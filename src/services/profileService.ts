@@ -18,10 +18,29 @@ export const profileService = {
         if (error && error.code !== 'PGRST116') {
             const isRLSError = error.code === '42501';
             console.error('Error fetching profile:', isRLSError ? 'RLS Permission Denied' : error);
-            // Even on error, return basic auth info to allow UI to function partialy
+        }
+
+        // No profile row yet — create one from auth metadata so next load finds it
+        if (error?.code === 'PGRST116' && !userId && user) {
+            await supabase.from('profiles').upsert({
+                id: user.id,
+                email: user.email || '',
+                full_name: user.user_metadata?.full_name || '',
+                company_name: user.user_metadata?.company_name || '',
+                plan: 'trial',
+                plan_status: 'active',
+                trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            }, { onConflict: 'id' });
         }
 
         if (data) {
+            // Profile row exists but name is missing — patch it from auth metadata silently
+            if ((!data.full_name || !data.company_name) && user) {
+                supabase.from('profiles').update({
+                    full_name: data.full_name || user.user_metadata?.full_name || '',
+                    company_name: data.company_name || user.user_metadata?.company_name || '',
+                }).eq('id', data.id).then(() => {});
+            }
             return {
                 id: data.id,
                 email: data.email,

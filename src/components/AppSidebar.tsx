@@ -14,9 +14,7 @@ import {
     Truck,
     ChevronLeft,
     ChevronRight,
-    LifeBuoy,
-    Smartphone,
-    Wrench
+    LifeBuoy
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
@@ -30,16 +28,8 @@ const AppSidebar: React.FC = () => {
 
     const menuItems = [
         { id: '/dashboard', icon: LayoutDashboard, label: 'Métricas', end: true, always: true },
-        // Vehicles logic
-        ...(profile?.business_type === 'vehicles' || !profile?.business_type ? [
-            ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: 'Carros', end: false, always: true }] : []),
-            ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),
-        ] : []),
-        // Phones logic
-        ...(profile?.business_type === 'phones' ? [
-            { id: '/phones', icon: Smartphone, label: 'Celulares', end: false, always: true },
-            { id: '/maintenance', icon: Wrench, label: 'Manutenções', end: false, always: true },
-        ] : []),
+        ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: 'Carros', end: false, always: true }] : []),
+        ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),
         { id: '/leads', icon: Users, label: 'Leads', end: false, always: true },
         { id: '/agenda', icon: Calendar, label: 'Agenda', end: false, always: true },
         { id: '/sales-closed', icon: CheckCircle2, label: 'Vendas', end: false, always: true },

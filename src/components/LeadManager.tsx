@@ -7,7 +7,7 @@ import {
   CalendarCheck, Clock, ExternalLink, Search, CheckSquare, Square, Upload,
   Briefcase, Users, User, MapPin, DollarSign, Calendar, Sliders, Settings,
   MessageSquare, MoreVertical, CreditCard, LayoutTemplate, Tag, Trash, FileText,
-  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Smartphone, Target, Info, Wrench
+  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Target, Info
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DraggableProvided, DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { Lead, LeadPhase, LeadTemperature, LeadCommunication, Tag as TagType, Vehicle, VehicleType, TransmissionType, EngineType, SaleDetails } from '../types';
@@ -43,14 +43,13 @@ interface LeadManagerProps {
   companyName?: string;
   impersonatedUserId?: string;
   vehicles?: Vehicle[];
-  businessType?: 'vehicles' | 'phones';
 }
 
 const SOURCES = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Indicação', 'Telefone', 'Outros'];
 
 const LeadManager: React.FC<LeadManagerProps> = ({
   type = 'leads', leads, phases: propPhases, onAddLead, onUpdateLead, onDeleteLead, onViewLead,
-  focusedLeadId, onClearFocus, onRefresh, userEmail, onDataChange, companyName, impersonatedUserId, vehicles = [], businessType = 'vehicles'
+  focusedLeadId, onClearFocus, onRefresh, userEmail, onDataChange, companyName, impersonatedUserId, vehicles = []
 }) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -92,7 +91,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const getPhaseIcon = (phase: string) => {
     switch (phase) {
       case LeadPhase.NEW: return <UserPlus size={14} />;
-      case LeadPhase.VISIT: return businessType === 'phones' ? <Wrench size={14} /> : <Calendar size={14} />;
+      case LeadPhase.VISIT: return <Calendar size={14} />;
       case LeadPhase.SIMULATION: return <Zap size={14} />;
       case LeadPhase.FOLLOW_UP: return <History size={14} />;
       case LeadPhase.COMPLETED: return <UserCheck size={14} />;
@@ -102,32 +101,26 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   };
 
   const getLabel = (key: string) => {
-    const isPhones = businessType === 'phones';
     switch (key) {
-      case 'scheduling': return isPhones ? 'Agendamento de Orçamento' : 'Agendamento de Visita';
-      case 'interest': return isPhones ? 'Aparelho de Interesse' : 'Veículo de Interesse';
-      case 'transmission': return isPhones ? 'Capacidade' : 'Câmbio';
-      case 'price': return isPhones ? 'Preço do Aparelho' : 'Potencial Compra';
-      case 'engine': return isPhones ? 'Saúde da Bateria' : 'Motorização';
-      case 'type': return isPhones ? 'Condição' : 'Tipos de Veículo';
-      case 'models': return isPhones ? 'Aparelhos de Interesse' : 'Modelos de Interesse';
-      case 'brands': return isPhones ? 'Marcas de Interesse' : 'Marcas Preferenciais';
-      case 'trade': return isPhones ? 'Aparelho para Troca' : 'Veículo para Troca';
-      case 'acquired': return isPhones ? 'Aparelho Adquirido' : 'Veículo Adquirido';
-      case 'visit_date': return isPhones ? 'Data/Hora Orçamento' : 'Data/Hora Agendada';
-      case 'visit_notes': return isPhones ? 'Notas do Orçamento' : 'Notas da Visita';
-      case 'visit_confirm': return isPhones ? 'Confirmado' : 'Veio';
-      case 'visit_noshow': return isPhones ? 'Não Veio' : 'Não Veio';
+      case 'scheduling': return 'Agendamento de Visita';
+      case 'interest': return 'Veículo de Interesse';
+      case 'transmission': return 'Câmbio';
+      case 'price': return 'Potencial Compra';
+      case 'engine': return 'Motorização';
+      case 'type': return 'Tipos de Veículo';
+      case 'models': return 'Modelos de Interesse';
+      case 'brands': return 'Marcas Preferenciais';
+      case 'trade': return 'Veículo para Troca';
+      case 'acquired': return 'Veículo Adquirido';
+      case 'visit_date': return 'Data/Hora Agendada';
+      case 'visit_notes': return 'Notas da Visita';
+      case 'visit_confirm': return 'Veio';
+      case 'visit_noshow': return 'Não Veio';
       default: return key;
     }
   };
 
-  const getPhaseLabel = (phase: string) => {
-    if (businessType === 'phones' && phase === LeadPhase.VISIT) {
-      return 'Orçamento / Reparo';
-    }
-    return phase;
-  };
+  const getPhaseLabel = (phase: string) => phase;
 
   // consolidated state
   const [isEditingPreferences, setIsEditingPreferences] = useState(false);
@@ -620,7 +613,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 {purchasedVehicles.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest px-1 flex items-center gap-2">
-                      {businessType === 'phones' ? <Smartphone size={14} /> : <Car size={14} />} {getLabel('acquired')}
+                      <Car size={14} /> {getLabel('acquired')}
                     </h3>
                     <div className="grid grid-cols-1 gap-4">
                       {purchasedVehicles.map(v => (

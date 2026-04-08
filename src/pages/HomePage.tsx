@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { format, isToday, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Sparkles, Calendar as CalendarIcon, ArrowRight, TrendingUp, Users, Car, Target, Clock, Smartphone } from 'lucide-react';
+import { Sparkles, Calendar as CalendarIcon, ArrowRight, TrendingUp, Users, Car, Target, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LeadPhase } from '../types';
 
@@ -14,7 +14,7 @@ const quotes = [
 ];
 
 const HomePage: React.FC = () => {
-    const { profile, leads, vehicles, motorcycles, phones } = useData();
+    const { profile, leads, vehicles, motorcycles } = useData();
     const navigate = useNavigate();
     const [quote, setQuote] = useState('');
 
@@ -31,8 +31,7 @@ const HomePage: React.FC = () => {
     const followupsHoje = leads.filter(l => l.phase === LeadPhase.FOLLOW_UP && l.follow_up_data?.nextContactDate && isToday(parseISO(l.follow_up_data.nextContactDate))).length;
     const availableVehicles = profile?.enable_cars !== false ? vehicles.filter(v => v.status === 'available').length : 0;
     const availableMotos = profile?.enable_motorcycles ? motorcycles.filter(m => m.status === 'available').length : 0;
-    const availablePhones = phones.filter(p => p.status === 'available').length;
-    const estoqueDisponivel = profile?.business_type === 'phones' ? availablePhones : (availableVehicles + availableMotos);
+    const estoqueDisponivel = availableVehicles + availableMotos;
 
     return (
         <div className="flex flex-col h-full justify-center animate-fadeUp pb-4 md:p-8 gap-8 lg:gap-12 max-w-6xl mx-auto w-full">
@@ -89,7 +88,7 @@ const HomePage: React.FC = () => {
                     </div>
                     <p className="text-4xl font-black text-slate-800 mb-1">{visitasHoje}</p>
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
-                        {profile?.business_type === 'phones' ? 'Orçamentos Marcados Hoje' : 'Visitas Marcadas Hoje'}
+                        Visitas Marcadas Hoje
                     </p>
                 </div>
 
@@ -105,15 +104,15 @@ const HomePage: React.FC = () => {
                 </div>
 
                 <div
-                    onClick={() => navigate(profile?.business_type === 'phones' ? '/phones' : '/inventory')}
+                    onClick={() => navigate('/inventory')}
                     className="bg-white/40 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
                 >
                     <div className="w-12 h-12 bg-indigo-500/10 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-500/20 transition-all duration-300">
-                        {profile?.business_type === 'phones' ? <Smartphone size={24} strokeWidth={2.5} /> : <Car size={24} strokeWidth={2.5} />}
+                        <Car size={24} strokeWidth={2.5} />
                     </div>
                     <p className="text-4xl font-black text-slate-800 mb-1">{estoqueDisponivel}</p>
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
-                        {profile?.business_type === 'phones' ? 'Celulares no Estoque' : 'Veículos no Estoque'}
+                        Veículos no Estoque
                     </p>
                 </div>
 

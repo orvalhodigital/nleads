@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { X, Check, Car, Calendar, DollarSign, Search, Loader2, Smartphone } from 'lucide-react';
-import { Lead, Vehicle, LeadPhase, Phone } from '../types';
+import React, { useState } from 'react';
+import { X, Check, Car, Calendar, DollarSign, Search, Loader2 } from 'lucide-react';
+import { Lead, Vehicle, LeadPhase } from '../types';
 import { vehicleService } from '../services/vehicleService';
 import { leadService } from '../services/leadService';
 import { useToast } from '../contexts/ToastContext';
@@ -14,12 +14,11 @@ interface LeadSaleModalProps {
     onClose: () => void;
     leadId: string | null;
     leads: Lead[];
-    items: (Vehicle | Phone)[];
+    items: Vehicle[];
     onSuccess: () => void;
-    businessType?: 'vehicles' | 'phones';
 }
 
-const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, leads, items, onSuccess, businessType = 'vehicles' }) => {
+const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, leads, items, onSuccess }) => {
     const { showToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItemId, setSelectedItemId] = useState<string>('');
@@ -29,18 +28,11 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
 
     const lead = leads.find(l => l.id === leadId);
 
-    const getItemLabel = (item: any) => {
-        if (businessType === 'phones') {
-            return `${item.brand} ${item.model} (${item.capacity})`;
-        }
-        return `${item.brand} ${item.model} ${item.year}`;
-    };
-
     const filteredItems = items.filter(v =>
         v.status === 'available' &&
         (v.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
             v.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (businessType === 'vehicles' ? (v as Vehicle).plate?.toLowerCase().includes(searchTerm.toLowerCase()) : (v as Phone).imei?.toLowerCase().includes(searchTerm.toLowerCase())))
+            (v as Vehicle).plate?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const handleConfirm = async () => {
@@ -54,7 +46,6 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
             const item = items.find(v => v.id === selectedItemId);
             if (!item) throw new Error("Item não encontrado");
 
-            // 1. Update Product to 'sold' and add sale details
             const saleDetails = {
                 salePrice,
                 saleDate,
@@ -63,19 +54,13 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                 isFollowUpSale: true
             };
 
-            const targetTable = businessType === 'phones' ? 'phones' : 'vehicles';
             const { error: vError } = await supabase
-                .from(targetTable)
-                .update({
-                    status: 'sold',
-                    sale_details: saleDetails
-                })
+                .from('vehicles')
+                .update({ status: 'sold', sale_details: saleDetails })
                 .eq('id', selectedItemId);
 
             if (vError) throw vError;
 
-            // 2. Update Lead: mark as buyer (appears in "Compradores" on Leads page)
-            // and move to WAITING_PAYMENT (appears in Sales Closed kanban)
             if (lead) {
                 await leadService.update({
                     ...lead,
@@ -121,13 +106,13 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                     {/* Item Selection */}
                     <div className="space-y-4">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">
-                            1. Selecione o {businessType === 'phones' ? 'Aparelho' : 'Veículo'} Vendido
+                            1. Selecione o Veículo Vendido
                         </label>
                         <div className="relative">
                             <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={18} />
                             <input
                                 type="text"
-                                placeholder={businessType === 'phones' ? "Buscar no estoque por marca, modelo ou IMEI..." : "Buscar no estoque por marca, modelo ou placa..."}
+                                placeholder="Buscar no estoque por marca, modelo ou placa..."
                                 className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
@@ -148,12 +133,12 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedItemId === v.id ? 'bg-emerald-500 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-500'}`}>
-                                            {businessType === 'phones' ? <Smartphone size={24} /> : <Car size={24} />}
+                                            <Car size={24} />
                                         </div>
                                         <div>
                                             <h4 className="font-extrabold text-slate-900 uppercase tracking-tight">{v.brand} {v.model}</h4>
                                             <p className="text-xs font-bold text-slate-400">
-                                                {businessType === 'phones' ? (v as Phone).capacity : (v as Vehicle).year} • {businessType === 'phones' ? (v as Phone).imei : (v as Vehicle).plate || 'S/ Placa'} • R$ {v.price.toLocaleString()}
+                                                {v.year} • {v.plate || 'S/ Placa'} • R$ {v.price.toLocaleString()}
                                             </p>
                                         </div>
                                     </div>
@@ -166,7 +151,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                             ))}
                             {filteredItems.length === 0 && (
                                 <div className="p-10 border-2 border-dashed border-slate-100 rounded-3xl text-center">
-                                    <p className="text-sm font-bold text-slate-400">Nenhum {businessType === 'phones' ? 'aparelho' : 'veículo'} disponível encontrado</p>
+                                    <p className="text-sm font-bold text-slate-400">Nenhum veículo disponível encontrado</p>
                                 </div>
                             )}
                         </div>

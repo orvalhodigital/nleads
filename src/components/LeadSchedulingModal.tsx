@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, Clock, Car, FileText, Check, Smartphone } from 'lucide-react';
-import { Lead, Vehicle, Phone } from '../types';
+import { X, Calendar, Clock, Car, FileText, Check } from 'lucide-react';
+import { Lead, Vehicle } from '../types';
 import { vehicleService } from '../services/vehicleService';
-import { phoneService } from '../services/phoneService';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { CustomTimePicker } from './ui/CustomTimePicker';
 
@@ -11,17 +10,16 @@ interface Props {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: (data?: { date: string; time: string; vehicleOfInterest: string; notes: string }) => void;
-    businessType?: 'vehicles' | 'phones';
 }
 
-export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, onConfirm, businessType = 'vehicles' }) => {
+export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, onConfirm }) => {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [vehicleOfInterest, setVehicleOfInterest] = useState('');
     const [notes, setNotes] = useState('');
 
-    const [availableItems, setAvailableItems] = useState<(Vehicle | Phone)[]>([]);
-    const [selectedItems, setSelectedItems] = useState<(Vehicle | Phone)[]>([]);
+    const [availableItems, setAvailableItems] = useState<Vehicle[]>([]);
+    const [selectedItems, setSelectedItems] = useState<Vehicle[]>([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -29,20 +27,14 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
         if (isOpen) {
             const fetchItems = async () => {
                 try {
-                    let data: (Vehicle | Phone)[] = [];
-                    if (businessType === 'phones') {
-                        data = await phoneService.getAll();
-                    } else {
-                        data = await vehicleService.getAll();
-                    }
+                    const data = await vehicleService.getAll();
                     setAvailableItems(data.filter(v => v.status === 'available'));
                 } catch (error) {
-                    console.error("Erro ao carregar itens", error);
+                    console.error("Erro ao carregar veículos", error);
                 }
             };
             fetchItems();
 
-            // Reset state directly when opening modal for the first time
             setDate('');
             setTime('');
             setVehicleOfInterest('');
@@ -50,7 +42,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
             setSelectedItems([]);
             setIsDropdownOpen(false);
         }
-    }, [isOpen, businessType]);
+    }, [isOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -62,22 +54,17 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const getItemLabel = (item: any) => {
-        if (businessType === 'phones') {
-            return `${item.brand} ${item.model} (${item.capacity})`;
-        }
-        return `${item.brand} ${item.model} ${item.year}`;
-    };
+    const getItemLabel = (item: Vehicle) => `${item.brand} ${item.model} ${item.year}`;
 
     const filteredItems = availableItems.filter(v =>
         getItemLabel(v).toLowerCase().includes(vehicleOfInterest.toLowerCase()) &&
         !selectedItems.find(sv => sv.id === v.id)
     );
 
-    const toggleItem = (item: any) => {
+    const toggleItem = (item: Vehicle) => {
         if (!selectedItems.find(v => v.id === item.id)) {
             setSelectedItems([...selectedItems, item]);
-            setVehicleOfInterest(''); // clear search
+            setVehicleOfInterest('');
             setIsDropdownOpen(false);
         }
     };
@@ -103,7 +90,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div>
                         <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                            {businessType === 'phones' ? 'Agendar Orçamento / Reparo' : 'Agendar Visita/Test Drive'}
+                            Agendar Visita/Test Drive
                         </h2>
                         <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Lead: {lead.name}</p>
                     </div>
@@ -116,7 +103,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
-                                <Calendar size={12} /> {businessType === 'phones' ? 'Data do Orçamento' : 'Data da Visita'}
+                                <Calendar size={12} /> Data da Visita
                             </label>
                             <CustomDatePicker
                                 value={date}
@@ -138,7 +125,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
 
                     <div className="space-y-2 relative" ref={dropdownRef}>
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
-                            {businessType === 'phones' ? <Smartphone size={12} /> : <Car size={12} />} {businessType === 'phones' ? 'Aparelho de Interesse' : 'Veículo de Interesse'} (Opcional)
+                            <Car size={12} /> Veículo de Interesse (Opcional)
                         </label>
                         <div className="w-full min-h-[56px] p-2 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all flex flex-wrap gap-2 items-center">
                             {selectedItems.map(item => (
@@ -151,7 +138,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             ))}
                             <input
                                 type="text"
-                                placeholder={selectedItems.length === 0 ? (businessType === 'phones' ? "Ex: iPhone 15 Pro Max" : "Ex: Jeep Compass 2022") : ""}
+                                placeholder={selectedItems.length === 0 ? "Ex: Jeep Compass 2022" : ""}
                                 value={vehicleOfInterest}
                                 onChange={e => {
                                     setVehicleOfInterest(e.target.value);
@@ -175,7 +162,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                                     {item.brand} {item.model}
                                                 </p>
                                                 <p className="text-xs font-medium text-slate-400">
-                                                    {businessType === 'phones' ? (item as Phone).capacity : (item as Vehicle).year}
+                                                    {item.year}
                                                 </p>
                                             </div>
                                             <div className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -185,7 +172,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                     ))
                                 ) : (
                                     <div className="px-4 py-3 text-sm text-slate-500 font-medium">
-                                        {vehicleOfInterest ? (businessType === 'phones' ? "Nennhum aparelho encontrado." : "Nenhum veículo encontrado.") : "Nenhum disponível"}
+                                        {vehicleOfInterest ? "Nenhum veículo encontrado." : "Nenhum disponível"}
                                     </div>
                                 )}
                             </div>
@@ -194,7 +181,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
 
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
-                            <FileText size={12} /> {businessType === 'phones' ? 'Observações para o orçamento' : 'Observações para a visita'}
+                            <FileText size={12} /> Observações para a visita
                         </label>
                         <textarea
                             placeholder="Detalhes adicionais..."
@@ -224,11 +211,10 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                         disabled={!date}
                         className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
                     >
-                        {businessType === 'phones' ? 'Confirmar Orçamento' : 'Confirmar Agendamento'}
+                        Confirmar Agendamento
                     </button>
                 </div>
             </div>
         </div>
     );
 };
-

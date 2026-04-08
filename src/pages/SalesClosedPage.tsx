@@ -5,20 +5,14 @@ import { LeadPhase } from '../types';
 import {
     CheckCircle2,
     Car,
-    Users,
     DollarSign,
-    Calendar,
     TrendingUp,
     ChevronRight,
     Award,
     ShoppingBag,
-    ArrowRight,
     Search,
-    Filter,
     X,
-    TrendingDown,
     Zap,
-    Smartphone
 } from 'lucide-react';
 
 import { format, isWithinInterval, startOfDay, endOfDay, subMonths, parseISO } from 'date-fns';
@@ -28,7 +22,7 @@ import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 import { formatCurrency } from '../utils/formatters';
 
 const SalesClosedPage: React.FC = () => {
-    const { leads, vehicles, phones, profile } = useData();
+    const { leads, vehicles } = useData();
     const navigate = useNavigate();
 
     // Filters
@@ -40,8 +34,7 @@ const SalesClosedPage: React.FC = () => {
 
     const salesData = useMemo(() => {
         const soldItems = [
-            ...vehicles.filter(v => v.status === 'sold' && v.saleDetails).map(v => ({ ...v, item_type: 'vehicle' as const })),
-            ...phones.filter(p => p.status === 'sold' && p.saleDetails).map(p => ({ ...p, item_type: 'phone' as const }))
+            ...vehicles.filter(v => v.status === 'sold' && v.saleDetails).map(v => ({ ...v, item_type: 'vehicle' as const }))
         ];
 
         let filtered = soldItems
@@ -84,6 +77,7 @@ const SalesClosedPage: React.FC = () => {
         return filtered.sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
     }, [vehicles, leads, searchQuery, dateRange]);
 
+
     const totalRevenue = salesData.reduce((sum, s) => sum + s.salePrice, 0);
     const totalProfit = salesData.reduce((sum, s) => sum + s.profit, 0);
     const totalCost = salesData.reduce((sum, s) => sum + s.cost, 0);
@@ -121,7 +115,7 @@ const SalesClosedPage: React.FC = () => {
                             <ShoppingBag size={18} className="text-emerald-500" />
                         </div>
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            {profile?.business_type === 'phones' ? 'Aparelhos Vendidos' : 'Veículos Vendidos'}
+                            Veículos Vendidos
                         </span>
                     </div>
                     <p className="text-3xl font-black text-slate-900">{salesData.length}</p>
@@ -165,7 +159,7 @@ const SalesClosedPage: React.FC = () => {
                         <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={18} />
                         <input
                             type="text"
-                            placeholder={profile?.business_type === 'phones' ? "Buscar por cliente ou aparelho..." : "Buscar por cliente ou veículo..."}
+                            placeholder="Buscar por cliente ou veículo..."
                             className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:border-emerald-500 transition-all outline-none"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
@@ -226,7 +220,7 @@ const SalesClosedPage: React.FC = () => {
                                             <img src={sale.item.imageUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                                {sale.itemType === 'phone' ? <Smartphone size={24} /> : <Car size={24} />}
+                                                <Car size={24} />
                                             </div>
                                         )}
                                     </div>
@@ -238,14 +232,12 @@ const SalesClosedPage: React.FC = () => {
                                         </h3>
                                         <div className="flex items-center gap-3 mt-1">
                                             <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                                                {sale.itemType === 'phone' ? (sale.item as any).capacity : (sale.item as any).year}
-                                                {sale.itemType === 'vehicle' && (sale.item as any).modelYear ? `/${String((sale.item as any).modelYear).slice(-2)}` : ''}
+                                                {(sale.item as any).year}
+                                                {(sale.item as any).modelYear ? `/${String((sale.item as any).modelYear).slice(-2)}` : ''}
                                             </span>
-                                            {sale.itemType === 'vehicle' && (
-                                                <span className="text-[9px] font-bold text-slate-400">
-                                                    {(sale.item as any).type} • {(sale.item as any).transmission}
-                                                </span>
-                                            )}
+                                            <span className="text-[9px] font-bold text-slate-400">
+                                                {(sale.item as any).type} • {(sale.item as any).transmission}
+                                            </span>
                                         </div>
                                     </div>
 
@@ -291,11 +283,9 @@ const SalesClosedPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="py-20 flex flex-col items-center text-center opacity-30 select-none">
-                        {profile?.business_type === 'phones' ? <Smartphone size={48} strokeWidth={1} /> : <Car size={48} strokeWidth={1} />}
+                        <Car size={48} strokeWidth={1} />
                         <h3 className="text-sm font-black uppercase tracking-tight mt-2">Nenhuma venda registrada</h3>
-                        <p className="text-xs font-medium mt-1">
-                            {profile?.business_type === 'phones' ? 'Registre vendas a partir do estoque de celulares' : 'Registre vendas a partir do estoque de veículos'}
-                        </p>
+                        <p className="text-xs font-medium mt-1">Registre vendas a partir do estoque de veículos</p>
                     </div>
                 )}
             </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Mail, Lock, Loader2, ArrowRight, User, Eye, EyeOff, Building, Car, Smartphone } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, User, Eye, EyeOff, Building, Car } from 'lucide-react';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 
 export default function Auth() {
@@ -10,7 +10,7 @@ export default function Auth() {
     const [fullName, setFullName] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
-    const [businessType, setBusinessType] = useState<'vehicles' | 'phones' | null>(null);
+    const [businessType, setBusinessType] = useState<'vehicles' | null>(null);
     const [step, setStep] = useState<'choice' | 'form'>('choice');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -73,7 +73,6 @@ export default function Auth() {
     if (isSignUp && step === 'choice') {
         const options = [
             { id: 'vehicles', label: 'Revenda de Veículos', icon: Building, active: true },
-            { id: 'phones', label: 'Lojas de Celulares', icon: Smartphone, active: true },
             { id: 'realestate', label: 'Imóveis', icon: Building, active: false },
             { id: 'fashion', label: 'Moda e Acessórios', icon: Building, active: false },
             { id: 'beauty', label: 'Estética e Beleza', icon: Building, active: false },
@@ -116,10 +115,7 @@ export default function Auth() {
                                     w-16 h-16 rounded-2xl flex items-center justify-center transition-all
                                     ${opt.active ? 'bg-slate-900 text-white group-hover:bg-emerald-500' : 'bg-slate-200 text-slate-400'}
                                 `}>
-                                    {opt.id === 'vehicles' ? <Car size={32} /> :
-                                        opt.id === 'phones' ? <Smartphone size={32} /> :
-                                            opt.id === 'realestate' ? <Building size={32} /> :
-                                                <Building size={32} />}
+                                    {opt.id === 'vehicles' ? <Car size={32} /> : <Building size={32} />}
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className={`font-black uppercase tracking-tight text-sm ${opt.active ? 'text-slate-900' : 'text-slate-400'}`}>
@@ -170,10 +166,10 @@ export default function Auth() {
                                     <div className="w-full px-4 py-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="text-emerald-500 flex items-center justify-center">
-                                                {businessType === 'phones' ? <Smartphone size={18} /> : <Car size={18} />}
+                                                <Car size={18} />
                                             </div>
                                             <span className="font-black text-sm text-emerald-700">
-                                                {businessType === 'phones' ? 'Lojas de Celulares' : 'Revenda de Veículos'}
+                                                Revenda de Veículos
                                             </span>
                                         </div>
                                         <button

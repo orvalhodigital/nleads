@@ -35,37 +35,6 @@ export interface SaleDetails {
   isFollowUpSale: boolean;
 }
 
-export interface Phone {
-  id: string;
-  brand: string;
-  model: string;
-  capacity?: string;
-  color?: string;
-  condition: 'novo' | 'usado' | 'vitrine';
-  batteryHealth?: number;
-  price: number;
-  status: 'available' | 'reserved' | 'sold';
-  imageUrl?: string;
-  imei?: string;
-  createdAt?: string;
-  saleDetails?: SaleDetails;
-}
-
-export type MaintenanceStatus = 'aguardando_orcamento' | 'em_manutencao' | 'pronto' | 'entregue' | 'aguardando_peca';
-
-export interface Maintenance {
-  id: string;
-  clientName: string;
-  clientPhone: string;
-  deviceModel: string;
-  deviceImei?: string;
-  problemDescription?: string;
-  estimatedPrice?: number;
-  status: MaintenanceStatus;
-  notes?: string;
-  createdAt: string;
-}
-
 export interface Vehicle {
   id: string;
   model: string;
@@ -195,7 +164,7 @@ export interface Profile {
   company_logo?: string;
   role?: string;
   phone?: string;
-  business_type?: 'vehicles' | 'phones';
+  business_type?: 'vehicles';
   // Vehicle Source Settings
   enable_manual_vehicles?: boolean;
   monthly_sales_goal?: number;
@@ -240,7 +209,7 @@ export interface Motorcycle {
   saleDetails?: SaleDetails;
 }
 
-export type View = 'dashboard' | 'inventory' | 'leads' | 'agenda' | 'sales-closed' | 'plans' | 'settings' | 'motorcycles' | 'onboarding' | 'support' | 'admin-tickets' | 'phones' | 'maintenance';
+export type View = 'dashboard' | 'inventory' | 'leads' | 'agenda' | 'sales-closed' | 'plans' | 'settings' | 'motorcycles' | 'onboarding' | 'support' | 'admin-tickets';
 
 export type TicketStatus = 'open' | 'in_progress' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';

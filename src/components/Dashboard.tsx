@@ -5,9 +5,9 @@ import {
   Users, Car, Target, DollarSign, Flame, Clock, AlertTriangle, BadgeCheck,
   CheckCircle2, Quote, Calendar, TrendingUp, TrendingDown, Eye, UserCheck,
   UserX, ShoppingBag, BarChart3, Percent, ArrowRight, Gauge, Package,
-  Repeat, Handshake, Timer, MapPin, ThermometerSun, Sparkles, Award, Activity, PhoneCall, Info, Smartphone
+  Repeat, Handshake, Timer, MapPin, ThermometerSun, Sparkles, Award, Activity, PhoneCall, Info
 } from 'lucide-react';
-import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, VisitStatus, Motorcycle, TransmissionType, EngineType, Phone } from '../types';
+import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, VisitStatus, Motorcycle, TransmissionType, EngineType } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import confetti from 'canvas-confetti';
 import { isToday, isTomorrow, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, parse } from 'date-fns';
@@ -17,14 +17,13 @@ import { CustomDatePicker } from './ui/CustomDatePicker';
 interface DashboardProps {
   leads: Lead[];
   vehicles: Vehicle[];
-  phones?: Phone[];
   motorcycles?: Motorcycle[];
   profile?: Profile | null;
 }
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#f97316'];
 
-const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], motorcycles = [], profile }) => {
+const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = [], profile }) => {
   const navigate = useNavigate();
   const now = new Date();
   const [activeTab, setActiveTab] = useState<'geral' | 'comercial' | 'estoque' | 'agenda'>('geral');
@@ -35,28 +34,24 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
 
   const unifiedItems = useMemo(() => {
     const list: any[] = [];
-    if (profile?.business_type === 'phones') {
-      list.push(...phones);
-    } else {
-      if (profile?.enable_cars !== false) {
-        list.push(...vehicles);
-      }
-      if (profile?.enable_motorcycles) {
-        list.push(...motorcycles.map(m => ({
-          ...m,
-          type: m.category as any,
-          brand: m.brand,
-          model: m.model,
-          price: m.price,
-          status: m.status,
-          saleDetails: m.saleDetails,
-          transmission: 'Manual' as TransmissionType,
-          engine: m.engine as any
-        })));
-      }
+    if (profile?.enable_cars !== false) {
+      list.push(...vehicles);
+    }
+    if (profile?.enable_motorcycles) {
+      list.push(...motorcycles.map(m => ({
+        ...m,
+        type: m.category as any,
+        brand: m.brand,
+        model: m.model,
+        price: m.price,
+        status: m.status,
+        saleDetails: m.saleDetails,
+        transmission: 'Manual' as TransmissionType,
+        engine: m.engine as any
+      })));
     }
     return list;
-  }, [vehicles, motorcycles, phones, profile]);
+  }, [vehicles, motorcycles, profile]);
   const [filterTemp, setFilterTemp] = useState<string>('all');
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [quote, setQuote] = useState<{ text: string, author: string }>({
@@ -208,7 +203,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
     // Funnel Data p/ Gráfico
     const funnelPhases = [
       { name: 'Contatos', label: 'Contatos', color: '#10b981' },
-      { name: 'Visita', label: profile?.business_type === 'phones' ? 'Orçamento' : 'Visita', color: '#3b82f6' },
+      { name: 'Visita', label: 'Visita', color: '#3b82f6' },
       { name: 'Simulação', label: 'Simulação', color: '#f59e0b' },
       { name: 'Ag. Pagamento', label: 'Ag. Pagamento', color: '#ec4899' }
     ];
@@ -256,7 +251,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
 
     const typeInterestMap: Record<string, number> = {};
     leads.forEach(l => {
-      const types = profile?.business_type === 'phones' ? l.phone_preferences?.brands || [] : l.preferences.tipos_veiculo;
+      const types = l.preferences.tipos_veiculo;
       types.forEach(t => typeInterestMap[t] = (typeInterestMap[t] || 0) + 1);
     });
     const typeInterest = Object.entries(typeInterestMap).map(([name, value]) => ({ name, value }));
@@ -451,13 +446,13 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
                 onClick={() => navigate('/reporting')}
               />
               <KpiGlassCard
-                label={profile?.business_type === 'phones' ? "Estoque Celulares" : "Estoque Veículos"}
+                label="Estoque Veículos"
                 value={availableItems.length}
-                icon={profile?.business_type === 'phones' ? Smartphone : Car}
+                icon={Car}
                 colorClass="text-blue-600 bg-blue-500/10"
                 glowClass="bg-blue-400/30"
-                info={profile?.business_type === 'phones' ? "Quantidade de aparelhos disponíveis." : "Quantidade de veículos disponíveis."}
-                onClick={() => navigate(profile?.business_type === 'phones' ? '/phones' : '/inventory')}
+                info="Quantidade de veículos disponíveis."
+                onClick={() => navigate('/inventory')}
               />
               <KpiGlassCard
                 label="Tick. Médio"
@@ -522,7 +517,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
                   </div>
 
                   <div className="space-y-5">
-                    {funnelPhases.filter(d => [profile?.business_type === 'phones' ? 'Orçamento' : 'Visita', 'Simulação', 'Ag. Pagamento'].includes(d.label)).map((item) => (
+                    {funnelPhases.filter(d => ['Visita', 'Simulação', 'Ag. Pagamento'].includes(d.label)).map((item) => (
                       <PhaseGlassBar key={item.label} label={item.label} value={leads.filter(l => l.phase === item.name).length} total={activeLeads.length} color={item.color} />
                     ))}
                   </div>
@@ -539,10 +534,10 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
               <SectionHeader icon={Flame} title="Ações de Alto Impacto" subtitle="Você pode vender hoje" color="text-orange-500 bg-orange-500/10 border-orange-500/20" />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
                 <ActionMetricCard
-                  title={profile?.business_type === 'phones' ? "Matches de Celulares" : "Matches de Carros"}
+                  title="Matches de Carros"
                   value={matchesProntos}
-                  subtitle={profile?.business_type === 'phones' ? "Buscam aparelho no estoque" : "Buscam carro no estoque"}
-                  icon={profile?.business_type === 'phones' ? Smartphone : Car}
+                  subtitle="Buscam carro no estoque"
+                  icon={Car}
                   colorClass="text-emerald-600 bg-emerald-500/10"
                 />
                 <ActionMetricCard title="A Ponto de Fechar" value={prontosParaFechar} subtitle="Simulando ou Avaliando" icon={Target} colorClass="text-sky-600 bg-sky-500/10" />
@@ -594,16 +589,16 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <GlassSection>
                 <SectionHeader
-                  icon={profile?.business_type === 'phones' ? Smartphone : Car}
+                  icon={Car}
                   title="Inventário Atual"
                   subtitle="Giro e Valor"
                   color="text-indigo-500 bg-indigo-500/10 border-indigo-500/20"
                 />
                 <div className="grid grid-cols-2 gap-6 mt-8">
                   <MiniStat
-                    label={profile?.business_type === 'phones' ? "Aparelhos Disp." : "Veículos Disp."}
+                    label="Veículos Disp."
                     value={availableItems.length}
-                    icon={profile?.business_type === 'phones' ? Smartphone : Car}
+                    icon={Car}
                   />
                   <MiniStat label="Giro Mensal" value={`${stockTurnover.toFixed(1)}%`} icon={TrendingUp} />
                 </div>
@@ -628,13 +623,13 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
                 <SectionHeader
                   icon={Package}
                   title="Alerta de Estoque"
-                  subtitle={profile?.business_type === 'phones' ? "Aparelhos que ninguém procurou" : "Carros que ninguém procurou"}
+                  subtitle="Carros que ninguém procurou"
                   color="text-rose-500 bg-rose-500/10 border-rose-500/20"
                 />
                 <div className="mt-8 flex flex-col items-center justify-center text-center py-16 border border-dashed border-rose-300 bg-rose-50/50 rounded-[32px]">
                   <p className="text-6xl font-black text-rose-600 mb-4">{availableItems.length}</p>
                   <p className="text-sm font-bold uppercase tracking-widest text-rose-500/80">
-                    {profile?.business_type === 'phones' ? "aparelhos disponíveis para venda" : "veículos disponíveis para venda"}
+                    veículos disponíveis para venda
                   </p>
                 </div>
               </GlassSection>
@@ -665,8 +660,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
                   </button>
                 </div>
                 <div className="space-y-4">
-                  <AgendaRow icon={Users} label={profile?.business_type === 'phones' ? "Orçamentos Agendados" : "Visitas Agendadas"} value={visToday} subtitle="Total para o dia de hoje" colorClass="text-amber-600 bg-amber-50" />
-                  <AgendaRow icon={CheckCircle2} label={profile?.business_type === 'phones' ? "Orçamentos Realizados" : "Visitas Realizadas"} value={visitsDoneToday} subtitle="Concluídas com sucesso" colorClass="text-emerald-600 bg-emerald-50 border border-emerald-100" />
+                  <AgendaRow icon={Users} label="Visitas Agendadas" value={visToday} subtitle="Total para o dia de hoje" colorClass="text-amber-600 bg-amber-50" />
+                  <AgendaRow icon={CheckCircle2} label="Visitas Realizadas" value={visitsDoneToday} subtitle="Concluídas com sucesso" colorClass="text-emerald-600 bg-emerald-50 border border-emerald-100" />
                 </div>
               </GlassSection>
 
@@ -688,7 +683,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, phones = [], mot
                     <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center shadow-inner">
                       <p className="text-5xl font-black text-slate-800">{appointmentsTomorrow}</p>
                       <p className="text-[11px] uppercase font-bold tracking-widest text-slate-400 mt-3">
-                        {profile?.business_type === 'phones' ? 'Novos Orçamentos' : 'Novas Visitas'}
+                        Novas Visitas
                       </p>
                     </div>
                     <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center shadow-inner">

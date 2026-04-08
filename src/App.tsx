@@ -21,8 +21,6 @@ import LeadDetailPage from './pages/LeadDetailPage';
 import LeadActionPage from './pages/LeadActionPage';
 import MotorcyclesPage from './pages/MotorcyclesPage';
 import SupportPage from './pages/SupportPage';
-import PhonesPage from './pages/PhonesPage';
-import MaintenancePage from './pages/MaintenancePage';
 
 const App: React.FC = () => {
   return (
@@ -54,8 +52,6 @@ const App: React.FC = () => {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="motorcycles" element={<MotorcyclesPage />} />
             <Route path="support" element={<SupportPage />} />
-            <Route path="phones" element={<PhonesPage />} />
-            <Route path="maintenance" element={<MaintenancePage />} />
 
           </Route>
         </Routes>

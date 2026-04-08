@@ -4,11 +4,9 @@ import { leadService } from '../services/leadService';
 import { vehicleService } from '../services/vehicleService';
 import { profileService } from '../services/profileService';
 import { motorcycleService } from '../services/motorcycleService';
-import { phoneService } from '../services/phoneService';
-import { maintenanceService } from '../services/maintenanceService';
 import { useToast } from './ToastContext';
 import { ToastType } from '../components/ui/Toast';
-import { Lead, Vehicle, Profile, LeadPhase, SaleDetails, Motorcycle, Phone, Maintenance } from '../types';
+import { Lead, Vehicle, Profile, LeadPhase, SaleDetails, Motorcycle } from '../types';
 
 interface DataContextType {
     session: any;
@@ -26,21 +24,8 @@ interface DataContextType {
     updateLead: (l: Lead) => Promise<void>;
     deleteLead: (id: string) => Promise<void>;
     motorcycles: Motorcycle[];
-    phones: Phone[];
-    maintenances: Maintenance[];
     refreshProfile: () => Promise<void>;
     impersonatedUserId?: string;
-
-    // Phone Actions
-    addPhone: (p: Omit<Phone, 'id' | 'createdAt'>) => Promise<void>;
-    updatePhone: (p: Phone) => Promise<void>;
-    deletePhone: (id: string) => Promise<void>;
-    handleSellPhone: (id: string, details: SaleDetails) => Promise<void>;
-
-    // Maintenance Actions
-    addMaintenance: (m: Omit<Maintenance, 'id' | 'createdAt'>) => Promise<void>;
-    updateMaintenance: (m: Maintenance) => Promise<void>;
-    deleteMaintenance: (id: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType>({} as DataContextType);
@@ -54,26 +39,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [leads, setLeads] = useState<Lead[]>([]);
     const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([]);
-    const [phones, setPhones] = useState<Phone[]>([]);
-    const [maintenances, setMaintenances] = useState<Maintenance[]>([]);
     const [profile, setProfile] = useState<Profile | null>(null);
 
     const loadData = async () => {
         try {
-            const [vehiclesData, leadsData, profileData, motorcyclesData, phonesData, maintenancesData] = await Promise.all([
+            const [vehiclesData, leadsData, profileData, motorcyclesData] = await Promise.all([
                 vehicleService.getAll(impersonatedUserId),
                 leadService.getAll(impersonatedUserId),
                 profileService.getProfile(impersonatedUserId),
                 motorcycleService.getAll(impersonatedUserId),
-                phoneService.getAll(impersonatedUserId),
-                maintenanceService.getAll(impersonatedUserId)
             ]);
             setVehicles(vehiclesData);
             setLeads(leadsData);
             setProfile(profileData);
             setMotorcycles(motorcyclesData);
-            setPhones(phonesData);
-            setMaintenances(maintenancesData);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
         }
@@ -246,93 +225,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         }
     };
 
-    // Phone Actions Implementation
-    const addPhone = async (p: Omit<Phone, 'id' | 'createdAt'>) => {
-        try {
-            const newPhone = await phoneService.create(p);
-            setPhones(prev => [newPhone, ...prev]);
-            showToast('success', 'Aparelho adicionado!');
-        } catch (error) {
-            console.error(error);
-            showToast('error', 'Erro ao adicionar aparelho');
-        }
-    };
-
-    const updatePhone = async (p: Phone) => {
-        try {
-            await phoneService.update(p);
-            setPhones(prev => prev.map(item => item.id === p.id ? p : item));
-            showToast('success', 'Aparelho atualizado!');
-        } catch (error) {
-            console.error(error);
-            showToast('error', 'Erro ao atualizar aparelho');
-        }
-    };
-
-    const deletePhone = async (id: string) => {
-        if (window.confirm("Remover aparelho?")) {
-            try {
-                await phoneService.delete(id);
-                setPhones(prev => prev.filter(p => p.id !== id));
-                showToast('success', 'Aparelho removido');
-            } catch (error) {
-                console.error(error);
-                showToast('error', 'Erro ao remover aparelho');
-            }
-        }
-    };
-
-    const handleSellPhone = async (id: string, details: SaleDetails) => {
-        try {
-            const phone = phones.find(p => p.id === id);
-            if (phone) {
-                const updated = { ...phone, status: 'sold' as const, saleDetails: details };
-                await phoneService.update(updated);
-                setPhones(prev => prev.map(p => p.id === id ? updated : p));
-                showToast('success', 'Venda registrada!');
-            }
-        } catch (error) {
-            console.error(error);
-            showToast('error', 'Erro ao registrar venda');
-        }
-    };
-
-    // Maintenance Actions Implementation
-    const addMaintenance = async (m: Omit<Maintenance, 'id' | 'createdAt'>) => {
-        try {
-            const newM = await maintenanceService.create(m);
-            setMaintenances(prev => [newM, ...prev]);
-            showToast('success', 'O.S. Criada!');
-        } catch (error) {
-            console.error(error);
-            showToast('error', 'Erro ao criar O.S.');
-        }
-    };
-
-    const updateMaintenance = async (m: Maintenance) => {
-        try {
-            await maintenanceService.update(m);
-            setMaintenances(prev => prev.map(item => item.id === m.id ? m : item));
-            showToast('success', 'O.S. Atualizada!');
-        } catch (error) {
-            console.error(error);
-            showToast('error', 'Erro ao atualizar O.S.');
-        }
-    };
-
-    const deleteMaintenance = async (id: string) => {
-        if (window.confirm("Remover ordem de serviço?")) {
-            try {
-                await maintenanceService.delete(id);
-                setMaintenances(prev => prev.filter(m => m.id !== id));
-                showToast('success', 'O.S. Removida');
-            } catch (error) {
-                console.error(error);
-                showToast('error', 'Erro ao remover O.S.');
-            }
-        }
-    };
-
     return (
         <DataContext.Provider value={{
             session,
@@ -340,8 +232,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             leads,
             vehicles,
             motorcycles,
-            phones,
-            maintenances,
             loading,
             loadData,
             showToast,
@@ -353,14 +243,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             updateLead,
             deleteLead,
             refreshProfile,
-            impersonatedUserId,
-            addPhone,
-            updatePhone,
-            deletePhone,
-            handleSellPhone,
-            addMaintenance,
-            updateMaintenance,
-            deleteMaintenance
+            impersonatedUserId
         }}>
             {children}
         </DataContext.Provider>

@@ -14,7 +14,7 @@ import LeadSaleModal from '../components/LeadSaleModal';
 const LeadActionPage: React.FC = () => {
     const { id, actionType } = useParams<{ id: string, actionType: string }>();
     const navigate = useNavigate();
-    const { leads, vehicles, phones, profile, updateLead } = useData();
+    const { leads, vehicles, updateLead } = useData();
     const { showToast } = useToast();
 
     const [lead, setLead] = useState(leads.find(l => l.id === id) || null);
@@ -61,7 +61,6 @@ const LeadActionPage: React.FC = () => {
             <LeadSchedulingModal
                 isOpen={true}
                 lead={lead}
-                businessType={profile?.business_type}
                 onClose={handleClose}
                 onConfirm={async (data) => {
                     const oldPhase = lead.phase;
@@ -75,10 +74,7 @@ const LeadActionPage: React.FC = () => {
                         } : {})
                     });
                     await notificationService.notifyLeadPhaseChange(lead.name, oldPhase, LeadPhase.VISIT, 'system');
-                    const successMsg = profile?.business_type === 'phones' ?
-                        (data ? 'Orçamento agendado e lead atualizado.' : 'Lead movido para Orçamento.') :
-                        (data ? 'Visita agendada e lead atualizado.' : 'Lead movido para Visita.');
-                    showToast('success', successMsg);
+                    showToast('success', data ? 'Visita agendada e lead atualizado.' : 'Lead movido para Visita.');
                     handleClose();
                 }}
             />
@@ -133,8 +129,7 @@ const LeadActionPage: React.FC = () => {
                 isOpen={true}
                 leadId={lead.id}
                 leads={leads}
-                items={profile?.business_type === 'phones' ? phones : vehicles}
-                businessType={profile?.business_type}
+                items={vehicles}
                 onClose={handleClose}
                 onSuccess={() => {
                     showToast('success', 'Venda finalizada com sucesso!');

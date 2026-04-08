@@ -4,9 +4,8 @@ import Dashboard from '../components/Dashboard';
 import { useData } from '../contexts/DataContext';
 
 const DashboardPage: React.FC = () => {
-    const { leads, vehicles, phones, profile, motorcycles } = useData();
-    // Dashboard expects leads and vehicles.
-    return <Dashboard leads={leads} vehicles={vehicles} phones={phones} motorcycles={motorcycles} profile={profile} />;
+    const { leads, vehicles, profile, motorcycles } = useData();
+    return <Dashboard leads={leads} vehicles={vehicles} motorcycles={motorcycles} profile={profile} />;
 };
 
 export default DashboardPage;

@@ -42,20 +42,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     const [profile, setProfile] = useState<Profile | null>(null);
 
     const loadData = async () => {
-        try {
-            const [vehiclesData, leadsData, profileData, motorcyclesData] = await Promise.all([
-                vehicleService.getAll(impersonatedUserId),
-                leadService.getAll(impersonatedUserId),
-                profileService.getProfile(impersonatedUserId),
-                motorcycleService.getAll(impersonatedUserId)
-            ]);
-            setVehicles(vehiclesData);
-            setLeads(leadsData);
-            setProfile(profileData);
-            setMotorcycles(motorcyclesData);
-        } catch (error) {
-            console.error('Erro ao carregar dados:', error);
-        }
+        // Using allSettled so a failure in one service (e.g. RLS error on vehicles)
+        // never prevents the profile or other data from loading.
+        const [vehiclesResult, leadsResult, profileResult, motorcyclesResult] = await Promise.allSettled([
+            vehicleService.getAll(impersonatedUserId),
+            leadService.getAll(impersonatedUserId),
+            profileService.getProfile(impersonatedUserId),
+            motorcycleService.getAll(impersonatedUserId),
+        ]);
+
+        if (vehiclesResult.status === 'fulfilled') setVehicles(vehiclesResult.value);
+        else console.error('Erro ao carregar veículos:', vehiclesResult.reason);
+
+        if (leadsResult.status === 'fulfilled') setLeads(leadsResult.value);
+        else console.error('Erro ao carregar leads:', leadsResult.reason);
+
+        if (profileResult.status === 'fulfilled') setProfile(profileResult.value);
+        else console.error('Erro ao carregar perfil:', profileResult.reason);
+
+        if (motorcyclesResult.status === 'fulfilled') setMotorcycles(motorcyclesResult.value);
+        else console.error('Erro ao carregar motos:', motorcyclesResult.reason);
     };
 
     useEffect(() => {

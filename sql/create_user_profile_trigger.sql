@@ -12,8 +12,9 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.email,
-    NEW.raw_user_meta_data->>'full_name',
-    NEW.raw_user_meta_data->>'company_name',
+    -- Google OAuth stores name in 'name'; email/password signup stores in 'full_name'
+    COALESCE(NULLIF(NEW.raw_user_meta_data->>'full_name', ''), NEW.raw_user_meta_data->>'name', ''),
+    COALESCE(NULLIF(NEW.raw_user_meta_data->>'company_name', ''), ''),
     'trial',
     'active',
     NOW() + INTERVAL '7 days'
@@ -57,13 +58,18 @@ WHERE p.id IS NULL
 ON CONFLICT (id) DO NOTHING;
 
 -- 5. Atualiza full_name/company_name para perfis que existem mas estão vazios
+--    Suporta tanto cadastro email/senha (full_name) quanto Google OAuth (name)
 UPDATE public.profiles p
 SET
-  full_name = COALESCE(NULLIF(p.full_name, ''), au.raw_user_meta_data->>'full_name'),
-  company_name = COALESCE(NULLIF(p.company_name, ''), au.raw_user_meta_data->>'company_name')
+  full_name = COALESCE(
+    NULLIF(p.full_name, ''),
+    NULLIF(au.raw_user_meta_data->>'full_name', ''),
+    au.raw_user_meta_data->>'name',
+    ''
+  ),
+  company_name = COALESCE(NULLIF(p.company_name, ''), au.raw_user_meta_data->>'company_name', '')
 FROM auth.users au
 WHERE p.id = au.id
-  AND (p.full_name IS NULL OR p.full_name = '')
-  AND au.raw_user_meta_data->>'full_name' IS NOT NULL;
+  AND (p.full_name IS NULL OR p.full_name = '');
 
 NOTIFY pgrst, 'reload schema';

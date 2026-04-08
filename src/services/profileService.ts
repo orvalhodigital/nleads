@@ -2,6 +2,49 @@ import { supabase } from '../lib/supabaseClient';
 import { Profile } from '../types';
 import { DEFAULT_PRESET_MESSAGES } from '../utils/constants';
 
+// Supabase stores email/password signup names in full_name, but Google OAuth stores in name
+function resolveFullName(user: any, dbFullName?: string): string {
+    return dbFullName
+        || user?.user_metadata?.full_name
+        || user?.user_metadata?.name  // Google OAuth field
+        || '';
+}
+
+function buildProfile(data: any, user: any): Profile {
+    return {
+        id: data.id,
+        email: data.email,
+        full_name: data.full_name || '',
+        plan: (data.plan === 'pro' && data.trial_ends_at && new Date() > new Date(data.trial_ends_at)) ? 'trial' : data.plan,
+        planStatus: ((data.plan === 'trial' || data.plan === 'pro') && data.trial_ends_at && new Date() > new Date(data.trial_ends_at)) ? 'expired' : data.plan_status,
+        trialEndsAt: data.trial_ends_at,
+        created_at: data.created_at,
+        webhook_url: data.webhook_url,
+        avatar_url: user?.user_metadata?.avatar_url || data.avatar_url || '',
+        company_name: data.company_name || '',
+        company_logo: user?.user_metadata?.company_logo || data.company_logo || '',
+        monthly_sales_goal: data.monthly_sales_goal,
+        enable_cars: user?.user_metadata?.enable_cars !== false,
+        enable_motorcycles: user?.user_metadata?.enable_motorcycles || false,
+        preset_messages: (data.preset_messages && data.preset_messages.length > 0) ? data.preset_messages : DEFAULT_PRESET_MESSAGES,
+    };
+}
+
+function buildFallback(user: any): Profile {
+    return {
+        id: user.id,
+        email: user.email || '',
+        full_name: resolveFullName(user),
+        company_name: user.user_metadata?.company_name || '',
+        plan: 'trial',
+        planStatus: 'active',
+        trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        enable_cars: user.user_metadata?.enable_cars !== false,
+        enable_motorcycles: user.user_metadata?.enable_motorcycles || false,
+        preset_messages: DEFAULT_PRESET_MESSAGES,
+    };
+}
+
 export const profileService = {
     async getProfile(userId?: string): Promise<Profile | null> {
         const { data: { user } } = await supabase.auth.getUser();
@@ -20,60 +63,48 @@ export const profileService = {
             console.error('Error fetching profile:', isRLSError ? 'RLS Permission Denied' : error);
         }
 
-        // No profile row yet — create one from auth metadata so next load finds it
+        // No profile row yet — create one and re-fetch so the DB row is source of truth
         if (error?.code === 'PGRST116' && !userId && user) {
+            const resolvedName = resolveFullName(user);
             await supabase.from('profiles').upsert({
                 id: user.id,
                 email: user.email || '',
-                full_name: user.user_metadata?.full_name || '',
+                full_name: resolvedName,
                 company_name: user.user_metadata?.company_name || '',
                 plan: 'trial',
                 plan_status: 'active',
                 trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
             }, { onConflict: 'id' });
+
+            // Re-fetch after creation
+            const { data: fresh } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (fresh) {
+                return buildProfile(fresh, user);
+            }
+            // If re-fetch failed, return from metadata directly
+            return buildFallback(user);
         }
 
         if (data) {
-            // Profile row exists but name is missing — patch it from auth metadata silently
+            // Profile row exists but name/company missing — patch silently from auth metadata
+            const resolvedName = resolveFullName(user, data.full_name);
+            const resolvedCompany = data.company_name || user?.user_metadata?.company_name || '';
             if ((!data.full_name || !data.company_name) && user) {
                 supabase.from('profiles').update({
-                    full_name: data.full_name || user.user_metadata?.full_name || '',
-                    company_name: data.company_name || user.user_metadata?.company_name || '',
+                    full_name: resolvedName,
+                    company_name: resolvedCompany,
                 }).eq('id', data.id).then(() => {});
             }
-            return {
-                id: data.id,
-                email: data.email,
-                full_name: data.full_name || user?.user_metadata?.full_name || '',
-                plan: (data.plan === 'pro' && data.trial_ends_at && new Date() > new Date(data.trial_ends_at)) ? 'trial' : data.plan,
-                planStatus: ((data.plan === 'trial' || data.plan === 'pro') && data.trial_ends_at && new Date() > new Date(data.trial_ends_at)) ? 'expired' : data.plan_status,
-                trialEndsAt: data.trial_ends_at,
-                created_at: data.created_at,
-                webhook_url: data.webhook_url,
-                avatar_url: user?.user_metadata?.avatar_url || data.avatar_url || '',
-                company_name: data.company_name || user?.user_metadata?.company_name || '',
-                company_logo: user?.user_metadata?.company_logo || data.company_logo || '',
-                monthly_sales_goal: data.monthly_sales_goal,
-                enable_cars: user?.user_metadata?.enable_cars !== false,
-                enable_motorcycles: user?.user_metadata?.enable_motorcycles || false,
-                preset_messages: (data.preset_messages && data.preset_messages.length > 0) ? data.preset_messages : DEFAULT_PRESET_MESSAGES,
-            };
+            return buildProfile({ ...data, full_name: resolvedName, company_name: resolvedCompany }, user);
         }
 
-        // Fallback if no profile row exists yet - ONLY if it's the current user (auth metadata available)
         if (!userId && user) {
-            return {
-                id: user.id,
-                email: user.email || '',
-                full_name: user.user_metadata?.full_name || '',
-                company_name: user.user_metadata?.company_name || '',
-                plan: 'trial',
-                planStatus: 'active',
-                trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                enable_cars: user.user_metadata?.enable_cars !== false,
-                enable_motorcycles: user.user_metadata?.enable_motorcycles || false,
-                preset_messages: DEFAULT_PRESET_MESSAGES,
-            };
+            return buildFallback(user);
         }
 
         return null;

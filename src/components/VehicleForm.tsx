@@ -60,12 +60,34 @@ function normalizeColor(apiCor: string): string {
     return apiCor.charAt(0).toUpperCase() + apiCor.slice(1).toLowerCase();
 }
 
-function normalizeTransmission(val: string): TransmissionType | null {
-    if (!val) return null;
+function normalizeTransmission(val: string): TransmissionType {
+    if (!val) return 'Automático';
     const v = val.toUpperCase();
-    if (v.includes('AUTO')) return 'Automático';
     if (v.includes('MANUAL')) return 'Manual';
-    return null;
+    return 'Automático';
+}
+
+function normalizeEngine(combustivel: string, cilindradas: string): EngineType {
+    const comb = (combustivel || '').toUpperCase();
+    if (comb.includes('ELÉTRI') || comb.includes('ELETRI')) return 'Elétrico';
+    if (comb.includes('HÍBRI') || comb.includes('HIBRI')) return 'Híbrido';
+    const cc = parseInt(cilindradas || '0');
+    if (cc >= 1900) return '2.0+';
+    if (cc >= 1550) return '1.6';
+    if (cc >= 1350) return '1.4';
+    return '1.0';
+}
+
+function normalizeVehicleType(segmento: string, subSegmento: string): VehicleType {
+    const s = ((segmento || '') + ' ' + (subSegmento || '')).toUpperCase();
+    if (s.includes('SUV') || s.includes('SPORT UTILITY')) return 'SUV';
+    if (s.includes('PICAPE') || s.includes('PICK-UP') || s.includes('PICKUP')) return 'Picape';
+    if (s.includes('VAN') || s.includes('FURGÃO') || s.includes('FURGAO')) return 'Van';
+    if (s.includes('HATCH')) return 'Hatch';
+    if (s.includes('ESPORT') || s.includes('COUPE') || s.includes('COUPÉ')) return 'Esportivo';
+    if (s.includes('CABRIO') || s.includes('CONVER')) return 'Conversível';
+    if (s.includes('SEDAN') || s.includes('SEDÃ')) return 'Sedan';
+    return 'Sedan';
 }
 
 const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditing = false }) => {
@@ -102,17 +124,30 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             if (!res.ok) throw new Error('Erro na consulta.');
             const data = await res.json();
 
-            if (data.mensagemRetorno && data.mensagemRetorno.toLowerCase().includes('erro')) {
-                setPlateError(data.mensagemRetorno);
+            // "Sem erros." is success — only block on actual error responses
+            const msg: string = data.mensagemRetorno || '';
+            const isError = msg.toLowerCase().startsWith('erro') || msg.toLowerCase().includes('não encontrada') || msg.toLowerCase().includes('invalida');
+            if (isError) {
+                setPlateError(msg || 'Placa não encontrada.');
                 return;
             }
+
+            if (!data.MARCA && !data.marca) {
+                setPlateError('Placa não encontrada na base de dados.');
+                return;
+            }
+
+            const extra = data.extra || {};
 
             const brand = normalizeBrand(data.MARCA || data.marca || '');
             const model = data.MODELO || data.modelo || '';
             const year = parseInt(data.ano) || formData.year;
-            const modelYear = parseInt(data.anoModelo) || year;
-            const color = normalizeColor(data.cor || data.extra?.cor || '');
-            const transmission = normalizeTransmission(data.extra?.caixa_cambio || '');
+            const modelYearRaw = parseInt(data.anoModelo) || parseInt(extra.ano_modelo);
+            const modelYear = (modelYearRaw && modelYearRaw > 1900) ? modelYearRaw : year;
+            const color = normalizeColor(data.cor || extra.cor || '');
+            const transmission = normalizeTransmission(extra.caixa_cambio || '');
+            const engine = normalizeEngine(extra.combustivel || '', extra.cilindradas || '0');
+            const type = normalizeVehicleType(data.segmento || extra.segmento || '', data.sub_segmento || extra.sub_segmento || '');
 
             setFormData(prev => ({
                 ...prev,
@@ -121,7 +156,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 year,
                 modelYear,
                 color,
-                ...(transmission ? { transmission } : {}),
+                transmission,
+                engine,
+                type,
             }));
         } catch (err: any) {
             setPlateError('Não foi possível consultar a placa. Verifique e tente novamente.');

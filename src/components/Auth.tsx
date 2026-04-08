@@ -287,7 +287,7 @@ export default function Auth() {
                         </p>
                         <button
                             onClick={toggleMode}
-                            className="text-xs font-extrabold text-emerald-600 hover:text-emerald-700 uppercase tracking-widest transition-colors"
+                            className="text-xs font-extrabold text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors"
                         >
                             {isSignUp ? 'Fazer Login' : 'Criar Nova Conta'}
                         </button>

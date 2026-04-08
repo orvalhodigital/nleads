@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     X, Upload, Loader2, Check, Plus, Car, DollarSign, Calendar, Gauge, Zap,
-    ChevronLeft, ArrowLeft
+    ChevronLeft, ArrowLeft, Search, AlertCircle
 } from 'lucide-react';
 import { Vehicle, VehicleType, TransmissionType, EngineType } from '../types';
 import { supabase } from '../lib/supabaseClient';
@@ -30,10 +30,50 @@ const COMMON_OPTIONS = [
     'Controle de Estabilidade', 'Controle de Tração', 'Chave Presencial'
 ];
 
+const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
+
+// Maps API brand names (uppercase) to carDatabase keys
+const BRAND_MAP: Record<string, string> = {
+    'VW': 'Volkswagen', 'VOLKSWAGEN': 'Volkswagen',
+    'CHEVROLET': 'Chevrolet', 'GM': 'Chevrolet',
+    'FIAT': 'Fiat', 'FORD': 'Ford', 'TOYOTA': 'Toyota',
+    'HONDA': 'Honda', 'HYUNDAI': 'Hyundai', 'RENAULT': 'Renault',
+    'PEUGEOT': 'Peugeot', 'CITROEN': 'Citroën', 'CITROËN': 'Citroën',
+    'NISSAN': 'Nissan', 'MITSUBISHI': 'Mitsubishi', 'JEEP': 'Jeep',
+    'BMW': 'BMW', 'MERCEDES': 'Mercedes-Benz', 'MERCEDES-BENZ': 'Mercedes-Benz',
+    'AUDI': 'Audi', 'KIA': 'Kia', 'LAND ROVER': 'Land Rover',
+    'PORSCHE': 'Porsche', 'SUBARU': 'Subaru', 'SUZUKI': 'Suzuki',
+    'VOLVO': 'Volvo', 'DODGE': 'Dodge', 'BYD': 'BYD',
+    'GWM': 'GWM', 'JAC': 'JAC', 'CHERY': 'Chery',
+    'LEXUS': 'Lexus', 'TROLLER': 'Troller',
+};
+
+function normalizeBrand(apiMarca: string): string {
+    const upper = apiMarca.toUpperCase().trim();
+    if (BRAND_MAP[upper]) return BRAND_MAP[upper];
+    const dbKey = Object.keys(carDatabase).find(k => k.toUpperCase() === upper);
+    return dbKey || (apiMarca.charAt(0).toUpperCase() + apiMarca.slice(1).toLowerCase());
+}
+
+function normalizeColor(apiCor: string): string {
+    if (!apiCor) return '';
+    return apiCor.charAt(0).toUpperCase() + apiCor.slice(1).toLowerCase();
+}
+
+function normalizeTransmission(val: string): TransmissionType | null {
+    if (!val) return null;
+    const v = val.toUpperCase();
+    if (v.includes('AUTO')) return 'Automático';
+    if (v.includes('MANUAL')) return 'Manual';
+    return null;
+}
+
 const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditing = false }) => {
     const navigate = useNavigate();
     const [uploading, setUploading] = useState(false);
     const [customOption, setCustomOption] = useState('');
+    const [lookupLoading, setLookupLoading] = useState(false);
+    const [plateError, setPlateError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<Omit<Vehicle, 'id' | 'status'>>({
         brand: '', model: '', year: new Date().getFullYear(), modelYear: new Date().getFullYear(), plate: '', price: 0, type: 'Sedan',
@@ -48,6 +88,54 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             setFormData(rest);
         }
     }, [initialData]);
+
+    const lookupPlate = async () => {
+        const rawPlate = formData.plate.replace(/[-\s]/g, '').toUpperCase();
+        if (rawPlate.length < 7) {
+            setPlateError('Digite uma placa válida (7 caracteres).');
+            return;
+        }
+        setLookupLoading(true);
+        setPlateError(null);
+        try {
+            const res = await fetch(`https://wdapi2.com.br/consulta/${rawPlate}/${APIPLACAS_TOKEN}`);
+            if (!res.ok) throw new Error('Erro na consulta.');
+            const data = await res.json();
+
+            if (data.mensagemRetorno && data.mensagemRetorno.toLowerCase().includes('erro')) {
+                setPlateError(data.mensagemRetorno);
+                return;
+            }
+
+            const brand = normalizeBrand(data.MARCA || data.marca || '');
+            const model = data.MODELO || data.modelo || '';
+            const year = parseInt(data.ano) || formData.year;
+            const modelYear = parseInt(data.anoModelo) || year;
+            const color = normalizeColor(data.cor || data.extra?.cor || '');
+            const transmission = normalizeTransmission(data.extra?.caixa_cambio || '');
+
+            setFormData(prev => ({
+                ...prev,
+                brand,
+                model,
+                year,
+                modelYear,
+                color,
+                ...(transmission ? { transmission } : {}),
+            }));
+        } catch (err: any) {
+            setPlateError('Não foi possível consultar a placa. Verifique e tente novamente.');
+        } finally {
+            setLookupLoading(false);
+        }
+    };
+
+    const handlePlateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            lookupPlate();
+        }
+    };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         try {
@@ -153,13 +241,35 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Placa</label>
-                                        <input
-                                            value={formData.plate}
-                                            onChange={e => setFormData({ ...formData, plate: e.target.value.toUpperCase() })}
-                                            placeholder="ABC-1234"
-                                            maxLength={8}
-                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm uppercase"
-                                        />
+                                        <div className="flex gap-2">
+                                            <input
+                                                value={formData.plate}
+                                                onChange={e => {
+                                                    setPlateError(null);
+                                                    setFormData({ ...formData, plate: e.target.value.toUpperCase() });
+                                                }}
+                                                onKeyDown={handlePlateKeyDown}
+                                                placeholder="ABC1234"
+                                                maxLength={8}
+                                                className="flex-1 min-w-0 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm uppercase"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={lookupPlate}
+                                                disabled={lookupLoading}
+                                                title="Consultar placa"
+                                                className="shrink-0 w-14 h-14 flex items-center justify-center rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white transition-all shadow-sm disabled:opacity-60"
+                                            >
+                                                {lookupLoading
+                                                    ? <Loader2 size={18} className="animate-spin" />
+                                                    : <Search size={18} />}
+                                            </button>
+                                        </div>
+                                        {plateError && (
+                                            <p className="flex items-center gap-1.5 text-[10px] font-bold text-red-500 px-1 pt-1">
+                                                <AlertCircle size={11} /> {plateError}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Fab.</label>

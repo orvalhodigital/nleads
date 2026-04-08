@@ -43,7 +43,6 @@ const LeadsPage: React.FC = () => {
             onClearFocus={() => setFocusedLeadId(null)}
             userEmail={profile?.email}
             onDataChange={loadData}
-            businessType={profile?.business_type}
         />
     );
 };

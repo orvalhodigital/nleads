@@ -17,7 +17,7 @@ export default function AdminUserDetails() {
     const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
     // Form states
-    const [plan, setPlan] = useState<string>('trial');
+    const [plan, setPlan] = useState<'trial' | 'pro'>('trial');
     const [planStatus, setPlanStatus] = useState<'active' | 'expired'>('active');
     const [trialEndsAt, setTrialEndsAt] = useState('');
     const [fullName, setFullName] = useState('');
@@ -154,7 +154,7 @@ export default function AdminUserDetails() {
                                 <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Término do Trial / Plano</label>
                                 <div className="flex items-center gap-2">
                                     <div className="relative flex-1">
-                                        <Calendar size={16} className="absolute left-3 top-0 bottom-0 my-auto text-slate-400" />
+                                        <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <CustomDatePicker
                                             value={trialEndsAt}
                                             onChange={(date) => setTrialEndsAt(date)}
@@ -203,9 +203,7 @@ export default function AdminUserDetails() {
                                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 font-medium capitalize"
                                 >
                                     <option value="trial">Trial (Teste)</option>
-                                    <option value="pro">Pro (Pago - Antigo)</option>
-                                    <option value="crm">Apenas CRM</option>
-                                    <option value="traffic_crm">Tráfego + CRM</option>
+                                    <option value="pro">Pro (Pago)</option>
                                 </select>
                             </div>
 

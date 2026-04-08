@@ -1,6 +1,5 @@
+
 import { createClient } from '@supabase/supabase-js';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
@@ -29,7 +28,7 @@ async function updatePlans() {
         },
         {
             slug: 'crm',
-            name: 'Apenas CRM',
+            name: 'CRM nLeads',
             price: 497,
             interval: 'month',
             duration_days: 30,
@@ -39,19 +38,18 @@ async function updatePlans() {
                 'Agenda de Visitas',
                 'Estoque de Veículos/Motos',
                 'Métricas de Vendas',
-                'Acesso ao Dashboard',
-                'Onboarding de Sistema'
+                'Acesso ao Dashboard'
             ],
             style: { icon: 'Shield' },
             is_active: true
         },
         {
             slug: 'traffic_crm',
-            name: 'Gestão de Tráfego + CRM',
+            name: 'Tráfego + CRM',
             price: 1890,
             interval: 'month',
             duration_days: 30,
-            description: 'Aceleração total de vendas e CRM',
+            description: 'Aceleração total de vendas',
             features: [
                 'Tudo do Plano CRM',
                 'Gestão de Tráfego Pago',

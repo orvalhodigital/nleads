@@ -87,9 +87,7 @@ const HomePage: React.FC = () => {
                         <CalendarIcon size={24} strokeWidth={2.5} />
                     </div>
                     <p className="text-4xl font-black text-slate-800 mb-1">{visitasHoje}</p>
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
-                        Visitas Marcadas Hoje
-                    </p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Visitas Marcadas Hoje</p>
                 </div>
 
                 <div
@@ -111,9 +109,7 @@ const HomePage: React.FC = () => {
                         <Car size={24} strokeWidth={2.5} />
                     </div>
                     <p className="text-4xl font-black text-slate-800 mb-1">{estoqueDisponivel}</p>
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
-                        Veículos no Estoque
-                    </p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Veículos no Estoque</p>
                 </div>
 
             </div>

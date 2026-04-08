@@ -18,28 +18,29 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
     const [vehicleOfInterest, setVehicleOfInterest] = useState('');
     const [notes, setNotes] = useState('');
 
-    const [availableItems, setAvailableItems] = useState<Vehicle[]>([]);
-    const [selectedItems, setSelectedItems] = useState<Vehicle[]>([]);
+    const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
+    const [selectedVehicles, setSelectedVehicles] = useState<Vehicle[]>([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isOpen) {
-            const fetchItems = async () => {
+            const fetchVehicles = async () => {
                 try {
                     const data = await vehicleService.getAll();
-                    setAvailableItems(data.filter(v => v.status === 'available'));
+                    setAvailableVehicles(data.filter(v => v.status === 'available'));
                 } catch (error) {
                     console.error("Erro ao carregar veículos", error);
                 }
             };
-            fetchItems();
+            fetchVehicles();
 
+            // Reset state directly when opening modal for the first time
             setDate('');
             setTime('');
             setVehicleOfInterest('');
             setNotes('');
-            setSelectedItems([]);
+            setSelectedVehicles([]);
             setIsDropdownOpen(false);
         }
     }, [isOpen]);
@@ -54,32 +55,30 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const getItemLabel = (item: Vehicle) => `${item.brand} ${item.model} ${item.year}`;
-
-    const filteredItems = availableItems.filter(v =>
-        getItemLabel(v).toLowerCase().includes(vehicleOfInterest.toLowerCase()) &&
-        !selectedItems.find(sv => sv.id === v.id)
+    const filteredVehicles = availableVehicles.filter(v =>
+        `${v.brand} ${v.model} ${v.year}`.toLowerCase().includes(vehicleOfInterest.toLowerCase()) &&
+        !selectedVehicles.find(sv => sv.id === v.id)
     );
 
-    const toggleItem = (item: Vehicle) => {
-        if (!selectedItems.find(v => v.id === item.id)) {
-            setSelectedItems([...selectedItems, item]);
-            setVehicleOfInterest('');
+    const toggleVehicle = (vehicle: Vehicle) => {
+        if (!selectedVehicles.find(v => v.id === vehicle.id)) {
+            setSelectedVehicles([...selectedVehicles, vehicle]);
+            setVehicleOfInterest(''); // clear search
             setIsDropdownOpen(false);
         }
     };
 
-    const removeItem = (id: string) => {
-        setSelectedItems(selectedItems.filter(v => v.id !== id));
+    const removeVehicle = (id: string) => {
+        setSelectedVehicles(selectedVehicles.filter(v => v.id !== id));
     };
 
     const handleConfirm = () => {
-        const finalLabelString = [
-            ...selectedItems.map(v => getItemLabel(v)),
+        const finalVehicleString = [
+            ...selectedVehicles.map(v => `${v.brand} ${v.model} ${v.year}`),
             vehicleOfInterest.trim()
         ].filter(Boolean).join(', ');
 
-        onConfirm({ date, time, vehicleOfInterest: finalLabelString, notes });
+        onConfirm({ date, time, vehicleOfInterest: finalVehicleString, notes });
     };
 
     if (!isOpen) return null;
@@ -89,9 +88,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
             <div className="bg-white w-[80vw] max-w-5xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div>
-                        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                            Agendar Visita/Test Drive
-                        </h2>
+                        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Agendar Visita/Test Drive</h2>
                         <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Lead: {lead.name}</p>
                     </div>
                     <button onClick={onClose} className="p-2 text-slate-300 hover:text-slate-600 hover:bg-white rounded-xl transition-all">
@@ -128,17 +125,17 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             <Car size={12} /> Veículo de Interesse (Opcional)
                         </label>
                         <div className="w-full min-h-[56px] p-2 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all flex flex-wrap gap-2 items-center">
-                            {selectedItems.map(item => (
-                                <span key={item.id} className="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-xl text-sm font-semibold">
-                                    {getItemLabel(item)}
-                                    <button onClick={() => removeItem(item.id)} className="ml-1 hover:text-emerald-950 transition-colors">
+                            {selectedVehicles.map(v => (
+                                <span key={v.id} className="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                                    {v.brand} {v.model} {v.year}
+                                    <button onClick={() => removeVehicle(v.id)} className="ml-1 hover:text-emerald-950 transition-colors">
                                         <X size={14} />
                                     </button>
                                 </span>
                             ))}
                             <input
                                 type="text"
-                                placeholder={selectedItems.length === 0 ? "Ex: Jeep Compass 2022" : ""}
+                                placeholder={selectedVehicles.length === 0 ? "Ex: Jeep Compass 2022" : ""}
                                 value={vehicleOfInterest}
                                 onChange={e => {
                                     setVehicleOfInterest(e.target.value);
@@ -148,22 +145,18 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                 className="flex-1 bg-transparent border-none outline-none font-semibold text-sm min-w-[120px] px-2"
                             />
                         </div>
-                        {isDropdownOpen && (vehicleOfInterest.trim() !== '' || availableItems.length > 0) && (
+                        {isDropdownOpen && (vehicleOfInterest.trim() !== '' || availableVehicles.length > 0) && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden z-20 max-h-60 overflow-y-auto">
-                                {filteredItems.length > 0 ? (
-                                    filteredItems.map(item => (
+                                {filteredVehicles.length > 0 ? (
+                                    filteredVehicles.map(v => (
                                         <div
-                                            key={item.id}
-                                            onClick={() => toggleItem(item)}
+                                            key={v.id}
+                                            onClick={() => toggleVehicle(v)}
                                             className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors border-b border-slate-50 last:border-0 group"
                                         >
                                             <div>
-                                                <p className="font-semibold text-slate-800">
-                                                    {item.brand} {item.model}
-                                                </p>
-                                                <p className="text-xs font-medium text-slate-400">
-                                                    {item.year}
-                                                </p>
+                                                <p className="font-semibold text-slate-800">{v.brand} {v.model}</p>
+                                                <p className="text-xs font-medium text-slate-400">{v.year}{v.plate ? ` • ${v.plate}` : ''}</p>
                                             </div>
                                             <div className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Check size={18} />
@@ -172,7 +165,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                     ))
                                 ) : (
                                     <div className="px-4 py-3 text-sm text-slate-500 font-medium">
-                                        {vehicleOfInterest ? "Nenhum veículo encontrado." : "Nenhum disponível"}
+                                        {vehicleOfInterest ? "Nenhum veículo encontrado. Você ainda pode usar este texto." : "Nenhum veículo disponível"}
                                     </div>
                                 )}
                             </div>
@@ -218,3 +211,4 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
         </div>
     );
 };
+

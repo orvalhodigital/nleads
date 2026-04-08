@@ -12,6 +12,7 @@ export default function Auth() {
     const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    // Default to true as per user request to have password visible
     const [showPassword, setShowPassword] = useState(false);
     const { logoUrl } = useSystemSettings();
 
@@ -32,15 +33,17 @@ export default function Auth() {
                     options: {
                         data: {
                             full_name: fullName,
-                            company_name: companyName,
-                            business_type: 'vehicles',
+                            company_name: companyName, // Sending company name to Supabase
                         }
                     }
                 });
                 if (error) throw error;
                 setSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
             } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                const { error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
                 if (error) throw error;
             }
         } catch (err: any) {
@@ -55,13 +58,8 @@ export default function Auth() {
         }
     };
 
-    const toggleMode = () => {
-        setIsSignUp(!isSignUp);
-        setError(null);
-        setSuccess(null);
-    };
-
     return (
+
         <div className="h-screen overflow-y-auto bg-[#FAFAFA] custom-scrollbar">
             <div className="min-h-full flex flex-col items-center justify-center p-4 py-12">
                 <div className="w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 animate-fadeUp">
@@ -82,10 +80,10 @@ export default function Auth() {
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pl-2">Nome Completo</label>
                                     <div className="relative">
-                                        <User className="absolute left-4 top-0 bottom-0 my-auto text-slate-300 pointer-events-none" size={18} />
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                         <input
                                             type="text"
-                                            required
+                                            required={isSignUp}
                                             value={fullName}
                                             onChange={(e) => setFullName(e.target.value)}
                                             className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
@@ -97,10 +95,10 @@ export default function Auth() {
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pl-2">Nome da Empresa</label>
                                     <div className="relative">
-                                        <Building className="absolute left-4 top-0 bottom-0 my-auto text-slate-300 pointer-events-none" size={18} />
+                                        <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                         <input
                                             type="text"
-                                            required
+                                            required={isSignUp}
                                             value={companyName}
                                             onChange={(e) => setCompanyName(e.target.value)}
                                             className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
@@ -114,7 +112,7 @@ export default function Auth() {
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pl-2">Email</label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-0 bottom-0 my-auto text-slate-300 pointer-events-none" size={18} />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                 <input
                                     type="email"
                                     required
@@ -129,7 +127,7 @@ export default function Auth() {
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest pl-2">Senha</label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-0 bottom-0 my-auto text-slate-300 pointer-events-none" size={18} />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     required
@@ -141,7 +139,7 @@ export default function Auth() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-0 bottom-0 my-auto text-slate-400 hover:text-slate-600 transition-colors z-10"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors z-10"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -179,14 +177,14 @@ export default function Auth() {
                             {isSignUp ? 'Já tem uma conta?' : 'Ainda não tem conta?'}
                         </p>
                         <button
-                            onClick={toggleMode}
-                            className="text-xs font-extrabold text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors"
+                            onClick={() => setIsSignUp(!isSignUp)}
+                            className="text-xs font-extrabold text-emerald-600 hover:text-emerald-700 uppercase tracking-widest transition-colors"
                         >
                             {isSignUp ? 'Fazer Login' : 'Criar Nova Conta'}
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

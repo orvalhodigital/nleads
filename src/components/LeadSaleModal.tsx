@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Check, Car, Calendar, DollarSign, Search, Loader2 } from 'lucide-react';
 import { Lead, Vehicle, LeadPhase } from '../types';
 import { vehicleService } from '../services/vehicleService';
@@ -14,38 +14,39 @@ interface LeadSaleModalProps {
     onClose: () => void;
     leadId: string | null;
     leads: Lead[];
-    items: Vehicle[];
+    vehicles: Vehicle[];
     onSuccess: () => void;
 }
 
-const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, leads, items, onSuccess }) => {
+const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, leads, vehicles, onSuccess }) => {
     const { showToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedItemId, setSelectedItemId] = useState<string>('');
+    const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
     const [salePrice, setSalePrice] = useState<number>(0);
     const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const lead = leads.find(l => l.id === leadId);
 
-    const filteredItems = items.filter(v =>
+    const filteredVehicles = vehicles.filter(v =>
         v.status === 'available' &&
         (v.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
             v.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (v as Vehicle).plate?.toLowerCase().includes(searchTerm.toLowerCase()))
+            v.plate?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const handleConfirm = async () => {
-        if (!leadId || !selectedItemId || salePrice <= 0) {
+        if (!leadId || !selectedVehicleId || salePrice <= 0) {
             showToast('error', 'Preencha todos os campos corretamente.');
             return;
         }
 
         setIsSubmitting(true);
         try {
-            const item = items.find(v => v.id === selectedItemId);
-            if (!item) throw new Error("Item não encontrado");
+            const vehicle = vehicles.find(v => v.id === selectedVehicleId);
+            if (!vehicle) throw new Error("Veículo não encontrado");
 
+            // 1. Update Vehicle to 'sold' and add sale details
             const saleDetails = {
                 salePrice,
                 saleDate,
@@ -56,11 +57,16 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
 
             const { error: vError } = await supabase
                 .from('vehicles')
-                .update({ status: 'sold', sale_details: saleDetails })
-                .eq('id', selectedItemId);
+                .update({
+                    status: 'sold',
+                    sale_details: saleDetails
+                })
+                .eq('id', selectedVehicleId);
 
             if (vError) throw vError;
 
+            // 2. Update Lead: mark as buyer (appears in "Compradores" on Leads page)
+            // and move to WAITING_PAYMENT (appears in Sales Closed kanban)
             if (lead) {
                 await leadService.update({
                     ...lead,
@@ -103,13 +109,11 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
 
                 {/* Content */}
                 <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                    {/* Item Selection */}
+                    {/* Vehicle Selection */}
                     <div className="space-y-4">
-                        <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">
-                            1. Selecione o Veículo Vendido
-                        </label>
+                        <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">1. Selecione o Veículo Vendido</label>
                         <div className="relative">
-                            <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={18} />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                             <input
                                 type="text"
                                 placeholder="Buscar no estoque por marca, modelo ou placa..."
@@ -120,36 +124,34 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 mt-4">
-                            {filteredItems.slice(0, 5).map(v => (
+                            {filteredVehicles.slice(0, 5).map(v => (
                                 <div
                                     key={v.id}
                                     onClick={() => {
-                                        setSelectedItemId(v.id);
+                                        setSelectedVehicleId(v.id);
                                         if (salePrice === 0) setSalePrice(v.price);
                                     }}
                                     className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between group
-                                        ${selectedItemId === v.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-white hover:border-emerald-200'}
+                                        ${selectedVehicleId === v.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-white hover:border-emerald-200'}
                                     `}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedItemId === v.id ? 'bg-emerald-500 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-500'}`}>
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedVehicleId === v.id ? 'bg-emerald-500 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-500'}`}>
                                             <Car size={24} />
                                         </div>
                                         <div>
                                             <h4 className="font-extrabold text-slate-900 uppercase tracking-tight">{v.brand} {v.model}</h4>
-                                            <p className="text-xs font-bold text-slate-400">
-                                                {v.year} • {v.plate || 'S/ Placa'} • R$ {v.price.toLocaleString()}
-                                            </p>
+                                            <p className="text-xs font-bold text-slate-400">{v.year} • {v.plate || 'S/ Placa'} • R$ {v.price.toLocaleString()}</p>
                                         </div>
                                     </div>
-                                    {selectedItemId === v.id && (
+                                    {selectedVehicleId === v.id && (
                                         <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center">
                                             <Check size={14} />
                                         </div>
                                     )}
                                 </div>
                             ))}
-                            {filteredItems.length === 0 && (
+                            {filteredVehicles.length === 0 && (
                                 <div className="p-10 border-2 border-dashed border-slate-100 rounded-3xl text-center">
                                     <p className="text-sm font-bold text-slate-400">Nenhum veículo disponível encontrado</p>
                                 </div>
@@ -162,7 +164,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                         <div className="space-y-3">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">2. Valor da Venda (R$)</label>
                             <div className="relative">
-                                <DollarSign className="absolute left-4 top-0 bottom-0 my-auto text-slate-400" size={18} />
+                                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                 <input
                                     type="text"
                                     className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-emerald-500 transition-all"
@@ -176,7 +178,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                         <div className="space-y-3">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">3. Data da Venda</label>
                             <div className="relative">
-                                <Calendar className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={18} />
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                 <div className="ml-12">
                                     <CustomDatePicker
                                         value={saleDate}
@@ -200,7 +202,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                     </button>
                     <button
                         onClick={handleConfirm}
-                        disabled={isSubmitting || !selectedItemId || salePrice <= 0}
+                        disabled={isSubmitting || !selectedVehicleId || salePrice <= 0}
                         className="flex-[2] py-5 bg-emerald-500 text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-500/30 hover:bg-emerald-600 disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-3"
                     >
                         {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Check size={20} />}

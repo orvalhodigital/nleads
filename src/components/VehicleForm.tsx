@@ -175,7 +175,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço Sugerido</label>
                                         <div className="relative">
-                                            <span className="absolute left-4 top-0 bottom-0 my-auto mt-[1px] text-emerald-700 font-bold text-sm">R$</span>
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 mt-[1px] text-emerald-700 font-bold text-sm">R$</span>
                                             <input
                                                 type="text"
                                                 required

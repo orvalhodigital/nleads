@@ -5,14 +5,19 @@ import { LeadPhase } from '../types';
 import {
     CheckCircle2,
     Car,
+    Users,
     DollarSign,
+    Calendar,
     TrendingUp,
     ChevronRight,
     Award,
     ShoppingBag,
+    ArrowRight,
     Search,
+    Filter,
     X,
-    Zap,
+    TrendingDown,
+    Zap
 } from 'lucide-react';
 
 import { format, isWithinInterval, startOfDay, endOfDay, subMonths, parseISO } from 'date-fns';
@@ -33,25 +38,22 @@ const SalesClosedPage: React.FC = () => {
     });
 
     const salesData = useMemo(() => {
-        const soldItems = [
-            ...vehicles.filter(v => v.status === 'sold' && v.saleDetails).map(v => ({ ...v, item_type: 'vehicle' as const }))
-        ];
+        const soldVehicles = vehicles.filter(v => v.status === 'sold' && v.saleDetails);
 
-        let filtered = soldItems
-            .map(item => {
-                const buyerLead = item.saleDetails?.buyerLeadId
-                    ? leads.find(l => l.id === item.saleDetails!.buyerLeadId)
+        let filtered = soldVehicles
+            .map(vehicle => {
+                const buyerLead = vehicle.saleDetails?.buyerLeadId
+                    ? leads.find(l => l.id === vehicle.saleDetails!.buyerLeadId)
                     : null;
 
                 return {
-                    item,
+                    vehicle,
                     buyerLead,
-                    salePrice: item.saleDetails!.salePrice,
-                    saleDate: item.saleDetails!.saleDate,
-                    buyerName: item.saleDetails!.buyerName,
-                    profit: item.saleDetails!.salePrice - item.price,
-                    cost: item.price,
-                    itemType: item.item_type
+                    salePrice: vehicle.saleDetails!.salePrice,
+                    saleDate: vehicle.saleDetails!.saleDate,
+                    buyerName: vehicle.saleDetails!.buyerName,
+                    profit: vehicle.saleDetails!.salePrice - vehicle.price,
+                    cost: vehicle.price
                 };
             });
 
@@ -60,8 +62,8 @@ const SalesClosedPage: React.FC = () => {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(s =>
                 s.buyerName.toLowerCase().includes(query) ||
-                s.item.brand.toLowerCase().includes(query) ||
-                s.item.model.toLowerCase().includes(query)
+                s.vehicle.brand.toLowerCase().includes(query) ||
+                s.vehicle.model.toLowerCase().includes(query)
             );
         }
 
@@ -76,7 +78,6 @@ const SalesClosedPage: React.FC = () => {
 
         return filtered.sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
     }, [vehicles, leads, searchQuery, dateRange]);
-
 
     const totalRevenue = salesData.reduce((sum, s) => sum + s.salePrice, 0);
     const totalProfit = salesData.reduce((sum, s) => sum + s.profit, 0);
@@ -114,9 +115,7 @@ const SalesClosedPage: React.FC = () => {
                         <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
                             <ShoppingBag size={18} className="text-emerald-500" />
                         </div>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            Veículos Vendidos
-                        </span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Vendas no Período</span>
                     </div>
                     <p className="text-3xl font-black text-slate-900">{salesData.length}</p>
                 </div>
@@ -156,10 +155,10 @@ const SalesClosedPage: React.FC = () => {
                 <div className="flex-1 min-w-[300px] space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Buscar Venda</label>
                     <div className="relative">
-                        <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                         <input
                             type="text"
-                            placeholder="Buscar por cliente ou veículo..."
+                            placeholder="Nome do cliente ou veículo..."
                             className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:border-emerald-500 transition-all outline-none"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
@@ -212,12 +211,12 @@ const SalesClosedPage: React.FC = () => {
                 {salesData.length > 0 ? (
                     <div className="divide-y divide-slate-50">
                         {salesData.map((sale, index) => (
-                            <div key={`${sale.itemType}-${sale.item.id}`} className="p-5 hover:bg-slate-50/50 transition-colors group">
+                            <div key={sale.vehicle.id} className="p-5 hover:bg-slate-50/50 transition-colors group">
                                 <div className="flex items-center gap-5">
-                                    {/* Item Image */}
+                                    {/* Vehicle Image */}
                                     <div className="w-20 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                                        {sale.item.imageUrl ? (
-                                            <img src={sale.item.imageUrl} alt="" className="w-full h-full object-cover" />
+                                        {sale.vehicle.imageUrl ? (
+                                            <img src={sale.vehicle.imageUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-300">
                                                 <Car size={24} />
@@ -225,18 +224,17 @@ const SalesClosedPage: React.FC = () => {
                                         )}
                                     </div>
 
-                                    {/* Item Info */}
+                                    {/* Vehicle Info */}
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">
-                                            {sale.item.brand} {sale.item.model}
+                                            {sale.vehicle.brand} {sale.vehicle.model}
                                         </h3>
                                         <div className="flex items-center gap-3 mt-1">
                                             <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                                                {(sale.item as any).year}
-                                                {(sale.item as any).modelYear ? `/${String((sale.item as any).modelYear).slice(-2)}` : ''}
+                                                {sale.vehicle.year}{sale.vehicle.modelYear ? `/${String(sale.vehicle.modelYear).slice(-2)}` : ''}
                                             </span>
                                             <span className="text-[9px] font-bold text-slate-400">
-                                                {(sale.item as any).type} • {(sale.item as any).transmission}
+                                                {sale.vehicle.type} • {sale.vehicle.transmission}
                                             </span>
                                         </div>
                                     </div>

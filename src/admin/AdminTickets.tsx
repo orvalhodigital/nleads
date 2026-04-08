@@ -277,7 +277,7 @@ export default function AdminTickets() {
 
                 <div className="flex flex-wrap gap-4">
                     <div className="relative min-w-[300px]">
-                        <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-400" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input
                             type="text"
                             value={searchTerm}

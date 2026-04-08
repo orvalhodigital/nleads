@@ -559,7 +559,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                 </div>
 
                 <div className="relative flex-1 max-w-xs">
-                    <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={16} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                     <input type="text" placeholder="Buscar moto..." value={filterQuery} onChange={e => setFilterQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white/60 backdrop-blur-xl border border-white/60 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-400 shadow-sm" />
                 </div>
 

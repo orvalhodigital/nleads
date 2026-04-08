@@ -47,7 +47,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
                 vehicleService.getAll(impersonatedUserId),
                 leadService.getAll(impersonatedUserId),
                 profileService.getProfile(impersonatedUserId),
-                motorcycleService.getAll(impersonatedUserId),
+                motorcycleService.getAll(impersonatedUserId)
             ]);
             setVehicles(vehiclesData);
             setLeads(leadsData);

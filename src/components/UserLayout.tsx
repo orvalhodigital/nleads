@@ -23,10 +23,10 @@ const UserLayout: React.FC = () => {
     if (profile?.planStatus === 'expired' && !impersonatedUserId) {
         return (
             <TrialExpired
-                onUpgrade={(plan) => {
-                    const paymentLink = plan?.stripe_url || 'https://buy.stripe.com/dRm9AT0wEe5s93G0DY4ZG00';
+                onUpgrade={() => {
+                    const paymentLink = 'https://buy.stripe.com/dRm9AT0wEe5s93G0DY4ZG00';
                     const url = profile?.email
-                        ? `${paymentLink}${paymentLink.includes('?') ? '&' : '?'}prefilled_email=${encodeURIComponent(profile.email)}`
+                        ? `${paymentLink}?prefilled_email=${encodeURIComponent(profile.email)}`
                         : paymentLink;
                     window.open(url, '_blank');
                 }}

@@ -91,7 +91,7 @@ export default function AdminUsers() {
             {/* Filters */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex gap-4">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-0 bottom-0 my-auto text-slate-400" size={20} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                     <input
                         type="text"
                         placeholder="Buscar por nome ou email..."
@@ -126,9 +126,7 @@ export default function AdminUsers() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize
-                        ${(user.plan === 'pro' || user.plan === 'crm') ? 'bg-black text-white' :
-                                                user.plan === 'traffic_crm' ? 'bg-indigo-600 text-white' :
-                                                    'bg-slate-100 text-slate-600'}
+                        ${user.plan === 'pro' ? 'bg-black text-white' : 'bg-slate-100 text-slate-600'}
                       `}>
                                             {user.plan}
                                         </span>

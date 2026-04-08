@@ -613,7 +613,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
               <div className="p-6 border-b border-slate-50">
                 <div className="relative mb-4">
-                  <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={20} />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
                   <input
                     autoFocus
                     type="text"
@@ -917,7 +917,7 @@ const Inventory: React.FC<InventoryProps> = ({
             <div className="md:col-span-2 space-y-1.5">
               <label className="text-[10px] font-bold uppercase text-slate-400 px-1 block">Buscar</label>
               <div className="relative">
-                <Search className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={16} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                 <input
                   type="text"
                   value={filterQuery}

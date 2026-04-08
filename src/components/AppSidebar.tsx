@@ -37,14 +37,12 @@ const AppSidebar: React.FC = () => {
     ];
 
     const getPlanLabel = (plan: string) => {
-        if (plan === 'pro' || plan === 'crm') return 'CRM';
-        if (plan === 'traffic_crm') return 'TRÁFEGO + CRM';
+        if (plan === 'pro') return 'PRO';
         return 'TESTE';
     };
 
     const getPlanStyle = (plan: string) => {
-        if (plan === 'pro' || plan === 'crm') return 'bg-slate-900 text-white border-slate-900';
-        if (plan === 'traffic_crm') return 'bg-indigo-600 text-white border-indigo-700 shadow-lg shadow-indigo-200';
+        if (plan === 'pro') return 'bg-slate-900 text-white border-slate-900';
         return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     };
 
@@ -117,7 +115,7 @@ const AppSidebar: React.FC = () => {
                                 {/* Tooltip for collapsed state */}
                                 {isCollapsed && (
                                     <div className="hidden lg:block absolute left-full ml-4 px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl pointer-events-none">
-                                        <div className="absolute top-0 bottom-0 my-auto -left-1 w-2 h-2 bg-slate-800 rotate-45" />
+                                        <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-800 rotate-45" />
                                         {item.label}
                                     </div>
                                 )}
@@ -149,8 +147,8 @@ const AppSidebar: React.FC = () => {
                                     <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{profile.company_name}</p>
                                 )}
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${getPlanStyle(profile?.plan || 'trial')}`}>
-                                        {getPlanLabel(profile?.plan || 'trial')}
+                                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${profile?.plan === 'pro' ? 'bg-slate-900 text-white border-slate-900' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+                                        {profile?.plan === 'pro' ? 'PRO' : 'TESTE'}
                                     </span>
                                 </div>
                             </div>
@@ -158,7 +156,7 @@ const AppSidebar: React.FC = () => {
 
                         {isCollapsed && (
                             <div className="hidden lg:block absolute left-full ml-4 px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 invisible group-hover/profile:opacity-100 group-hover/profile:visible transition-all whitespace-nowrap z-50 shadow-xl pointer-events-none">
-                                <div className="absolute top-0 bottom-0 my-auto -left-1 w-2 h-2 bg-slate-800 rotate-45" />
+                                <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-slate-800 rotate-45" />
                                 {profile?.full_name || 'Meu Perfil'}
                             </div>
                         )}

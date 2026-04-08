@@ -30,14 +30,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
     ];
 
     const getPlanLabel = (plan: string) => {
-        if (plan === 'pro' || plan === 'crm') return 'CRM';
-        if (plan === 'traffic_crm') return 'TRÁFEGO + CRM';
+        if (plan === 'pro') return 'PRO';
         return 'TESTE';
     };
 
     const getPlanStyle = (plan: string) => {
-        if (plan === 'pro' || plan === 'crm') return 'bg-slate-900 text-white border-slate-900';
-        if (plan === 'traffic_crm') return 'bg-indigo-600 text-white border-indigo-600';
+        if (plan === 'pro') return 'bg-slate-900 text-white border-slate-900';
         return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     };
 

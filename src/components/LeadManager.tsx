@@ -7,7 +7,7 @@ import {
   CalendarCheck, Clock, ExternalLink, Search, CheckSquare, Square, Upload,
   Briefcase, Users, User, MapPin, DollarSign, Calendar, Sliders, Settings,
   MessageSquare, MoreVertical, CreditCard, LayoutTemplate, Tag, Trash, FileText,
-  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Target, Info
+  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Smartphone, Target, Info
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DraggableProvided, DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { Lead, LeadPhase, LeadTemperature, LeadCommunication, Tag as TagType, Vehicle, VehicleType, TransmissionType, EngineType, SaleDetails } from '../types';
@@ -99,28 +99,6 @@ const LeadManager: React.FC<LeadManagerProps> = ({
       default: return <Target size={14} />;
     }
   };
-
-  const getLabel = (key: string) => {
-    switch (key) {
-      case 'scheduling': return 'Agendamento de Visita';
-      case 'interest': return 'Veículo de Interesse';
-      case 'transmission': return 'Câmbio';
-      case 'price': return 'Potencial Compra';
-      case 'engine': return 'Motorização';
-      case 'type': return 'Tipos de Veículo';
-      case 'models': return 'Modelos de Interesse';
-      case 'brands': return 'Marcas Preferenciais';
-      case 'trade': return 'Veículo para Troca';
-      case 'acquired': return 'Veículo Adquirido';
-      case 'visit_date': return 'Data/Hora Agendada';
-      case 'visit_notes': return 'Notas da Visita';
-      case 'visit_confirm': return 'Veio';
-      case 'visit_noshow': return 'Não Veio';
-      default: return key;
-    }
-  };
-
-  const getPhaseLabel = (phase: string) => phase;
 
   // consolidated state
   const [isEditingPreferences, setIsEditingPreferences] = useState(false);
@@ -439,19 +417,19 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 )}
 
                 <div>
-                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">{getLabel('scheduling')}</h3>
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">Agendamento de Visita</h3>
                   <div className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-5">
 
                     {selectedLead.scheduling_data?.vehicleOfInterest && (
                       <div>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{getLabel('interest')}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Veículo de Interesse</p>
                         <p className="text-sm font-semibold text-slate-700 bg-emerald-50 text-emerald-700 p-2.5 rounded-lg border border-emerald-100">{selectedLead.scheduling_data.vehicleOfInterest}</p>
                       </div>
                     )}
 
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Clock size={12} /> {getLabel('visit_date')}
+                        <Clock size={12} /> Data/Hora Agendada
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         <CustomDatePicker
@@ -472,25 +450,25 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                     </div>
                     {selectedLead.scheduling_data?.notes && (
                       <div>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">{getLabel('visit_notes')}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Notas da Visita</p>
                         <p className="text-sm font-medium text-slate-600 bg-slate-50 p-3 rounded-xl">{selectedLead.scheduling_data.notes}</p>
                       </div>
                     )}
 
                     <div className="pt-2">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Ações do Histórico</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Ações do Histórico (Agendamento Novo / Fechado)</p>
                       <div className="grid grid-cols-2 gap-2 border-t border-slate-50 pt-2">
                         <button
                           onClick={() => handleUpdateVisit(selectedLead.visit_date || '', 'show')}
                           className={`py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${selectedLead.visit_status === 'show' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/10' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                         >
-                          {getLabel('visit_confirm')}
+                          Confirmado
                         </button>
                         <button
                           onClick={() => handleUpdateVisit(selectedLead.visit_date || '', 'noshow')}
                           className={`py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${selectedLead.visit_status === 'noshow' ? 'bg-rose-500 text-white shadow-md shadow-rose-500/10' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                         >
-                          {getLabel('visit_noshow')}
+                          Não Veio
                         </button>
                       </div>
                     </div>
@@ -504,20 +482,20 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Perfil de Interesse</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{getLabel('transmission')}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Câmbio</p>
                       <p className="text-sm font-bold text-slate-700">
                         {Array.isArray(selectedLead.preferences.transmissao) ? selectedLead.preferences.transmissao.join(', ') : (selectedLead.preferences.transmissao || 'Qualquer')}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{getLabel('price')}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Potencial Compra</p>
                       <p className="text-sm font-bold text-emerald-600">R$ {selectedLead.preferences.valor_maximo ? formatCurrency(selectedLead.preferences.valor_maximo) : 'N/A'}</p>
 
                     </div>
                     {selectedLead.preferences.motorizacao && selectedLead.preferences.motorizacao.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{getLabel('engine')}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Motorização</p>
                         <p className="text-sm font-bold text-slate-700">
                           {Array.isArray(selectedLead.preferences.motorizacao) ? selectedLead.preferences.motorizacao.join(', ') : selectedLead.preferences.motorizacao}
                         </p>
@@ -525,33 +503,33 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                     )}
                     {selectedLead.preferences.tipos_veiculo && selectedLead.preferences.tipos_veiculo.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{getLabel('type')}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tipos de Veículo</p>
                         <p className="text-sm font-bold text-slate-700">
                           {Array.isArray(selectedLead.preferences.tipos_veiculo) ? selectedLead.preferences.tipos_veiculo.join(', ') : selectedLead.preferences.tipos_veiculo}
                         </p>
                       </div>
                     )}
                     <div className="col-span-full pt-4 border-t border-slate-50">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">{getLabel('models')}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Modelos de Interesse</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedLead.preferences.modelos && selectedLead.preferences.modelos.length > 0 ? (
                           selectedLead.preferences.modelos.map(m => (
                             <span key={m} className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl text-[10px] font-bold uppercase tracking-tight">{m}</span>
                           ))
                         ) : (
-                          <span className="text-xs font-medium text-slate-400 italic">Nenhum definido</span>
+                          <span className="text-xs font-medium text-slate-400 italic">Nenhum modelo definido</span>
                         )}
                       </div>
                     </div>
                     <div className="col-span-full pt-4 border-t border-slate-50">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">{getLabel('brands')}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Marcas Preferenciais</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedLead.preferences.marcas.length > 0 ? (
                           selectedLead.preferences.marcas.map(m => (
                             <span key={m} className="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-tight">{m}</span>
                           ))
                         ) : (
-                          <span className="text-xs font-medium text-slate-400 italic">Nenhuma definida</span>
+                          <span className="text-xs font-medium text-slate-400 italic">Nenhuma marca definida</span>
                         )}
                       </div>
                     </div>
@@ -565,7 +543,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                         )}
                         {selectedLead.preferences.possui_troca && (
                           <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{getLabel('trade')}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Veículo para Troca</p>
                             <p className="text-sm font-bold text-slate-700">{selectedLead.preferences.veiculo_troca}</p>
                           </div>
                         )}
@@ -613,7 +591,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 {purchasedVehicles.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest px-1 flex items-center gap-2">
-                      <Car size={14} /> {getLabel('acquired')}
+                      <Car size={14} /> Veículo Adquirido
                     </h3>
                     <div className="grid grid-cols-1 gap-4">
                       {purchasedVehicles.map(v => (
@@ -750,8 +728,8 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                       <div className={`p-2.5 rounded-xl ${colors.bgIcon} ${colors.textStrong} shadow-sm`}>
                         {getPhaseIcon(phase)}
                       </div>
-                      {!isCollapsed && <h3 className="text-[11px] font-black text-slate-800 tracking-wider uppercase">{getPhaseLabel(phase)}</h3>}
-                      {isCollapsed && <h3 className="text-[10px] font-black text-slate-400 [writing-mode:vertical-lr] rotate-180 uppercase tracking-[0.2em]">{getPhaseLabel(phase)}</h3>}
+                      {!isCollapsed && <h3 className="text-[11px] font-black text-slate-800 tracking-wider uppercase">{phase}</h3>}
+                      {isCollapsed && <h3 className="text-[10px] font-black text-slate-400 [writing-mode:vertical-lr] rotate-180 uppercase tracking-[0.2em]">{phase}</h3>}
                     </div>
                     {!isCollapsed && (
                       <div className="flex items-center justify-center min-w-[24px] h-6 px-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg text-[10px] font-black">

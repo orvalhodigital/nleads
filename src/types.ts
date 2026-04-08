@@ -154,7 +154,7 @@ export interface Profile {
   id: string;
   email: string;
   full_name?: string;
-  plan: string;
+  plan: 'trial' | 'pro';
   planStatus: 'active' | 'expired';
   trialEndsAt: string;
   created_at?: string;
@@ -164,7 +164,6 @@ export interface Profile {
   company_logo?: string;
   role?: string;
   phone?: string;
-  business_type?: 'vehicles';
   // Vehicle Source Settings
   enable_manual_vehicles?: boolean;
   monthly_sales_goal?: number;

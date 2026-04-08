@@ -32,8 +32,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
   const [customEndDate, setCustomEndDate] = useState(format(now, 'yyyy-MM-dd'));
   const [filterSource, setFilterSource] = useState<string>('all');
 
-  const unifiedItems = useMemo(() => {
-    const list: any[] = [];
+  const unifiedVehicles = useMemo(() => {
+    const list: Vehicle[] = [];
     if (profile?.enable_cars !== false) {
       list.push(...vehicles);
     }
@@ -41,11 +41,6 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       list.push(...motorcycles.map(m => ({
         ...m,
         type: m.category as any,
-        brand: m.brand,
-        model: m.model,
-        price: m.price,
-        status: m.status,
-        saleDetails: m.saleDetails,
         transmission: 'Manual' as TransmissionType,
         engine: m.engine as any
       })));
@@ -148,7 +143,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     const leadsGrowth = previousLeads.length > 0 ? ((filteredLeads.length - previousLeads.length) / previousLeads.length) * 100 : 0;
 
     // Vendas e Receita
-    const filteredSales = unifiedItems.filter(v => {
+    const filteredSales = unifiedVehicles.filter(v => {
       if (v.status !== 'sold' || !v.saleDetails) return false;
       const d = parseISO(v.saleDetails.saleDate);
       const isDateInRange = timeRange === 'all' || (isAfter(d, rangeStart) && isBefore(d, effectiveEnd));
@@ -161,7 +156,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       return isDateInRange && isSourceMatch && isTempMatch;
     });
 
-    const previousSales = unifiedItems.filter(v =>
+    const previousSales = unifiedVehicles.filter(v =>
       v.status === 'sold' &&
       v.saleDetails &&
       isAfter(parseISO(v.saleDetails.saleDate), compareStart) &&
@@ -189,34 +184,34 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     const hotLeads = activeLeads.filter(l => l.temperature === LeadTemperature.HOT).length;
 
     // Estoque
-    const availableItems = unifiedItems.filter(v => v.status === 'available');
-    const totalStockValue = availableItems.reduce((acc, v) => acc + v.price, 0);
-    const stockTurnover = unifiedItems.length > 0 ? (filteredSales.length / unifiedItems.length) * 100 : 0;
+    const availableVehicles = unifiedVehicles.filter(v => v.status === 'available');
+    const totalStockValue = availableVehicles.reduce((acc, v) => acc + v.price, 0);
+    const stockTurnover = unifiedVehicles.length > 0 ? (filteredSales.length / unifiedVehicles.length) * 100 : 0;
 
-    let mostExpensive = availableItems.length > 0 ? availableItems[0] : null;
-    let cheapest = availableItems.length > 0 ? availableItems[0] : null;
-    availableItems.forEach(v => {
+    let mostExpensive = availableVehicles.length > 0 ? availableVehicles[0] : null;
+    let cheapest = availableVehicles.length > 0 ? availableVehicles[0] : null;
+    availableVehicles.forEach(v => {
       if (!mostExpensive || v.price > mostExpensive.price) mostExpensive = v;
       if (!cheapest || v.price < cheapest.price) cheapest = v;
     });
 
     // Funnel Data p/ Gráfico
     const funnelPhases = [
-      { name: 'Contatos', label: 'Contatos', color: '#10b981' },
-      { name: 'Visita', label: 'Visita', color: '#3b82f6' },
-      { name: 'Simulação', label: 'Simulação', color: '#f59e0b' },
-      { name: 'Ag. Pagamento', label: 'Ag. Pagamento', color: '#ec4899' }
+      { name: 'Contatos', color: '#10b981' },
+      { name: 'Visita', color: '#3b82f6' },
+      { name: 'Simulação', color: '#f59e0b' },
+      { name: 'Ag. Pagamento', color: '#ec4899' }
     ];
 
     const funnelData = funnelPhases.map(p => ({
-      name: p.label,
-      value: leads.filter(l => l.phase === p.name).length,
+      name: p.name,
+      value: leads.filter(l => l.phase.includes(p.name)).length,
       color: p.color
     }));
 
     // Comercial Actions
     const matchesProntos = activeLeads.filter(l =>
-      availableItems.some(v =>
+      availableVehicles.some(v =>
         l.preferences.marcas.includes(v.brand) ||
         l.preferences.modelos.includes(v.model)
       )
@@ -251,8 +246,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
     const typeInterestMap: Record<string, number> = {};
     leads.forEach(l => {
-      const types = l.preferences.tipos_veiculo;
-      types.forEach(t => typeInterestMap[t] = (typeInterestMap[t] || 0) + 1);
+      l.preferences.tipos_veiculo.forEach(t => typeInterestMap[t] = (typeInterestMap[t] || 0) + 1);
     });
     const typeInterest = Object.entries(typeInterestMap).map(([name, value]) => ({ name, value }));
 
@@ -280,19 +274,19 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
     return {
       leadsThisMonth, leadsGrowth, salesThisMonth, salesCountGrowth, revenueThisMonth, salesGrowth,
-      conversionRate, ticketMedioVendas, activeLeads, attentionLeads, hotLeads, availableItems,
-      totalStockValue, stockTurnover, mostExpensive, cheapest, funnelData, funnelPhases, matchesProntos,
+      conversionRate, ticketMedioVendas, activeLeads, attentionLeads, hotLeads, availableVehicles,
+      totalStockValue, stockTurnover, mostExpensive, cheapest, funnelData, matchesProntos,
       prontosParaFechar, leadsEsquecidos, leadsComEntrada, leadsComTroca, salesByBrand,
       brandInterest, typeInterest, leadSources, monthlyGoal, isGoalReached, goalProgress,
       salesNeeded, daysLeftInMonth, salesPerDayNeeded, visToday, visitsDoneToday,
       followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest: [] // Placeholder for model interest
     };
-  }, [leads, unifiedItems, profile, now, timeRange, customStartDate, customEndDate, filterSource, filterTemp]);
+  }, [leads, unifiedVehicles, profile, now, timeRange, customStartDate, customEndDate, filterSource, filterTemp]);
 
   const {
     leadsThisMonth, leadsGrowth, salesThisMonth, salesCountGrowth, revenueThisMonth, salesGrowth,
-    conversionRate, ticketMedioVendas, activeLeads, attentionLeads, hotLeads, availableItems,
-    totalStockValue, stockTurnover, mostExpensive, cheapest, funnelData, funnelPhases, matchesProntos,
+    conversionRate, ticketMedioVendas, activeLeads, attentionLeads, hotLeads, availableVehicles,
+    totalStockValue, stockTurnover, mostExpensive, cheapest, funnelData, matchesProntos,
     prontosParaFechar, leadsEsquecidos, leadsComEntrada, leadsComTroca, salesByBrand,
     brandInterest, typeInterest, leadSources, monthlyGoal, isGoalReached, goalProgress,
     salesNeeded, daysLeftInMonth, salesPerDayNeeded, visToday, visitsDoneToday,
@@ -446,12 +440,12 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                 onClick={() => navigate('/reporting')}
               />
               <KpiGlassCard
-                label="Estoque Veículos"
-                value={availableItems.length}
+                label="Estoque"
+                value={availableVehicles.length}
                 icon={Car}
                 colorClass="text-blue-600 bg-blue-500/10"
                 glowClass="bg-blue-400/30"
-                info="Quantidade de veículos disponíveis."
+                info="Quantidade de veículos disponíveis. Estratégia: Estoque parado é dinheiro morrendo. Foque nos carros que estão há mais de 30 dias na loja."
                 onClick={() => navigate('/inventory')}
               />
               <KpiGlassCard
@@ -517,8 +511,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                   </div>
 
                   <div className="space-y-5">
-                    {funnelPhases.filter(d => ['Visita', 'Simulação', 'Ag. Pagamento'].includes(d.label)).map((item) => (
-                      <PhaseGlassBar key={item.label} label={item.label} value={leads.filter(l => l.phase === item.name).length} total={activeLeads.length} color={item.color} />
+                    {funnelData.filter(d => ['Visita', 'Simulação', 'Ag. Pagamento'].includes(d.name)).map((item) => (
+                      <PhaseGlassBar key={item.name} label={item.name} value={item.value} total={activeLeads.length} color={item.color} />
                     ))}
                   </div>
                 </div>
@@ -533,13 +527,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
             <GlassSection>
               <SectionHeader icon={Flame} title="Ações de Alto Impacto" subtitle="Você pode vender hoje" color="text-orange-500 bg-orange-500/10 border-orange-500/20" />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-                <ActionMetricCard
-                  title="Matches de Carros"
-                  value={matchesProntos}
-                  subtitle="Buscam carro no estoque"
-                  icon={Car}
-                  colorClass="text-emerald-600 bg-emerald-500/10"
-                />
+                <ActionMetricCard title="Matches de Carros" value={matchesProntos} subtitle="Buscam carro no estoque" icon={Car} colorClass="text-emerald-600 bg-emerald-500/10" />
                 <ActionMetricCard title="A Ponto de Fechar" value={prontosParaFechar} subtitle="Simulando ou Avaliando" icon={Target} colorClass="text-sky-600 bg-sky-500/10" />
                 <ActionMetricCard title="Leads Esquecidos" value={leadsEsquecidos} subtitle="Sem contato recente" icon={Clock} colorClass="text-amber-600 bg-amber-500/10" />
               </div>
@@ -588,18 +576,9 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
           <div className="space-y-8 animate-fadeUp">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <GlassSection>
-                <SectionHeader
-                  icon={Car}
-                  title="Inventário Atual"
-                  subtitle="Giro e Valor"
-                  color="text-indigo-500 bg-indigo-500/10 border-indigo-500/20"
-                />
+                <SectionHeader icon={Car} title="Inventário Atual" subtitle="Giro e Valor" color="text-indigo-500 bg-indigo-500/10 border-indigo-500/20" />
                 <div className="grid grid-cols-2 gap-6 mt-8">
-                  <MiniStat
-                    label="Veículos Disp."
-                    value={availableItems.length}
-                    icon={Car}
-                  />
+                  <MiniStat label="Veículos Disp." value={availableVehicles.length} icon={Car} />
                   <MiniStat label="Giro Mensal" value={`${stockTurnover.toFixed(1)}%`} icon={TrendingUp} />
                 </div>
                 <div className="mt-6 mb-6">
@@ -620,17 +599,10 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               </GlassSection>
 
               <GlassSection>
-                <SectionHeader
-                  icon={Package}
-                  title="Alerta de Estoque"
-                  subtitle="Carros que ninguém procurou"
-                  color="text-rose-500 bg-rose-500/10 border-rose-500/20"
-                />
+                <SectionHeader icon={Package} title="Alerta de Estoque" subtitle="Carros que ninguém procurou" color="text-rose-500 bg-rose-500/10 border-rose-500/20" />
                 <div className="mt-8 flex flex-col items-center justify-center text-center py-16 border border-dashed border-rose-300 bg-rose-50/50 rounded-[32px]">
-                  <p className="text-6xl font-black text-rose-600 mb-4">{availableItems.length}</p>
-                  <p className="text-sm font-bold uppercase tracking-widest text-rose-500/80">
-                    veículos disponíveis para venda
-                  </p>
+                  <p className="text-6xl font-black text-rose-600 mb-4">{availableVehicles.length}</p>
+                  <p className="text-sm font-bold uppercase tracking-widest text-rose-500/80">veículos disponíveis para venda</p>
                 </div>
               </GlassSection>
             </div>
@@ -682,9 +654,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                   <div className="grid grid-cols-2 gap-8">
                     <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center shadow-inner">
                       <p className="text-5xl font-black text-slate-800">{appointmentsTomorrow}</p>
-                      <p className="text-[11px] uppercase font-bold tracking-widest text-slate-400 mt-3">
-                        Novas Visitas
-                      </p>
+                      <p className="text-[11px] uppercase font-bold tracking-widest text-slate-400 mt-3">Novas Visitas</p>
                     </div>
                     <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center shadow-inner">
                       <p className="text-5xl font-black text-slate-800">{followupsTomorrow}</p>

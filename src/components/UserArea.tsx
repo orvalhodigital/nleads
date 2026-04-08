@@ -195,7 +195,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-2">Nome Completo</label>
                                         <div className="relative">
-                                            <User className="absolute left-4 top-0 bottom-0 my-auto text-slate-400" size={18} />
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                             <input
                                                 type="text"
                                                 className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
@@ -207,7 +207,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-2">Nome da Empresa</label>
                                         <div className="relative">
-                                            <Building className="absolute left-4 top-0 bottom-0 my-auto text-slate-400" size={18} />
+                                            <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                             <input
                                                 type="text"
                                                 className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
@@ -219,7 +219,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-2">Email (Apenas Visualização)</label>
                                         <div className="relative">
-                                            <Mail className="absolute left-4 top-0 bottom-0 my-auto text-slate-300" size={18} />
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                             <input
                                                 type="email"
                                                 disabled
@@ -231,7 +231,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-2">Meta de Vendas Mensal</label>
                                         <div className="relative">
-                                            <Target className="absolute left-4 top-0 bottom-0 my-auto text-slate-400" size={18} />
+                                            <Target className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                             <input
                                                 type="number"
                                                 className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
@@ -248,7 +248,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                         <span className="text-[10px] text-slate-300 font-bold">(Deixe vazio para não alterar)</span>
                                     </div>
                                     <div className="relative">
-                                        <Lock className="absolute left-4 top-0 bottom-0 my-auto text-slate-400" size={18} />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                         <input
                                             type="password"
                                             className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"

@@ -129,7 +129,7 @@ const LeadActionPage: React.FC = () => {
                 isOpen={true}
                 leadId={lead.id}
                 leads={leads}
-                items={vehicles}
+                vehicles={vehicles}
                 onClose={handleClose}
                 onSuccess={() => {
                     showToast('success', 'Venda finalizada com sucesso!');

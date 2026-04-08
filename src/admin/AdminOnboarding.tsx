@@ -324,8 +324,8 @@ export default function AdminOnboarding() {
                                         { field: 'step_referral_request', label: 'Pedido de Indicação', icon: ArrowRight, desc: 'Incentivo ao bônus de indicação', type: 'both' },
                                     ].filter(step => {
                                         const userPlan = selectedSession.profiles?.plan?.toLowerCase() || '';
-                                        // Apenas quem tem tráfego vê onboarding de tráfego
-                                        if (userPlan !== 'traffic_crm' && step.type === 'traffic') return false;
+                                        // Se o plano for apenas CRM (crm ou trial de crm), oculta etapas de tráfego
+                                        if (userPlan === 'crm' && step.type === 'traffic') return false;
                                         return true;
                                     }).map(step => (
                                         <button
@@ -517,7 +517,7 @@ export default function AdminOnboarding() {
                     {/* Filters */}
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex gap-4">
                         <div className="relative flex-1 max-w-md">
-                            <Search className="absolute left-3 top-0 bottom-0 my-auto text-slate-400" size={20} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                             <input
                                 type="text"
                                 placeholder="Buscar cliente..."

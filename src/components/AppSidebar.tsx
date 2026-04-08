@@ -1,0 +1,192 @@
+
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import {
+    LayoutDashboard,
+    Car,
+    Users,
+    CheckCircle2,
+    LogOut,
+    CreditCard,
+    Settings,
+    Calendar,
+    Bike,
+    Truck,
+    ChevronLeft,
+    ChevronRight,
+    LifeBuoy,
+    Smartphone,
+    Wrench
+} from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { useSystemSettings } from '../hooks/useSystemSettings';
+import { useData } from '../contexts/DataContext';
+
+const AppSidebar: React.FC = () => {
+    const { logoUrl } = useSystemSettings();
+    const { profile } = useData();
+    const navigate = useNavigate();
+    const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+    const menuItems = [
+        { id: '/dashboard', icon: LayoutDashboard, label: 'Métricas', end: true, always: true },
+        // Vehicles logic
+        ...(profile?.business_type === 'vehicles' || !profile?.business_type ? [
+            ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: 'Carros', end: false, always: true }] : []),
+            ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),
+        ] : []),
+        // Phones logic
+        ...(profile?.business_type === 'phones' ? [
+            { id: '/phones', icon: Smartphone, label: 'Celulares', end: false, always: true },
+            { id: '/maintenance', icon: Wrench, label: 'Manutenções', end: false, always: true },
+        ] : []),
+        { id: '/leads', icon: Users, label: 'Leads', end: false, always: true },
+        { id: '/agenda', icon: Calendar, label: 'Agenda', end: false, always: true },
+        { id: '/sales-closed', icon: CheckCircle2, label: 'Vendas', end: false, always: true },
+        { id: '/support', icon: LifeBuoy, label: 'Suporte', end: false, always: true }
+    ];
+
+    const getPlanLabel = (plan: string) => {
+        if (plan === 'pro' || plan === 'crm') return 'CRM';
+        if (plan === 'traffic_crm') return 'TRÁFEGO + CRM';
+        return 'TESTE';
+    };
+
+    const getPlanStyle = (plan: string) => {
+        if (plan === 'pro' || plan === 'crm') return 'bg-slate-900 text-white border-slate-900';
+        if (plan === 'traffic_crm') return 'bg-indigo-600 text-white border-indigo-700 shadow-lg shadow-indigo-200';
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    };
+
+    return (
+        <aside className={`
+            fixed bottom-0 left-0 w-full h-[72px] bg-white/60 backdrop-blur-2xl border-t border-white/50 flex flex-row z-[100] transition-all duration-300
+            lg:relative lg:h-auto lg:bg-white/40 lg:backdrop-blur-3xl lg:border-r lg:border-white/50 lg:border-t-0 lg:flex-col lg:z-50 lg:shrink-0
+            ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-64'}
+        `}>
+            <div className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center px-4 py-5' : 'justify-between px-4 py-3'}`}>
+                {!isCollapsed && (
+                    <div
+                        onClick={() => navigate('/')}
+                        className="cursor-pointer hover:opacity-80 transition-opacity flex-1 min-w-0 h-14 flex items-center"
+                        title="Página Inicial"
+                    >
+                        {profile?.company_logo ? (
+                            <img src={profile.company_logo} alt="Company Logo" className="w-full h-full object-contain object-left" />
+                        ) : logoUrl ? (
+                            <img src={logoUrl} alt="Logo" className="w-full h-full object-contain object-left" />
+                        ) : (
+                            <img src="https://docs.nleads.pro/nleads-logo.png" alt="Logo" className="h-[38px] w-auto object-contain" />
+                        )}
+                    </div>
+                )}
+
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className={`p-2 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
+                    title={isCollapsed ? "Expandir menu" : "Recolher menu"}
+                >
+                    {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                </button>
+            </div>
+
+            <nav className="
+                flex-1 flex flex-row items-center justify-around px-2
+                lg:flex-col lg:px-4 lg:space-y-2 lg:mt-4 lg:items-stretch lg:justify-start
+            ">
+                {menuItems.map(item => (
+                    <NavLink
+                        key={item.id}
+                        to={item.id}
+                        end={item.end}
+                        className={({ isActive }) => `
+                            flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 group relative
+                            lg:flex-row lg:gap-3 lg:px-4 lg:py-3 lg:justify-start
+                            ${isCollapsed ? 'lg:justify-center lg:w-auto lg:mx-2' : 'lg:w-full'}
+                            ${isActive
+                                ? 'bg-emerald-500/10 text-emerald-600'
+                                : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-50'
+                            }
+                        `}
+                    >
+                        {({ isActive }) => (
+                            <>
+                                <item.icon
+                                    size={22}
+                                    strokeWidth={isActive ? 2.5 : 2}
+                                    className={`shrink-0 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
+                                />
+                                <span className={`
+                                    text-[10px] font-bold mt-1
+                                    lg:text-sm lg:mt-0 lg:font-semibold
+                                    ${isCollapsed ? 'lg:hidden' : ''}
+                                `}>
+                                    {item.label}
+                                </span>
+
+                                {/* Tooltip for collapsed state */}
+                                {isCollapsed && (
+                                    <div className="hidden lg:block absolute left-full ml-4 px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                                        <div className="absolute top-0 bottom-0 my-auto -left-1 w-2 h-2 bg-slate-800 rotate-45" />
+                                        {item.label}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </NavLink>
+                ))}
+            </nav>
+
+            <div className="hidden lg:block p-4 mt-auto border-t border-slate-50">
+                <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} p-2 lg:p-0`}>
+                    <NavLink
+                        to="/settings"
+                        className={`flex items-center flex-1 min-w-0 cursor-pointer group/profile relative ${isCollapsed ? 'justify-center' : 'gap-3'}`}
+                        title="Ver meu perfil"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase transition-transform group-hover/profile:scale-105 overflow-hidden border-2 border-transparent group-hover/profile:border-emerald-500">
+                            {profile?.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                profile?.full_name?.charAt(0) || profile?.email.charAt(0) || 'U'
+                            )}
+                        </div>
+
+                        {!isCollapsed && (
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-slate-900 truncate group-hover/profile:text-emerald-600 transition-colors">{profile?.full_name || 'Usuário'}</p>
+                                {profile?.company_name && (
+                                    <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{profile.company_name}</p>
+                                )}
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${getPlanStyle(profile?.plan || 'trial')}`}>
+                                        {getPlanLabel(profile?.plan || 'trial')}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {isCollapsed && (
+                            <div className="hidden lg:block absolute left-full ml-4 px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 invisible group-hover/profile:opacity-100 group-hover/profile:visible transition-all whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                                <div className="absolute top-0 bottom-0 my-auto -left-1 w-2 h-2 bg-slate-800 rotate-45" />
+                                {profile?.full_name || 'Meu Perfil'}
+                            </div>
+                        )}
+                    </NavLink>
+
+                    {!isCollapsed && (
+                        <button
+                            onClick={() => supabase.auth.signOut()}
+                            className="hidden lg:flex text-slate-300 hover:text-red-500 transition-colors bg-transparent p-2 rounded-lg hover:bg-red-50 shrink-0"
+                            title="Sair"
+                        >
+                            <LogOut size={16} />
+                        </button>
+                    )}
+                </div>
+            </div>
+        </aside>
+    );
+};
+
+export default AppSidebar;

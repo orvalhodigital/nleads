@@ -93,6 +93,8 @@ const WebsitePage: React.FC = () => {
     const [backgroundColor, setBackgroundColor]         = useState('');
     const [bgColor2, setBgColor2]                       = useState('');
     const [bgGradient, setBgGradient]                   = useState(false);
+    const [companyLogo, setCompanyLogo]                 = useState('');
+    const [companyLogoUploading, setCompanyLogoUploading] = useState(false);
     const [heroImage, setHeroImage]       = useState('');
     const [heroImageUploading, setHeroImageUploading] = useState(false);
     const [heroText, setHeroText]         = useState('');
@@ -124,6 +126,7 @@ const WebsitePage: React.FC = () => {
         setBackgroundColor(profile.website_background_color || '');
         setBgColor2(profile.website_bg_color2 || '');
         setBgGradient(profile.website_bg_gradient || false);
+        setCompanyLogo(profile.company_logo || '');
         setHeroImage(profile.website_hero_image || '');
         setHeroText(profile.website_hero_text || '');
         setHeroSubtitle(profile.website_hero_subtitle || '');
@@ -209,6 +212,7 @@ const WebsitePage: React.FC = () => {
                 website_background_color: backgroundColor,
                 website_bg_color2: bgColor2,
                 website_bg_gradient: bgGradient,
+                company_logo: companyLogo,
                 website_hero_image: heroImage,
                 website_hero_text: heroText,
                 website_hero_subtitle: heroSubtitle,
@@ -354,6 +358,74 @@ const WebsitePage: React.FC = () => {
                         </button>
                     ))}
                 </div>
+            </div>
+
+            {/* ── 2b. Logo ── */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                    <ImageIcon size={17} className="text-slate-400" />
+                    <span className="font-semibold text-slate-800 text-sm">Logo do Site</span>
+                </div>
+                <p className="text-sm text-slate-500">A logo aparecerá na barra superior do seu site (altura máxima: 48px)</p>
+
+                {companyLogo ? (
+                    <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-3 flex items-center justify-center h-20">
+                        <img src={companyLogo} alt="Logo" className="h-12 object-contain" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
+                            <label className="cursor-pointer bg-white/90 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-white transition-colors">
+                                Trocar
+                                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file || !profile) return;
+                                    setCompanyLogoUploading(true);
+                                    try {
+                                        const ext = file.name.split('.').pop();
+                                        const path = `logos/${profile.id}-${Date.now()}.${ext}`;
+                                        const { error } = await supabase.storage.from('vehicles').upload(path, file, { upsert: true });
+                                        if (!error) {
+                                            const { data: urlData } = supabase.storage.from('vehicles').getPublicUrl(path);
+                                            setCompanyLogo(urlData.publicUrl);
+                                        }
+                                    } finally { setCompanyLogoUploading(false); }
+                                }} />
+                            </label>
+                            <button onClick={() => setCompanyLogo('')}
+                                className="bg-red-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-red-500 transition-colors">
+                                Remover
+                            </button>
+                        </div>
+                        {companyLogoUploading && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                <Loader2 size={24} className="text-white animate-spin" />
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <label className={`flex flex-col items-center justify-center h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-all ${companyLogoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {companyLogoUploading
+                            ? <Loader2 size={20} className="text-emerald-500 animate-spin" />
+                            : <>
+                                <ImageIcon size={20} className="text-slate-300 mb-2" />
+                                <span className="text-xs text-slate-400 font-medium">Clique para fazer upload</span>
+                                <span className="text-[10px] text-slate-300 mt-0.5">PNG, SVG ou JPG até 2MB</span>
+                            </>
+                        }
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file || !profile) return;
+                            setCompanyLogoUploading(true);
+                            try {
+                                const ext = file.name.split('.').pop();
+                                const path = `logos/${profile.id}-${Date.now()}.${ext}`;
+                                const { error } = await supabase.storage.from('vehicles').upload(path, file, { upsert: true });
+                                if (!error) {
+                                    const { data: urlData } = supabase.storage.from('vehicles').getPublicUrl(path);
+                                    setCompanyLogo(urlData.publicUrl);
+                                }
+                            } finally { setCompanyLogoUploading(false); }
+                        }} />
+                    </label>
+                )}
             </div>
 
             {/* ── 3. Colors ── */}

@@ -31,6 +31,7 @@ export interface Database {
                     has_warranty: boolean | null
                     optionals: string[] | null
                     image_url: string | null
+                    gallery_images: string[] | null
                     status: string | null
                     sale_details: Json | null
                 }
@@ -77,6 +78,7 @@ export interface Database {
                     has_warranty?: boolean | null
                     optionals?: string[] | null
                     image_url?: string | null
+                    gallery_images?: string[] | null
                     status?: string | null
                     sale_details?: Json | null
                 }

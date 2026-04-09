@@ -97,11 +97,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     const [lookupLoading, setLookupLoading] = useState(false);
     const [plateError, setPlateError] = useState<string | null>(null);
 
+    const [galleryUploading, setGalleryUploading] = useState(false);
+
     const [formData, setFormData] = useState<Omit<Vehicle, 'id' | 'status'>>({
         brand: '', model: '', year: new Date().getFullYear(), modelYear: new Date().getFullYear(), plate: '', price: 0, type: 'Sedan',
         transmission: 'Automático', engine: '1.6', mileage: 0, color: '',
         isSingleOwner: false, isServiceHistoryComplete: false, isIpvaPaid: true, hasWarranty: false,
-        optionals: [], imageUrl: ''
+        optionals: [], imageUrl: '', galleryImages: []
     });
 
     useEffect(() => {
@@ -199,6 +201,66 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         } finally {
             setUploading(false);
         }
+    };
+
+    const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const currentCount = formData.galleryImages?.length || 0;
+        const remaining = 6 - currentCount;
+        if (remaining <= 0) return;
+
+        const files = Array.from(e.target.files).slice(0, remaining);
+        setGalleryUploading(true);
+        try {
+            const urls: string[] = [];
+            for (const file of files) {
+                // Gallery: 600px wide, proportional height (max 450px)
+                const resizedBlob = await resizeImage(file, 600, 450, 0.82);
+                const resizedFile = new File([resizedBlob], 'gallery.webp', { type: 'image/webp' });
+                const fileName = `gallery/${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('vehicles')
+                    .upload(fileName, resizedFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('vehicles')
+                    .getPublicUrl(fileName);
+
+                urls.push(publicUrl);
+            }
+            setFormData(prev => ({
+                ...prev,
+                galleryImages: [...(prev.galleryImages || []), ...urls],
+            }));
+        } catch (error: any) {
+            alert('Erro ao fazer upload da galeria: ' + error.message);
+        } finally {
+            setGalleryUploading(false);
+            e.target.value = '';
+        }
+    };
+
+    const removeGalleryImage = async (url: string) => {
+        // Remove from storage
+        try {
+            if (url.includes('/public/')) {
+                const relativePath = url.split('/public/')[1];
+                if (relativePath) {
+                    const parts = relativePath.split('/');
+                    parts.shift(); // remove bucket
+                    await supabase.storage.from('vehicles').remove([parts.join('/')]);
+                }
+            }
+        } catch (err) {
+            console.error('Erro ao remover imagem:', err);
+        }
+        setFormData(prev => ({
+            ...prev,
+            galleryImages: (prev.galleryImages || []).filter(u => u !== url),
+        }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -505,7 +567,55 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     </div>
                                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
                                 </label>
-                                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Formatos aceitos: JPG, PNG. Máx 5MB.</p>
+                                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Foto principal · 800×600px · WebP</p>
+                            </div>
+
+                            {/* ── Galeria de Fotos ── */}
+                            <div className="space-y-3 pt-2 border-t border-slate-100">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Galeria</span>
+                                    <span className="text-[10px] font-bold text-slate-300">{formData.galleryImages?.length || 0}/6 fotos</span>
+                                </div>
+
+                                {/* Grid de thumbnails */}
+                                {(formData.galleryImages?.length ?? 0) > 0 && (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {formData.galleryImages!.map((url, i) => (
+                                            <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
+                                                <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeGalleryImage(url)}
+                                                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X size={16} className="text-white" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {(formData.galleryImages?.length || 0) < 6 && (
+                                    <label className="block w-full cursor-pointer group">
+                                        <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                            {galleryUploading
+                                                ? <Loader2 size={16} className="animate-spin text-emerald-500" />
+                                                : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
+                                            <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
+                                                {galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            className="hidden"
+                                            onChange={handleGalleryUpload}
+                                            disabled={galleryUploading}
+                                        />
+                                    </label>
+                                )}
+                                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 600px · WebP</p>
                             </div>
                         </div>
 

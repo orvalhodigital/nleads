@@ -6,7 +6,7 @@ import { Database } from '../lib/database.types';
 type VehicleRow = Database['public']['Tables']['vehicles']['Row'];
 
 // Mapper to convert DB Row to App Entity
-const mapRowToVehicle = (row: VehicleRow): Vehicle => ({
+const mapRowToVehicle = (row: any): Vehicle => ({
     id: row.id,
     brand: row.brand,
     model: row.model,
@@ -25,9 +25,28 @@ const mapRowToVehicle = (row: VehicleRow): Vehicle => ({
     hasWarranty: row.has_warranty,
     optionals: row.optionals || [],
     imageUrl: row.image_url || '',
+    galleryImages: row.gallery_images || [],
     status: (row.status as 'available' | 'sold') || 'available',
     saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined
 });
+
+// Helper: delete a list of storage URLs from the 'vehicles' bucket
+async function deleteStorageUrls(urls: string[]): Promise<void> {
+    const paths = urls
+        .map(url => {
+            if (!url || !url.includes('/public/')) return null;
+            const relativePath = url.split('/public/')[1];
+            if (!relativePath) return null;
+            const parts = relativePath.split('/');
+            parts.shift(); // remove bucket name
+            return parts.join('/');
+        })
+        .filter(Boolean) as string[];
+
+    if (paths.length > 0) {
+        await supabase.storage.from('vehicles').remove(paths);
+    }
+}
 
 export const vehicleService = {
     async getAll(userId?: string): Promise<Vehicle[]> {
@@ -81,6 +100,7 @@ export const vehicleService = {
                 has_warranty: vehicle.hasWarranty,
                 optionals: vehicle.optionals,
                 image_url: vehicle.imageUrl,
+                gallery_images: vehicle.galleryImages || [],
                 status: vehicle.status,
                 sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null
             })
@@ -164,6 +184,7 @@ export const vehicleService = {
                 has_warranty: vehicle.hasWarranty,
                 optionals: vehicle.optionals,
                 image_url: vehicle.imageUrl,
+                gallery_images: vehicle.galleryImages || [],
                 status: vehicle.status,
                 sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null
             })
@@ -176,32 +197,23 @@ export const vehicleService = {
     },
 
     async delete(id: string): Promise<void> {
-        // 1. Fetch vehicle to get image URL
+        // 1. Fetch vehicle to get all images
         const { data: vehicle } = await supabase
             .from('vehicles')
-            .select('image_url')
+            .select('image_url, gallery_images')
             .eq('id', id)
             .single();
 
-        // 2. Delete image from Storage if exists
-        if (vehicle?.image_url) {
+        // 2. Delete all images from Storage (main + gallery)
+        if (vehicle) {
             try {
-                const url = vehicle.image_url;
-                // Standard Supabase Public URL: .../storage/v1/object/public/[bucket]/[path]
-                if (url.includes('/public/')) {
-                    const relativePath = url.split('/public/')[1];
-                    if (relativePath) {
-                        const [bucket, ...pathParts] = relativePath.split('/');
-                        const filePath = pathParts.join('/');
-
-                        if (bucket && filePath) {
-                            await supabase.storage.from(bucket).remove([filePath]);
-                        }
-                    }
-                }
+                const allUrls = [
+                    vehicle.image_url,
+                    ...(vehicle.gallery_images || [])
+                ].filter(Boolean) as string[];
+                await deleteStorageUrls(allUrls);
             } catch (err) {
-                console.error("Erro ao deletar imagem do storage:", err);
-                // Continue execution to delete record even if image delete fails
+                console.error("Erro ao deletar imagens do storage:", err);
             }
         }
 
@@ -215,10 +227,27 @@ export const vehicleService = {
     },
 
     async sell(id: string, saleDetails: SaleDetails): Promise<void> {
+        // 1. Fetch gallery images to delete them (keep only main image)
+        const { data: vehicle } = await supabase
+            .from('vehicles')
+            .select('gallery_images')
+            .eq('id', id)
+            .single();
+
+        if (vehicle?.gallery_images?.length) {
+            try {
+                await deleteStorageUrls(vehicle.gallery_images);
+            } catch (err) {
+                console.error("Erro ao deletar galeria na venda:", err);
+            }
+        }
+
+        // 2. Mark as sold and clear gallery
         const { error } = await supabase
             .from('vehicles')
             .update({
                 status: 'sold',
+                gallery_images: [],
                 sale_details: saleDetails as unknown as any
             })
             .eq('id', id);

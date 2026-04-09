@@ -54,6 +54,7 @@ export interface Vehicle {
   hasWarranty: boolean;
   optionals: string[];
   imageUrl: string;
+  galleryImages: string[];
   status: 'available' | 'sold';
   saleDetails?: SaleDetails;
 }

@@ -244,6 +244,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                     hasWarranty: false,
                     optionals: (row['Opcionais'] || '').split(/[,;\/-]+/).map((s: string) => s.trim()).filter(Boolean),
                     imageUrl: '',
+                    galleryImages: [],
                     status: 'available'
                 };
             });

@@ -172,6 +172,15 @@ export interface Profile {
   enable_motorcycles?: boolean;
   enable_trucks?: boolean;
   preset_messages?: string[];
+  // Website settings
+  website_active?: boolean;
+  website_theme?: 'classic' | 'glass' | 'premium';
+  website_primary_color?: string;
+  website_hero_text?: string;
+  website_whatsapp?: string;
+  website_cta_text?: string;
+  website_slug?: string;
+  custom_domain?: string;
 }
 
 export interface LeadCommunication {

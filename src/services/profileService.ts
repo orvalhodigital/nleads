@@ -27,6 +27,15 @@ function buildProfile(data: any, user: any): Profile {
         enable_cars: user?.user_metadata?.enable_cars !== false,
         enable_motorcycles: user?.user_metadata?.enable_motorcycles || false,
         preset_messages: (data.preset_messages && data.preset_messages.length > 0) ? data.preset_messages : DEFAULT_PRESET_MESSAGES,
+        // Website settings
+        website_active: data.website_active || false,
+        website_theme: data.website_theme || 'classic',
+        website_primary_color: data.website_primary_color || '#10b981',
+        website_hero_text: data.website_hero_text || '',
+        website_whatsapp: data.website_whatsapp || '',
+        website_cta_text: data.website_cta_text || 'Tenho Interesse',
+        website_slug: data.website_slug || '',
+        custom_domain: data.custom_domain || '',
     };
 }
 

@@ -265,6 +265,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                     hasWarranty: vehicle.hasWarranty,
                     optionals: vehicle.optionals,
                     imageUrl: vehicle.imageUrl,
+                    galleryImages: vehicle.galleryImages || [],
                     status: vehicle.status,
                     saleDetails: saleDetails
                 });

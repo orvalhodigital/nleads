@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import UserLayout from './components/UserLayout';
 import AdminApp from './admin/AdminApp';
 import { ToastProvider } from './contexts/ToastContext';
@@ -21,42 +22,53 @@ import LeadDetailPage from './pages/LeadDetailPage';
 import LeadActionPage from './pages/LeadActionPage';
 import MotorcyclesPage from './pages/MotorcyclesPage';
 import SupportPage from './pages/SupportPage';
+import WebsitePage from './pages/WebsitePage';
+
+// Public site pages (no auth required)
+import PublicSiteHome from './pages/public/PublicSiteHome';
+import PublicVehicleDetail from './pages/public/PublicVehicleDetail';
 
 const App: React.FC = () => {
   return (
-    <ToastProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Admin Routes */}
-          <Route path="/paineldoadm/*" element={<AdminApp />} />
+    <HelmetProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public site routes — outside DataProvider/auth */}
+            <Route path="/site/:slug" element={<PublicSiteHome />} />
+            <Route path="/site/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
 
-          {/* User Routes */}
-          <Route path="/*" element={
-            <DataProvider>
-              <UserLayout />
-            </DataProvider>
-          }>
-            <Route index element={<HomePage />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="inventory" element={<InventoryPage />} />
-            <Route path="inventory/new" element={<VehicleFormPage />} />
-            <Route path="inventory/edit/:id" element={<VehicleFormPage />} />
-            <Route path="leads" element={<LeadsPage />} />
-            <Route path="leads/new" element={<LeadFormPage />} />
-            <Route path="leads/edit/:id" element={<LeadFormPage />} />
-            <Route path="leads/:id" element={<LeadDetailPage />} />
-            <Route path="leads/:id/action/:actionType" element={<LeadActionPage />} />
-            <Route path="agenda" element={<AgendaPage />} />
-            <Route path="sales-closed" element={<SalesClosedPage />} />
-            <Route path="plans" element={<Navigate to="/settings" replace />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="motorcycles" element={<MotorcyclesPage />} />
-            <Route path="support" element={<SupportPage />} />
+            {/* Admin Routes */}
+            <Route path="/paineldoadm/*" element={<AdminApp />} />
 
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </ToastProvider>
+            {/* User Routes */}
+            <Route path="/*" element={
+              <DataProvider>
+                <UserLayout />
+              </DataProvider>
+            }>
+              <Route index element={<HomePage />} />
+              <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="inventory" element={<InventoryPage />} />
+              <Route path="inventory/new" element={<VehicleFormPage />} />
+              <Route path="inventory/edit/:id" element={<VehicleFormPage />} />
+              <Route path="leads" element={<LeadsPage />} />
+              <Route path="leads/new" element={<LeadFormPage />} />
+              <Route path="leads/edit/:id" element={<LeadFormPage />} />
+              <Route path="leads/:id" element={<LeadDetailPage />} />
+              <Route path="leads/:id/action/:actionType" element={<LeadActionPage />} />
+              <Route path="agenda" element={<AgendaPage />} />
+              <Route path="sales-closed" element={<SalesClosedPage />} />
+              <Route path="plans" element={<Navigate to="/settings" replace />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="motorcycles" element={<MotorcyclesPage />} />
+              <Route path="support" element={<SupportPage />} />
+              <Route path="website" element={<WebsitePage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
+    </HelmetProvider>
   );
 };
 

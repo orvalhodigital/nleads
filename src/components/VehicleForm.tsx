@@ -209,7 +209,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         const remaining = 6 - currentCount;
         if (remaining <= 0) return;
 
-        const files = Array.from(e.target.files).slice(0, remaining);
+        const files = Array.from(e.target.files as FileList).slice(0, remaining) as File[];
         setGalleryUploading(true);
         try {
             const urls: string[] = [];

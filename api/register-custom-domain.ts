@@ -16,21 +16,15 @@ function isValidDomain(domain: string): boolean {
     return domainRegex.test(domain) && domain.length <= 255;
 }
 
-// Get standard Vercel DNS records
-// These are always the same regardless of domain - configured at the domain registrar
+// Get standard Vercel DNS record
+// Only A record needed to point domain to Vercel
 function getVercelDnsRecords(): any {
     return [
         {
             type: 'A',
             name: '@',
             value: '216.198.79.1',
-            description: 'Root domain A record'
-        },
-        {
-            type: 'CNAME',
-            name: 'www',
-            value: 'cname.vercel-dns.com.',
-            description: 'WWW subdomain'
+            description: 'Apontador para Vercel'
         }
     ];
 }

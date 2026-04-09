@@ -46,16 +46,25 @@ const mapRowToVehicle = (row: any): Vehicle => ({
 });
 
 export const websiteService = {
-    async getProfileBySlug(slug: string): Promise<PublicProfile | null> {
-        const { data, error } = await supabase
+    async getProfileBySlug(slug: string): Promise<{ profile: PublicProfile | null; reason: 'ok' | 'not_found' | 'inactive' | 'error'; errorMsg?: string }> {
+        // First: check if slug exists at all (regardless of active status)
+        const { data: anyData, error: anyError } = await supabase
             .from('profiles')
-            .select('id, company_name, company_logo, website_theme, website_primary_color, website_secondary_color, website_text_color, website_title_color, website_use_gradient, website_hero_image, website_hero_text, website_hero_subtitle, website_whatsapp, website_cta_text, website_slug, website_city, website_google_maps, custom_domain')
+            .select('id, website_active, website_slug, company_name, company_logo, website_theme, website_primary_color, website_secondary_color, website_text_color, website_title_color, website_use_gradient, website_hero_image, website_hero_text, website_hero_subtitle, website_whatsapp, website_cta_text, website_city, website_google_maps, custom_domain')
             .eq('website_slug', slug)
-            .eq('website_active', true)
-            .single();
+            .maybeSingle();
 
-        if (error || !data) return null;
-        return data as PublicProfile;
+        if (anyError) {
+            console.error('[websiteService] Error fetching profile:', anyError);
+            return { profile: null, reason: 'error', errorMsg: anyError.message };
+        }
+        if (!anyData) {
+            return { profile: null, reason: 'not_found' };
+        }
+        if (!anyData.website_active) {
+            return { profile: null, reason: 'inactive' };
+        }
+        return { profile: anyData as PublicProfile, reason: 'ok' };
     },
 
     async getVehiclesByUserId(userId: string): Promise<Vehicle[]> {

@@ -76,6 +76,7 @@ const ColorField: React.FC<{ label: string; value: string; onChange: (v: string)
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'short';
+type DomainRegisterStatus = 'idle' | 'registering' | 'registered' | 'error';
 
 const WebsitePage: React.FC = () => {
     const { profile, refreshProfile } = useData();
@@ -101,7 +102,9 @@ const WebsitePage: React.FC = () => {
     const [googleMaps, setGoogleMaps]     = useState('');
     const [slug, setSlug]                 = useState('');
     const [customDomain, setCustomDomain] = useState('');
+    const [customDomainInput, setCustomDomainInput] = useState('');
     const [saving, setSaving]             = useState(false);
+    const [domainRegisterStatus, setDomainRegisterStatus] = useState<DomainRegisterStatus>('idle');
     const [copied, setCopied]             = useState(false);
     const [showDns, setShowDns]           = useState(false);
     const [slugStatus, setSlugStatus]     = useState<SlugStatus>('idle');
@@ -129,6 +132,7 @@ const WebsitePage: React.FC = () => {
         const autoSlug = profile.website_slug || (profile.company_name ? generateSlug(profile.company_name) : '');
         setSlug(autoSlug);
         setCustomDomain(profile.custom_domain || '');
+        setCustomDomainInput(profile.custom_domain || '');
     }, [profile]);
 
     // ─── Slug checker ─────────────────────────────────────────────────────────
@@ -218,6 +222,51 @@ const WebsitePage: React.FC = () => {
             showToast('error', err?.message || 'Erro ao salvar configurações.');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleRegisterDomain = async () => {
+        if (!customDomainInput || customDomainInput.trim().length === 0) {
+            showToast('error', 'Digite um domínio válido.');
+            return;
+        }
+
+        const domain = customDomainInput.toLowerCase().trim();
+
+        // Basic domain validation
+        const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i;
+        if (!domainRegex.test(domain)) {
+            showToast('error', 'Formato de domínio inválido (ex: estoque.minhaloja.com.br)');
+            return;
+        }
+
+        setDomainRegisterStatus('registering');
+        try {
+            const response = await fetch('/api/register-custom-domain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    domain,
+                    userId: profile?.id,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setDomainRegisterStatus('error');
+                showToast('error', data.error || 'Erro ao registrar domínio na Vercel.');
+                return;
+            }
+
+            setCustomDomain(domain);
+            setDomainRegisterStatus('registered');
+            showToast('success', 'Domínio registrado com sucesso! Configure o DNS nos próximos 10 minutos.');
+            setTimeout(() => setDomainRegisterStatus('idle'), 3000);
+        } catch (err: any) {
+            setDomainRegisterStatus('error');
+            console.error('Domain registration error:', err);
+            showToast('error', err.message || 'Erro ao registrar domínio.');
         }
     };
 
@@ -579,9 +628,38 @@ const WebsitePage: React.FC = () => {
 
                         <div>
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Domínio personalizado</label>
-                            <input value={customDomain} onChange={e => setCustomDomain(e.target.value.toLowerCase())}
-                                placeholder="Ex: estoque.minhaloja.com.br"
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                            <div className="flex gap-2">
+                                <input value={customDomainInput} onChange={e => setCustomDomainInput(e.target.value.toLowerCase())}
+                                    placeholder="Ex: estoque.minhaloja.com.br"
+                                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                                <button onClick={handleRegisterDomain} disabled={domainRegisterStatus === 'registering'}
+                                    className={`px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                                        domainRegisterStatus === 'registering'
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : domainRegisterStatus === 'registered'
+                                            ? 'bg-emerald-500 text-white'
+                                            : domainRegisterStatus === 'error'
+                                            ? 'bg-red-500 text-white hover:bg-red-600'
+                                            : 'bg-slate-800 text-white hover:bg-slate-900'
+                                    }`}>
+                                    {domainRegisterStatus === 'registering' ? (
+                                        <>
+                                            <div className="w-3.5 h-3.5 border-2 border-slate-300/30 border-t-slate-400 rounded-full animate-spin" />
+                                            Registrando...
+                                        </>
+                                    ) : domainRegisterStatus === 'registered' ? (
+                                        <>
+                                            <Check size={14} />
+                                            Registrado
+                                        </>
+                                    ) : (
+                                        'Registrar'
+                                    )}
+                                </button>
+                            </div>
+                            {customDomain && (
+                                <p className="text-[10px] text-emerald-600 mt-1.5">✓ Domínio: <strong>{customDomain}</strong></p>
+                            )}
                         </div>
                     </div>
                 )}

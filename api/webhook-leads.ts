@@ -2,10 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase Client
 // Note: In production, configure these as Environment Variables in Vercel
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://supabase.orvalhodigital.com.br';
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://cjcfmbgzuxqprzldighp.supabase.co';
 // Use Service Role Key for backend operations if available, otherwise fallback to Anon key (which might need RLS policies adjusted for public inserts)
-// Providing the anon key here as fallback based on project config
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.LdVhXiWHbpkfQjLkY4hkeOf0RXozK5acvCHvid4SZOQ';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqY2ZtYmd6dXhxcHJ6bGRpZ2hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTA5MTYsImV4cCI6MjA5MTIyNjkxNn0.06APE1p3V0bdPRNkwOjku8ETbBSSYbsUI-9Wy3Z4OG4';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

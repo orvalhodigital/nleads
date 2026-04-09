@@ -134,7 +134,7 @@ const WebsitePage: React.FC = () => {
         setGoogleMaps(profile.website_google_maps || '');
         const autoSlug = profile.website_slug || (profile.company_name ? generateSlug(profile.company_name) : '');
         setSlug(autoSlug);
-        setCustomDomain(profile.custom_domain || '');
+        setCustomDomain((profile.custom_domain || '').toLowerCase().trim());
         setCustomDomainInput('');
     }, [profile]);
 
@@ -246,6 +246,7 @@ const WebsitePage: React.FC = () => {
 
         setDomainRegisterStatus('registering');
         try {
+            console.log('Registering domain:', domain);
             const response = await fetch('/api/register-custom-domain', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -256,6 +257,7 @@ const WebsitePage: React.FC = () => {
             });
 
             const data = await response.json();
+            console.log('Register response:', { status: response.status, data });
 
             if (!response.ok) {
                 setDomainRegisterStatus('error');
@@ -286,18 +288,21 @@ const WebsitePage: React.FC = () => {
 
         setSaving(true);
         try {
+            console.log('Removing domain:', customDomain);
             const response = await fetch('/api/remove-custom-domain', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    domain: customDomain,
+                    domain: customDomain.toLowerCase().trim(),
                     userId: profile?.id,
                 }),
             });
 
             const data = await response.json();
+            console.log('Remove response:', { status: response.status, data });
 
             if (!response.ok) {
+                console.error('API error:', data);
                 showToast('error', data.error || 'Erro ao remover domínio.');
                 return;
             }

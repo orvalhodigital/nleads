@@ -69,6 +69,9 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ error: 'Missing required fields: domain, userId' });
         }
 
+        // Normalize domain
+        const normalizedDomain = domain.toLowerCase().trim();
+
         // Verify the domain belongs to this user
         const { data: profile, error: checkError } = await supabase
             .from('profiles')
@@ -81,12 +84,14 @@ export default async function handler(req: any, res: any) {
             return res.status(500).json({ error: 'Database error while verifying domain ownership' });
         }
 
-        if (profile.custom_domain !== domain) {
+        const storedDomain = (profile.custom_domain || '').toLowerCase().trim();
+        if (storedDomain !== normalizedDomain) {
+            console.warn(`Domain mismatch: stored="${storedDomain}" vs request="${normalizedDomain}"`);
             return res.status(403).json({ error: 'This domain does not belong to your account.' });
         }
 
         // Remove domain from Vercel
-        const vercelResult = await removeDomainFromVercel(domain);
+        const vercelResult = await removeDomainFromVercel(normalizedDomain);
 
         if (!vercelResult.success) {
             console.warn('Warning: Failed to remove domain from Vercel, but will continue to remove from database:', vercelResult.error);

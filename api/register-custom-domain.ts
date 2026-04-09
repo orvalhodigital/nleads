@@ -104,7 +104,10 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ error: 'Missing required fields: domain, userId' });
         }
 
-        if (!isValidDomain(domain)) {
+        // Normalize domain
+        const normalizedDomain = domain.toLowerCase().trim();
+
+        if (!isValidDomain(normalizedDomain)) {
             return res.status(400).json({ error: 'Invalid domain format. Must be a valid domain name.' });
         }
 
@@ -112,7 +115,7 @@ export default async function handler(req: any, res: any) {
         const { data: existingDomain, error: checkError } = await supabase
             .from('profiles')
             .select('id')
-            .eq('custom_domain', domain)
+            .eq('custom_domain', normalizedDomain)
             .neq('id', userId)
             .maybeSingle();
 
@@ -126,7 +129,7 @@ export default async function handler(req: any, res: any) {
         }
 
         // Register domain with Vercel
-        const vercelResult = await registerDomainWithVercel(domain);
+        const vercelResult = await registerDomainWithVercel(normalizedDomain);
 
         if (!vercelResult.success) {
             return res.status(400).json({
@@ -138,7 +141,7 @@ export default async function handler(req: any, res: any) {
         const { error: updateError } = await supabase
             .from('profiles')
             .update({
-                custom_domain: domain,
+                custom_domain: normalizedDomain,
                 custom_domain_status: 'pending',
                 dns_records: vercelResult.dnsRecords || [],
             })
@@ -148,7 +151,7 @@ export default async function handler(req: any, res: any) {
             console.error('Supabase update error:', updateError);
             // Try to remove from Vercel if DB save fails
             try {
-                await fetch(`${VERCEL_API_URL}/v10/projects/${VERCEL_PROJECT_ID}/domains/${domain}`, {
+                await fetch(`${VERCEL_API_URL}/v10/projects/${VERCEL_PROJECT_ID}/domains/${normalizedDomain}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${VERCEL_API_TOKEN}`,
@@ -163,7 +166,7 @@ export default async function handler(req: any, res: any) {
         return res.status(200).json({
             success: true,
             message: 'Domain registered successfully',
-            domain,
+            domain: normalizedDomain,
             status: 'pending',
             dnsRecords: vercelResult.dnsRecords,
             vercelData: vercelResult.data,

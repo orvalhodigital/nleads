@@ -27,6 +27,7 @@ import WebsitePage from './pages/WebsitePage';
 // Public site pages (no auth required)
 import PublicSiteHome from './pages/public/PublicSiteHome';
 import PublicVehicleDetail from './pages/public/PublicVehicleDetail';
+import CustomDomainRedirect from './pages/CustomDomainRedirect';
 
 const App: React.FC = () => {
   return (
@@ -34,6 +35,9 @@ const App: React.FC = () => {
       <ToastProvider>
         <BrowserRouter>
           <Routes>
+            {/* Custom domain redirect — checks hostname and redirects to /site/{slug} */}
+            <Route path="/" element={<CustomDomainRedirect />} />
+
             {/* Public site routes — outside DataProvider/auth */}
             <Route path="/site/:slug" element={<PublicSiteHome />} />
             <Route path="/site/:slug/veiculo/:id" element={<PublicVehicleDetail />} />

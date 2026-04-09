@@ -21,7 +21,7 @@ function buildWaUrl(phone: string, message: string) {
 // ─── Theme Classes ───────────────────────────────────────────────────────────
 
 interface TC {
-    wrapper: string; nav: string; heroText: string; heroSubText: string;
+    wrapper: string; nav: string; heroText: string; heroSubText: string; heroAlign: string;
     heroBtnOutline: string; sectionTitle: string;
     card: string; cardTitle: string; cardSub: string;
     cardBadge: string; cardBtnDetail: string; cardBtnWa: string;
@@ -38,6 +38,7 @@ function getTC(theme: string): TC {
             nav: 'bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50',
             heroText: 'text-white text-4xl md:text-5xl font-extrabold drop-shadow',
             heroSubText: 'text-white/70 text-lg',
+            heroAlign: 'text-center items-center',
             heroBtnOutline: 'border border-white/40 text-white hover:bg-white/10',
             sectionTitle: 'text-white font-bold',
             card: 'bg-white/8 backdrop-blur-xl border border-white/15 rounded-2xl overflow-hidden hover:border-white/30 hover:-translate-y-1 transition-all duration-300',
@@ -61,6 +62,7 @@ function getTC(theme: string): TC {
             nav: 'bg-[#0a0a12]/95 backdrop-blur-xl border-b border-yellow-500/15 sticky top-0 z-50',
             heroText: 'text-white text-4xl md:text-5xl font-extrabold',
             heroSubText: 'text-gray-400 text-lg',
+            heroAlign: 'text-center items-center',
             heroBtnOutline: 'border border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10',
             sectionTitle: 'text-white font-bold',
             card: 'bg-[#12121e] border border-yellow-500/15 rounded-2xl overflow-hidden hover:border-yellow-500/40 hover:-translate-y-1 transition-all duration-300',
@@ -84,6 +86,7 @@ function getTC(theme: string): TC {
             nav: 'bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50',
             heroText: 'text-white text-4xl md:text-5xl font-extrabold drop-shadow',
             heroSubText: 'text-white/80 text-lg',
+            heroAlign: 'text-left items-start',
             heroBtnOutline: 'border-2 border-white text-white hover:bg-white/10',
             sectionTitle: 'text-gray-900 font-bold',
             card: 'bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300',
@@ -183,11 +186,11 @@ const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: P
                     {formatPrice(vehicle.price)}
                 </p>
                 <div className="flex gap-2 mt-3">
-                    <Link to={`/site/${slug}/veiculo/${vehicle.id}`} className={tc.cardBtnDetail}>
+                    <div className={tc.cardBtnDetail}>
                         Ver Detalhes
-                    </Link>
+                    </div>
                     {profile.website_whatsapp && (
-                        <a href={waUrl} target="_blank" rel="noopener noreferrer" className={tc.cardBtnWa}>
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer" className={tc.cardBtnWa} onClick={e => e.stopPropagation()}>
                             <MessageCircle size={15} />
                             Tenho Interesse
                         </a>
@@ -209,18 +212,24 @@ const PublicSiteHome: React.FC = () => {
     const [search, setSearch] = useState('');
     const [activeType, setActiveType] = useState('Todos');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [showAll, setShowAll] = useState(false);
 
     useEffect(() => {
         if (!slug) return;
         (async () => {
-            const p = await websiteService.getProfileBySlug(slug);
-            if (!p) { setNotFound(true); setLoading(false); return; }
-            setProfile(p);
-            const v = await websiteService.getVehiclesByUserId(p.id);
+            const result = await websiteService.getProfileBySlug(slug);
+            if (!result.profile || result.reason !== 'ok') { setNotFound(true); setLoading(false); return; }
+            setProfile(result.profile);
+            const v = await websiteService.getVehiclesByUserId(result.profile.id);
             setVehicles(v);
             setLoading(false);
         })();
     }, [slug]);
+
+    // Reset showAll when filters change
+    useEffect(() => {
+        setShowAll(false);
+    }, [activeType, search, sortOrder]);
 
     const tc = useMemo(() => getTC(profile?.website_theme || 'classic'), [profile?.website_theme]);
     const primary = profile?.website_primary_color || '#10b981';
@@ -248,6 +257,10 @@ const PublicSiteHome: React.FC = () => {
         return list;
     }, [vehicles, activeType, search, sortOrder]);
 
+    const displayedVehicles = useMemo(() => {
+        return showAll ? filtered : filtered.slice(0, 9);
+    }, [filtered, showAll]);
+
     const mainWaUrl = profile?.website_whatsapp
         ? buildWaUrl(profile.website_whatsapp, `Olá! Vim pelo site ${profile.company_name} e gostaria de saber mais sobre os veículos disponíveis.`)
         : '#';
@@ -274,8 +287,18 @@ const PublicSiteHome: React.FC = () => {
     const seoTitle = `${profile.company_name}${profile.website_city ? ` — ${profile.website_city}` : ''} | Veículos à Venda`;
     const seoDesc = profile.website_hero_subtitle || profile.website_hero_text || `Confira os melhores veículos em ${profile.company_name}${profile.website_city ? `, ${profile.website_city}` : ''}.`;
 
+    // Background color style
+    const bgStyle: React.CSSProperties = {};
+    if (profile?.website_background_color) {
+        if (profile.website_bg_gradient && profile.website_bg_color2) {
+            bgStyle.background = `linear-gradient(135deg, ${profile.website_background_color}, ${profile.website_bg_color2})`;
+        } else {
+            bgStyle.backgroundColor = profile.website_background_color;
+        }
+    }
+
     return (
-        <div className={tc.wrapper}>
+        <div className={tc.wrapper} style={bgStyle}>
             <Helmet>
                 <title>{seoTitle}</title>
                 <meta name="description" content={seoDesc} />
@@ -337,7 +360,7 @@ const PublicSiteHome: React.FC = () => {
                 )}
 
                 {/* Content */}
-                <div className="relative z-10 max-w-6xl mx-auto px-4 py-16 text-center space-y-4 w-full">
+                <div className={`relative z-10 max-w-6xl mx-auto px-4 py-16 space-y-4 w-full flex flex-col ${tc.heroAlign}`}>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg">
                         {profile.website_hero_text || `Bem-vindo à ${profile.company_name}`}
                     </h1>
@@ -369,52 +392,151 @@ const PublicSiteHome: React.FC = () => {
 
             {/* Inventory */}
             <section id="estoque" className="max-w-6xl mx-auto px-4 py-12">
-                {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-3 mb-6">
-                    <div className="relative flex-1">
-                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40" />
-                        <input value={search} onChange={e => setSearch(e.target.value)}
-                            placeholder="Buscar por marca ou modelo..."
-                            className={`${tc.input} w-full pl-10`} />
-                    </div>
-                    <div className="relative">
-                        <select value={sortOrder} onChange={e => setSortOrder(e.target.value as 'asc' | 'desc')}
-                            className={`${tc.input} pr-8 appearance-none cursor-pointer`}>
-                            <option value="asc">Menor preço</option>
-                            <option value="desc">Maior preço</option>
-                        </select>
-                        <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 pointer-events-none" />
-                    </div>
-                </div>
+                {/* For Glass/Premium: Sidebar layout */}
+                {profile.website_theme !== 'classic' ? (
+                    <div className="flex gap-6">
+                        {/* Sidebar - Filtros */}
+                        <div className="w-56 shrink-0">
+                            <h3 className={`text-lg font-bold mb-4 ${tc.sectionTitle}`}>Filtros</h3>
 
-                {types.length > 1 && (
-                    <div className="flex flex-wrap gap-2 mb-5">
-                        {types.map(type => (
-                            <button key={type} onClick={() => setActiveType(type)}
-                                className={activeType === type ? tc.filterPillActive : tc.filterPill}
-                                style={activeType === type && profile.website_theme === 'classic' ? { backgroundColor: primary } : undefined}>
-                                {type}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                            {/* Search */}
+                            <div className="mb-6">
+                                <label className={`text-xs font-semibold opacity-60 mb-2 block`}>Buscar</label>
+                                <div className="relative">
+                                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40" />
+                                    <input value={search} onChange={e => setSearch(e.target.value)}
+                                        placeholder="Marca ou modelo..."
+                                        className={`${tc.input} w-full pl-10`} />
+                                </div>
+                            </div>
 
-                <p className={`text-sm mb-4 ${tc.sectionTitle}`}>
-                    {filtered.length} veículo{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
-                </p>
+                            {/* Type filter */}
+                            {types.length > 1 && (
+                                <div className="mb-6">
+                                    <label className={`text-xs font-semibold opacity-60 mb-2 block`}>Tipo</label>
+                                    <div className="space-y-2">
+                                        {types.map(type => (
+                                            <button key={type} onClick={() => setActiveType(type)}
+                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${activeType === type ? tc.filterPillActive : tc.filterPill}`}
+                                                style={activeType === type && profile.website_theme === 'classic' ? { backgroundColor: primary } : undefined}>
+                                                {type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
-                {filtered.length === 0 ? (
-                    <div className="text-center py-20 opacity-40">
-                        <Car size={48} className="mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">Nenhum veículo encontrado</p>
-                        <p className="text-sm mt-1">Tente outros filtros ou entre em contato.</p>
+                            {/* Sort */}
+                            <div className="mb-6">
+                                <label className={`text-xs font-semibold opacity-60 mb-2 block`}>Ordenar</label>
+                                <div className="relative">
+                                    <select value={sortOrder} onChange={e => setSortOrder(e.target.value as 'asc' | 'desc')}
+                                        className={`${tc.input} w-full pr-8 appearance-none cursor-pointer`}>
+                                        <option value="asc">Menor preço</option>
+                                        <option value="desc">Maior preço</option>
+                                    </select>
+                                    <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 pointer-events-none" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1">
+                            <p className={`text-sm mb-4 ${tc.sectionTitle}`}>
+                                {filtered.length} veículo{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+                            </p>
+
+                            {filtered.length === 0 ? (
+                                <div className="text-center py-20 opacity-40">
+                                    <Car size={48} className="mx-auto mb-3 opacity-30" />
+                                    <p className="font-medium">Nenhum veículo encontrado</p>
+                                    <p className="text-sm mt-1">Tente outros filtros ou entre em contato.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                                        {displayedVehicles.map(vehicle => (
+                                            <Link key={vehicle.id} to={`/site/${slug}/veiculo/${vehicle.id}`}>
+                                                <VehicleCard vehicle={vehicle} slug={slug!} tc={tc} profile={profile} />
+                                            </Link>
+                                        ))}
+                                    </div>
+                                    {!showAll && filtered.length > 9 && (
+                                        <div className="text-center mt-8">
+                                            <button onClick={() => setShowAll(true)}
+                                                className={`px-8 py-3 rounded-xl font-semibold text-sm transition-colors ${tc.filterPillActive}`}
+                                                style={{ backgroundColor: primary }}>
+                                                Ver todos os {filtered.length} veículos
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filtered.map(vehicle => (
-                            <VehicleCard key={vehicle.id} vehicle={vehicle} slug={slug!} tc={tc} profile={profile} />
-                        ))}
-                    </div>
+                    // Classic layout - horizontal filters
+                    <>
+                        <div className="flex flex-col md:flex-row gap-3 mb-6">
+                            <div className="relative flex-1">
+                                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40" />
+                                <input value={search} onChange={e => setSearch(e.target.value)}
+                                    placeholder="Buscar por marca ou modelo..."
+                                    className={`${tc.input} w-full pl-10`} />
+                            </div>
+                            <div className="relative">
+                                <select value={sortOrder} onChange={e => setSortOrder(e.target.value as 'asc' | 'desc')}
+                                    className={`${tc.input} pr-8 appearance-none cursor-pointer`}>
+                                    <option value="asc">Menor preço</option>
+                                    <option value="desc">Maior preço</option>
+                                </select>
+                                <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        {types.length > 1 && (
+                            <div className="flex flex-wrap gap-2 mb-5">
+                                {types.map(type => (
+                                    <button key={type} onClick={() => setActiveType(type)}
+                                        className={activeType === type ? tc.filterPillActive : tc.filterPill}
+                                        style={activeType === type && profile.website_theme === 'classic' ? { backgroundColor: primary } : undefined}>
+                                        {type}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <p className={`text-sm mb-4 ${tc.sectionTitle}`}>
+                            {filtered.length} veículo{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+                        </p>
+
+                        {filtered.length === 0 ? (
+                            <div className="text-center py-20 opacity-40">
+                                <Car size={48} className="mx-auto mb-3 opacity-30" />
+                                <p className="font-medium">Nenhum veículo encontrado</p>
+                                <p className="text-sm mt-1">Tente outros filtros ou entre em contato.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    {displayedVehicles.map(vehicle => (
+                                        <Link key={vehicle.id} to={`/site/${slug}/veiculo/${vehicle.id}`}>
+                                            <VehicleCard vehicle={vehicle} slug={slug!} tc={tc} profile={profile} />
+                                        </Link>
+                                    ))}
+                                </div>
+                                {!showAll && filtered.length > 9 && (
+                                    <div className="text-center mt-8">
+                                        <button onClick={() => setShowAll(true)}
+                                            className={`px-8 py-3 rounded-xl font-semibold text-sm transition-colors ${tc.filterPillActive}`}
+                                            style={{ backgroundColor: primary }}>
+                                            Ver todos os {filtered.length} veículos
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </>
                 )}
             </section>
 

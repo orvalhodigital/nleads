@@ -89,6 +89,9 @@ const WebsitePage: React.FC = () => {
     const [titleColor, setTitleColor]     = useState('#111827');
     const [textColor, setTextColor]       = useState('#374151');
     const [useGradient, setUseGradient]   = useState(false);
+    const [backgroundColor, setBackgroundColor]         = useState('');
+    const [bgColor2, setBgColor2]                       = useState('');
+    const [bgGradient, setBgGradient]                   = useState(false);
     const [heroImage, setHeroImage]       = useState('');
     const [heroImageUploading, setHeroImageUploading] = useState(false);
     const [heroText, setHeroText]         = useState('');
@@ -114,6 +117,9 @@ const WebsitePage: React.FC = () => {
         setTitleColor(profile.website_title_color || '#111827');
         setTextColor(profile.website_text_color || '#374151');
         setUseGradient(profile.website_use_gradient || false);
+        setBackgroundColor(profile.website_background_color || '');
+        setBgColor2(profile.website_bg_color2 || '');
+        setBgGradient(profile.website_bg_gradient || false);
         setHeroImage(profile.website_hero_image || '');
         setHeroText(profile.website_hero_text || '');
         setHeroSubtitle(profile.website_hero_subtitle || '');
@@ -194,6 +200,9 @@ const WebsitePage: React.FC = () => {
                 website_text_color: textColor,
                 website_title_color: titleColor,
                 website_use_gradient: useGradient,
+                website_background_color: backgroundColor,
+                website_bg_color2: bgColor2,
+                website_bg_gradient: bgGradient,
                 website_hero_image: heroImage,
                 website_hero_text: heroText,
                 website_hero_subtitle: heroSubtitle,
@@ -340,6 +349,56 @@ const WebsitePage: React.FC = () => {
                     <ColorField label="Cor Secundária" value={secondaryColor} onChange={setSecondary} />
                     <ColorField label="Cor dos Títulos" value={titleColor} onChange={setTitleColor} />
                     <ColorField label="Cor do Texto" value={textColor} onChange={setTextColor} />
+                </div>
+            </div>
+
+            {/* ── 3b. Background Color ── */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                    <div className="w-4 h-4 rounded-full" style={{ background: bgGradient ? `linear-gradient(135deg, ${backgroundColor}, ${bgColor2})` : backgroundColor || '#f3f4f6' }} />
+                    <span className="font-semibold text-slate-800 text-sm">Cor de Fundo</span>
+                </div>
+
+                {/* Palettes para background */}
+                <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Paletas Rápidas</label>
+                    <div className="flex flex-wrap gap-2">
+                        {PALETTES.map(p => (
+                            <button key={`bg-${p.id}`} onClick={() => {
+                                setBackgroundColor(p.primary);
+                                setBgColor2(p.secondary);
+                                setBgGradient(p.gradient);
+                            }} title={`Fundo - ${p.name}`}
+                                className="flex flex-col items-center gap-1 group">
+                                <div className="w-9 h-9 rounded-xl border-2 border-white shadow-md hover:scale-110 transition-transform"
+                                    style={{ background: p.gradient ? `linear-gradient(135deg, ${p.primary}, ${p.secondary})` : p.primary }} />
+                                <span className="text-[9px] text-slate-400 group-hover:text-slate-600">{p.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Gradient toggle */}
+                <div className="flex items-center justify-between py-2 border-t border-slate-50">
+                    <div>
+                        <p className="text-sm font-medium text-slate-700">Usar Degradê</p>
+                        <p className="text-xs text-slate-400">Aplica degradê na cor de fundo</p>
+                    </div>
+                    <button onClick={() => setBgGradient(v => !v)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${bgGradient ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${bgGradient ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+
+                {/* Preview gradient bar */}
+                {bgGradient && (
+                    <div className="h-3 rounded-full" style={{ background: `linear-gradient(135deg, ${backgroundColor}, ${bgColor2})` }} />
+                )}
+
+                {/* Color pickers grid */}
+                <div className="grid grid-cols-2 gap-3">
+                    <ColorField label="Cor de Fundo" value={backgroundColor} onChange={setBackgroundColor} />
+                    {bgGradient && <ColorField label="Cor Secundária" value={bgColor2} onChange={setBgColor2} />}
                 </div>
             </div>
 

@@ -173,6 +173,160 @@ const ContactForm: React.FC<{ profile: PublicProfile; vehicle?: Vehicle; tc: TC 
     );
 };
 
+// ─── Modal Components ─────────────────────────────────────────────────────────
+
+interface ModalProps { profile: PublicProfile; vehicle: Vehicle | null; tc: TC; onClose: () => void; }
+
+const InterestModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
+    const [form, setForm] = useState({ name: '', phone: '' });
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!form.name || !form.phone) return;
+        setSubmitting(true);
+        try {
+            await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-tenho-interesse', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: form.name,
+                    phone: form.phone,
+                    vehicle: vehicle ? { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, year: vehicle.year, price: vehicle.price } : null,
+                    store_id: profile.id,
+                    store_name: profile.company_name
+                })
+            });
+            if (profile.website_whatsapp) {
+                const msg = `Olá! Tenho interesse no ${vehicle?.brand} ${vehicle?.model} ${vehicle?.year}. Poderia me dar mais informações?`;
+                window.open(buildWaUrl(profile.website_whatsapp, msg), '_blank');
+            }
+            onClose();
+        } finally { setSubmitting(false); }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Seu nome" className={tc.inputField} />
+            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="Seu telefone" className={tc.inputField} />
+            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
+                {submitting ? 'Enviando...' : 'Conversar no WhatsApp'}
+            </button>
+        </form>
+    );
+};
+
+const TestDriveModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
+    const [form, setForm] = useState({ name: '', phone: '', date: '', time: '' });
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!form.name || !form.phone || !form.date || !form.time) return;
+        setSubmitting(true);
+        try {
+            await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-test-drive', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: form.name, phone: form.phone, date: form.date, time: form.time, vehicle_id: vehicle?.id })
+            });
+            onClose();
+        } finally { setSubmitting(false); }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Seu nome" className={tc.inputField} />
+            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="Seu telefone" className={tc.inputField} />
+            <input required type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                className={tc.inputField} />
+            <input required type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
+                className={tc.inputField} />
+            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
+                {submitting ? 'Agendando...' : 'Agendar Test Drive'}
+            </button>
+        </form>
+    );
+};
+
+const FinancingModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
+    const [form, setForm] = useState({ name: '', phone: '', entrada: '', parcelas: '', ideal: '' });
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!form.name || !form.phone) return;
+        setSubmitting(true);
+        try {
+            await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-simular-financiamento', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: form.name, phone: form.phone, entrada: form.entrada, parcelas: form.parcelas, ideal: form.ideal, vehicle_id: vehicle?.id })
+            });
+            onClose();
+        } finally { setSubmitting(false); }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Seu nome" className={tc.inputField} />
+            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="Seu telefone" className={tc.inputField} />
+            <input value={form.entrada} onChange={e => setForm(f => ({ ...f, entrada: e.target.value }))}
+                placeholder="Valor de entrada" className={tc.inputField} />
+            <input value={form.parcelas} onChange={e => setForm(f => ({ ...f, parcelas: e.target.value }))}
+                placeholder="Nº de parcelas" className={tc.inputField} />
+            <input value={form.ideal} onChange={e => setForm(f => ({ ...f, ideal: e.target.value }))}
+                placeholder="Valor ideal de parcela" className={tc.inputField} />
+            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
+                {submitting ? 'Enviando...' : 'Simular Financiamento'}
+            </button>
+        </form>
+    );
+};
+
+const TradeModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
+    const [form, setForm] = useState({ name: '', phone: '', modelo: '', ano: '', placa: '' });
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!form.name || !form.phone) return;
+        setSubmitting(true);
+        try {
+            await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-troca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: form.name, phone: form.phone, trade_model: form.modelo, trade_year: form.ano, trade_plate: form.placa, vehicle_id: vehicle?.id })
+            });
+            onClose();
+        } finally { setSubmitting(false); }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Seu nome" className={tc.inputField} />
+            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="Seu telefone" className={tc.inputField} />
+            <input value={form.modelo} onChange={e => setForm(f => ({ ...f, modelo: e.target.value }))}
+                placeholder="Modelo do carro" className={tc.inputField} />
+            <input value={form.ano} onChange={e => setForm(f => ({ ...f, ano: e.target.value }))}
+                placeholder="Ano" className={tc.inputField} />
+            <input value={form.placa} onChange={e => setForm(f => ({ ...f, placa: e.target.value }))}
+                placeholder="Placa (opcional)" className={tc.inputField} />
+            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
+                {submitting ? 'Enviando...' : 'Propor Troca'}
+            </button>
+        </form>
+    );
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const PublicVehicleDetail: React.FC = () => {
@@ -183,6 +337,7 @@ const PublicVehicleDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
     const [activeImg, setActiveImg] = useState(0);
+    const [activeModal, setActiveModal] = useState<null | 'interest' | 'testdrive' | 'financing' | 'trade'>(null);
 
     useEffect(() => {
         if (!slug || !id) return;
@@ -198,6 +353,8 @@ const PublicVehicleDetail: React.FC = () => {
             setAllVehicles(all);
             setLoading(false);
             setActiveImg(0);
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         })();
     }, [slug, id]);
 
@@ -403,23 +560,23 @@ const PublicVehicleDetail: React.FC = () => {
 
                             {profile.website_whatsapp && (
                                 <div className="space-y-2.5">
-                                    <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                                    <button onClick={() => setActiveModal('interest')}
                                         className={ctaBtnPrimary} style={ctaBtnPrimaryStyle}>
                                         <MessageCircle size={18} />
                                         Tenho Interesse
-                                    </a>
-                                    <a href={buildWaUrl(profile.website_whatsapp, `Olá! Gostaria de agendar um test drive do ${vehicle.brand} ${vehicle.model} ${vehicle.year}.`)}
-                                        target="_blank" rel="noopener noreferrer" className={tc.ctaBtnOutline}>
+                                    </button>
+                                    <button onClick={() => setActiveModal('testdrive')}
+                                        className={tc.ctaBtnOutline}>
                                         <Calendar size={16} /> Agendar Test Drive
-                                    </a>
-                                    <a href={buildWaUrl(profile.website_whatsapp, `Olá! Gostaria de simular o financiamento do ${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${formatPrice(vehicle.price)}.`)}
-                                        target="_blank" rel="noopener noreferrer" className={tc.ctaBtnOutline}>
+                                    </button>
+                                    <button onClick={() => setActiveModal('financing')}
+                                        className={tc.ctaBtnOutline}>
                                         <FileText size={16} /> Simular Financiamento
-                                    </a>
-                                    <a href={buildWaUrl(profile.website_whatsapp, `Olá! Tenho um veículo para troca e tenho interesse no ${vehicle.brand} ${vehicle.model} ${vehicle.year}.`)}
-                                        target="_blank" rel="noopener noreferrer" className={tc.ctaBtnOutline}>
+                                    </button>
+                                    <button onClick={() => setActiveModal('trade')}
+                                        className={tc.ctaBtnOutline}>
                                         <Shield size={16} /> Propor Troca
-                                    </a>
+                                    </button>
                                 </div>
                             )}
 
@@ -458,6 +615,13 @@ const PublicVehicleDetail: React.FC = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                        <div className="text-center mt-6">
+                            <Link to={`/site/${slug}`}
+                                className="inline-block px-7 py-3 rounded-xl font-semibold text-sm transition-colors"
+                                style={{ backgroundColor: primary, color: 'white' }}>
+                                Ver todos os veículos
+                            </Link>
                         </div>
                     </div>
                 )}
@@ -507,6 +671,36 @@ const PublicVehicleDetail: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Modals Overlay */}
+            {activeModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setActiveModal(null)}>
+                    <div className={`${tc.formCard} max-w-md w-full`} onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className={tc.formTitle}>
+                                {activeModal === 'interest' && 'Tenho Interesse'}
+                                {activeModal === 'testdrive' && 'Agendar Test Drive'}
+                                {activeModal === 'financing' && 'Simular Financiamento'}
+                                {activeModal === 'trade' && 'Propor Troca'}
+                            </h3>
+                            <button onClick={() => setActiveModal(null)} className="text-gray-500 hover:text-gray-700">✕</button>
+                        </div>
+
+                        {activeModal === 'interest' && (
+                            <InterestModal profile={profile} vehicle={vehicle} tc={tc} onClose={() => setActiveModal(null)} />
+                        )}
+                        {activeModal === 'testdrive' && (
+                            <TestDriveModal profile={profile} vehicle={vehicle} tc={tc} onClose={() => setActiveModal(null)} />
+                        )}
+                        {activeModal === 'financing' && (
+                            <FinancingModal profile={profile} vehicle={vehicle} tc={tc} onClose={() => setActiveModal(null)} />
+                        )}
+                        {activeModal === 'trade' && (
+                            <TradeModal profile={profile} vehicle={vehicle} tc={tc} onClose={() => setActiveModal(null)} />
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <footer className={tc.footer}>

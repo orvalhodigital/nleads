@@ -11,13 +11,22 @@ import {
     Bike,
     Truck,
     ToggleLeft,
-    ToggleRight
+    ToggleRight,
+    Clock
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
 import { supabase } from '../lib/supabaseClient';
+import { profileService } from '../services/profileService';
 import UserArea from '../components/UserArea';
 import { DEFAULT_PRESET_MESSAGES } from '../utils/constants';
+
+interface BusinessHourEntry {
+    day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    open: boolean;
+    start: string;
+    end: string;
+}
 
 const SettingsPage: React.FC = () => {
     const { profile, refreshProfile } = useData();
@@ -29,6 +38,15 @@ const SettingsPage: React.FC = () => {
     const [presetMessages, setPresetMessages] = useState<string[]>(
         profile?.preset_messages?.length === 10 ? profile.preset_messages : DEFAULT_PRESET_MESSAGES
     );
+    const [businessHours, setBusinessHours] = useState<BusinessHourEntry[]>([
+        { day: 0, open: false, start: '09:00', end: '18:00' }, // domingo
+        { day: 1, open: true, start: '08:00', end: '18:00' },  // segunda
+        { day: 2, open: true, start: '08:00', end: '18:00' },  // terça
+        { day: 3, open: true, start: '08:00', end: '18:00' },  // quarta
+        { day: 4, open: true, start: '08:00', end: '18:00' },  // quinta
+        { day: 5, open: true, start: '08:00', end: '18:00' },  // sexta
+        { day: 6, open: true, start: '08:00', end: '13:00' },  // sábado
+    ]);
 
     useEffect(() => {
         setEnableCars(profile?.enable_cars !== false);
@@ -38,6 +56,9 @@ const SettingsPage: React.FC = () => {
         } else if (profile && (!profile.preset_messages || profile.preset_messages.length === 0)) {
             // Se veio vazio e carregou o perfil, inicializa com 10 padrões
             setPresetMessages(DEFAULT_PRESET_MESSAGES);
+        }
+        if (profile?.business_hours && Array.isArray(profile.business_hours) && profile.business_hours.length > 0) {
+            setBusinessHours(profile.business_hours as BusinessHourEntry[]);
         }
     }, [profile]);
 
@@ -106,10 +127,12 @@ const SettingsPage: React.FC = () => {
             if (profile?.id) {
                 // Garante que sempre salvamos exatamente 10 mensagens
                 const normalizedMessages = Array(10).fill('').map((_, i) => presetMessages[i] || '');
-                await supabase
-                    .from('profiles')
-                    .update({ preset_messages: normalizedMessages })
-                    .eq('id', profile.id);
+
+                // Save business hours and preset messages
+                await profileService.updateProfile({
+                    preset_messages: normalizedMessages,
+                    business_hours: businessHours
+                });
             }
 
             await refreshProfile();
@@ -361,6 +384,75 @@ const SettingsPage: React.FC = () => {
                                     />
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* Business Hours */}
+                    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <Clock className="text-emerald-500" size={24} />
+                                Horário de Funcionamento
+                            </h2>
+                        </div>
+                        <p className="text-sm text-slate-500 -mt-2 mb-4">
+                            Configure os horários de funcionamento da sua loja para o site público. Esses horários serão usados ao agendar test drives.
+                        </p>
+
+                        <div className="space-y-3">
+                            {businessHours.map((hour, index) => {
+                                const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+                                return (
+                                    <div key={index} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${hour.open ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold text-slate-900">{dayNames[hour.day]}</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {hour.open ? (
+                                                <>
+                                                    <input
+                                                        type="time"
+                                                        value={hour.start}
+                                                        onChange={(e) => {
+                                                            const newHours = [...businessHours];
+                                                            newHours[index].start = e.target.value;
+                                                            setBusinessHours(newHours);
+                                                        }}
+                                                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                    />
+                                                    <span className="text-xs font-medium text-slate-500">até</span>
+                                                    <input
+                                                        type="time"
+                                                        value={hour.end}
+                                                        onChange={(e) => {
+                                                            const newHours = [...businessHours];
+                                                            newHours[index].end = e.target.value;
+                                                            setBusinessHours(newHours);
+                                                        }}
+                                                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                    />
+                                                </>
+                                            ) : (
+                                                <span className="text-xs font-medium text-slate-400">Fechado</span>
+                                            )}
+                                            <button
+                                                onClick={() => {
+                                                    const newHours = [...businessHours];
+                                                    newHours[index].open = !newHours[index].open;
+                                                    setBusinessHours(newHours);
+                                                }}
+                                                className="focus:outline-none"
+                                            >
+                                                {hour.open ? (
+                                                    <ToggleRight size={28} className="text-emerald-500" />
+                                                ) : (
+                                                    <ToggleLeft size={28} className="text-slate-300" />
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

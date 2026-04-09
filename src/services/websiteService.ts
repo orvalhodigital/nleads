@@ -1,5 +1,12 @@
 import { supabase } from '../lib/supabaseClient';
-import { Vehicle, VehicleType, TransmissionType, EngineType } from '../types';
+import { Vehicle, VehicleType, TransmissionType, EngineType, LeadPhase } from '../types';
+
+export interface BusinessHourEntry {
+    day: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=domingo, 1=segunda...
+    open: boolean;
+    start: string; // "08:00"
+    end: string;   // "18:00"
+}
 
 export interface PublicProfile {
     id: string;
@@ -11,6 +18,9 @@ export interface PublicProfile {
     website_text_color: string;
     website_title_color: string;
     website_use_gradient: boolean;
+    website_background_color: string;
+    website_bg_color2: string;
+    website_bg_gradient: boolean;
     website_hero_image: string;
     website_hero_text: string;
     website_hero_subtitle: string;
@@ -20,6 +30,7 @@ export interface PublicProfile {
     website_city: string;
     website_google_maps: string;
     custom_domain?: string;
+    business_hours: BusinessHourEntry[];
 }
 
 const mapRowToVehicle = (row: any): Vehicle => ({
@@ -50,7 +61,7 @@ export const websiteService = {
         // First: check if slug exists at all (regardless of active status)
         const { data: anyData, error: anyError } = await supabase
             .from('profiles')
-            .select('id, website_active, website_slug, company_name, company_logo, website_theme, website_primary_color, website_secondary_color, website_text_color, website_title_color, website_use_gradient, website_hero_image, website_hero_text, website_hero_subtitle, website_whatsapp, website_cta_text, website_city, website_google_maps, custom_domain')
+            .select('id, website_active, website_slug, company_name, company_logo, website_theme, website_primary_color, website_secondary_color, website_text_color, website_title_color, website_use_gradient, website_background_color, website_bg_color2, website_bg_gradient, website_hero_image, website_hero_text, website_hero_subtitle, website_whatsapp, website_cta_text, website_city, website_google_maps, custom_domain, business_hours')
             .eq('website_slug', slug)
             .maybeSingle();
 
@@ -88,5 +99,51 @@ export const websiteService = {
 
         if (error || !data) return null;
         return mapRowToVehicle(data);
+    },
+
+    async createPublicLead(userId: string, leadData: {
+        name: string;
+        phone: string;
+        phase?: LeadPhase;
+        scheduling_data?: any;
+        simulation_data?: any;
+        possui_troca?: boolean;
+        veiculo_troca?: string;
+    }): Promise<{ success: boolean; error?: string }> {
+        try {
+            const { error } = await supabase
+                .from('leads')
+                .insert({
+                    user_id: userId,
+                    name: leadData.name,
+                    phone: leadData.phone,
+                    source: 'Site',
+                    phase: leadData.phase || LeadPhase.NEW,
+                    email: '',
+                    temperature: 'WARM',
+                    tipos_veiculo: [],
+                    marcas: [],
+                    modelos: [],
+                    transmissao: ['Qualquer Um(a)'],
+                    motorizacao: ['Qualquer Um(a)'],
+                    observacoes_adicionais: '',
+                    possui_entrada: false,
+                    possui_troca: leadData.possui_troca || false,
+                    veiculo_troca: leadData.veiculo_troca || '',
+                    presented_vehicles: [],
+                    scheduling_data: leadData.scheduling_data || null,
+                    simulation_data: leadData.simulation_data || null,
+                });
+
+            if (error) {
+                console.error('[websiteService] Error creating public lead:', error);
+                return { success: false, error: error.message };
+            }
+
+            return { success: true };
+        } catch (err: any) {
+            console.error('[websiteService] Exception creating public lead:', err);
+            return { success: false, error: err.message };
+        }
     },
 };

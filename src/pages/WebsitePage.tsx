@@ -105,7 +105,6 @@ const WebsitePage: React.FC = () => {
     const [slug, setSlug]                 = useState('');
     const [customDomain, setCustomDomain] = useState('');
     const [customDomainInput, setCustomDomainInput] = useState('');
-    const [dnsRecords, setDnsRecords]     = useState<any[]>([]);
     const [saving, setSaving]             = useState(false);
     const [domainRegisterStatus, setDomainRegisterStatus] = useState<DomainRegisterStatus>('idle');
     const [copied, setCopied]             = useState(false);
@@ -137,7 +136,6 @@ const WebsitePage: React.FC = () => {
         setSlug(autoSlug);
         setCustomDomain(profile.custom_domain || '');
         setCustomDomainInput(profile.custom_domain || '');
-        setDnsRecords(profile.dns_records || []);
     }, [profile]);
 
     // ─── Slug checker ─────────────────────────────────────────────────────────
@@ -266,7 +264,7 @@ const WebsitePage: React.FC = () => {
             }
 
             setCustomDomain(domain);
-            setDnsRecords(data.dnsRecords || []);
+            setCustomDomainInput(''); // Clear input after successful registration
             setDomainRegisterStatus('registered');
             showToast('success', 'Domínio registrado com sucesso! Configure o DNS nos próximos 10 minutos.');
             setTimeout(() => setDomainRegisterStatus('idle'), 3000);
@@ -306,7 +304,6 @@ const WebsitePage: React.FC = () => {
 
             setCustomDomain('');
             setCustomDomainInput('');
-            setDnsRecords([]);
             showToast('success', 'Domínio removido com sucesso!');
             await refreshProfile();
         } catch (err: any) {
@@ -727,41 +724,32 @@ const WebsitePage: React.FC = () => {
 
                         <div>
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Registros DNS para domínio próprio</label>
-                            {dnsRecords && dnsRecords.length > 0 ? (
-                                <>
-                                    <div className="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100 mb-3">
-                                        <div className="grid grid-cols-3 gap-2 px-4 py-2 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
-                                            <span>Tipo</span><span>Nome</span><span>Valor</span>
-                                        </div>
-                                        {dnsRecords.map((record: any, idx: number) => (
-                                            <div key={idx} className="grid grid-cols-3 gap-2 px-4 py-3 text-xs font-mono text-slate-700">
-                                                <span className="text-indigo-600 font-bold">{record.type}</span>
-                                                <span>{record.name}</span>
-                                                <span title={record.description} className="break-all">{record.value}</span>
-                                            </div>
-                                        ))}
+                            {!customDomain ? (
+                                <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800 mb-3 flex gap-2">
+                                    <Info size={16} className="shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold mb-1">Use estes registros DNS ao configurar seu domínio:</p>
+                                        <p className="text-[11px] space-y-1">
+                                            <strong>Tipo:</strong> A | <strong>Nome:</strong> @ | <strong>Valor:</strong> 216.198.79.1
+                                        </p>
                                     </div>
+                                </div>
+                            ) : null}
 
-                                    <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 space-y-2 mb-2">
-                                        <div className="flex gap-2">
-                                            <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
-                                            <div className="text-xs text-blue-900">
-                                                <p className="font-semibold mb-2">Como configurar seu domínio:</p>
-                                                <ol className="list-decimal list-inside space-y-1 text-[11px]">
-                                                    <li>Acesse o painel de controle do seu registrador de domínio</li>
-                                                    <li>Localize a seção <strong>Gerenciar DNS</strong> ou <strong>DNS Records</strong></li>
-                                                    <li>Adicione os registros A e CNAME acima (substitua pelos valores exatos)</li>
-                                                    <li>Salve as alterações e aguarde a propagação (até 48 horas)</li>
-                                                </ol>
+                            <div className="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
+                                <div className="grid grid-cols-3 gap-2 px-4 py-2 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
+                                    <span>Tipo</span><span>Nome</span><span>Valor</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 px-4 py-3 text-xs font-mono text-slate-700">
+                                    <span className="text-indigo-600 font-bold">A</span>
+                                    <span>@</span>
+                                    <span>216.198.79.1</span>
+                                </div>
                             </div>
-                                        </div>
-                                    </div>
 
-                                    <p className="text-[10px] text-slate-400">A propagação pode levar até 48 horas.</p>
-                                </>
-                            ) : (
-                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
-                                    Registre um domínio para ver os registros DNS necessários.
+                            {customDomain && (
+                                <div className="rounded-xl bg-green-50 border border-green-200 p-3 mt-3 text-xs text-green-800">
+                                    <p><strong>✓ Domínio registrado!</strong> Aguarde até 48 horas para a propagação do DNS.</p>
                                 </div>
                             )}
                         </div>

@@ -14,8 +14,10 @@ const CustomDomainRedirect: React.FC = () => {
             // Get the current hostname
             const hostname = window.location.hostname;
 
-            // Check if it's a custom domain (not veiculos.nleads.pro)
-            const isCustomDomain = !hostname.includes('nleads.pro') && !hostname.includes('localhost');
+            // Check if it's a custom domain (not nleads.pro and not localhost/127.0.0.1)
+            const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168');
+            const isNleadsPro = hostname.includes('nleads.pro');
+            const isCustomDomain = !isLocalhost && !isNleadsPro;
 
             if (!isCustomDomain) {
                 // Not a custom domain, let normal routing handle it
@@ -23,6 +25,8 @@ const CustomDomainRedirect: React.FC = () => {
             }
 
             try {
+                console.log('Checking custom domain:', hostname);
+
                 // Find the profile with this custom domain
                 const { data: profile, error } = await supabase
                     .from('profiles')
@@ -30,18 +34,21 @@ const CustomDomainRedirect: React.FC = () => {
                     .eq('custom_domain', hostname)
                     .single();
 
-                if (error || !profile) {
-                    console.error('Custom domain not found:', hostname);
-                    // Domain not configured, show error or redirect
-                    navigate('/');
+                if (error) {
+                    console.error('Error querying custom domain:', error);
                     return;
                 }
 
+                if (!profile || !profile.website_slug) {
+                    console.warn('No profile found for custom domain:', hostname);
+                    return;
+                }
+
+                console.log('Redirecting to website:', profile.website_slug);
                 // Redirect to the website
                 navigate(`/site/${profile.website_slug}`, { replace: true });
             } catch (err) {
                 console.error('Error redirecting custom domain:', err);
-                navigate('/');
             }
         };
 

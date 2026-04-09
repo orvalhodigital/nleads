@@ -277,6 +277,46 @@ const WebsitePage: React.FC = () => {
         }
     };
 
+    const handleRemoveDomain = async () => {
+        if (!customDomain) return;
+
+        const confirmed = window.confirm(
+            `Tem certeza que deseja remover o domínio "${customDomain}"? Esta ação não pode ser desfeita.`
+        );
+
+        if (!confirmed) return;
+
+        setSaving(true);
+        try {
+            const response = await fetch('/api/remove-custom-domain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    domain: customDomain,
+                    userId: profile?.id,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                showToast('error', data.error || 'Erro ao remover domínio.');
+                return;
+            }
+
+            setCustomDomain('');
+            setCustomDomainInput('');
+            setDnsRecords([]);
+            showToast('success', 'Domínio removido com sucesso!');
+            await refreshProfile();
+        } catch (err: any) {
+            console.error('Domain removal error:', err);
+            showToast('error', err.message || 'Erro ao remover domínio.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const previewUrl = `/site/${slug}`;
     const gradientPreview = `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`;
 
@@ -740,7 +780,17 @@ const WebsitePage: React.FC = () => {
                                 </button>
                             </div>
                             {customDomain && (
-                                <p className="text-[10px] text-emerald-600 mt-1.5">✓ Domínio: <strong>{customDomain}</strong></p>
+                                <div className="flex items-center justify-between mt-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
+                                    <p className="text-[10px] text-emerald-700"><strong>✓ {customDomain}</strong></p>
+                                    <button
+                                        onClick={handleRemoveDomain}
+                                        disabled={saving}
+                                        className="text-[9px] px-2 py-1 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-semibold transition-colors disabled:opacity-50"
+                                        title="Remover domínio"
+                                    >
+                                        {saving ? 'Removendo...' : 'Remover'}
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>

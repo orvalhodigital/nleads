@@ -180,6 +180,7 @@ export interface Profile {
   website_text_color?: string;
   website_title_color?: string;
   website_use_gradient?: boolean;
+  website_hero_image?: string;
   website_hero_text?: string;
   website_hero_subtitle?: string;
   website_whatsapp?: string;

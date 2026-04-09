@@ -3,7 +3,7 @@ import {
     Globe, Eye, Copy, Check, ChevronDown, ChevronUp,
     ExternalLink, Phone, Server, Info, Monitor, Layers,
     MapPin, Loader2, CheckCircle2, XCircle, AlertCircle,
-    Type, Sparkles
+    Type, Sparkles, ImageIcon, X
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { profileService } from '../services/profileService';
@@ -89,6 +89,8 @@ const WebsitePage: React.FC = () => {
     const [titleColor, setTitleColor]     = useState('#111827');
     const [textColor, setTextColor]       = useState('#374151');
     const [useGradient, setUseGradient]   = useState(false);
+    const [heroImage, setHeroImage]       = useState('');
+    const [heroImageUploading, setHeroImageUploading] = useState(false);
     const [heroText, setHeroText]         = useState('');
     const [heroSubtitle, setHeroSubtitle] = useState('');
     const [whatsapp, setWhatsapp]         = useState('');
@@ -112,6 +114,7 @@ const WebsitePage: React.FC = () => {
         setTitleColor(profile.website_title_color || '#111827');
         setTextColor(profile.website_text_color || '#374151');
         setUseGradient(profile.website_use_gradient || false);
+        setHeroImage(profile.website_hero_image || '');
         setHeroText(profile.website_hero_text || '');
         setHeroSubtitle(profile.website_hero_subtitle || '');
         setWhatsapp(profile.website_whatsapp || '');
@@ -191,6 +194,7 @@ const WebsitePage: React.FC = () => {
                 website_text_color: textColor,
                 website_title_color: titleColor,
                 website_use_gradient: useGradient,
+                website_hero_image: heroImage,
                 website_hero_text: heroText,
                 website_hero_subtitle: heroSubtitle,
                 website_whatsapp: whatsapp,
@@ -344,6 +348,72 @@ const WebsitePage: React.FC = () => {
                 <div className="flex items-center gap-2 mb-1">
                     <Sparkles size={17} className="text-slate-400" />
                     <span className="font-semibold text-slate-800 text-sm">Personalização</span>
+                </div>
+
+                {/* Hero Image */}
+                <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-1.5">
+                        <ImageIcon size={10} /> Imagem de Fundo da Hero
+                    </label>
+                    {heroImage ? (
+                        <div className="relative rounded-xl overflow-hidden h-32 border border-slate-200">
+                            <img src={heroImage} alt="Hero" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 hover:opacity-100 transition-opacity">
+                                <label className="cursor-pointer bg-white/90 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-white transition-colors">
+                                    Trocar
+                                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file || !profile) return;
+                                        setHeroImageUploading(true);
+                                        try {
+                                            const ext = file.name.split('.').pop();
+                                            const path = `hero/${profile.id}-${Date.now()}.${ext}`;
+                                            const { error } = await supabase.storage.from('vehicles').upload(path, file, { upsert: true });
+                                            if (!error) {
+                                                const { data: urlData } = supabase.storage.from('vehicles').getPublicUrl(path);
+                                                setHeroImage(urlData.publicUrl);
+                                            }
+                                        } finally { setHeroImageUploading(false); }
+                                    }} />
+                                </label>
+                                <button onClick={() => setHeroImage('')}
+                                    className="bg-red-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-red-500 transition-colors">
+                                    Remover
+                                </button>
+                            </div>
+                            {heroImageUploading && (
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                    <Loader2 size={24} className="text-white animate-spin" />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <label className={`flex flex-col items-center justify-center h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-all ${heroImageUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            {heroImageUploading
+                                ? <Loader2 size={20} className="text-emerald-500 animate-spin" />
+                                : <>
+                                    <ImageIcon size={20} className="text-slate-300 mb-2" />
+                                    <span className="text-xs text-slate-400 font-medium">Clique para fazer upload</span>
+                                    <span className="text-[10px] text-slate-300 mt-0.5">JPG, PNG, WebP até 5MB</span>
+                                </>
+                            }
+                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file || !profile) return;
+                                setHeroImageUploading(true);
+                                try {
+                                    const ext = file.name.split('.').pop();
+                                    const path = `hero/${profile.id}-${Date.now()}.${ext}`;
+                                    const { error } = await supabase.storage.from('vehicles').upload(path, file, { upsert: true });
+                                    if (!error) {
+                                        const { data: urlData } = supabase.storage.from('vehicles').getPublicUrl(path);
+                                        setHeroImage(urlData.publicUrl);
+                                    }
+                                } finally { setHeroImageUploading(false); }
+                            }} />
+                        </label>
+                    )}
+                    <p className="text-[10px] text-slate-400 mt-1">Quando vazia, o hero usa a cor/degradê selecionado acima.</p>
                 </div>
 
                 <div>

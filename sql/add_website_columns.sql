@@ -12,6 +12,7 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS website_text_color      TEXT    DEFAULT '#374151',
   ADD COLUMN IF NOT EXISTS website_title_color     TEXT    DEFAULT '#111827',
   ADD COLUMN IF NOT EXISTS website_use_gradient    BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS website_hero_image      TEXT    DEFAULT '',
   ADD COLUMN IF NOT EXISTS website_hero_text       TEXT    DEFAULT '',
   ADD COLUMN IF NOT EXISTS website_hero_subtitle   TEXT    DEFAULT '',
   ADD COLUMN IF NOT EXISTS website_whatsapp        TEXT    DEFAULT '',

@@ -310,15 +310,39 @@ const PublicSiteHome: React.FC = () => {
             </nav>
 
             {/* Hero */}
-            <section className={`${profile.website_theme !== 'classic' ? (profile.website_theme === 'glass' ? 'bg-gradient-to-r from-indigo-900/60 to-purple-900/60 backdrop-blur border-b border-white/10' : 'bg-gradient-to-r from-yellow-900/20 to-orange-900/10 border-b border-yellow-500/15') : ''} py-16 md:py-24`}
-                style={heroStyle}>
-                <div className="max-w-6xl mx-auto px-4 text-center space-y-4">
-                    <h1 className={tc.heroText}
-                        style={profile.website_theme === 'classic' ? { color: profile.website_title_color || '#ffffff' } : undefined}>
+            <section
+                className="relative flex items-center justify-center overflow-hidden"
+                style={{ minHeight: '500px' }}>
+                {/* Background: image > gradient > theme default */}
+                {profile.website_hero_image ? (
+                    <>
+                        <img
+                            src={profile.website_hero_image}
+                            alt="Hero"
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50" />
+                    </>
+                ) : (
+                    <div
+                        className={`absolute inset-0 ${
+                            profile.website_theme === 'glass'
+                                ? 'bg-gradient-to-r from-indigo-900/80 to-purple-900/80'
+                                : profile.website_theme === 'premium'
+                                ? 'bg-gradient-to-r from-yellow-900/30 to-orange-900/20'
+                                : ''
+                        }`}
+                        style={!profile.website_hero_image ? heroStyle : undefined}
+                    />
+                )}
+
+                {/* Content */}
+                <div className="relative z-10 max-w-6xl mx-auto px-4 py-16 text-center space-y-4 w-full">
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg">
                         {profile.website_hero_text || `Bem-vindo à ${profile.company_name}`}
                     </h1>
                     {profile.website_hero_subtitle && (
-                        <p className={tc.heroSubText}>
+                        <p className="text-white/80 text-lg drop-shadow">
                             {profile.website_hero_subtitle}
                         </p>
                     )}
@@ -329,13 +353,13 @@ const PublicSiteHome: React.FC = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                         <a href="#estoque"
-                            className="px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-colors hover:opacity-90"
-                            style={{ backgroundColor: profile.website_theme === 'premium' ? '#eab308' : (profile.website_theme === 'glass' ? 'rgba(255,255,255,0.2)' : primary) }}>
+                            className="px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-colors hover:opacity-90 shadow-lg"
+                            style={{ backgroundColor: profile.website_theme === 'premium' ? '#eab308' : (profile.website_theme === 'glass' ? 'rgba(255,255,255,0.25)' : primary) }}>
                             Ver Estoque
                         </a>
                         {profile.website_whatsapp && (
                             <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                className={`px-7 py-3.5 rounded-xl text-sm font-bold transition-colors ${tc.heroBtnOutline}`}>
+                                className="px-7 py-3.5 rounded-xl text-sm font-bold border-2 border-white text-white hover:bg-white/15 transition-colors shadow-lg">
                                 Falar no WhatsApp
                             </a>
                         )}

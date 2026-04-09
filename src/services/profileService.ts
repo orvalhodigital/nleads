@@ -35,6 +35,7 @@ function buildProfile(data: any, user: any): Profile {
         website_text_color: data.website_text_color || '#374151',
         website_title_color: data.website_title_color || '#111827',
         website_use_gradient: data.website_use_gradient || false,
+        website_hero_image: data.website_hero_image || '',
         website_hero_text: data.website_hero_text || '',
         website_hero_subtitle: data.website_hero_subtitle || '',
         website_whatsapp: data.website_whatsapp || '',

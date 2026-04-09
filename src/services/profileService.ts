@@ -31,10 +31,17 @@ function buildProfile(data: any, user: any): Profile {
         website_active: data.website_active || false,
         website_theme: data.website_theme || 'classic',
         website_primary_color: data.website_primary_color || '#10b981',
+        website_secondary_color: data.website_secondary_color || '#0891b2',
+        website_text_color: data.website_text_color || '#374151',
+        website_title_color: data.website_title_color || '#111827',
+        website_use_gradient: data.website_use_gradient || false,
         website_hero_text: data.website_hero_text || '',
+        website_hero_subtitle: data.website_hero_subtitle || '',
         website_whatsapp: data.website_whatsapp || '',
         website_cta_text: data.website_cta_text || 'Tenho Interesse',
         website_slug: data.website_slug || '',
+        website_city: data.website_city || '',
+        website_google_maps: data.website_google_maps || '',
         custom_domain: data.custom_domain || '',
     };
 }

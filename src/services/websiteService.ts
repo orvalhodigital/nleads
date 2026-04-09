@@ -7,10 +7,17 @@ export interface PublicProfile {
     company_logo?: string;
     website_theme: 'classic' | 'glass' | 'premium';
     website_primary_color: string;
+    website_secondary_color: string;
+    website_text_color: string;
+    website_title_color: string;
+    website_use_gradient: boolean;
     website_hero_text: string;
+    website_hero_subtitle: string;
     website_whatsapp: string;
     website_cta_text: string;
     website_slug: string;
+    website_city: string;
+    website_google_maps: string;
     custom_domain?: string;
 }
 
@@ -41,7 +48,7 @@ export const websiteService = {
     async getProfileBySlug(slug: string): Promise<PublicProfile | null> {
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, company_name, company_logo, website_theme, website_primary_color, website_hero_text, website_whatsapp, website_cta_text, website_slug, custom_domain')
+            .select('id, company_name, company_logo, website_theme, website_primary_color, website_secondary_color, website_text_color, website_title_color, website_use_gradient, website_hero_text, website_hero_subtitle, website_whatsapp, website_cta_text, website_slug, website_city, website_google_maps, custom_domain')
             .eq('website_slug', slug)
             .eq('website_active', true)
             .single();

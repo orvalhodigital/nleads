@@ -176,10 +176,17 @@ export interface Profile {
   website_active?: boolean;
   website_theme?: 'classic' | 'glass' | 'premium';
   website_primary_color?: string;
+  website_secondary_color?: string;
+  website_text_color?: string;
+  website_title_color?: string;
+  website_use_gradient?: boolean;
   website_hero_text?: string;
+  website_hero_subtitle?: string;
   website_whatsapp?: string;
   website_cta_text?: string;
   website_slug?: string;
+  website_city?: string;
+  website_google_maps?: string;
   custom_domain?: string;
 }
 

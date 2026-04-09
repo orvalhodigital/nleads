@@ -110,7 +110,7 @@ const inferType = (model: string, enableCars: boolean, enableMotos: boolean): st
 
 export default function InventoryImportModal({ isOpen, onClose, onSuccess, currentVehicles, leads, onSellVehicle }: InventoryImportModalProps) {
     const { showToast } = useToast();
-    const { profile } = useData();
+    const { profile, loadData } = useData();
     const [step, setStep] = useState<Step>('upload');
     const [importedVehicles, setImportedVehicles] = useState<ImportedVehicle[]>([]);
 
@@ -329,6 +329,10 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                     failCount > 0 ? 'error' : 'success',
                     `${successCount} importados com suceso.${failCount > 0 ? ` ${failCount} falhas.` : ''}`
                 );
+
+                if (successCount > 0) {
+                    loadData(); // Atualiza o inventário imediatamente
+                }
 
             } catch (err: any) {
                 console.error("Error importing new:", err);

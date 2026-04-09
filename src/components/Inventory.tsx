@@ -1206,7 +1206,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
         <InventoryImportModal
           isOpen={isImportModalOpen}
-          onClose={() => setIsImportModalOpen(false)}
+          onClose={() => { if (onDataChange) onDataChange(); setIsImportModalOpen(false); }}
           onSuccess={() => {
             if (onDataChange) onDataChange();
             else window.location.reload();

@@ -1,6 +1,7 @@
 -- ============================================================
 -- EXECUTAR NO SQL EDITOR DO SUPABASE DASHBOARD
--- Execute mesmo se já executou versão anterior (usa IF NOT EXISTS)
+-- Passo 1: Adiciona colunas de website na tabela profiles
+-- Passo 2: Execute fix_rls_recursion.sql para configurar as policies
 -- ============================================================
 
 ALTER TABLE profiles
@@ -20,47 +21,11 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS website_google_maps     TEXT    DEFAULT '',
   ADD COLUMN IF NOT EXISTS custom_domain           TEXT    DEFAULT '';
 
--- Índice único no slug para lookups rápidos
+-- Índice único no slug
 CREATE UNIQUE INDEX IF NOT EXISTS profiles_website_slug_idx
   ON profiles (website_slug)
   WHERE website_slug IS NOT NULL AND website_slug <> '';
 
--- RLS: perfis com website ativo podem ser lidos por anônimos
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'profiles'
-      AND policyname = 'Public can read active website profiles'
-  ) THEN
-    CREATE POLICY "Public can read active website profiles"
-      ON profiles FOR SELECT
-      TO anon
-      USING (website_active = true);
-  END IF;
-END $$;
-
--- RLS: veículos de lojas com website ativo podem ser lidos por anônimos
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'vehicles'
-      AND policyname = 'Public can read vehicles for active websites'
-  ) THEN
-    CREATE POLICY "Public can read vehicles for active websites"
-      ON vehicles FOR SELECT
-      TO anon
-      USING (
-        EXISTS (
-          SELECT 1 FROM profiles
-          WHERE profiles.id = vehicles.user_id
-            AND profiles.website_active = true
-        )
-      );
-  END IF;
-END $$;
-
 NOTIFY pgrst, 'reload schema';
 
-SELECT 'Colunas de website e políticas públicas criadas com sucesso!' AS resultado;
+SELECT 'Colunas de website adicionadas! Execute fix_rls_recursion.sql para configurar as políticas de acesso.' AS resultado;

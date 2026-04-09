@@ -16,52 +16,23 @@ function isValidDomain(domain: string): boolean {
     return domainRegex.test(domain) && domain.length <= 255;
 }
 
-// Extract DNS records from Vercel response
-function extractDnsRecords(vercelDomainData: any): any {
-    const records: any[] = [];
-
-    console.log('Vercel domain data:', JSON.stringify(vercelDomainData, null, 2));
-
-    // Check if using Vercel Nameservers or needs manual DNS configuration
-    const usingVercelNameservers = !vercelDomainData?.nameservers || vercelDomainData.nameservers.length === 0;
-
-    if (usingVercelNameservers) {
-        // When using Vercel nameservers, these are the DNS records that Vercel accepts
-        // Users can optionally point A/CNAME records if they want to use another DNS provider
-        records.push({
+// Get standard Vercel DNS records
+// These are always the same regardless of domain - configured at the domain registrar
+function getVercelDnsRecords(): any {
+    return [
+        {
             type: 'A',
             name: '@',
-            value: '76.76.21.21',
-            description: 'Root domain A record (Vercel IP)'
-        });
-
-        records.push({
+            value: '216.198.79.1',
+            description: 'Root domain A record'
+        },
+        {
             type: 'CNAME',
             name: 'www',
             value: 'cname.vercel-dns.com.',
-            description: 'WWW subdomain CNAME'
-        });
-
-        // Add note about Vercel nameservers
-        records.push({
-            type: 'NS',
-            name: '@',
-            value: 'Usar Vercel Nameservers (recomendado)',
-            description: 'Mude os nameservers do seu registrador para os da Vercel'
-        });
-    } else {
-        // If using custom nameservers
-        vercelDomainData.nameservers.forEach((ns: string, index: number) => {
-            records.push({
-                type: 'NS',
-                name: '@',
-                value: ns,
-                description: `Nameserver ${index + 1}`
-            });
-        });
-    }
-
-    return records;
+            description: 'WWW subdomain'
+        }
+    ];
 }
 
 // Register domain with Vercel
@@ -94,8 +65,8 @@ async function registerDomainWithVercel(domain: string): Promise<{
             };
         }
 
-        // Extract DNS records from Vercel response
-        const dnsRecords = extractDnsRecords(responseData);
+        // Get standard Vercel DNS records
+        const dnsRecords = getVercelDnsRecords();
 
         return {
             success: true,

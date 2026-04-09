@@ -558,27 +558,25 @@ const PublicVehicleDetail: React.FC = () => {
                             </p>
                             <p className={`text-xs mb-5 ${tc.specLabel}`}>Preço de tabela · sujeito a alterações</p>
 
-                            {profile.website_whatsapp && (
-                                <div className="space-y-2.5">
-                                    <button onClick={() => setActiveModal('interest')}
-                                        className={ctaBtnPrimary} style={ctaBtnPrimaryStyle}>
-                                        <MessageCircle size={18} />
-                                        Tenho Interesse
-                                    </button>
-                                    <button onClick={() => setActiveModal('testdrive')}
-                                        className={tc.ctaBtnOutline}>
-                                        <Calendar size={16} /> Agendar Test Drive
-                                    </button>
-                                    <button onClick={() => setActiveModal('financing')}
-                                        className={tc.ctaBtnOutline}>
-                                        <FileText size={16} /> Simular Financiamento
-                                    </button>
-                                    <button onClick={() => setActiveModal('trade')}
-                                        className={tc.ctaBtnOutline}>
-                                        <Shield size={16} /> Propor Troca
-                                    </button>
-                                </div>
-                            )}
+                            <div className="space-y-2.5">
+                                <button onClick={() => setActiveModal('interest')}
+                                    className={ctaBtnPrimary} style={ctaBtnPrimaryStyle}>
+                                    <MessageCircle size={18} />
+                                    Tenho Interesse
+                                </button>
+                                <button onClick={() => setActiveModal('testdrive')}
+                                    className={tc.ctaBtnOutline}>
+                                    <Calendar size={16} /> Agendar Test Drive
+                                </button>
+                                <button onClick={() => setActiveModal('financing')}
+                                    className={tc.ctaBtnOutline}>
+                                    <FileText size={16} /> Simular Financiamento
+                                </button>
+                                <button onClick={() => setActiveModal('trade')}
+                                    className={tc.ctaBtnOutline}>
+                                    <Shield size={16} /> Propor Troca
+                                </button>
+                            </div>
 
                             <div className={`border-t ${tc.divider} mt-5 pt-4`}>
                                 <div className={`flex items-center gap-2 text-xs ${tc.specLabel}`}>

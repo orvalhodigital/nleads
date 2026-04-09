@@ -99,7 +99,6 @@ export default async function handler(req: any, res: any) {
             .update({
                 custom_domain: null,
                 custom_domain_status: null,
-                dns_records: null,
             })
             .eq('id', userId);
 

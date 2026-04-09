@@ -45,7 +45,7 @@ const THEMES = [
         id: 'glass' as const,
         name: 'Glass',
         description: 'Glassmorphismo com gradiente escuro e blur.',
-        previewBg: 'bg-gradient-to-br from-slate-800 to-indigo-900',
+        previewBg: 'bg-gradient-to-br from-slate-900 to-gray-950',
         previewBorder: 'border-white/20',
         bars: ['bg-white/15', 'bg-white/8', 'bg-white/15'],
     },
@@ -135,7 +135,7 @@ const WebsitePage: React.FC = () => {
         const autoSlug = profile.website_slug || (profile.company_name ? generateSlug(profile.company_name) : '');
         setSlug(autoSlug);
         setCustomDomain(profile.custom_domain || '');
-        setCustomDomainInput(profile.custom_domain || '');
+        setCustomDomainInput('');
     }, [profile]);
 
     // ─── Slug checker ─────────────────────────────────────────────────────────

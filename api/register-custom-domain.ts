@@ -22,46 +22,43 @@ function extractDnsRecords(vercelDomainData: any): any {
 
     console.log('Vercel domain data:', JSON.stringify(vercelDomainData, null, 2));
 
-    // Extract from verificationRecords if available (contains the DNS records to add)
-    if (vercelDomainData?.verificationRecords?.length) {
-        vercelDomainData.verificationRecords.forEach((record: any, index: number) => {
+    // Check if using Vercel Nameservers or needs manual DNS configuration
+    const usingVercelNameservers = !vercelDomainData?.nameservers || vercelDomainData.nameservers.length === 0;
+
+    if (usingVercelNameservers) {
+        // When using Vercel nameservers, these are the DNS records that Vercel accepts
+        // Users can optionally point A/CNAME records if they want to use another DNS provider
+        records.push({
+            type: 'A',
+            name: '@',
+            value: '76.76.21.21',
+            description: 'Root domain A record (Vercel IP)'
+        });
+
+        records.push({
+            type: 'CNAME',
+            name: 'www',
+            value: 'cname.vercel-dns.com.',
+            description: 'WWW subdomain CNAME'
+        });
+
+        // Add note about Vercel nameservers
+        records.push({
+            type: 'NS',
+            name: '@',
+            value: 'Usar Vercel Nameservers (recomendado)',
+            description: 'Mude os nameservers do seu registrador para os da Vercel'
+        });
+    } else {
+        // If using custom nameservers
+        vercelDomainData.nameservers.forEach((ns: string, index: number) => {
             records.push({
-                type: record.type || 'A',
-                name: record.name || '@',
-                value: record.value || '',
-                description: record.description || `DNS Record ${index + 1}`
+                type: 'NS',
+                name: '@',
+                value: ns,
+                description: `Nameserver ${index + 1}`
             });
         });
-    }
-
-    // If no verification records, try to extract from domain configuration
-    if (records.length === 0 && vercelDomainData?.name) {
-        // Fallback: Check for DNS records in response
-        if (vercelDomainData?.nameservers?.length) {
-            vercelDomainData.nameservers.forEach((ns: string, index: number) => {
-                records.push({
-                    type: 'NS',
-                    name: '@',
-                    value: ns,
-                    description: `Nameserver ${index + 1}`
-                });
-            });
-        }
-
-        // Add CNAME if using Vercel DNS
-        if (vercelDomainData?.useNameservers === true) {
-            records.push({
-                type: 'CNAME',
-                name: 'www',
-                value: `cname.vercel-dns.com.`,
-                description: 'WWW subdomain (Vercel DNS)'
-            });
-        }
-    }
-
-    // If still no records, log warning
-    if (records.length === 0) {
-        console.warn('No DNS records extracted from Vercel response for domain:', vercelDomainData?.name);
     }
 
     return records;

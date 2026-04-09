@@ -16,10 +16,46 @@ function isValidDomain(domain: string): boolean {
     return domainRegex.test(domain) && domain.length <= 255;
 }
 
+// Extract DNS records from Vercel response
+function extractDnsRecords(vercelDomainData: any): any {
+    const records: any[] = [];
+
+    // Always provide the A record for Vercel's IP
+    records.push({
+        type: 'A',
+        name: '@',
+        value: '76.76.21.21', // Vercel's IP
+        description: 'Root domain A record'
+    });
+
+    // Add CNAME for www subdomain
+    records.push({
+        type: 'CNAME',
+        name: 'www',
+        value: `cname.vercel-dns.com.`,
+        description: 'WWW subdomain'
+    });
+
+    // Add nameserver records if provided by Vercel response
+    if (vercelDomainData?.nameservers?.length) {
+        vercelDomainData.nameservers.forEach((ns: string, index: number) => {
+            records.push({
+                type: 'NS',
+                name: '@',
+                value: ns,
+                description: `Nameserver ${index + 1}`
+            });
+        });
+    }
+
+    return records;
+}
+
 // Register domain with Vercel
 async function registerDomainWithVercel(domain: string): Promise<{
     success: boolean;
     data?: any;
+    dnsRecords?: any[];
     error?: string;
 }> {
     try {
@@ -45,9 +81,13 @@ async function registerDomainWithVercel(domain: string): Promise<{
             };
         }
 
+        // Extract DNS records from Vercel response
+        const dnsRecords = extractDnsRecords(responseData);
+
         return {
             success: true,
             data: responseData,
+            dnsRecords,
         };
     } catch (error: any) {
         return {
@@ -116,12 +156,13 @@ export default async function handler(req: any, res: any) {
             });
         }
 
-        // Save domain to Supabase
+        // Save domain and DNS records to Supabase
         const { error: updateError } = await supabase
             .from('profiles')
             .update({
                 custom_domain: domain,
                 custom_domain_status: 'pending',
+                dns_records: vercelResult.dnsRecords || [],
             })
             .eq('id', userId);
 
@@ -146,6 +187,7 @@ export default async function handler(req: any, res: any) {
             message: 'Domain registered successfully',
             domain,
             status: 'pending',
+            dnsRecords: vercelResult.dnsRecords,
             vercelData: vercelResult.data,
         });
 

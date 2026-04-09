@@ -103,6 +103,7 @@ const WebsitePage: React.FC = () => {
     const [slug, setSlug]                 = useState('');
     const [customDomain, setCustomDomain] = useState('');
     const [customDomainInput, setCustomDomainInput] = useState('');
+    const [dnsRecords, setDnsRecords]     = useState<any[]>([]);
     const [saving, setSaving]             = useState(false);
     const [domainRegisterStatus, setDomainRegisterStatus] = useState<DomainRegisterStatus>('idle');
     const [copied, setCopied]             = useState(false);
@@ -133,6 +134,7 @@ const WebsitePage: React.FC = () => {
         setSlug(autoSlug);
         setCustomDomain(profile.custom_domain || '');
         setCustomDomainInput(profile.custom_domain || '');
+        setDnsRecords(profile.dns_records || []);
     }, [profile]);
 
     // ─── Slug checker ─────────────────────────────────────────────────────────
@@ -186,7 +188,7 @@ const WebsitePage: React.FC = () => {
     // ─── Copy URL ─────────────────────────────────────────────────────────────
 
     const handleCopy = async () => {
-        try { await navigator.clipboard.writeText(`veiculos.nleads.pro/${slug}`); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /**/ }
+        try { await navigator.clipboard.writeText(`veiculos.nleads.pro/site/${slug}`); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /**/ }
     };
 
     // ─── Save ─────────────────────────────────────────────────────────────────
@@ -260,6 +262,7 @@ const WebsitePage: React.FC = () => {
             }
 
             setCustomDomain(domain);
+            setDnsRecords(data.dnsRecords || []);
             setDomainRegisterStatus('registered');
             showToast('success', 'Domínio registrado com sucesso! Configure o DNS nos próximos 10 minutos.');
             setTimeout(() => setDomainRegisterStatus('idle'), 3000);
@@ -310,7 +313,7 @@ const WebsitePage: React.FC = () => {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Endereço do Site</label>
                     <div className="flex items-center gap-2">
                         <div className="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 gap-1.5 min-w-0">
-                            <span className="text-[11px] text-slate-400 shrink-0">veiculos.nleads.pro/</span>
+                            <span className="text-[11px] text-slate-400 shrink-0">veiculos.nleads.pro/site/</span>
                             <input value={slug} onChange={e => handleSlugChange(e.target.value)}
                                 placeholder="nome-da-loja"
                                 className="flex-1 bg-transparent text-sm font-mono text-slate-700 outline-none min-w-0" />
@@ -597,7 +600,7 @@ const WebsitePage: React.FC = () => {
                         <div className="flex gap-2 bg-blue-50 border border-blue-100 rounded-xl p-3 mt-4">
                             <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
                             <p className="text-xs text-blue-700">
-                                Seu site já fica disponível em <strong>veiculos.nleads.pro/{slug || 'sua-loja'}</strong>.
+                                Seu site já fica disponível em <strong>veiculos.nleads.pro/site/{slug || 'sua-loja'}</strong>.
                                 Para usar domínio próprio, configure os registros abaixo no provedor de DNS.
                             </p>
                         </div>
@@ -605,24 +608,31 @@ const WebsitePage: React.FC = () => {
                         <div>
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">URL padrão</label>
                             <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
-                                <span className="text-sm font-mono text-slate-700">veiculos.nleads.pro/{slug || 'sua-loja'}</span>
+                                <span className="text-sm font-mono text-slate-700">veiculos.nleads.pro/site/{slug || 'sua-loja'}</span>
                                 <ExternalLink size={13} className="text-slate-400" />
                             </div>
                         </div>
 
                         <div>
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Registros DNS para domínio próprio</label>
-                            <div className="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
-                                <div className="grid grid-cols-3 gap-2 px-4 py-2 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
-                                    <span>Tipo</span><span>Nome</span><span>Valor</span>
+                            {dnsRecords && dnsRecords.length > 0 ? (
+                                <div className="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
+                                    <div className="grid grid-cols-3 gap-2 px-4 py-2 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
+                                        <span>Tipo</span><span>Nome</span><span>Valor</span>
+                                    </div>
+                                    {dnsRecords.map((record: any, idx: number) => (
+                                        <div key={idx} className="grid grid-cols-3 gap-2 px-4 py-3 text-xs font-mono text-slate-700">
+                                            <span className="text-indigo-600 font-bold">{record.type}</span>
+                                            <span>{record.name}</span>
+                                            <span title={record.description} className="break-all">{record.value}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 px-4 py-3 text-xs font-mono text-slate-700">
-                                    <span className="text-indigo-600 font-bold">A</span><span>@</span><span>76.76.21.21</span>
+                            ) : (
+                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+                                    Registre um domínio para ver os registros DNS necessários.
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 px-4 py-3 text-xs font-mono text-slate-700">
-                                    <span className="text-indigo-600 font-bold">CNAME</span><span>www</span><span>veiculos.nleads.pro</span>
-                                </div>
-                            </div>
+                            )}
                             <p className="text-[10px] text-slate-400 mt-1.5">A propagação pode levar até 48 horas.</p>
                         </div>
 

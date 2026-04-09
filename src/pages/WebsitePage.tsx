@@ -728,24 +728,42 @@ const WebsitePage: React.FC = () => {
                         <div>
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Registros DNS para domínio próprio</label>
                             {dnsRecords && dnsRecords.length > 0 ? (
-                                <div className="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
-                                    <div className="grid grid-cols-3 gap-2 px-4 py-2 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
-                                        <span>Tipo</span><span>Nome</span><span>Valor</span>
-                                    </div>
-                                    {dnsRecords.map((record: any, idx: number) => (
-                                        <div key={idx} className="grid grid-cols-3 gap-2 px-4 py-3 text-xs font-mono text-slate-700">
-                                            <span className="text-indigo-600 font-bold">{record.type}</span>
-                                            <span>{record.name}</span>
-                                            <span title={record.description} className="break-all">{record.value}</span>
+                                <>
+                                    <div className="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100 mb-3">
+                                        <div className="grid grid-cols-3 gap-2 px-4 py-2 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase">
+                                            <span>Tipo</span><span>Nome</span><span>Valor</span>
                                         </div>
-                                    ))}
-                                </div>
+                                        {dnsRecords.map((record: any, idx: number) => (
+                                            <div key={idx} className="grid grid-cols-3 gap-2 px-4 py-3 text-xs font-mono text-slate-700">
+                                                <span className="text-indigo-600 font-bold">{record.type}</span>
+                                                <span>{record.name}</span>
+                                                <span title={record.description} className="break-all">{record.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 space-y-2 mb-2">
+                                        <div className="flex gap-2">
+                                            <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
+                                            <div className="text-xs text-blue-900">
+                                                <p className="font-semibold mb-2">Como configurar seu domínio:</p>
+                                                <ol className="list-decimal list-inside space-y-1 text-[11px]">
+                                                    <li>Acesse o painel de controle do seu registrador de domínio</li>
+                                                    <li>Localize a seção <strong>Gerenciar DNS</strong> ou <strong>DNS Records</strong></li>
+                                                    <li>Adicione os registros A e CNAME acima (substitua pelos valores exatos)</li>
+                                                    <li>Salve as alterações e aguarde a propagação (até 48 horas)</li>
+                                                </ol>
+                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-[10px] text-slate-400">A propagação pode levar até 48 horas.</p>
+                                </>
                             ) : (
                                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
                                     Registre um domínio para ver os registros DNS necessários.
                                 </div>
                             )}
-                            <p className="text-[10px] text-slate-400 mt-1.5">A propagação pode levar até 48 horas.</p>
                         </div>
 
                         <div>

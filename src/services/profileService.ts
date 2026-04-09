@@ -147,7 +147,6 @@ export const profileService = {
 
         // Remove fields that should only live in auth metadata, if they somehow get here.
         delete dbUpdates.avatar_url;
-        delete dbUpdates.company_logo;
         delete dbUpdates.enable_cars;
         delete dbUpdates.enable_motorcycles;
 

@@ -22,6 +22,7 @@ import { CustomDatePicker } from './ui/CustomDatePicker';
 import { CustomTimePicker } from './ui/CustomTimePicker';
 import { LeadSimulationModal } from './LeadSimulationModal';
 import { LeadFollowUpModal } from './LeadFollowUpModal';
+import LeadImportModal from './LeadImportModal';
 import { useToast } from '../contexts/ToastContext';
 import { formatCurrency } from '../utils/formatters';
 
@@ -956,6 +957,12 @@ const LeadManager: React.FC<LeadManagerProps> = ({
         {viewMode === 'kanban' ? renderKanban() : renderList()}
       </div>
 
+      <LeadImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => onRefresh?.()}
+        currentLeads={leads}
+      />
     </div>
   );
 };

@@ -20,7 +20,8 @@ const CustomDomainRedirect: React.FC = () => {
             const isCustomDomain = !isLocalhost && !isNleadsPro;
 
             if (!isCustomDomain) {
-                // Not a custom domain, let normal routing handle it
+                // Not a custom domain, redirect to the app dashboard.
+                navigate('/dashboard', { replace: true });
                 return;
             }
 

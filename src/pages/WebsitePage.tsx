@@ -218,7 +218,6 @@ const WebsitePage: React.FC = () => {
                 website_city: city,
                 website_google_maps: googleMaps,
                 website_slug: slug,
-                custom_domain: customDomain,
             });
             await refreshProfile();
             showToast('success', 'Configurações do website salvas!');
@@ -288,28 +287,41 @@ const WebsitePage: React.FC = () => {
 
         setSaving(true);
         try {
-            console.log('Removing domain:', customDomain);
-            const response = await fetch('/api/remove-custom-domain', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    domain: customDomain.toLowerCase().trim(),
-                    userId: profile?.id,
-                }),
-            });
+            const domainToRemove = customDomain.toLowerCase().trim();
 
-            const data = await response.json();
-            console.log('Remove response:', { status: response.status, data });
+            // 1) Try API to remove from Vercel + DB
+            try {
+                await fetch('/api/remove-custom-domain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        domain: domainToRemove,
+                        userId: profile?.id,
+                    }),
+                });
+            } catch (apiErr) {
+                console.warn('API remove-custom-domain failed, will clean DB directly:', apiErr);
+            }
 
-            if (!response.ok) {
-                console.error('API error:', data);
-                showToast('error', data.error || 'Erro ao remover domínio.');
+            // 2) Always clean DB directly via Supabase as guarantee
+            const { error: dbError } = await supabase
+                .from('profiles')
+                .update({ custom_domain: null, custom_domain_status: null })
+                .eq('id', profile?.id);
+
+            if (dbError) {
+                console.error('Supabase direct update error:', dbError);
+                showToast('error', 'Erro ao remover domínio do banco de dados.');
                 return;
             }
 
+            // 3) Clear local state BEFORE refreshProfile to avoid flicker
             setCustomDomain('');
             setCustomDomainInput('');
+            setDomainRegisterStatus('idle');
             showToast('success', 'Domínio removido com sucesso!');
+
+            // 4) Refresh profile to sync
             await refreshProfile();
         } catch (err: any) {
             console.error('Domain removal error:', err);
@@ -761,45 +773,46 @@ const WebsitePage: React.FC = () => {
 
                         <div>
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Domínio personalizado</label>
-                            <div className="flex gap-2">
-                                <input value={customDomainInput} onChange={e => setCustomDomainInput(e.target.value.toLowerCase())}
-                                    placeholder="Ex: estoque.minhaloja.com.br"
-                                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
-                                <button onClick={handleRegisterDomain} disabled={domainRegisterStatus === 'registering'}
-                                    className={`px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shrink-0 ${
-                                        domainRegisterStatus === 'registering'
-                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            : domainRegisterStatus === 'registered'
-                                            ? 'bg-emerald-500 text-white'
-                                            : domainRegisterStatus === 'error'
-                                            ? 'bg-red-500 text-white hover:bg-red-600'
-                                            : 'bg-slate-800 text-white hover:bg-slate-900'
-                                    }`}>
-                                    {domainRegisterStatus === 'registering' ? (
-                                        <>
-                                            <div className="w-3.5 h-3.5 border-2 border-slate-300/30 border-t-slate-400 rounded-full animate-spin" />
-                                            Registrando...
-                                        </>
-                                    ) : domainRegisterStatus === 'registered' ? (
-                                        <>
-                                            <Check size={14} />
-                                            Registrado
-                                        </>
-                                    ) : (
-                                        'Registrar'
-                                    )}
-                                </button>
-                            </div>
-                            {customDomain && (
-                                <div className="flex items-center justify-between mt-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
-                                    <p className="text-[10px] text-emerald-700"><strong>✓ {customDomain}</strong></p>
+                            {customDomain ? (
+                                <div className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
+                                    <p className="text-xs text-emerald-700"><strong>✓ {customDomain}</strong></p>
                                     <button
                                         onClick={handleRemoveDomain}
                                         disabled={saving}
-                                        className="text-[9px] px-2 py-1 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-semibold transition-colors disabled:opacity-50"
+                                        className="text-[10px] px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 hover:bg-red-500/20 font-semibold transition-colors disabled:opacity-50"
                                         title="Remover domínio"
                                     >
                                         {saving ? 'Removendo...' : 'Remover'}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input value={customDomainInput} onChange={e => setCustomDomainInput(e.target.value.toLowerCase())}
+                                        placeholder="Ex: estoque.minhaloja.com.br"
+                                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                                    <button onClick={handleRegisterDomain} disabled={domainRegisterStatus === 'registering'}
+                                        className={`px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                                            domainRegisterStatus === 'registering'
+                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                : domainRegisterStatus === 'registered'
+                                                ? 'bg-emerald-500 text-white'
+                                                : domainRegisterStatus === 'error'
+                                                ? 'bg-red-500 text-white hover:bg-red-600'
+                                                : 'bg-slate-800 text-white hover:bg-slate-900'
+                                        }`}>
+                                        {domainRegisterStatus === 'registering' ? (
+                                            <>
+                                                <div className="w-3.5 h-3.5 border-2 border-slate-300/30 border-t-slate-400 rounded-full animate-spin" />
+                                                Registrando...
+                                            </>
+                                        ) : domainRegisterStatus === 'registered' ? (
+                                            <>
+                                                <Check size={14} />
+                                                Registrado
+                                            </>
+                                        ) : (
+                                            'Registrar'
+                                        )}
                                     </button>
                                 </div>
                             )}

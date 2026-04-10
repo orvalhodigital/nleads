@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Check, Star, Zap, User, Lock, Save, Loader2, Shield, Crown, Rocket, Gift, Building, Mail, Target, Edit2, Plus } from 'lucide-react';
+import { Check, Star, Zap, User, Lock, Save, Loader2, Shield, Crown, Rocket, Gift, Building, Mail, Target, Edit2, Plus, Trash2 } from 'lucide-react';
 import { Profile, Plan, Campaign } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
@@ -104,6 +104,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
 
             const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
+            await supabase.auth.updateUser({ data: { company_logo: publicUrl } });
             await profileService.updateProfile({ company_logo: publicUrl });
             onProfileUpdate();
             setMessage({ type: 'success', text: 'Logo atualizada!' });
@@ -112,6 +113,16 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
         } finally {
             setLoading(false);
         }
+    };
+
+    const getStoragePathFromPublicUrl = (url: string) => {
+        if (!url.includes('/public/')) return null;
+        const relativePath = url.split('/public/')[1];
+        if (!relativePath) return null;
+
+        const parts = relativePath.split('/');
+        parts.shift();
+        return parts.join('/');
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,11 +142,58 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
 
             const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
+            await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
             await profileService.updateProfile({ avatar_url: publicUrl });
             onProfileUpdate();
             setMessage({ type: 'success', text: 'Avatar atualizado!' });
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message || 'Erro no upload' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveAvatar = async () => {
+        if (!profile?.avatar_url) return;
+
+        try {
+            setLoading(true);
+            setMessage(null);
+
+            const storagePath = getStoragePathFromPublicUrl(profile.avatar_url);
+            if (storagePath) {
+                await supabase.storage.from('avatars').remove([storagePath]);
+            }
+
+            await supabase.auth.updateUser({ data: { avatar_url: '' } });
+            await profileService.updateProfile({ avatar_url: '' });
+            onProfileUpdate();
+            setMessage({ type: 'success', text: 'Foto removida com sucesso!' });
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message || 'Erro ao remover foto' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveLogo = async () => {
+        if (!profile?.company_logo) return;
+
+        try {
+            setLoading(true);
+            setMessage(null);
+
+            const storagePath = getStoragePathFromPublicUrl(profile.company_logo);
+            if (storagePath) {
+                await supabase.storage.from('avatars').remove([storagePath]);
+            }
+
+            await supabase.auth.updateUser({ data: { company_logo: '' } });
+            await profileService.updateProfile({ company_logo: '' });
+            onProfileUpdate();
+            setMessage({ type: 'success', text: 'Logo removida com sucesso!' });
+        } catch (error: any) {
+            setMessage({ type: 'error', text: error.message || 'Erro ao remover logo' });
         } finally {
             setLoading(false);
         }
@@ -150,13 +208,23 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                         {/* Avatar & Logo Section */}
                         <div className="md:w-1/3 flex flex-col items-center space-y-8">
                             <div className="relative group">
-                                <div className="w-32 h-32 rounded-[2.5rem] bg-slate-100 overflow-hidden border-4 border-white shadow-xl">
+                                <div className="w-32 h-32 rounded-[2.5rem] bg-slate-100 overflow-hidden border-4 border-white shadow-xl relative">
                                     {profile?.avatar_url ? (
                                         <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                                             <User size={48} />
                                         </div>
+                                    )}
+                                    {profile?.avatar_url && (
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveAvatar}
+                                            className="absolute top-2 right-2 p-2 bg-white text-slate-600 rounded-full shadow-md hover:bg-red-600 hover:text-white transition-all z-20"
+                                            title="Remover foto"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     )}
                                 </div>
                                 <label className="absolute -bottom-2 -right-2 p-3 bg-indigo-600 text-white rounded-2xl shadow-lg cursor-pointer hover:bg-indigo-700 transition-all hover:scale-110 active:scale-95">
@@ -178,12 +246,22 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                     <Building size={14} />
                                 </div>
                                 <div className="relative group p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 hover:border-indigo-400 transition-all text-center">
+                                    {profile?.company_logo && (
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveLogo}
+                                            className="absolute top-3 right-3 p-2 bg-white text-slate-600 rounded-full shadow-md hover:bg-red-600 hover:text-white transition-all z-20 pointer-events-auto"
+                                            title="Remover logo"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    )}
                                     {profile?.company_logo ? (
                                         <img src={profile.company_logo} alt="Logo" className="max-h-20 mx-auto group-hover:opacity-50 transition-all" />
                                     ) : (
                                         <div className="text-slate-300 py-4"><Plus size={24} className="mx-auto mb-2" /> <span className="text-[10px] font-black uppercase">Subir Logo</span></div>
                                     )}
-                                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={handleLogoUpload} />
+                                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" onChange={handleLogoUpload} />
                                 </div>
                             </div>
                         </div>

@@ -97,11 +97,15 @@ export default async function handler(req: any, res: any) {
     }
 
     try {
-        const { domain, userId } = req.body;
+        const { domain, userId, websiteSlug } = req.body;
 
         // Validation
         if (!domain || !userId) {
             return res.status(400).json({ error: 'Missing required fields: domain, userId' });
+        }
+
+        if (!websiteSlug) {
+            return res.status(400).json({ error: 'Missing required field: websiteSlug. Please define a slug for your website before registering a custom domain.' });
         }
 
         // Normalize domain

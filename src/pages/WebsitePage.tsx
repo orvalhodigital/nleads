@@ -229,6 +229,17 @@ const WebsitePage: React.FC = () => {
     };
 
     const handleRegisterDomain = async () => {
+        // Validate slug first
+        if (!slug || slug.length < 3) {
+            showToast('error', 'Defina um slug válido com mínimo 3 caracteres antes de registrar o domínio.');
+            return;
+        }
+
+        if (slugStatus === 'taken') {
+            showToast('error', 'O slug escolhido está indisponível. Escolha outro antes de registrar o domínio.');
+            return;
+        }
+
         if (!customDomainInput || customDomainInput.trim().length === 0) {
             showToast('error', 'Digite um domínio válido.');
             return;
@@ -245,12 +256,13 @@ const WebsitePage: React.FC = () => {
 
         setDomainRegisterStatus('registering');
         try {
-            console.log('Registering domain:', domain);
+            console.log('Registering domain:', { domain, websiteSlug: slug, userId: profile?.id });
             const response = await fetch('/api/register-custom-domain', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     domain,
+                    websiteSlug: slug,
                     userId: profile?.id,
                 }),
             });
@@ -267,6 +279,7 @@ const WebsitePage: React.FC = () => {
             setCustomDomain(domain);
             setCustomDomainInput(''); // Clear input after successful registration
             setDomainRegisterStatus('registered');
+            await refreshProfile();
             showToast('success', 'Domínio registrado com sucesso! Configure o DNS nos próximos 10 minutos.');
             setTimeout(() => setDomainRegisterStatus('idle'), 3000);
         } catch (err: any) {

@@ -194,13 +194,15 @@ const WebsitePage: React.FC = () => {
 
     // ─── Save ─────────────────────────────────────────────────────────────────
 
-    const handleSave = async () => {
-        if (!slug || slug.length < 3) { showToast('error', 'Defina um endereço com mínimo 3 caracteres.'); return; }
-        if (slugStatus === 'taken') { showToast('error', 'Escolha um endereço disponível antes de salvar.'); return; }
+    const handleSave = async (overrideActive?: boolean): Promise<boolean> => {
+        if (!slug || slug.length < 3) { showToast('error', 'Defina um endereço com mínimo 3 caracteres.'); return false; }
+        if (slugStatus === 'taken') { showToast('error', 'Escolha um endereço disponível antes de salvar.'); return false; }
+        if (saving) return false;
+
         setSaving(true);
         try {
             await profileService.updateProfile({
-                website_active: active,
+                website_active: overrideActive ?? active,
                 website_theme: theme,
                 website_primary_color: primaryColor,
                 website_secondary_color: secondaryColor,
@@ -221,10 +223,21 @@ const WebsitePage: React.FC = () => {
             });
             await refreshProfile();
             showToast('success', 'Configurações do website salvas!');
+            return true;
         } catch (err: any) {
             showToast('error', err?.message || 'Erro ao salvar configurações.');
+            return false;
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleToggleActive = async () => {
+        const nextActive = !active;
+        setActive(nextActive);
+        const saved = await handleSave(nextActive);
+        if (!saved) {
+            setActive(!nextActive);
         }
     };
 
@@ -369,9 +382,9 @@ const WebsitePage: React.FC = () => {
                         <Monitor size={17} className="text-slate-400" />
                         <span className="font-semibold text-slate-800 text-sm">Status do Site</span>
                     </div>
-                    <button onClick={() => setActive(v => !v)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${active ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${active ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <button type="button" onClick={handleToggleActive} disabled={saving}
+                        className={`relative inline-flex h-6 w-12 items-center rounded-full overflow-hidden transition-colors shrink-0 ${active ? 'bg-emerald-500' : 'bg-slate-200'} ${saving ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${active ? 'translate-x-7' : 'translate-x-1'}`} />
                     </button>
                 </div>
 
@@ -523,9 +536,9 @@ const WebsitePage: React.FC = () => {
                         <p className="text-sm font-medium text-slate-700">Usar Degradê</p>
                         <p className="text-xs text-slate-400">Aplica degradê de Cor Principal → Secundária no hero</p>
                     </div>
-                    <button onClick={() => setUseGradient(v => !v)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${useGradient ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${useGradient ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <button type="button" onClick={() => setUseGradient(v => !v)}
+                        className={`relative inline-flex h-6 w-12 items-center rounded-full overflow-hidden transition-colors shrink-0 ${useGradient ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${useGradient ? 'translate-x-7' : 'translate-x-1'}`} />
                     </button>
                 </div>
 
@@ -575,9 +588,9 @@ const WebsitePage: React.FC = () => {
                         <p className="text-sm font-medium text-slate-700">Usar Degradê</p>
                         <p className="text-xs text-slate-400">Aplica degradê na cor de fundo</p>
                     </div>
-                    <button onClick={() => setBgGradient(v => !v)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${bgGradient ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${bgGradient ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <button type="button" onClick={() => setBgGradient(v => !v)}
+                        className={`relative inline-flex h-6 w-12 items-center rounded-full overflow-hidden transition-colors shrink-0 ${bgGradient ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${bgGradient ? 'translate-x-7' : 'translate-x-1'}`} />
                     </button>
                 </div>
 

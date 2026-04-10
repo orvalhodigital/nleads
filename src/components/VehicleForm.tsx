@@ -274,7 +274,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     };
 
     return (
-        <div className="max-w-4xl mx-auto w-full pb-20 animate-fadeUp">
+        <div className="max-w-2xl mx-auto w-full pb-32 animate-fadeUp">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-6">
                     <button
@@ -299,11 +299,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                    {/* Main Info Column */}
-                    <div className="lg:col-span-2 space-y-8">
+            <form id="vehicle-form" onSubmit={handleSubmit} className="space-y-8">
                         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-10">
 
                             <section className="space-y-6">
@@ -526,127 +522,130 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 </div>
                             </section>
                         </div>
-                    </div>
 
-                    {/* Sidebar / Image Column */}
-                    <div className="space-y-8 lg:sticky lg:top-8 self-start">
-                        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm space-y-6">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                <Car size={14} /> Mídia do Veículo
-                            </h3>
-
-                            <div className="space-y-4">
-                                <div className="aspect-[4/3] rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
-                                    {formData.imageUrl ? (
-                                        <>
-                                            <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="w-12 h-12 rounded-full bg-white text-red-500 flex items-center justify-center shadow-xl">
-                                                    <X size={20} />
-                                                </button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-3">
-                                            <Upload size={48} strokeWidth={1} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Nenhuma Foto</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <label className={`block w-full cursor-pointer group`}>
-                                    <div className={`w-full py-4 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
-                                        {uploading ? (
-                                            <Loader2 size={18} className="animate-spin text-emerald-500" />
-                                        ) : (
-                                            <Upload size={18} className="text-slate-400 group-hover:text-emerald-500" />
-                                        )}
-                                        <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
-                                            {uploading ? 'Enviando...' : 'Fazer Upload'}
-                                        </span>
-                                    </div>
-                                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
-                                </label>
-                                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Foto principal · 800×600px · WebP</p>
+                        {/* Media Section - inline */}
+                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-6">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    Mídia do Veículo
+                                </h3>
                             </div>
 
-                            {/* ── Galeria de Fotos ── */}
-                            <div className="space-y-3 pt-2 border-t border-slate-100">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Galeria</span>
-                                    <span className="text-[10px] font-bold text-slate-300">{formData.galleryImages?.length || 0}/6 fotos</span>
-                                </div>
-
-                                {/* Grid de thumbnails */}
-                                {(formData.galleryImages?.length ?? 0) > 0 && (
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {formData.galleryImages!.map((url, i) => (
-                                            <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
-                                                <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeGalleryImage(url)}
-                                                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <X size={16} className="text-white" />
-                                                </button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Foto Principal */}
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
+                                    <div className="aspect-[4/3] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                                        {formData.imageUrl ? (
+                                            <>
+                                                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="w-12 h-12 rounded-full bg-white text-red-500 flex items-center justify-center shadow-xl">
+                                                        <X size={20} />
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-3">
+                                                <Upload size={40} strokeWidth={1} />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Nenhuma Foto</span>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
-                                )}
-
-                                {(formData.galleryImages?.length || 0) < 6 && (
                                     <label className="block w-full cursor-pointer group">
-                                        <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
-                                            {galleryUploading
-                                                ? <Loader2 size={16} className="animate-spin text-emerald-500" />
-                                                : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
-                                            <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
-                                                {galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}
+                                        <div className={`w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                            {uploading ? (
+                                                <Loader2 size={16} className="animate-spin text-emerald-500" />
+                                            ) : (
+                                                <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />
+                                            )}
+                                            <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
+                                                {uploading ? 'Enviando...' : 'Fazer Upload'}
                                             </span>
                                         </div>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            multiple
-                                            className="hidden"
-                                            onChange={handleGalleryUpload}
-                                            disabled={galleryUploading}
-                                        />
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
                                     </label>
-                                )}
-                                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 600px · WebP</p>
+                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">800×600px · WebP</p>
+                                </div>
+
+                                {/* Galeria */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-1">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Galeria</label>
+                                        <span className="text-[10px] font-bold text-slate-300">{formData.galleryImages?.length || 0}/6 fotos</span>
+                                    </div>
+
+                                    {(formData.galleryImages?.length ?? 0) > 0 && (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {formData.galleryImages!.map((url, i) => (
+                                                <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
+                                                    <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeGalleryImage(url)}
+                                                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X size={16} className="text-white" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {(formData.galleryImages?.length || 0) < 6 && (
+                                        <label className="block w-full cursor-pointer group">
+                                            <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                                {galleryUploading
+                                                    ? <Loader2 size={16} className="animate-spin text-emerald-500" />
+                                                    : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
+                                                <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
+                                                    {galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}
+                                                </span>
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                className="hidden"
+                                                onChange={handleGalleryUpload}
+                                                disabled={galleryUploading}
+                                            />
+                                        </label>
+                                    )}
+                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 600px · WebP</p>
+                                </div>
                             </div>
                         </div>
+            </form>
 
-                        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl shadow-slate-900/20">
-                            <h3 className="text-xs font-black uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <Check size={16} className="text-emerald-400" /> Confirmar Cadastro
-                            </h3>
-                            <p className="text-slate-400 text-xs font-medium leading-relaxed mb-8">
-                                Ao salvar, o veículo ficará imediatamente visível no seu estoque disponível para novos leads.
-                            </p>
-
-                            <div className="space-y-3">
-                                <button
-                                    type="submit"
-                                    disabled={uploading}
-                                    className="w-full py-5 bg-emerald-500 text-white rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
-                                >
-                                    {isEditing ? 'Salvar Alterações' : 'Publicar no Estoque'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/inventory')}
-                                    className="w-full py-5 text-slate-400 text-xs font-black uppercase tracking-widest hover:text-white transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
+            {/* Sticky Bottom Action Bar */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-700/50 px-6 py-4">
+                <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+                    <div className="hidden sm:block">
+                        <p className="text-xs font-bold text-slate-400">
+                            {isEditing ? 'Editando veículo' : 'Novo cadastro'}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3 ml-auto">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/inventory')}
+                            className="px-6 py-3.5 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            form="vehicle-form"
+                            disabled={uploading}
+                            className="px-8 py-3.5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
+                        >
+                            {isEditing ? 'Salvar Alterações' : 'Publicar no Estoque'}
+                        </button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     );
 };

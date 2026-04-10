@@ -125,7 +125,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
     const phases = [LeadPhase.NEW, LeadPhase.VISIT, LeadPhase.SIMULATION, LeadPhase.FOLLOW_UP, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
 
     return (
-        <div className="max-w-4xl mx-auto w-full pb-20 animate-fadeUp">
+        <div className="max-w-2xl mx-auto w-full pb-32 animate-fadeUp">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-6">
                     <button
@@ -146,10 +146,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Info Column */}
-                    <div className="lg:col-span-2 space-y-8">
+            <form id="lead-form" onSubmit={handleSubmit} className="space-y-8">
                         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-10">
 
                             <section className="space-y-6">
@@ -399,37 +396,34 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                 </div>
                             </section>
                         </div>
+            </form>
+
+            {/* Sticky Bottom Action Bar */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-700/50 px-6 py-4">
+                <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+                    <div className="hidden sm:block">
+                        <p className="text-xs font-bold text-slate-400">
+                            {isEditing ? 'Editando lead' : 'Novo cadastro'}
+                        </p>
                     </div>
-
-                    {/* Sidebar Column */}
-                    <div className="space-y-8 lg:sticky lg:top-8 self-start">
-                        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl shadow-slate-900/20">
-                            <h3 className="text-xs font-black uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <Check size={16} className="text-emerald-400" /> Confirmar Cadastro
-                            </h3>
-                            <p className="text-slate-400 text-xs font-medium leading-relaxed mb-8">
-                                Ao salvar, o lead será classificado no funil e ficará visível para acompanhamento.
-                            </p>
-
-                            <div className="space-y-3">
-                                <button
-                                    type="submit"
-                                    className="w-full py-5 bg-emerald-500 text-white rounded-[1.5rem] text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
-                                >
-                                    {isEditing ? 'Salvar Alterações' : 'Criar Lead'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/leads')}
-                                    className="w-full py-5 text-slate-400 text-xs font-black uppercase tracking-widest hover:text-white transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-3 ml-auto">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/leads')}
+                            className="px-6 py-3.5 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            form="lead-form"
+                            className="px-8 py-3.5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+                        >
+                            {isEditing ? 'Salvar Alterações' : 'Criar Lead'}
+                        </button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     );
 };

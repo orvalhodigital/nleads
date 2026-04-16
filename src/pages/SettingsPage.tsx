@@ -193,7 +193,7 @@ const SettingsPage: React.FC = () => {
         if (!profile?.email) return;
         setWhatsappStatus('checking');
         try {
-            const response = await fetch('https://webhook.orvalhodigital.com.br/webhook/v-nleads-verifica-conexao-whatsapp', {
+            const response = await fetch('https://webhook.orvalhodigital.com.br/webhook/nleads-veiculos-verifica-conexao-whatsapp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

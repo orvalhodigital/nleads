@@ -163,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
 
     const handleConnectWhatsApp = () => {
         // Open popup for webhook
-        const url = 'https://webhook.orvalhodigital.com.br/webhook/nLeads-criar-instancia';
+        const url = 'https://webhook.orvalhodigital.com.br/webhook/nLeads-veiculos-criar-instancia';
         const width = 600;
         const height = 700;
         const left = (window.screen.width - width) / 2;

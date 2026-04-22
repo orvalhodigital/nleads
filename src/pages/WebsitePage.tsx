@@ -63,12 +63,18 @@ const THEMES = [
 
 const ColorField: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
     <div>
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">{label}</label>
-        <div className="flex items-center gap-2">
-            <input type="color" value={value} onChange={e => onChange(e.target.value)}
-                className="w-9 h-9 rounded-lg border border-slate-200 cursor-pointer p-0.5 shrink-0" />
-            <input value={value} onChange={e => onChange(e.target.value)} placeholder="#000000"
-                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+        <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-2.5">{label}</label>
+        <div className="flex items-center gap-2.5">
+            <div className="relative shrink-0">
+                <input type="color" value={value} onChange={e => onChange(e.target.value)}
+                    className="w-12 h-12 rounded-xl border-2 border-slate-200 cursor-pointer p-0.5 shadow-sm hover:border-slate-300 hover:shadow-md transition-all" />
+                <div className="absolute inset-0.5 rounded-lg pointer-events-none border border-white/40" />
+            </div>
+            <div className="flex-1 flex items-center gap-2 px-3 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl hover:border-slate-300 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
+                <input value={value} onChange={e => onChange(e.target.value)} placeholder="#000000"
+                    className="flex-1 bg-transparent text-sm font-mono text-slate-700 outline-none" />
+                <span className="text-[10px] text-slate-400 font-semibold">HEX</span>
+            </div>
         </div>
     </div>
 );
@@ -378,40 +384,42 @@ const WebsitePage: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
                 {/* Toggle */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Monitor size={17} className="text-slate-400" />
-                        <span className="font-semibold text-slate-800 text-sm">Status do Site</span>
+                    <div className="flex items-center gap-2.5">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-emerald-100' : 'bg-slate-100'}`}>
+                            <Monitor size={18} className={active ? 'text-emerald-600' : 'text-slate-400'} />
+                        </div>
+                        <span className="font-bold text-slate-800 text-sm">Status do Site</span>
                     </div>
                     <button type="button" onClick={handleToggleActive} disabled={saving}
-                        className={`relative inline-flex h-6 w-12 items-center rounded-full overflow-hidden transition-colors shrink-0 ${active ? 'bg-emerald-500' : 'bg-slate-200'} ${saving ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${active ? 'translate-x-7' : 'translate-x-1'}`} />
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full overflow-hidden transition-all shrink-0 shadow-sm ${active ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-slate-300'} ${saving ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:shadow-md'}`}>
+                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-all ${active ? 'translate-x-8' : 'translate-x-1'}`} />
                     </button>
                 </div>
 
-                <div className={`text-xs px-3 py-2 rounded-xl border ${active ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
-                    {active ? 'Seu site está publicado e visível ao público.' : 'Seu site está desativado.'}
+                <div className={`text-xs px-4 py-3 rounded-xl border-2 font-medium ${active ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                    {active ? '🟢 Seu site está publicado e visível ao público.' : '🔴 Seu site está desativado. Ative para exibir ao público.'}
                 </div>
 
                 {/* Slug */}
                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Endereço do Site</label>
+                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-2.5">Endereço do Site</label>
                     <div className="flex items-center gap-2">
-                        <div className="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 gap-1.5 min-w-0">
-                            <span className="text-[11px] text-slate-400 shrink-0">veiculos.nleads.pro/site/</span>
+                        <div className="flex-1 flex items-center bg-white border-2 border-slate-200 hover:border-slate-300 rounded-xl px-4 py-3.5 gap-2 min-w-0 transition-colors focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-500/20">
+                            <span className="text-xs font-semibold text-slate-500 shrink-0">veiculos.nleads.pro/site/</span>
                             <input value={slug} onChange={e => handleSlugChange(e.target.value)}
                                 placeholder="nome-da-loja"
-                                className="flex-1 bg-transparent text-sm font-mono text-slate-700 outline-none min-w-0" />
+                                className="flex-1 bg-transparent text-sm font-bold text-slate-800 outline-none min-w-0 placeholder:text-slate-400" />
                         </div>
                         <button onClick={handleCopy} title="Copiar"
-                            className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
-                            {copied ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
+                            className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all hover:shadow-sm active:scale-95">
+                            {copied ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
                         </button>
                         <a href={previewUrl} target="_blank" rel="noopener noreferrer" title="Visualizar"
-                            className="p-2.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-600 transition-colors">
-                            <Eye size={15} />
+                            className="p-3 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-600 transition-all hover:shadow-sm active:scale-95">
+                            <Eye size={16} />
                         </a>
                     </div>
-                    <div className="mt-1.5 h-4">{slugIndicator()}</div>
+                    <div className="mt-2.5 flex items-center min-h-5">{slugIndicator()}</div>
                 </div>
             </div>
 
@@ -517,28 +525,36 @@ const WebsitePage: React.FC = () => {
 
                 {/* Palettes */}
                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Paletas Rápidas</label>
-                    <div className="flex flex-wrap gap-2">
-                        {PALETTES.map(p => (
-                            <button key={p.id} onClick={() => applyPalette(p)} title={p.name}
-                                className="flex flex-col items-center gap-1 group">
-                                <div className="w-9 h-9 rounded-xl border-2 border-white shadow-md hover:scale-110 transition-transform"
-                                    style={{ background: p.gradient ? `linear-gradient(135deg, ${p.primary}, ${p.secondary})` : p.primary }} />
-                                <span className="text-[9px] text-slate-400 group-hover:text-slate-600">{p.name}</span>
-                            </button>
-                        ))}
+                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-3">Paletas Rápidas</label>
+                    <div className="flex flex-wrap gap-2.5">
+                        {PALETTES.map(p => {
+                            const isSelected = primaryColor === p.primary && secondaryColor === p.secondary && useGradient === p.gradient;
+                            return (
+                                <button key={p.id} onClick={() => applyPalette(p)} title={p.name}
+                                    className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
+                                        isSelected
+                                            ? 'bg-emerald-50 border-2 border-emerald-400 shadow-md'
+                                            : 'hover:bg-slate-50 border-2 border-transparent'
+                                    }`}>
+                                    <div className="w-10 h-10 rounded-lg border-2 border-white shadow-md hover:scale-110 transition-transform"
+                                        style={{ background: p.gradient ? `linear-gradient(135deg, ${p.primary}, ${p.secondary})` : p.primary }} />
+                                    <span className={`text-[9px] font-semibold transition-colors ${isSelected ? 'text-emerald-600' : 'text-slate-500'}`}>{p.name}</span>
+                                    {isSelected && <span className="text-[8px] text-emerald-600 font-bold">✓ ATIVO</span>}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
                 {/* Gradient toggle */}
-                <div className="flex items-center justify-between py-2 border-t border-slate-50">
-                    <div>
-                        <p className="text-sm font-medium text-slate-700">Usar Degradê</p>
-                        <p className="text-xs text-slate-400">Aplica degradê de Cor Principal → Secundária no hero</p>
+                <div className="flex items-center justify-between py-3 px-3 border-t border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-700">Usar Degradê</p>
+                        <p className="text-xs text-slate-500 font-medium">Aplica degradê de Cor Principal → Secundária no hero</p>
                     </div>
                     <button type="button" onClick={() => setUseGradient(v => !v)}
-                        className={`relative inline-flex h-6 w-12 items-center rounded-full overflow-hidden transition-colors shrink-0 ${useGradient ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${useGradient ? 'translate-x-7' : 'translate-x-1'}`} />
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full overflow-hidden transition-all shrink-0 shadow-sm ml-4 ${useGradient ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-slate-300'}`}>
+                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-all ${useGradient ? 'translate-x-8' : 'translate-x-1'}`} />
                     </button>
                 </div>
 
@@ -565,32 +581,40 @@ const WebsitePage: React.FC = () => {
 
                 {/* Palettes para background */}
                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Paletas Rápidas</label>
-                    <div className="flex flex-wrap gap-2">
-                        {PALETTES.map(p => (
-                            <button key={`bg-${p.id}`} onClick={() => {
-                                setBackgroundColor(p.primary);
-                                setBgColor2(p.secondary);
-                                setBgGradient(p.gradient);
-                            }} title={`Fundo - ${p.name}`}
-                                className="flex flex-col items-center gap-1 group">
-                                <div className="w-9 h-9 rounded-xl border-2 border-white shadow-md hover:scale-110 transition-transform"
-                                    style={{ background: p.gradient ? `linear-gradient(135deg, ${p.primary}, ${p.secondary})` : p.primary }} />
-                                <span className="text-[9px] text-slate-400 group-hover:text-slate-600">{p.name}</span>
-                            </button>
-                        ))}
+                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-3">Paletas Rápidas</label>
+                    <div className="flex flex-wrap gap-2.5">
+                        {PALETTES.map(p => {
+                            const isSelected = backgroundColor === p.primary && bgColor2 === p.secondary && bgGradient === p.gradient;
+                            return (
+                                <button key={`bg-${p.id}`} onClick={() => {
+                                    setBackgroundColor(p.primary);
+                                    setBgColor2(p.secondary);
+                                    setBgGradient(p.gradient);
+                                }} title={`Fundo - ${p.name}`}
+                                    className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
+                                        isSelected
+                                            ? 'bg-emerald-50 border-2 border-emerald-400 shadow-md'
+                                            : 'hover:bg-slate-50 border-2 border-transparent'
+                                    }`}>
+                                    <div className="w-10 h-10 rounded-lg border-2 border-white shadow-md hover:scale-110 transition-transform"
+                                        style={{ background: p.gradient ? `linear-gradient(135deg, ${p.primary}, ${p.secondary})` : p.primary }} />
+                                    <span className={`text-[9px] font-semibold transition-colors ${isSelected ? 'text-emerald-600' : 'text-slate-500'}`}>{p.name}</span>
+                                    {isSelected && <span className="text-[8px] text-emerald-600 font-bold">✓ ATIVO</span>}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
                 {/* Gradient toggle */}
-                <div className="flex items-center justify-between py-2 border-t border-slate-50">
-                    <div>
-                        <p className="text-sm font-medium text-slate-700">Usar Degradê</p>
-                        <p className="text-xs text-slate-400">Aplica degradê na cor de fundo</p>
+                <div className="flex items-center justify-between py-3 px-3 border-t border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-700">Usar Degradê</p>
+                        <p className="text-xs text-slate-500 font-medium">Aplica degradê na cor de fundo</p>
                     </div>
                     <button type="button" onClick={() => setBgGradient(v => !v)}
-                        className={`relative inline-flex h-6 w-12 items-center rounded-full overflow-hidden transition-colors shrink-0 ${bgGradient ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${bgGradient ? 'translate-x-7' : 'translate-x-1'}`} />
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full overflow-hidden transition-all shrink-0 shadow-sm ml-4 ${bgGradient ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-slate-300'}`}>
+                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-all ${bgGradient ? 'translate-x-8' : 'translate-x-1'}`} />
                     </button>
                 </div>
 
@@ -680,37 +704,37 @@ const WebsitePage: React.FC = () => {
                 </div>
 
                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-1.5">
-                        <MapPin size={10} /> Cidade
+                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                        <MapPin size={11} /> Cidade
                     </label>
                     <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ex: São Paulo, SP"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                        className="w-full px-4 py-3 bg-white rounded-xl border-2 border-slate-200 text-sm font-medium text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
                 </div>
 
                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-1.5">
-                        <Type size={10} /> Título do Hero
+                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                        <Type size={11} /> Título do Hero
                     </label>
                     <input value={heroText} onChange={e => setHeroText(e.target.value)} placeholder="Ex: Os melhores veículos da região"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                        className="w-full px-4 py-3 bg-white rounded-xl border-2 border-slate-200 text-sm font-medium text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
                 </div>
 
                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-1.5">
-                        <Type size={10} /> Subtítulo do Hero
+                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                        <Type size={11} /> Subtítulo do Hero
                     </label>
                     <input value={heroSubtitle} onChange={e => setHeroSubtitle(e.target.value)} placeholder="Ex: Financiamento facilitado, entrada zero"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                        className="w-full px-4 py-3 bg-white rounded-xl border-2 border-slate-200 text-sm font-medium text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
                 </div>
 
                 <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-1.5">
-                        <Phone size={10} /> WhatsApp — CTA Principal (com DDD)
+                    <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                        <Phone size={11} /> WhatsApp — CTA Principal (com DDD)
                     </label>
                     <input value={whatsapp} onChange={e => setWhatsapp(e.target.value.replace(/\D/g, ''))}
                         placeholder="Ex: 11999998888" maxLength={13}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
-                    <p className="text-[10px] text-slate-400 mt-1">Todos os botões do site abrem conversa neste número.</p>
+                        className="w-full px-4 py-3 bg-white rounded-xl border-2 border-slate-200 text-sm font-medium text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+                    <p className="text-[10px] text-slate-500 font-medium mt-1.5">Todos os botões do site abrem conversa neste número.</p>
                 </div>
             </div>
 
@@ -728,7 +752,7 @@ const WebsitePage: React.FC = () => {
                 </div>
                 <input value={googleMaps} onChange={e => setGoogleMaps(e.target.value)}
                     placeholder="https://www.google.com/maps/embed?pb=..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                    className="w-full px-4 py-3 bg-white rounded-xl border-2 border-slate-200 text-sm font-medium text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
                 {googleMaps && (
                     <div className="mt-3 rounded-xl overflow-hidden border border-slate-200 h-40">
                         <iframe src={googleMaps} width="100%" height="100%" className="border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
@@ -800,31 +824,31 @@ const WebsitePage: React.FC = () => {
                         <div>
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Domínio personalizado</label>
                             {customDomain ? (
-                                <div className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
-                                    <p className="text-xs text-emerald-700"><strong>✓ {customDomain}</strong></p>
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border-2 border-emerald-200">
+                                    <p className="text-sm font-bold text-emerald-700"><span className="text-lg">✓</span> {customDomain}</p>
                                     <button
                                         onClick={handleRemoveDomain}
                                         disabled={saving}
-                                        className="text-[10px] px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 hover:bg-red-500/20 font-semibold transition-colors disabled:opacity-50"
+                                        className="text-xs px-4 py-2 rounded-lg bg-red-500 text-white font-bold hover:bg-red-600 transition-all disabled:opacity-60 active:scale-95 shadow-sm hover:shadow-md"
                                         title="Remover domínio"
                                     >
                                         {saving ? 'Removendo...' : 'Remover'}
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex gap-2">
+                                <div className="flex gap-2.5">
                                     <input value={customDomainInput} onChange={e => setCustomDomainInput(e.target.value.toLowerCase())}
                                         placeholder="Ex: estoque.minhaloja.com.br"
-                                        className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
+                                        className="flex-1 px-4 py-3 bg-white rounded-xl border-2 border-slate-200 text-sm font-medium text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
                                     <button onClick={handleRegisterDomain} disabled={domainRegisterStatus === 'registering'}
-                                        className={`px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                                        className={`px-5 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shrink-0 ${
                                             domainRegisterStatus === 'registering'
                                                 ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                 : domainRegisterStatus === 'registered'
-                                                ? 'bg-emerald-500 text-white'
+                                                ? 'bg-emerald-500 text-white shadow-md'
                                                 : domainRegisterStatus === 'error'
-                                                ? 'bg-red-500 text-white hover:bg-red-600'
-                                                : 'bg-slate-800 text-white hover:bg-slate-900'
+                                                ? 'bg-red-500 text-white hover:bg-red-600 shadow-sm'
+                                                : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
                                         }`}>
                                         {domainRegisterStatus === 'registering' ? (
                                             <>
@@ -833,7 +857,7 @@ const WebsitePage: React.FC = () => {
                                             </>
                                         ) : domainRegisterStatus === 'registered' ? (
                                             <>
-                                                <Check size={14} />
+                                                <Check size={16} />
                                                 Registrado
                                             </>
                                         ) : (
@@ -850,8 +874,29 @@ const WebsitePage: React.FC = () => {
             {/* Save */}
             <div className="flex justify-end pb-8">
                 <button onClick={handleSave} disabled={saving || slugStatus === 'taken'}
-                    className="px-7 py-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 disabled:opacity-50 transition-colors shadow-sm">
-                    {saving ? 'Salvando...' : 'Salvar Configurações'}
+                    className={`px-8 py-3.5 rounded-xl text-white font-bold text-sm flex items-center gap-2.5 transition-all shadow-md ${
+                        slugStatus === 'taken'
+                            ? 'bg-slate-300 cursor-not-allowed text-slate-600'
+                            : saving
+                            ? 'bg-slate-400 cursor-not-allowed'
+                            : 'bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg active:scale-95'
+                    }`}>
+                    {saving ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Salvando...
+                        </>
+                    ) : slugStatus === 'taken' ? (
+                        <>
+                            <AlertCircle size={16} />
+                            Slug indisponível
+                        </>
+                    ) : (
+                        <>
+                            <Check size={16} />
+                            Salvar Configurações
+                        </>
+                    )}
                 </button>
             </div>
         </div>

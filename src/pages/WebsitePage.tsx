@@ -17,6 +17,18 @@ const generateSlug = (name: string): string =>
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
+const sanitizeData = (data: any): Record<string, any> => {
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(data)) {
+        if (value === null || value === undefined) {
+            cleaned[key] = null;
+        } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+            cleaned[key] = value;
+        }
+    }
+    return cleaned;
+};
+
 // ─── Color Palettes ──────────────────────────────────────────────────────────
 
 const PALETTES = [
@@ -207,7 +219,7 @@ const WebsitePage: React.FC = () => {
 
         setSaving(true);
         try {
-            await profileService.updateProfile({
+            const updateData = sanitizeData({
                 website_active: overrideActive ?? active,
                 website_theme: theme,
                 website_primary_color: primaryColor,
@@ -227,6 +239,7 @@ const WebsitePage: React.FC = () => {
                 website_google_maps: googleMaps,
                 website_slug: slug,
             });
+            await profileService.updateProfile(updateData);
             await refreshProfile();
             showToast('success', 'Configurações do website salvas!');
             return true;

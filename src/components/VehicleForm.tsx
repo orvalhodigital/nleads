@@ -2,15 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    X, Upload, Loader2, Check, Plus, Car, DollarSign, Calendar, Gauge, Zap,
-    ChevronLeft, ArrowLeft, Search, AlertCircle
+    X, Upload, Loader2, Check, Plus, DollarSign, Calendar, Gauge, Zap,
+    ArrowLeft, Search, AlertCircle, Hash, Shield, ImagePlus, FileText
 } from 'lucide-react';
-import { Vehicle, VehicleType, TransmissionType, EngineType } from '../types';
+import { Vehicle, VehicleType, TransmissionType, EngineType, FuelType } from '../types';
+import { Switch } from './ui/switch';
 import { supabase } from '../lib/supabaseClient';
 import { resizeImage } from '../utils/imageProcessor';
 import { carDatabase } from '../data/carDb';
 import AutocompleteInput from './ui/AutocompleteInput';
-import { formatCurrency, parseCurrency } from '../utils/formatters';
+import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
 
 
 interface VehicleFormProps {
@@ -22,6 +23,8 @@ interface VehicleFormProps {
 const VEHICLE_TYPES: VehicleType[] = ['SUV', 'Sedan', 'Hatch', 'Picape', 'Esportivo', 'Conversível', 'Van'];
 const TRANSMISSION_TYPES: TransmissionType[] = ['Manual', 'Automático'];
 const ENGINE_TYPES: EngineType[] = ['1.0', '1.4', '1.6', '2.0+', 'Elétrico', 'Híbrido'];
+const FUEL_TYPES: FuelType[] = ['Gasolina', 'Álcool', 'Flex', 'Diesel', 'GNV'];
+const DOOR_OPTIONS: (2 | 4)[] = [2, 4];
 const COMMON_OPTIONS = [
     'Ar Condicionado', 'Direção Hidráulica', 'Vidros Elétricos', 'Travas Elétricas',
     'Alarme', 'Airbag', 'Freios ABS', 'Som Multimídia', 'Rodas de Liga Leve',
@@ -29,6 +32,11 @@ const COMMON_OPTIONS = [
     'Piloto Automático', 'Computador de Bordo', 'Tração 4x4', 'Farol de Neblina',
     'Controle de Estabilidade', 'Controle de Tração', 'Chave Presencial'
 ];
+const CATEGORIZED_OPTIONS = [
+    { label: 'Segurança', color: 'bg-red-500', items: ['Alarme', 'Airbag', 'Freios ABS', 'Câmera de Ré', 'Sensor de Estacionamento', 'Controle de Estabilidade', 'Controle de Tração'] },
+    { label: 'Conforto', color: 'bg-amber-500', items: ['Ar Condicionado', 'Direção Hidráulica', 'Vidros Elétricos', 'Travas Elétricas', 'Som Multimídia', 'Bancos de Couro', 'Teto Solar', 'Piloto Automático', 'Computador de Bordo', 'Chave Presencial'] },
+    { label: 'Exterior', color: 'bg-sky-500', items: ['Rodas de Liga Leve', 'Tração 4x4', 'Farol de Neblina'] }
+] as const;
 
 const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
 
@@ -93,16 +101,19 @@ function normalizeVehicleType(segmento: string, subSegmento: string): VehicleTyp
 const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditing = false }) => {
     const navigate = useNavigate();
     const [uploading, setUploading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [customOption, setCustomOption] = useState('');
     const [lookupLoading, setLookupLoading] = useState(false);
     const [plateError, setPlateError] = useState<string | null>(null);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [galleryUploading, setGalleryUploading] = useState(false);
 
     const [formData, setFormData] = useState<Omit<Vehicle, 'id' | 'status'>>({
-        brand: '', model: '', year: new Date().getFullYear(), modelYear: new Date().getFullYear(), plate: '', price: 0, type: 'Sedan',
-        transmission: 'Automático', engine: '1.6', mileage: 0, color: '',
+        brand: '', model: '', year: new Date().getFullYear(), modelYear: new Date().getFullYear(), plate: '', chassis: '', fipePrice: 0, price: 0, type: 'Sedan',
+        transmission: 'Automático', engine: '1.6', fuelType: 'Flex', doors: 4, mileage: 0, color: '',
         isSingleOwner: false, isServiceHistoryComplete: false, isIpvaPaid: true, hasWarranty: false,
+        hasSpareKey: false, hasOwnerManual: false,
         optionals: [], imageUrl: '', galleryImages: []
     });
 
@@ -151,6 +162,16 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             const engine = normalizeEngine(extra.combustivel || '', extra.cilindradas || '0');
             const type = normalizeVehicleType(data.segmento || extra.segmento || '', data.sub_segmento || extra.sub_segmento || '');
 
+            let fipePrice = 0;
+            if (data.fipe && data.fipe.dados && data.fipe.dados.length > 0) {
+                const fipeItem = data.fipe.dados[0];
+                if (fipeItem && fipeItem.texto_valor) {
+                    const rawString = fipeItem.texto_valor.replace('R$', '').trim();
+                    const numString = rawString.replace(/\./g, '').replace(',', '.');
+                    fipePrice = parseFloat(numString);
+                }
+            }
+
             setFormData(prev => ({
                 ...prev,
                 brand,
@@ -161,6 +182,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 transmission,
                 engine,
                 type,
+                fipePrice: fipePrice > 0 ? fipePrice : prev.fipePrice,
             }));
         } catch (err: any) {
             setPlateError('Não foi possível consultar a placa. Verifique e tente novamente.');
@@ -181,7 +203,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             if (!e.target.files || e.target.files.length === 0) return;
             const file = e.target.files[0];
             setUploading(true);
-            const resizedBlob = await resizeImage(file, 800, 600); // Standard size for WebP
+            const resizedBlob = await resizeImage(file, 1080, 1350); // Standard size for 4:5 aspect ratio
             const resizedFile = new File([resizedBlob], "image.webp", { type: 'image/webp' });
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
 
@@ -215,7 +237,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             const urls: string[] = [];
             for (const file of files) {
                 // Gallery: 600px wide, proportional height (max 450px)
-                const resizedBlob = await resizeImage(file, 600, 450, 0.82);
+                const resizedBlob = await resizeImage(file, 1080, 1350, 0.85);
                 const resizedFile = new File([resizedBlob], 'gallery.webp', { type: 'image/webp' });
                 const fileName = `gallery/${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
 
@@ -263,18 +285,47 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (isEditing && initialData) {
-            onSave({ ...initialData, ...formData });
-        } else {
-            onSave({ ...formData, status: 'available' });
+    const getFieldClassName = (field: string, base: string) => `${base} ${errors[field] ? 'border-red-300 bg-red-50/60 focus:ring-red-500/10' : ''}`;
+
+    const validateForm = () => {
+        const nextErrors: Record<string, string> = {};
+
+        if (!formData.brand.trim()) nextErrors.brand = 'Informe a marca.';
+        if (!formData.model.trim()) nextErrors.model = 'Informe o modelo.';
+        if (!formData.year) nextErrors.year = 'Informe o ano de fabricação.';
+        if (!formData.modelYear) nextErrors.modelYear = 'Informe o ano modelo.';
+        if (formData.modelYear && formData.modelYear < formData.year) nextErrors.modelYear = 'O ano modelo não pode ser menor que o ano de fabricação.';
+        if (!formData.price) nextErrors.price = 'Informe o preço de venda.';
+        if (formData.mileage < 0) nextErrors.mileage = 'A quilometragem não pode ser negativa.';
+        if (formData.chassis && formData.chassis.replace(/\s/g, '').length > 0 && formData.chassis.replace(/\s/g, '').length < 17) {
+            nextErrors.chassis = 'O chassi deve ter 17 caracteres ou ficar vazio.';
         }
-        navigate('/inventory');
+
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validateForm()) {
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            if (isEditing && initialData) {
+                await Promise.resolve(onSave({ ...initialData, ...formData }));
+            } else {
+                await Promise.resolve(onSave({ ...formData, status: 'available' }));
+            }
+            navigate('/inventory');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
-        <div className="max-w-2xl mx-auto w-full pb-32 animate-fadeUp">
+        <div className="max-w-[1600px] mx-auto w-full pb-32 animate-fadeUp">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-6">
                     <button
@@ -305,7 +356,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             <section className="space-y-6">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Informações Básicas</h3>
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Informações Básicas</h3>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -316,9 +367,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                             value={formData.brand}
                                             onChangeValue={(val) => setFormData({ ...formData, brand: val, model: '' })}
                                             suggestions={Object.keys(carDatabase)}
-                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm"
+                                            className={getFieldClassName('brand', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm')}
                                             placeholder="Ex: Chevrolet"
                                         />
+                                        {errors.brand && <p className="text-[10px] font-bold text-red-500 px-1">{errors.brand}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Modelo</label>
@@ -327,13 +379,14 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                             value={formData.model}
                                             onChangeValue={(val) => setFormData(prev => ({ ...prev, model: val }))}
                                             suggestions={carDatabase[Object.keys(carDatabase).find(k => k.toLowerCase() === formData.brand.toLowerCase()) || ''] || []}
-                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm"
+                                            className={getFieldClassName('model', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm')}
                                             placeholder="Ex: Onix"
                                         />
+                                        {errors.model && <p className="text-[10px] font-bold text-red-500 px-1">{errors.model}</p>}
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Placa</label>
                                         <div className="flex gap-2">
@@ -367,18 +420,25 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                         )}
                                     </div>
                                     <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Chassi</label>
+                                        <input type="text" value={formData.chassis || ''} onChange={e => setFormData({ ...formData, chassis: e.target.value.toUpperCase() })} maxLength={17} placeholder="Opcional" className={getFieldClassName('chassis', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm uppercase')} />
+                                        {errors.chassis && <p className="text-[10px] font-bold text-red-500 px-1">{errors.chassis}</p>}
+                                    </div>
+                                    <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Fab.</label>
-                                        <input type="number" required value={formData.year} onChange={e => setFormData({ ...formData, year: parseInt(e.target.value) })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm" />
+                                        <input type="number" required value={formData.year} onChange={e => setFormData({ ...formData, year: parseInt(e.target.value) })} className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
+                                        {errors.year && <p className="text-[10px] font-bold text-red-500 px-1">{errors.year}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Modelo</label>
-                                        <input type="number" required value={formData.modelYear || formData.year} onChange={e => setFormData({ ...formData, modelYear: parseInt(e.target.value) })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm" />
+                                        <input type="number" required value={formData.modelYear || formData.year} onChange={e => setFormData({ ...formData, modelYear: parseInt(e.target.value) })} className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
+                                        {errors.modelYear && <p className="text-[10px] font-bold text-red-500 px-1">{errors.modelYear}</p>}
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço Sugerido</label>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço de Venda</label>
                                         <div className="relative">
                                             <span className="absolute left-4 top-1/2 -translate-y-1/2 mt-[1px] text-emerald-700 font-bold text-sm">R$</span>
                                             <input
@@ -386,19 +446,35 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                                 required
                                                 value={formatCurrency(formData.price)}
                                                 onChange={e => setFormData({ ...formData, price: parseCurrency(e.target.value) })}
-                                                className="w-full p-4 pl-12 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl outline-none font-bold text-sm"
+                                                className={getFieldClassName('price', 'w-full p-4 pl-12 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl outline-none font-bold text-sm')}
                                             />
                                         </div>
+                                        {errors.price && <p className="text-[10px] font-bold text-red-500 px-1">{errors.price}</p>}
+                                        <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest px-1">Preço de Venda</p>
                                     </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço FIPE</label>
+                                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl h-[54px] flex items-center">
+                                            {formData.fipePrice ? (
+                                                <p className="text-sm font-bold text-blue-700">R$ {formatCurrency(formData.fipePrice)}</p>
+                                            ) : (
+                                                <p className="text-sm font-medium text-blue-300 italic">Consulte a placa</p>
+                                            )}
+                                        </div>
+                                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest px-1">Tabela FIPE</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">KM Rodados</label>
                                         <input
-                                            type="number"
+                                            type="text"
                                             required
-                                            value={formData.mileage}
-                                            onChange={e => setFormData({ ...formData, mileage: parseInt(e.target.value) })}
-                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
+                                            value={formatKM(formData.mileage)}
+                                            onChange={e => setFormData({ ...formData, mileage: parseKM(e.target.value) })}
+                                            className={getFieldClassName('mileage', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')}
                                         />
+                                        {errors.mileage && <p className="text-[10px] font-bold text-red-500 px-1">{errors.mileage}</p>}
                                     </div>
                                 </div>
                             </section>
@@ -406,7 +482,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             <section className="space-y-6">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Especificações Técnicas</h3>
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações Técnicas</h3>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -426,6 +502,29 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Motor</label>
                                         <select value={formData.engine} onChange={e => setFormData({ ...formData, engine: e.target.value as EngineType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
                                             {ENGINE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Combustível</label>
+                                        <select
+                                            value={formData.fuelType || 'Flex'}
+                                            onChange={e => setFormData({ ...formData, fuelType: e.target.value as FuelType })}
+                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer"
+                                        >
+                                            {FUEL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Portas</label>
+                                        <select
+                                            value={formData.doors || 4}
+                                            onChange={e => setFormData({ ...formData, doors: parseInt(e.target.value) === 2 ? 2 : 4 })}
+                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer"
+                                        >
+                                            {DOOR_OPTIONS.map(d => <option key={d} value={d}>{d} Portas</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -454,34 +553,91 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
                             <section className="space-y-6">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Opcionais do Veículo</h3>
+                                    <div className="w-1.5 h-4 bg-violet-500 rounded-full" />
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Documentação</h3>
                                 </div>
 
-                                <div className="flex flex-wrap gap-2">
-                                    {COMMON_OPTIONS.map(opt => {
-                                        const isSelected = formData.optionals.includes(opt);
-                                        return (
-                                            <button
-                                                type="button"
-                                                key={opt}
-                                                onClick={() => {
-                                                    setFormData(prev => {
-                                                        const newOptionals = isSelected
-                                                            ? prev.optionals.filter(o => o !== opt)
-                                                            : [...prev.optionals, opt];
-                                                        return { ...prev, optionals: newOptionals };
-                                                    });
-                                                }}
-                                                className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all border ${isSelected
-                                                    ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                                                    : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                                                    }`}
-                                            >
-                                                {opt}
-                                            </button>
-                                        );
-                                    })}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasSpareKey ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Chave Reserva</p>
+                                            <p className={`text-sm font-bold mt-0.5 ${formData.hasSpareKey ? 'text-violet-700' : 'text-slate-400'}`}>
+                                                {formData.hasSpareKey ? 'Sim' : 'Não'}
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={!!formData.hasSpareKey}
+                                            onCheckedChange={(val) => setFormData(prev => ({ ...prev, hasSpareKey: val }))}
+                                        />
+                                    </div>
+
+                                    <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasOwnerManual ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Manual do Proprietário</p>
+                                            <p className={`text-sm font-bold mt-0.5 ${formData.hasOwnerManual ? 'text-violet-700' : 'text-slate-400'}`}>
+                                                {formData.hasOwnerManual ? 'Sim' : 'Não'}
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={!!formData.hasOwnerManual}
+                                            onCheckedChange={(val) => setFormData(prev => ({ ...prev, hasOwnerManual: val }))}
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50">
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Final da Placa</p>
+                                            <p className="text-2xl font-black text-slate-700 mt-0.5 tracking-widest">
+                                                {formData.plate?.replace(/[-\s]/g, '').slice(-1).toUpperCase() || '—'}
+                                            </p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                                            <Hash size={18} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais do Veículo</h3>
+                                </div>
+
+                                <div className="space-y-5">
+                                    {CATEGORIZED_OPTIONS.map(category => (
+                                        <div key={category.label}>
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <div className={`w-1 h-3 ${category.color} rounded-full`} />
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{category.label}</p>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {category.items.map(opt => {
+                                                    const isSelected = formData.optionals.includes(opt);
+                                                    return (
+                                                        <button
+                                                            type="button"
+                                                            key={opt}
+                                                            onClick={() => {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    optionals: isSelected
+                                                                        ? prev.optionals.filter(o => o !== opt)
+                                                                        : [...prev.optionals, opt]
+                                                                }));
+                                                            }}
+                                                            className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all border ${isSelected
+                                                                ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                                                                : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                                                            }`}
+                                                        >
+                                                            {opt}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <div className="flex gap-2">
@@ -528,7 +684,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    Mídia do Veículo
+                                    <ImagePlus size={13} /> Mídia do Veículo
                                 </h3>
                             </div>
 
@@ -536,7 +692,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 {/* Foto Principal */}
                                 <div className="space-y-4">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
-                                    <div className="aspect-[4/3] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                                    <div className="aspect-[4/5] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
                                         {formData.imageUrl ? (
                                             <>
                                                 <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -566,7 +722,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                         </div>
                                         <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
                                     </label>
-                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">800×600px · WebP</p>
+                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Padrão: 1080×1350px (4:5) · WebP</p>
                                 </div>
 
                                 {/* Galeria */}
@@ -579,7 +735,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     {(formData.galleryImages?.length ?? 0) > 0 && (
                                         <div className="grid grid-cols-3 gap-2">
                                             {formData.galleryImages!.map((url, i) => (
-                                                <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
+                                                <div key={i} className="relative group aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
                                                     <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
                                                     <button
                                                         type="button"
@@ -613,7 +769,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                             />
                                         </label>
                                     )}
-                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 600px · WebP</p>
+                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 1080×1350px · WebP</p>
                                 </div>
                             </div>
                         </div>
@@ -621,7 +777,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
             {/* Sticky Bottom Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-700/50 px-6 py-4">
-                <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+                <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
                     <div className="hidden sm:block">
                         <p className="text-xs font-bold text-slate-400">
                             {isEditing ? 'Editando veículo' : 'Novo cadastro'}
@@ -638,10 +794,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         <button
                             type="submit"
                             form="vehicle-form"
-                            disabled={uploading}
+                            disabled={uploading || galleryUploading || submitting}
                             className="px-8 py-3.5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
                         >
-                            {isEditing ? 'Salvar Alterações' : 'Publicar no Estoque'}
+                            {submitting ? <span className="flex items-center gap-2"><Loader2 size={14} className="animate-spin" /> Salvando...</span> : isEditing ? 'Salvar Alterações' : 'Publicar no Estoque'}
                         </button>
                     </div>
                 </div>

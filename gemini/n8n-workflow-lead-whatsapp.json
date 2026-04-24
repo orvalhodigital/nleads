@@ -1,0 +1,308 @@
+{
+  "name": "Lead WhatsApp via Evolution API",
+  "description": "Recebe dados do formulário, trata informações e envia mensagem WhatsApp via Evolution API",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "lead-webhook",
+        "responseMode": "onReceived",
+        "httpMethod": "POST",
+        "options": {}
+      },
+      "id": "9f8c9b1a-2d3e-4f5g-6h7i-8j9k0l1m2n3o",
+      "name": "Webhook - Formulário",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "lead-webhook"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "id",
+              "type": "string",
+              "value": "={{ $uuid() }}"
+            },
+            {
+              "name": "nomeCompleto",
+              "type": "string",
+              "value": "={{ $json.name || 'Não informado' }}"
+            },
+            {
+              "name": "email",
+              "type": "string",
+              "value": "={{ $json.email || 'Não informado' }}"
+            },
+            {
+              "name": "telefone",
+              "type": "string",
+              "value": "={{ $json.phone || 'Não informado' }}"
+            },
+            {
+              "name": "assunto",
+              "type": "string",
+              "value": "={{ $json.subject || 'Consulta de Clientes' }}"
+            },
+            {
+              "name": "mensagem",
+              "type": "string",
+              "value": "={{ $json.message || '' }}"
+            },
+            {
+              "name": "empresaUsuario",
+              "type": "string",
+              "value": "={{ $json.userEmail || 'Não informado' }}"
+            },
+            {
+              "name": "instanciaEvolution",
+              "type": "string",
+              "value": "={{ $json.userEmail }}"
+            },
+            {
+              "name": "dataRecebimento",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "name": "numeroFormatado",
+              "type": "string",
+              "value": "={{ ($json.phone || '').replaceAll(/[^0-9]/g, '') }}"
+            }
+          ]
+        }
+      },
+      "id": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+      "name": "Processar Dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [550, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.numeroFormatado }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "2b3c4d5e-6f7g-8h9i-0j1k-2l3m4n5o6p7q",
+      "name": "Validar Telefone",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://localhost:3000/message/sendText/' + $json.instanciaEvolution }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "bearerToken",
+        "sendBody": true,
+        "contentType": "application/json",
+        "body": "={\n  \"number\": \"{{ $json.numeroFormatado }}\",\n  \"text\": \"Olá {{ $json.nomeCompleto }},\\n\\nRecebemos seu contato com sucesso!\\n\\n📋 *Detalhes da sua solicitação:*\\nNome: {{ $json.nomeCompleto }}\\nEmail: {{ $json.email }}\\nAssunto: {{ $json.assunto }}\\n\\nEm breve um de nossos especialistas entrará em contato.\\n\\nAtenciosamente,\\nEquipe {{ $json.empresaUsuario }}\"\n}"
+      },
+      "id": "3c4d5e6f-7g8h-9i0j-1k2l-3m4n5o6p7q8r",
+      "name": "Enviar WhatsApp via Evolution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 150],
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://localhost:3000/message/sendText/' + $json.instanciaEvolution }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "bearerToken",
+        "sendBody": true,
+        "contentType": "application/json",
+        "body": "={\n  \"number\": \"{{ $json.numeroFormatado }}\",\n  \"text\": \"❌ Desculpe, o número de telefone fornecido é inválido. Por favor, verifique e tente novamente.\"\n}"
+      },
+      "id": "4d5e6f7g-8h9i-0j1k-2l3m-4n5o6p7q8r9s",
+      "name": "Erro - Telefone Inválido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 450],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "sucesso",
+              "type": "boolean",
+              "value": "=true"
+            },
+            {
+              "name": "idLead",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "nomeCompleto",
+              "type": "string",
+              "value": "={{ $json.nomeCompleto }}"
+            },
+            {
+              "name": "email",
+              "type": "string",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "telefone",
+              "type": "string",
+              "value": "={{ $json.numeroFormatado }}"
+            },
+            {
+              "name": "dataProcessamento",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "name": "instancia",
+              "type": "string",
+              "value": "={{ $json.instanciaEvolution }}"
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "value": "=Lead enviado para WhatsApp com sucesso"
+            }
+          ]
+        }
+      },
+      "id": "5e6f7g8h-9i0j-1k2l-3m4n-5o6p7q8r9s0t",
+      "name": "Resposta Sucesso",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1300, 150]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "sucesso",
+              "type": "boolean",
+              "value": "=false"
+            },
+            {
+              "name": "idLead",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "nomeCompleto",
+              "type": "string",
+              "value": "={{ $json.nomeCompleto }}"
+            },
+            {
+              "name": "erro",
+              "type": "string",
+              "value": "=Telefone fornecido é inválido"
+            },
+            {
+              "name": "dataProcessamento",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "value": "=Erro na validação"
+            }
+          ]
+        }
+      },
+      "id": "6f7g8h9i-0j1k-2l3m-4n5o-6p7q8r9s0t1u",
+      "name": "Resposta Erro",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1300, 450]
+    }
+  ],
+  "connections": {
+    "Webhook - Formulário": {
+      "main": [
+        [
+          {
+            "node": "Processar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Dados": {
+      "main": [
+        [
+          {
+            "node": "Validar Telefone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Telefone": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp via Evolution",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Erro - Telefone Inválido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp via Evolution": {
+      "main": [
+        [
+          {
+            "node": "Resposta Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Erro - Telefone Inválido": {
+      "main": [
+        [
+          {
+            "node": "Resposta Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

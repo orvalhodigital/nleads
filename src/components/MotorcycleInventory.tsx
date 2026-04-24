@@ -4,19 +4,21 @@ import {
     Plus, Search, Filter, Gauge, Calendar, DollarSign,
     Edit3, Trash2, ChevronLeft, Upload, Loader2, X, Check,
     UserCheck, Users, Tag, Send, LayoutGrid, List,
-    Bike, Hash, Palette, Zap
+    Bike, Hash, Palette, Zap, AlertCircle, TrendingUp, TrendingDown, Minus, Shield, ImagePlus, FileText
 } from 'lucide-react';
-import { Lead, LeadPhase, SaleDetails, LeadTemperature, Motorcycle, MotorcycleCategory } from '../types';
+import { Lead, LeadPhase, SaleDetails, LeadTemperature, Motorcycle, MotorcycleCategory, MotoStartType, MotoFuelSystem, MotoCooling, MotoBrakeType } from '../types';
+import { Switch } from './ui/switch';
 import { motorcycleService } from '../services/motorcycleService';
 import { supabase } from '../lib/supabaseClient';
 import { resizeImage } from '../utils/imageProcessor';
 import { CustomDatePicker } from './ui/CustomDatePicker';
-import { formatCurrency, parseCurrency } from '../utils/formatters';
+import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
 import { motoDatabase } from '../data/motoDb';
 import AutocompleteInput from './ui/AutocompleteInput';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
+const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
 const MOTO_CATEGORIES: MotorcycleCategory[] = ['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'];
 const MOTO_ENGINES = ['110cc', '125cc', '150cc', '160cc', '190cc', '250cc', '300cc', '400cc', '600cc', '750cc', '1000cc', '1200cc+'];
 const MOTO_BRANDS = ['Honda', 'Yamaha', 'Kawasaki', 'Suzuki', 'BMW', 'Ducati', 'Harley-Davidson', 'KTM', 'Royal Enfield', 'Triumph', 'Dafra', 'Shineray', 'Haojue', 'Traxx'];
@@ -25,15 +27,25 @@ const COMMON_OPTIONS = [
     'Baú', 'Alforje', 'Mala de Tanque', 'Protetor de Motor', 'Slider', 'Manoplas Aquecidas',
     'Painel Digital', 'Freio ABS', 'Controle de Tração', 'Airbag', 'BSS',
     'LED Full', 'GPS Integrado', 'Bluetooth', 'USB', 'Alarme',
-    'Windshelf', 'Protetor de Carenagem', 'Guidão Regulável'
+    'Windshelf', 'Protetor de Carenagem', 'Guidão Regulável',
+    'Amortecedor de Direção', 'Quick Shifter', 'Escapamento Esportivo',
+    'Protetor de Mão', 'Modos de Pilotagem'
 ];
+
+const MOTO_START_TYPES: MotoStartType[] = ['Elétrica', 'Pedal', 'Ambos'];
+const MOTO_FUEL_SYSTEMS: MotoFuelSystem[] = ['Injeção Eletrônica', 'Carburador'];
+const MOTO_COOLINGS: MotoCooling[] = ['Ar', 'Líquida'];
+const MOTO_BRAKE_TYPES: MotoBrakeType[] = ['Disco', 'Tambor', 'ABS', 'CBS', 'Disco + ABS', 'Disco + CBS'];
 
 const EMPTY_MOTO: Omit<Motorcycle, 'id'> = {
     brand: 'Honda', model: '', year: new Date().getFullYear(),
-    modelYear: new Date().getFullYear(), plate: '', price: 0,
+    modelYear: new Date().getFullYear(), plate: '', chassis: '', fipePrice: 0, price: 0,
     category: 'Naked', engine: '150cc', mileage: 0, color: '',
     isSingleOwner: false, hasWarranty: false, isIpvaPaid: false,
-    optionals: [], imageUrl: '', status: 'available',
+    optionals: [], imageUrl: '', galleryImages: [],
+    startType: 'Elétrica', fuelSystem: 'Injeção Eletrônica', cooling: 'Ar', brakeType: 'Disco',
+    hasSpareKey: false, hasOwnerManual: false,
+    status: 'available',
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -63,6 +75,8 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [filterPriceMax, setFilterPriceMax] = useState('');
     const [filterCategory, setFilterCategory] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [galleryUploading, setGalleryUploading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [isSellModalOpen, setIsSellModalOpen] = useState(false);
     const [form, setForm] = useState<Omit<Motorcycle, 'id'>>(EMPTY_MOTO);
     const [walkInName, setWalkInName] = useState('');
@@ -74,6 +88,9 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [msgTemplate, setMsgTemplate] = useState('');
     const [msgTargets, setMsgTargets] = useState<Lead[]>([]);
+    const [lookupLoading, setLookupLoading] = useState(false);
+    const [plateError, setPlateError] = useState<string | null>(null);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     // ── Filtro de listagem ──────────────────────────────────────────────────────
 
@@ -122,9 +139,60 @@ const MotorcycleInventory: React.FC<Props> = ({
         }
     };
 
+    const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const currentCount = form.galleryImages?.length || 0;
+        const remaining = 6 - currentCount;
+        if (remaining <= 0) return;
+        const files = Array.from(e.target.files as FileList).slice(0, remaining) as File[];
+        setGalleryUploading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const urls: string[] = [];
+            for (const file of files) {
+                const resized = await resizeImage(file, 600, 450, 0.82);
+                const asFile = new File([resized], 'gallery.webp', { type: 'image/webp' });
+                const url = await motorcycleService.uploadGalleryImage(asFile, user!.id);
+                urls.push(url);
+            }
+            setForm(prev => ({ ...prev, galleryImages: [...(prev.galleryImages || []), ...urls] }));
+        } catch (err: any) {
+            alert('Erro ao enviar fotos da galeria: ' + (err.message || 'Erro desconhecido'));
+        } finally {
+            setGalleryUploading(false);
+            e.target.value = '';
+        }
+    };
+
+    const removeGalleryImage = (url: string) => {
+        setForm(prev => ({ ...prev, galleryImages: (prev.galleryImages || []).filter(u => u !== url) }));
+    };
+
+    const getFieldClassName = (field: string, base: string) => `${base} ${formErrors[field] ? 'border-red-300 bg-red-50/60 focus:ring-red-500/10' : ''}`;
+
+    const validateMotoForm = () => {
+        const nextErrors: Record<string, string> = {};
+
+        if (!form.brand.trim()) nextErrors.brand = 'Informe a marca.';
+        if (!form.model.trim()) nextErrors.model = 'Informe o modelo.';
+        if (!form.year) nextErrors.year = 'Informe o ano de fabricação.';
+        if (!form.modelYear) nextErrors.modelYear = 'Informe o ano modelo.';
+        if (form.modelYear && form.modelYear < form.year) nextErrors.modelYear = 'O ano modelo não pode ser menor que o ano de fabricação.';
+        if (!form.price) nextErrors.price = 'Informe o preço de venda.';
+        if (form.mileage < 0) nextErrors.mileage = 'A quilometragem não pode ser negativa.';
+        if (form.chassis && form.chassis.replace(/\s/g, '').length > 0 && form.chassis.replace(/\s/g, '').length < 17) {
+            nextErrors.chassis = 'O chassi deve ter 17 caracteres ou ficar vazio.';
+        }
+
+        setFormErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        setUploading(true);
+        if (!validateMotoForm()) return;
+
+        setSubmitting(true);
         try {
             if (selected === 'new') {
                 await motorcycleService.create(form);
@@ -139,7 +207,7 @@ const MotorcycleInventory: React.FC<Props> = ({
             const errorMsg = err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
             alert('Erro ao salvar moto: ' + errorMsg);
         } finally {
-            setUploading(false);
+            setSubmitting(false);
         }
     };
 
@@ -148,6 +216,90 @@ const MotorcycleInventory: React.FC<Props> = ({
         await motorcycleService.delete(id);
         onDataChange();
         setSelected(null);
+    };
+
+    const lookupPlate = async () => {
+        const rawPlate = form.plate.replace(/[-\s]/g, '').toUpperCase();
+        if (rawPlate.length < 7) {
+            setPlateError('Digite uma placa válida (7 caracteres).');
+            return;
+        }
+        setLookupLoading(true);
+        setPlateError(null);
+        try {
+            const res = await fetch(`https://wdapi2.com.br/consulta/${rawPlate}/${APIPLACAS_TOKEN}`);
+            if (!res.ok) throw new Error('Erro na consulta.');
+            const data = await res.json();
+
+            const msg: string = data.mensagemRetorno || '';
+            const isError = msg.toLowerCase().startsWith('erro') || msg.toLowerCase().includes('não encontrada') || msg.toLowerCase().includes('invalida');
+            if (isError) {
+                setPlateError(msg || 'Placa não encontrada.');
+                return;
+            }
+
+            if (!data.MARCA && !data.marca) {
+                setPlateError('Placa não encontrada na base de dados.');
+                return;
+            }
+
+            const extra = data.extra || {};
+            const brand = data.MARCA || data.marca || '';
+            const model = data.MODELO || data.modelo || '';
+            const year = parseInt(data.ano) || form.year;
+            const color = data.cor || extra.cor || '';
+
+            let fipePrice = 0;
+            if (data.fipe && data.fipe.dados && data.fipe.dados.length > 0) {
+                const fipeItem = data.fipe.dados[0];
+                if (fipeItem && fipeItem.texto_valor) {
+                    const rawString = fipeItem.texto_valor.replace('R$', '').trim();
+                    const numString = rawString.replace(/\./g, '').replace(',', '.');
+                    fipePrice = parseFloat(numString);
+                }
+            }
+
+            // Try to normalize engine from cilindradas field
+            const cilindradas = parseInt(extra.cilindradas || '0');
+            let engine = form.engine;
+            if (cilindradas > 0) {
+                const ccStr = cilindradas + 'cc';
+                engine = MOTO_ENGINES.find(e => e === ccStr) || (cilindradas >= 1200 ? '1200cc+' : ccStr);
+            }
+
+            // Try to infer category from segment data
+            const seg = ((data.segmento || extra.segmento || '') + ' ' + (data.sub_segmento || extra.sub_segmento || '')).toUpperCase();
+            let category = form.category;
+            if (seg.includes('SCOOTER') || seg.includes('SCÚTER')) category = 'Scooter';
+            else if (seg.includes('TRAIL') || seg.includes('ADVENTURE') || seg.includes('ENDURO')) category = 'Trail';
+            else if (seg.includes('SPORT') || seg.includes('ESPORT') || seg.includes('SUPER')) category = 'Sport';
+            else if (seg.includes('TOURING') || seg.includes('TURISMO')) category = 'Touring';
+            else if (seg.includes('CUSTOM') || seg.includes('CRUISER')) category = 'Custom';
+            else if (seg.includes('ELÉTRI') || seg.includes('ELETRI')) category = 'Elétrica';
+            else if (seg.includes('STREET') || seg.includes('NAKED')) category = 'Naked';
+
+            setForm(prev => ({
+                ...prev,
+                brand,
+                model,
+                year,
+                color,
+                engine,
+                category,
+                fipePrice: fipePrice > 0 ? fipePrice : prev.fipePrice,
+            }));
+        } catch (err: any) {
+            setPlateError('Não foi possível consultar a placa. Verifique e tente novamente.');
+        } finally {
+            setLookupLoading(false);
+        }
+    };
+
+    const handlePlateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            lookupPlate();
+        }
     };
 
     const handleOpenSell = () => {
@@ -204,7 +356,16 @@ const MotorcycleInventory: React.FC<Props> = ({
     };
 
     const openEdit = (m: Motorcycle) => {
-        setForm({ brand: m.brand, model: m.model, year: m.year, modelYear: m.modelYear ?? m.year, plate: m.plate ?? '', price: m.price, category: m.category, engine: m.engine, mileage: m.mileage, color: m.color, isSingleOwner: m.isSingleOwner, hasWarranty: m.hasWarranty, isIpvaPaid: m.isIpvaPaid, optionals: m.optionals, imageUrl: m.imageUrl, status: m.status, saleDetails: m.saleDetails });
+        setForm({
+            brand: m.brand, model: m.model, year: m.year, modelYear: m.modelYear ?? m.year,
+            plate: m.plate ?? '', chassis: m.chassis ?? '', fipePrice: m.fipePrice, price: m.price,
+            category: m.category, engine: m.engine, mileage: m.mileage, color: m.color,
+            isSingleOwner: m.isSingleOwner, hasWarranty: m.hasWarranty, isIpvaPaid: m.isIpvaPaid,
+            optionals: m.optionals, imageUrl: m.imageUrl, galleryImages: m.galleryImages ?? [],
+            startType: m.startType, brakeType: m.brakeType, fuelSystem: m.fuelSystem, cooling: m.cooling,
+            hasSpareKey: m.hasSpareKey ?? false, hasOwnerManual: m.hasOwnerManual ?? false,
+            status: m.status, saleDetails: m.saleDetails
+        });
         setSelected(m);
     };
 
@@ -331,7 +492,7 @@ const MotorcycleInventory: React.FC<Props> = ({
 
                 {/* Sell Modal */}
                 {isSellModalOpen && (
-                    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[90] flex items-center justify-center p-6" onClick={() => setIsSellModalOpen(false)}>
+                    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSellModalOpen(false)}>
                         <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
                             <form onSubmit={handleSellSubmit}>
                                 <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
@@ -373,7 +534,7 @@ const MotorcycleInventory: React.FC<Props> = ({
 
                 {/* Message Modal */}
                 {isMessageModalOpen && (
-                    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-6" onClick={() => setIsMessageModalOpen(false)}>
+                    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsMessageModalOpen(false)}>
                         <div className="bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl animate-fadeUp overflow-hidden" onClick={e => e.stopPropagation()}>
                             <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
                                 <div><h2 className="text-lg font-extrabold text-slate-900 uppercase">Enviar Mensagem</h2><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Para: {msgTargets.length > 1 ? `${msgTargets.length} leads` : msgTargets[0]?.name}</p></div>
@@ -412,22 +573,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                 <form onSubmit={handleSave} className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8">
                     <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Nova Moto</h2>
 
-                    {/* Imagem */}
-                    <div>
-                        <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-3">Foto da Moto</label>
-                        {form.imageUrl ? (
-                            <div className="relative w-full h-64 rounded-2xl overflow-hidden">
-                                <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                                <button type="button" onClick={() => setForm(p => ({ ...p, imageUrl: '' }))} className="absolute top-4 right-4 w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 shadow"><X size={16} /></button>
-                            </div>
-                        ) : (
-                            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all">
-                                {uploading ? <Loader2 size={32} className="text-emerald-500 animate-spin" /> : <><Upload size={32} className="text-slate-300 mb-3" /><p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Clique para enviar</p></>}
-                                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
-                            </label>
-                        )}
-                    </div>
-
                     {/* Identificação */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
@@ -438,8 +583,9 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 suggestions={Object.keys(motoDatabase)}
                                 placeholder="Ex: Honda"
                                 required
-                                className="w-full bg-slate-50 border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
+                                className={getFieldClassName('brand', 'w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none')}
                             />
+                            {formErrors.brand && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.brand}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Modelo</label>
@@ -461,8 +607,9 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 }}
                                 suggestions={(motoDatabase[form.brand] || []).map(m => m.name)}
                                 placeholder="Ex: CB 300F"
-                                className="w-full bg-slate-50 border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
+                                className={getFieldClassName('model', 'w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none')}
                             />
+                            {formErrors.model && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.model}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Categoria</label>
@@ -479,15 +626,18 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Ano Fabr.</label>
-                            <input type="number" required value={form.year} onChange={e => setForm(p => ({ ...p, year: +e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400" />
+                            <input type="number" required value={form.year} onChange={e => setForm(p => ({ ...p, year: +e.target.value }))} className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400')} />
+                            {formErrors.year && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.year}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Ano Modelo</label>
-                            <input type="number" value={form.modelYear ?? form.year} onChange={e => setForm(p => ({ ...p, modelYear: +e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400" />
+                            <input type="number" value={form.modelYear ?? form.year} onChange={e => setForm(p => ({ ...p, modelYear: +e.target.value }))} className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400')} />
+                            {formErrors.modelYear && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.modelYear}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Quilometragem</label>
-                            <input type="number" required value={form.mileage} onChange={e => setForm(p => ({ ...p, mileage: +e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400" />
+                            <input type="text" required value={formatKM(form.mileage)} onChange={e => setForm(p => ({ ...p, mileage: parseKM(e.target.value) }))} className={getFieldClassName('mileage', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400')} />
+                            {formErrors.mileage && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.mileage}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Cor</label>
@@ -495,11 +645,76 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Placa</label>
-                            <input type="text" placeholder="ABC-1234" value={form.plate ?? ''} onChange={e => setForm(p => ({ ...p, plate: e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400" />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="ABC1234"
+                                    value={form.plate ?? ''}
+                                    onChange={e => {
+                                        setPlateError(null);
+                                        setForm(p => ({ ...p, plate: e.target.value.toUpperCase() }));
+                                    }}
+                                    onKeyDown={handlePlateKeyDown}
+                                    maxLength={8}
+                                    className="flex-1 min-w-0 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm uppercase"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={lookupPlate}
+                                    disabled={lookupLoading}
+                                    title="Consultar placa"
+                                    className="shrink-0 w-14 h-14 flex items-center justify-center rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white transition-all shadow-sm disabled:opacity-60"
+                                >
+                                    {lookupLoading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                                </button>
+                            </div>
+                            {plateError && (
+                                <p className="flex items-center gap-1.5 text-[10px] font-bold text-red-500 px-1 pt-1">
+                                    <AlertCircle size={11} /> {plateError}
+                                </p>
+                            )}
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Preço</label>
-                            <input type="text" required value={formatCurrency(form.price)} onChange={e => setForm(p => ({ ...p, price: parseCurrency(e.target.value) }))} className="w-full p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-2xl font-black outline-none text-lg focus:border-emerald-400" />
+                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Chassi</label>
+                            <input type="text" value={form.chassis || ''} onChange={e => setForm(p => ({ ...p, chassis: e.target.value.toUpperCase() }))} maxLength={17} placeholder="Opcional" className={getFieldClassName('chassis', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm uppercase')} />
+                            {formErrors.chassis && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.chassis}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Preço de Venda</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 mt-[1px] text-emerald-700 font-bold text-sm">R$</span>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formatCurrency(form.price)}
+                                    onChange={e => setForm(p => ({ ...p, price: parseCurrency(e.target.value) }))}
+                                    className={getFieldClassName('price', 'w-full p-4 pl-12 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl outline-none font-bold text-sm')}
+                                />
+                            </div>
+                            {formErrors.price && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.price}</p>}
+                            {form.fipePrice ? (() => {
+                                const diff = form.price && form.fipePrice ? ((form.price - form.fipePrice) / form.fipePrice) * 100 : 0;
+                                const absDiff = Math.abs(diff).toFixed(1);
+                                const isAbove = diff > 0.5;
+                                const isBelow = diff < -0.5;
+                                return (
+                                    <div className="mt-2 grid grid-cols-2 gap-2">
+                                        <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                                            <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Tabela FIPE</p>
+                                            <p className="text-sm font-bold text-blue-700">R$ {formatCurrency(form.fipePrice)}</p>
+                                        </div>
+                                        <div className={`p-3 rounded-xl border flex items-center gap-2 ${isAbove ? 'bg-orange-50 border-orange-100' : isBelow ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                                            {isAbove ? <TrendingUp size={16} className="text-orange-500 shrink-0" /> : isBelow ? <TrendingDown size={16} className="text-emerald-500 shrink-0" /> : <Minus size={16} className="text-slate-400 shrink-0" />}
+                                            <div>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">vs FIPE</p>
+                                                <p className={`text-sm font-black ${isAbove ? 'text-orange-600' : isBelow ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                                    {isAbove ? '+' : isBelow ? '-' : ''}{absDiff}%
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })() : null}
                         </div>
                     </div>
 
@@ -520,9 +735,78 @@ const MotorcycleInventory: React.FC<Props> = ({
                         ))}
                     </div>
 
+                    {/* Especificações Técnicas */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações Técnicas</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Partida</label>
+                                <select value={form.startType || 'Elétrica'} onChange={e => setForm(p => ({ ...p, startType: e.target.value as MotoStartType }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
+                                    {MOTO_START_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Freio</label>
+                                <select value={form.brakeType || 'Disco'} onChange={e => setForm(p => ({ ...p, brakeType: e.target.value as MotoBrakeType }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
+                                    {MOTO_BRAKE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Alimentação</label>
+                                <select value={form.fuelSystem || 'Injeção Eletrônica'} onChange={e => setForm(p => ({ ...p, fuelSystem: e.target.value as MotoFuelSystem }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
+                                    {MOTO_FUEL_SYSTEMS.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Refrigeração</label>
+                                <select value={form.cooling || 'Ar'} onChange={e => setForm(p => ({ ...p, cooling: e.target.value as MotoCooling }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
+                                    {MOTO_COOLINGS.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Documentação */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-4 bg-violet-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Documentação</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${form.hasSpareKey ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Chave Reserva</p>
+                                    <p className={`text-sm font-bold mt-0.5 ${form.hasSpareKey ? 'text-violet-700' : 'text-slate-400'}`}>{form.hasSpareKey ? 'Sim' : 'Não'}</p>
+                                </div>
+                                <Switch checked={!!form.hasSpareKey} onCheckedChange={(val) => setForm(p => ({ ...p, hasSpareKey: val }))} />
+                            </div>
+                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${form.hasOwnerManual ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Manual do Proprietário</p>
+                                    <p className={`text-sm font-bold mt-0.5 ${form.hasOwnerManual ? 'text-violet-700' : 'text-slate-400'}`}>{form.hasOwnerManual ? 'Sim' : 'Não'}</p>
+                                </div>
+                                <Switch checked={!!form.hasOwnerManual} onCheckedChange={(val) => setForm(p => ({ ...p, hasOwnerManual: val }))} />
+                            </div>
+                            <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50">
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Final da Placa</p>
+                                    <p className="text-2xl font-black text-slate-700 mt-0.5 tracking-widest">
+                                        {form.plate?.replace(/[-\s]/g, '').slice(-1).toUpperCase() || '—'}
+                                    </p>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                                    <Hash size={18} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Opcionais */}
                     <div className="space-y-3">
-                        <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Opcionais</label>
+                        <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais</label>
                         <div className="flex flex-wrap gap-2">
                             {COMMON_OPTIONS.map(opt => {
                                 const active = form.optionals.includes(opt);
@@ -536,10 +820,75 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                     </div>
 
+                    {/* Mídia */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><ImagePlus size={13} /> Mídia da Moto</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Foto Principal */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
+                                <div className="aspect-[4/5] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                                    {form.imageUrl ? (
+                                        <>
+                                            <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button type="button" onClick={() => setForm(p => ({ ...p, imageUrl: '' }))} className="w-12 h-12 rounded-full bg-white text-red-500 flex items-center justify-center shadow-xl"><X size={20} /></button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-3">
+                                            <Upload size={40} strokeWidth={1} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Nenhuma Foto</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <label className="block w-full cursor-pointer group">
+                                    <div className={`w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                        {uploading ? <Loader2 size={16} className="animate-spin text-emerald-500" /> : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
+                                        <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>{uploading ? 'Enviando...' : 'Fazer Upload'}</span>
+                                    </div>
+                                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                                </label>
+                            </div>
+                            {/* Galeria */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between px-1">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Galeria</label>
+                                    <span className="text-[10px] font-bold text-slate-300">{form.galleryImages?.length || 0}/6</span>
+                                </div>
+                                {(form.galleryImages?.length ?? 0) > 0 && (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {form.galleryImages!.map((url, i) => (
+                                            <div key={i} className="relative group aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
+                                                <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
+                                                <button type="button" onClick={() => removeGalleryImage(url)} className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <X size={16} className="text-white" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {(form.galleryImages?.length || 0) < 6 && (
+                                    <label className="block w-full cursor-pointer group">
+                                        <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                            {galleryUploading ? <Loader2 size={16} className="animate-spin text-emerald-500" /> : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
+                                            <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>{galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}</span>
+                                        </div>
+                                        <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={galleryUploading} />
+                                    </label>
+                                )}
+                                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 1080×1350px (4:5) · WebP</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex gap-4 pt-4">
                         <button type="button" onClick={() => { setSelected(null); setForm(EMPTY_MOTO); }} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl font-extrabold text-slate-500 uppercase tracking-widest text-sm hover:bg-slate-50">Cancelar</button>
-                        <button type="submit" disabled={uploading} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl font-extrabold uppercase tracking-widest text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2">
-                            {uploading ? <Loader2 size={18} className="animate-spin" /> : <><Bike size={18} /> Salvar Moto</>}
+                        <button type="submit" disabled={uploading || galleryUploading || submitting} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl font-extrabold uppercase tracking-widest text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-60">
+                            {submitting ? <><Loader2 size={18} className="animate-spin" /> Salvando...</> : <><Bike size={18} /> Salvar Moto</>}
                         </button>
                     </div>
                 </form>
@@ -610,13 +959,13 @@ const MotorcycleInventory: React.FC<Props> = ({
                     </button>
                 </div>
             ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {displayed.map(m => (
                         <div key={m.id} onClick={() => setSelected(m)} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden">
                             {m.imageUrl ? (
-                                <div className="h-48 overflow-hidden"><img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /></div>
+                                <div className="aspect-[4/5] overflow-hidden"><img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /></div>
                             ) : (
-                                <div className="h-48 bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center"><Bike size={64} className="text-slate-200" /></div>
+                                <div className="aspect-[4/5] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center"><Bike size={64} className="text-slate-200" /></div>
                             )}
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-3">

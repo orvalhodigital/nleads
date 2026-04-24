@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 import { Vehicle, VehicleType, TransmissionType, EngineType, LeadPhase } from '../types';
 
 export interface BusinessHourEntry {
@@ -12,7 +12,7 @@ export interface PublicProfile {
     id: string;
     company_name: string;
     company_logo?: string;
-    website_theme: 'classic' | 'glass' | 'premium';
+    website_theme: 'classic' | 'glass' | 'premium' | 'modern' | 'bold' | 'luxury';
     website_primary_color: string;
     website_secondary_color: string;
     website_text_color: string;
@@ -31,6 +31,82 @@ export interface PublicProfile {
     website_google_maps: string;
     custom_domain?: string;
     business_hours: BusinessHourEntry[];
+    website_about_text?: string;
+    website_instagram?: string;
+    website_facebook?: string;
+    website_youtube?: string;
+    website_hero_button_text?: string;
+    website_show_sold?: boolean;
+    website_show_filters?: boolean;
+    website_diff1_active?: boolean;
+    website_diff1_title?: string;
+    website_diff1_sub?: string;
+    website_diff2_active?: boolean;
+    website_diff2_title?: string;
+    website_diff2_sub?: string;
+    website_diff3_active?: boolean;
+    website_diff3_title?: string;
+    website_diff3_sub?: string;
+    website_diff4_active?: boolean;
+    website_diff4_title?: string;
+    website_diff4_sub?: string;
+    website_diff1_icon?: string;
+    website_diff2_icon?: string;
+    website_diff3_icon?: string;
+    website_diff4_icon?: string;
+    website_sections?: {
+        show_mission_vision_values?: boolean;
+        mission?: string;
+        vision?: string;
+        values?: string;
+        show_vehicle_categories?: boolean;
+        show_maps?: boolean;
+        show_contact_form?: boolean;
+        show_testimonials?: boolean;
+        show_announcement_bar?: boolean;
+        show_social_media?: boolean;
+    };
+    website_branding?: {
+        logo_primary?: string;
+        logo_dark?: string;
+        favicon?: string;
+        enabled?: boolean;
+        text?: string;
+        color?: string;
+    };
+    website_optimization?: {
+        meta_title?: string;
+        meta_description?: string;
+        google_tag_manager?: string;
+        meta_pixel?: string;
+        custom_scripts?: string;
+    };
+    website_content?: {
+        hero_title?: string;
+        hero_subtitle?: string;
+        mission?: string;
+        vision?: string;
+        values?: string;
+        testimonials?: Array<{
+            id?: string;
+            name: string;
+            role: string;
+            text: string;
+            photo?: string;
+        }>;
+    };
+    website_contact?: {
+        whatsapp?: string;
+        phone?: string;
+        email?: string;
+        address?: string;
+        google_maps_embed?: string;
+        instagram?: string;
+        facebook?: string;
+        tiktok?: string;
+        youtube?: string;
+    };
+    preset_messages?: string[];
 }
 
 const mapRowToVehicle = (row: any): Vehicle => ({
@@ -61,7 +137,7 @@ export const websiteService = {
         // First: check if slug exists at all (regardless of active status)
         const { data: anyData, error: anyError } = await supabase
             .from('profiles')
-            .select('id, website_active, website_slug, company_name, company_logo, website_theme, website_primary_color, website_secondary_color, website_text_color, website_title_color, website_use_gradient, website_background_color, website_bg_color2, website_bg_gradient, website_hero_image, website_hero_text, website_hero_subtitle, website_whatsapp, website_cta_text, website_city, website_google_maps, custom_domain, business_hours')
+            .select('*')
             .eq('website_slug', slug)
             .maybeSingle();
 
@@ -79,26 +155,31 @@ export const websiteService = {
     },
 
     async getVehiclesByUserId(userId: string): Promise<Vehicle[]> {
-        const { data, error } = await supabase
+        const response = await supabase
             .from('vehicles')
             .select('*')
             .eq('user_id', userId)
             .eq('status', 'available')
             .order('created_at', { ascending: false });
 
-        if (error || !data) return [];
-        return data.map(mapRowToVehicle);
+        const data = handleSupabaseResponse(response);
+        return (data || []).map(mapRowToVehicle);
     },
 
-    async getVehicleById(id: string): Promise<Vehicle | null> {
-        const { data, error } = await supabase
+    async getVehicleById(id: string, ownerId?: string): Promise<Vehicle | null> {
+        let query = supabase
             .from('vehicles')
             .select('*')
-            .eq('id', id)
-            .single();
+            .eq('id', id);
 
-        if (error || !data) return null;
-        return mapRowToVehicle(data);
+        if (ownerId) {
+            query = query.eq('user_id', ownerId);
+        }
+
+        const response = await query.single();
+
+        const data = handleSupabaseResponse(response);
+        return data ? mapRowToVehicle(data) : null;
     },
 
     async createPublicLead(userId: string, leadData: {
@@ -111,7 +192,7 @@ export const websiteService = {
         veiculo_troca?: string;
     }): Promise<{ success: boolean; error?: string }> {
         try {
-            const { error } = await supabase
+            const response = await supabase
                 .from('leads')
                 .insert({
                     user_id: userId,
@@ -135,11 +216,7 @@ export const websiteService = {
                     simulation_data: leadData.simulation_data || null,
                 });
 
-            if (error) {
-                console.error('[websiteService] Error creating public lead:', error);
-                return { success: false, error: error.message };
-            }
-
+            handleSupabaseResponse(response);
             return { success: true };
         } catch (err: any) {
             console.error('[websiteService] Exception creating public lead:', err);

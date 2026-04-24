@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 import { Profile } from '../types';
 import { DEFAULT_PRESET_MESSAGES } from '../utils/constants';
 
@@ -44,6 +44,37 @@ function buildProfile(data: any, user: any): Profile {
         website_city: data.website_city || '',
         website_google_maps: data.website_google_maps || '',
         custom_domain: data.custom_domain || '',
+        website_background_color: data.website_background_color || '',
+        website_bg_color2: data.website_bg_color2 || '',
+        website_bg_gradient: data.website_bg_gradient || false,
+        website_hero_button_text: data.website_hero_button_text || '',
+        website_about_text: data.website_about_text || '',
+        website_instagram: data.website_instagram || '',
+        website_facebook: data.website_facebook || '',
+        website_youtube: data.website_youtube || '',
+        website_show_sold: data.website_show_sold ?? false,
+        website_show_filters: data.website_show_filters ?? true,
+        website_diff1_active: data.website_diff1_active ?? true,
+        website_diff1_title: data.website_diff1_title || '',
+        website_diff1_sub: data.website_diff1_sub || '',
+        website_diff1_icon: data.website_diff1_icon || '',
+        website_diff2_active: data.website_diff2_active ?? true,
+        website_diff2_title: data.website_diff2_title || '',
+        website_diff2_sub: data.website_diff2_sub || '',
+        website_diff2_icon: data.website_diff2_icon || '',
+        website_diff3_active: data.website_diff3_active ?? true,
+        website_diff3_title: data.website_diff3_title || '',
+        website_diff3_sub: data.website_diff3_sub || '',
+        website_diff3_icon: data.website_diff3_icon || '',
+        website_diff4_active: data.website_diff4_active ?? true,
+        website_diff4_title: data.website_diff4_title || '',
+        website_diff4_sub: data.website_diff4_sub || '',
+        website_diff4_icon: data.website_diff4_icon || '',
+        website_sections: data.website_sections || {},
+        website_branding: data.website_branding || {},
+        website_optimization: data.website_optimization || {},
+        website_content: data.website_content || {},
+        website_contact: data.website_contact || {},
     };
 }
 
@@ -69,15 +100,16 @@ export const profileService = {
 
         if (!targetUserId) return null;
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('profiles')
             .select('*')
             .eq('id', targetUserId)
             .single();
 
+        const { data, error } = response;
+
         if (error && error.code !== 'PGRST116') {
-            const isRLSError = error.code === '42501';
-            console.error('Error fetching profile:', isRLSError ? 'RLS Permission Denied' : error);
+            handleSupabaseResponse(response); // This will throw for actual errors
         }
 
         // No profile row yet — create one and re-fetch so the DB row is source of truth
@@ -149,11 +181,70 @@ export const profileService = {
         delete dbUpdates.enable_cars;
         delete dbUpdates.enable_motorcycles;
 
-        const { error: updateError } = await supabase
+        const response = await supabase
             .from('profiles')
             .update(dbUpdates)
             .eq('id', idToUpdate);
 
-        if (updateError) throw updateError;
+        handleSupabaseResponse(response);
+    },
+
+    async getTeamMembers(adminId: string): Promise<Profile[]> {
+        const response = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('parent_id', adminId)
+            .order('created_at', { ascending: false });
+
+        const data = handleSupabaseResponse(response);
+        return (data || []).map(row => buildProfile(row, null));
+    },
+
+    async createTeamUser(userData: { email: string; full_name: string; phone?: string; adminId: string }): Promise<Profile> {
+        const response = await supabase
+            .from('profiles')
+            .insert({
+                email: userData.email,
+                full_name: userData.full_name,
+                phone: userData.phone || null,
+                parent_id: userData.adminId,
+                plan: 'trial',
+                plan_status: 'active',
+                trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                role: 'user'
+            })
+            .select()
+            .single();
+
+        const data = handleSupabaseResponse(response);
+        if (!data) throw new Error('Falha ao criar usuário da equipe.');
+        return buildProfile(data, null);
+    },
+
+    async updateTeamUser(userId: string, updates: Partial<Profile>): Promise<void> {
+        const dbUpdates: any = { ...updates };
+
+        if (updates.planStatus !== undefined) {
+            dbUpdates.plan_status = updates.planStatus;
+            delete dbUpdates.planStatus;
+        }
+        if (updates.trialEndsAt !== undefined) {
+            dbUpdates.trial_ends_at = updates.trialEndsAt;
+            delete dbUpdates.trialEndsAt;
+        }
+
+        const response = await supabase
+            .from('profiles')
+            .update(dbUpdates)
+            .eq('id', userId);
+
+        handleSupabaseResponse(response);
+    },
+
+    async removeTeamUser(userId: string): Promise<void> {
+        const response = await supabase
+            .rpc('invite_user', { p_user_id: userId, p_action: 'remove' });
+
+        handleSupabaseResponse(response);
     }
 };

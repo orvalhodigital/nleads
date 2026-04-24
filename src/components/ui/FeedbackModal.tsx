@@ -16,7 +16,7 @@ export default function FeedbackModal({ isOpen, type, title, message, onClose, o
     const isConfirm = type === 'confirm';
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4 animate-fadeIn">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-scaleUp">
                 {/* Header Color Bar */}
                 <div className={`h-2 w-full ${type === 'success' ? 'bg-emerald-500' :

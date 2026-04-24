@@ -1,4 +1,6 @@
-
+/**
+ * Fases do funil de vendas do Lead.
+ */
 export enum LeadPhase {
   NEW = 'Novo Lead',
   VISIT = 'Visita / Test Drive',
@@ -11,6 +13,9 @@ export enum LeadPhase {
   DISQUALIFIED = 'Desqualificados'
 }
 
+/**
+ * Temperatura comercial do Lead.
+ */
 export enum LeadTemperature {
   HOT = 'Quente',
   WARM = 'Morna',
@@ -19,22 +24,54 @@ export enum LeadTemperature {
 
 export type VisitStatus = 'pending' | 'show' | 'noshow';
 
-export type VehicleType = 'SUV' | 'Sedan' | 'Hatch' | 'Picape' | 'Esportivo' | 'Conversível' | 'Van' |
-  // Tipos de Moto
-  'Naked' | 'Sport' | 'Trail' | 'Custom' | 'Scooter' | 'Touring' | 'Elétrica' | 'Street' | 'Qualquer Um(a)';
-export type TransmissionType = 'Manual' | 'Automático' | 'Qualquer Um(a)';
-export type EngineType = '1.0' | '1.4' | '1.6' | '2.0+' | 'Elétrico' | 'Híbrido' | 'Qualquer Um(a)' |
-  // Motorizações de Moto
-  '110cc' | '125cc' | '150cc' | '160cc' | '190cc' | '250cc' | '300cc' | '400cc' | '600cc' | '750cc' | '1000cc' | '1200cc+';
+/**
+ * Tipos de veículos suportados, abrangendo Carros, Motos e Caminhões.
+ */
+export type VehicleType = 
+  // Carros
+  'SUV' | 'Sedan' | 'Hatch' | 'Picape' | 'Esportivo' | 'Conversível' | 'Van' |
+  // Motos
+  'Naked' | 'Sport' | 'Trail' | 'Custom' | 'Scooter' | 'Touring' | 'Elétrica' | 'Street' | 
+  // Caminhões
+  'Caminhão Leve' | 'Caminhão Pesado' | 'Cavalo Mecânico' | 'Carreta' |
+  'Qualquer Um(a)';
 
+/**
+ * Tipos de transmissão.
+ */
+export type TransmissionType = 'Manual' | 'Automático' | 'Automatizado' | 'CVT' | 'Semi-Automático' | 'Qualquer Um(a)';
+
+/**
+ * Motorizações agrupadas para todos os tipos de veículos.
+ */
+export type EngineType = 
+  // Carros
+  '1.0' | '1.3' | '1.4' | '1.5' | '1.6' | '1.8' | '2.0' | '2.0+' | 'Elétrico' | 'Híbrido' | 
+  // Motos
+  '110cc' | '125cc' | '150cc' | '160cc' | '190cc' | '250cc' | '300cc' | '400cc' | '600cc' | '750cc' | '1000cc' | '1200cc+' |
+  // Caminhões
+  'Diesel Leve' | 'Diesel Pesado' |
+  'Qualquer Um(a)';
+
+export type FuelType = 'Gasolina' | 'Álcool' | 'Flex' | 'Diesel' | 'GNV' | 'Elétrico' | 'Híbrido';
+
+export type VehicleKanbanPhase = 'em_transito' | 'disponivel' | 'reservado' | 'entregando' | 'vendido';
+
+/**
+ * Detalhes da venda de um veículo.
+ */
 export interface SaleDetails {
   salePrice: number;
   saleDate: string;
-  buyerLeadId?: string; // ID do Lead comprador para vínculo
+  buyerLeadId?: string;
   buyerName: string;
   isFollowUpSale: boolean;
+  refurbishmentCosts: number;
 }
 
+/**
+ * Interface principal de Veículo (Foco em Carros e Veículos Gerais).
+ */
 export interface Vehicle {
   id: string;
   model: string;
@@ -42,10 +79,16 @@ export interface Vehicle {
   year: number;
   modelYear?: number;
   plate?: string;
+  chassis?: string;
+  fipePrice?: number;
   price: number;
   type: VehicleType;
   transmission: TransmissionType;
   engine: EngineType;
+  fuelType?: FuelType;
+  doors?: 2 | 4;
+  hasSpareKey?: boolean;
+  hasOwnerManual?: boolean;
   mileage: number;
   color: string;
   isSingleOwner: boolean;
@@ -56,15 +99,31 @@ export interface Vehicle {
   imageUrl: string;
   galleryImages: string[];
   status: 'available' | 'sold';
+  sale_phase?: VehicleKanbanPhase;
   saleDetails?: SaleDetails;
 }
 
 export interface LeadPreference {
   tipos_veiculo: VehicleType[];
-  valor_minimo?: number;
-  valor_maximo?: number;
   marcas: string[];
   modelos: string[];
+  carro_valor_min?: number;
+  carro_valormax?: number;
+  carro_transmissao: TransmissionType[];
+  carro_motorizacao: EngineType[];
+  
+  interesse_carro?: boolean;
+  interesse_moto?: boolean;
+  tipos_moto?: VehicleType[];
+  marcas_moto?: string[];
+  modelos_moto?: string[];
+  moto_valor_min?: number;
+  moto__valormax?: number;
+  moto_transmissao: TransmissionType[];
+  moto_motorizacao: EngineType[];
+
+  valor_minimo?: number;
+  valor_maximo?: number;
   transmissao: TransmissionType[];
   motorizacao: EngineType[];
   observacoes_adicionais: string;
@@ -109,6 +168,33 @@ export interface Tag {
   color: string;
 }
 
+/**
+ * Metadados de marketing para rastreamento de campanhas.
+ */
+export interface MarketingMetadata {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+  fbclid?: string;
+  gclid?: string;
+}
+
+/**
+ * Histórico de interações com o Lead.
+ */
+export interface InteractionHistory {
+  id: string;
+  date: string;
+  type: 'call' | 'email' | 'whatsapp' | 'meeting' | 'note';
+  description: string;
+  agentId?: string;
+}
+
+/**
+ * Interface de Lead otimizada para suportar histórico e marketing.
+ */
 export interface Lead {
   id: string;
   name: string;
@@ -126,31 +212,30 @@ export interface Lead {
   disqualificationReasons?: string[];
   disqualificationNotes?: string;
 
-  // Novos campos de visita
+  // Campos de visita
   visit_date?: string;
   visit_status?: VisitStatus;
 
   // Tags
   tags?: string[];
   foto_url?: string;
+  
+  // Estruturas de suporte
   scheduling_data?: SchedulingData;
   simulation_data?: SimulationData;
   follow_up_data?: FollowUpData;
 
-  // Buyer flag — when true, the lead purchased a car and should appear
-  // in the "Compradores" column on the Leads page regardless of their
-  // current sales-funnel phase (WAITING_PAYMENT, DOCUMENTATION, etc.)
+  // Novos campos profissionais adicionados para Marketing e Histórico
+  marketing_metadata?: MarketingMetadata;
+  interaction_history?: InteractionHistory[];
+
   is_buyer?: boolean;
 }
 
-export interface SaleRecord {
-  id: string;
-  leadId: string;
-  vehicleId: string;
-  salePrice: number;
-  date: string;
-}
 
+/**
+ * Perfil do usuário e Configurações da Loja.
+ */
 export interface Profile {
   id: string;
   email: string;
@@ -174,7 +259,7 @@ export interface Profile {
   preset_messages?: string[];
   // Website settings
   website_active?: boolean;
-  website_theme?: 'classic' | 'glass' | 'premium';
+  website_theme?: 'classic' | 'glass' | 'premium' | 'modern' | 'bold' | 'luxury';
   website_primary_color?: string;
   website_secondary_color?: string;
   website_text_color?: string;
@@ -189,22 +274,103 @@ export interface Profile {
   website_city?: string;
   website_google_maps?: string;
   custom_domain?: string;
+  website_background_color?: string;
+  website_bg_color2?: string;
+  website_bg_gradient?: boolean;
+  website_hero_button_text?: string;
+  website_about_text?: string;
+  website_instagram?: string;
+  website_facebook?: string;
+  website_youtube?: string;
+  website_show_sold?: boolean;
+  website_show_filters?: boolean;
+  website_sections?: {
+    show_mission_vision_values?: boolean;
+    mission?: string;
+    vision?: string;
+    values?: string;
+    show_vehicle_categories?: boolean;
+    show_maps?: boolean;
+    show_contact_form?: boolean;
+    show_testimonials?: boolean;
+    show_announcement_bar?: boolean;
+    show_social_media?: boolean;
+  };
+  website_branding?: {
+    logo_primary?: string;
+    logo_dark?: string;
+    favicon?: string;
+    enabled?: boolean;
+    text?: string;
+    color?: string;
+  };
+  website_content?: {
+    hero_title?: string;
+    hero_subtitle?: string;
+    mission?: string;
+    vision?: string;
+    values?: string;
+    testimonials?: Array<{
+      id?: string;
+      name: string;
+      role: string;
+      text: string;
+      photo?: string;
+    }>;
+  };
+  website_contact?: {
+    whatsapp?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    google_maps_embed?: string;
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
+    youtube?: string;
+  };
+  website_optimization?: {
+    meta_title?: string;
+    meta_description?: string;
+    google_tag_manager?: string;
+    meta_pixel?: string;
+    custom_scripts?: string;
+  };
+  // Differentials (legacy)
+  website_diff1_active?: boolean;
+  website_diff1_title?: string;
+  website_diff1_sub?: string;
+  website_diff1_icon?: string;
+  website_diff2_active?: boolean;
+  website_diff2_title?: string;
+  website_diff2_sub?: string;
+  website_diff2_icon?: string;
+  website_diff3_active?: boolean;
+  website_diff3_title?: string;
+  website_diff3_sub?: string;
+  website_diff3_icon?: string;
+  website_diff4_active?: boolean;
+  website_diff4_title?: string;
+  website_diff4_sub?: string;
+  website_diff4_icon?: string;
+  // WhatsApp settings
+  use_company_number?: boolean;
+  whatsapp_webhook_url?: string;
+  // Business hours
+  business_hours?: any[];
 }
 
-export interface LeadCommunication {
-  id: string;
-  lead_id: string;
-  vehicle_id?: string;
-  contact_name: string;
-  contact_phone: string;
-  message_body: string;
-  is_sent: string;
-  created_at: string;
-  email_user?: string;
-}
 
 export type MotorcycleCategory = 'Naked' | 'Sport' | 'Trail' | 'Custom' | 'Scooter' | 'Touring' | 'Elétrica' | 'Street' | 'Qualquer Um(a)';
 
+export type MotoStartType = 'Elétrica' | 'Pedal' | 'Ambos';
+export type MotoFuelSystem = 'Carburador' | 'Injeção Eletrônica';
+export type MotoCooling = 'Ar' | 'Líquida' | 'Ar e Óleo';
+export type MotoBrakeType = 'Disco' | 'Tambor' | 'ABS' | 'CBS' | 'Disco + ABS' | 'Disco + CBS';
+
+/**
+ * Interface dedicada para Motocicletas.
+ */
 export interface Motorcycle {
   id: string;
   brand: string;
@@ -212,9 +378,11 @@ export interface Motorcycle {
   year: number;
   modelYear?: number;
   plate?: string;
+  chassis?: string;
+  fipePrice?: number;
   price: number;
   category: MotorcycleCategory;
-  engine: string;      // ex: '150cc', '300cc'
+  engine: EngineType;
   mileage: number;
   color: string;
   isSingleOwner: boolean;
@@ -222,6 +390,13 @@ export interface Motorcycle {
   isIpvaPaid: boolean;
   optionals: string[];
   imageUrl: string;
+  galleryImages: string[];
+  startType?: MotoStartType;
+  brakeType?: MotoBrakeType;
+  fuelSystem?: MotoFuelSystem;
+  cooling?: MotoCooling;
+  hasSpareKey?: boolean;
+  hasOwnerManual?: boolean;
   status: 'available' | 'sold';
   saleDetails?: SaleDetails;
 }
@@ -276,7 +451,7 @@ export interface OnboardingSession {
   satisfaction_score?: number;
   created_at?: string;
   updated_at?: string;
-  profiles?: Profile; // Para joins
+  profiles?: Profile; 
 }
 
 export interface Plan {

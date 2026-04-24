@@ -1,42 +1,31 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
     Calendar as CalendarIcon,
     Clock,
     Users,
     Plus,
     Search,
-    MessageSquare,
     Car,
     ChevronRight,
     CheckCircle2,
     XCircle,
     Save,
     ChevronLeft,
-    ChevronDown,
-    X,
     CalendarDays,
     LayoutList,
     UserPlus,
-    Zap,
-    List as ListIcon,
     PhoneCall,
-    RefreshCw,
-    Eye,
-    ArrowRight
+    Eye
 } from 'lucide-react';
-import { format, isToday, parseISO, startOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, addDays, isPast, isFuture, isAfter, isBefore, addWeeks } from 'date-fns';
+import { format, isToday, parseISO, startOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, addDays, isPast, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { vehicleService } from '../services/vehicleService';
-import { formatCurrency } from '../utils/formatters';
-
-import { supabase } from '../lib/supabaseClient';
-import { CustomDatePicker } from './ui/CustomDatePicker';
-import { CustomTimePicker } from './ui/CustomTimePicker';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { Lead, LeadPhase, LeadTemperature, VisitStatus } from '../types';
+import FollowUpCard from './FollowUpCard';
+import ScheduleVisitModal, { ScheduleFormData } from './ScheduleVisitModal';
 
 const Agenda: React.FC = () => {
     const { leads, vehicles, updateLead, addLead, loadData } = useData();
@@ -53,62 +42,71 @@ const Agenda: React.FC = () => {
     const [dateFilter, setDateFilter] = useState<string>(''); // YYYY-MM-DD
     const [followupFilter, setFollowupFilter] = useState<'overdue' | 'today' | 'upcoming' | 'nodate' | 'all'>('all');
 
-    // Form State
+    // Modal State
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [scheduleForm, setScheduleForm] = useState({
-        leadId: '',
-        vehicleId: '',
-        date: format(new Date(), 'yyyy-MM-dd'),
-        time: '09:00',
-        isNewLead: false,
-        newLeadName: '',
-        newLeadPhone: '',
-        vehicleSearch: ''
-    });
-    const [isVehicleDropdownOpen, setIsVehicleDropdownOpen] = useState(false);
-    const [isLeadDropdownOpen, setIsLeadDropdownOpen] = useState(false);
-    const [leadSearch, setLeadSearch] = useState('');
 
     // Edit State
     const [editingVisitId, setEditingVisitId] = useState<string | null>(null);
     const [tempDate, setTempDate] = useState('');
 
+    // Optimization: Create a vehicle map for O(1) lookup
+    const vehicleMap = useMemo(() => {
+        const map = new Map();
+        vehicles.forEach(v => map.set(v.id, v));
+        return map;
+    }, [vehicles]);
+
     // All Visits (not filtered yet)
     const baseVisits = useMemo(() => {
-        return leads.flatMap(l => {
-            const allVisits = [];
+        const allVisits: any[] = [];
+        
+        // Using a single loop for performance on large lists
+        for (const l of leads) {
             const appointments = l.scheduling_data?.appointments || [];
 
             if (appointments.length > 0) {
-                allVisits.push(...appointments.map(app => ({
-                    ...l,
-                    appointmentId: app.id,
-                    visitDate: parseISO(app.date),
-                    visit_status: (app.status || 'pending') as VisitStatus,
-                    schedulingNotes: app.notes,
-                    vehicleOfInterestId: app.vehicleOfInterest,
-                    vehicle: vehicles.find(v => v.id === (app.vehicleOfInterest || l.presentedVehicles?.[l.presentedVehicles.length - 1]))
-                })));
+                for (const app of appointments) {
+                    if (!app.date) continue; // Safety check
+                    const vDate = parseISO(app.date);
+                    if (isNaN(vDate.getTime())) continue; // Invalid date safety
+
+                    const vehicleId = app.vehicleOfInterest || (l.presentedVehicles?.length ? l.presentedVehicles[l.presentedVehicles.length - 1] : undefined);
+                    allVisits.push({
+                        ...l,
+                        appointmentId: app.id,
+                        visitDate: vDate,
+                        visit_status: (app.status || 'pending') as VisitStatus,
+                        schedulingNotes: app.notes,
+                        vehicleOfInterestId: app.vehicleOfInterest,
+                        vehicle: vehicleMap.get(vehicleId)
+                    });
+                }
             } else if (l.visit_date) {
-                allVisits.push({
-                    ...l,
-                    appointmentId: 'legacy', // Consistente com os handlers de update
-                    visitDate: parseISO(l.visit_date),
-                    visit_status: (l.visit_status || 'pending') as VisitStatus,
-                    schedulingNotes: l.scheduling_data?.notes,
-                    vehicleOfInterestId: l.scheduling_data?.vehicleOfInterest,
-                    vehicle: vehicles.find(v => v.id === (l.scheduling_data?.vehicleOfInterest || l.presentedVehicles?.[l.presentedVehicles.length - 1]))
-                });
+                const vDate = parseISO(l.visit_date);
+                if (isNaN(vDate.getTime())) {
+                    // Skip or handle corrupted legacy date
+                } else {
+                    const vehicleId = l.scheduling_data?.vehicleOfInterest || (l.presentedVehicles?.length ? l.presentedVehicles[l.presentedVehicles.length - 1] : undefined);
+                    allVisits.push({
+                        ...l,
+                        appointmentId: 'legacy',
+                        visitDate: vDate,
+                        visit_status: (l.visit_status || 'pending') as VisitStatus,
+                        schedulingNotes: l.scheduling_data?.notes,
+                        vehicleOfInterestId: l.scheduling_data?.vehicleOfInterest,
+                        vehicle: vehicleMap.get(vehicleId)
+                    });
+                }
             }
-            return allVisits;
-        });
-    }, [leads, vehicles]);
+        }
+        return allVisits;
+    }, [leads, vehicleMap]);
 
     // Final visits list - all filters applied together
     const visits = useMemo(() => {
+        const q = searchQuery.toLowerCase();
         return baseVisits
             .filter(v => {
-                const q = searchQuery.toLowerCase();
                 const matchesSearch = !searchQuery ||
                     v.name.toLowerCase().includes(q) ||
                     (v.phone && v.phone.includes(searchQuery));
@@ -123,8 +121,8 @@ const Agenda: React.FC = () => {
 
     // Visit pool (ignores status filter) - used for stats card counts
     const visitPool = useMemo(() => {
+        const q = searchQuery.toLowerCase();
         return baseVisits.filter(v => {
-            const q = searchQuery.toLowerCase();
             const matchesSearch = !searchQuery ||
                 v.name.toLowerCase().includes(q) ||
                 (v.phone && v.phone.includes(searchQuery));
@@ -138,18 +136,25 @@ const Agenda: React.FC = () => {
     const baseFollowups = useMemo(() => {
         return leads
             .filter(l => l.phase === LeadPhase.FOLLOW_UP && l.follow_up_data?.nextContactDate)
-            .map(l => ({
-                ...l,
-                contactDate: parseISO(l.follow_up_data!.nextContactDate!),
-                vehicle: vehicles.find(v => v.id === l.presentedVehicles[l.presentedVehicles.length - 1])
-            }));
-    }, [leads, vehicles]);
+            .map(l => {
+                const cDate = parseISO(l.follow_up_data!.nextContactDate!);
+                if (isNaN(cDate.getTime())) return null; // Safety check
+                
+                return {
+                    ...l,
+                    contactDate: cDate,
+                    vehicle: (l.presentedVehicles?.length ? vehicleMap.get(l.presentedVehicles[l.presentedVehicles.length - 1]) : undefined)
+                };
+            })
+            .filter((f): f is any => f !== null); // Filter out invalid entries
+    }, [leads, vehicleMap]);
 
     // Pool of follow-ups filtered by search and date
     const currentPoolFollowups = useMemo(() => {
+        const q = searchQuery.toLowerCase();
         return baseFollowups.filter(f => {
             const matchesSearch = !searchQuery ||
-                f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                f.name.toLowerCase().includes(q) ||
                 (f.phone && f.phone.includes(searchQuery));
 
             const matchesDate = !dateFilter || format(f.contactDate, 'yyyy-MM-dd') === dateFilter;
@@ -175,13 +180,13 @@ const Agenda: React.FC = () => {
 
     // Follow-ups without date (just in follow-up phase)
     const followupsNoDateFil = useMemo(() => {
+        const q = searchQuery.toLowerCase();
         return leads
             .filter(l => l.phase === LeadPhase.FOLLOW_UP && !l.follow_up_data?.nextContactDate)
-            .filter(f => !searchQuery || f.name.toLowerCase().includes(searchQuery.toLowerCase()) || f.phone?.includes(searchQuery));
+            .filter(f => !searchQuery || f.name.toLowerCase().includes(q) || f.phone?.includes(searchQuery));
     }, [leads, searchQuery]);
 
     const stats = useMemo(() => {
-        // Stats from visitPool (respects search+date, ignores status filter)
         return {
             visitsTodayTotal: baseVisits.filter(v => isToday(v.visitDate)).length,
             visitsPending: visitPool.filter(v => v.visit_status === 'pending').length,
@@ -195,7 +200,7 @@ const Agenda: React.FC = () => {
         };
     }, [baseVisits, visitPool, currentPoolFollowups, followupsNoDateFil, now]);
 
-    const handleUpdateVisitStatus = async (leadId: string, appointmentId: string, status: VisitStatus) => {
+    const handleUpdateVisitStatus = useCallback(async (leadId: string, appointmentId: string, status: VisitStatus) => {
         const lead = leads.find(l => l.id === leadId);
         if (!lead) return;
 
@@ -217,7 +222,7 @@ const Agenda: React.FC = () => {
         try {
             await updateLead({
                 ...lead,
-                visit_status: status, // Also sync the root
+                visit_status: status,
                 scheduling_data: {
                     ...(lead.scheduling_data || {}),
                     appointments: updatedAppointments
@@ -227,9 +232,9 @@ const Agenda: React.FC = () => {
         } catch (error) {
             showToast('error', 'Erro ao atualizar.');
         }
-    };
+    }, [leads, updateLead, showToast]);
 
-    const handleSaveDate = async (leadId: string, appointmentId: string) => {
+    const handleSaveDate = useCallback(async (leadId: string, appointmentId: string) => {
         const lead = leads.find(l => l.id === leadId);
         if (!lead || !tempDate) return;
 
@@ -252,7 +257,7 @@ const Agenda: React.FC = () => {
         try {
             await updateLead({
                 ...lead,
-                visit_date: newDateIso, // Sync root
+                visit_date: newDateIso,
                 scheduling_data: {
                     ...(lead.scheduling_data || {}),
                     appointments: updatedAppointments
@@ -263,7 +268,7 @@ const Agenda: React.FC = () => {
         } catch (error) {
             showToast('error', 'Erro ao atualizar data.');
         }
-    };
+    }, [leads, tempDate, updateLead, showToast]);
 
     const getStatusLabel = (status: VisitStatus) => {
         switch (status) {
@@ -281,15 +286,14 @@ const Agenda: React.FC = () => {
         }
     };
 
-    const handleScheduleVisit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleScheduleVisit = async (formData: ScheduleFormData) => {
         try {
-            let targetLeadId = scheduleForm.leadId;
+            let targetLeadId = formData.leadId;
 
-            if (scheduleForm.isNewLead) {
+            if (formData.isNewLead) {
                 const newLead = await addLead({
-                    name: scheduleForm.newLeadName,
-                    phone: scheduleForm.newLeadPhone,
+                    name: formData.newLeadName,
+                    phone: formData.newLeadPhone,
                     email: '',
                     phase: LeadPhase.NEW,
                     temperature: LeadTemperature.HOT,
@@ -310,25 +314,16 @@ const Agenda: React.FC = () => {
                     funnelHistory: { [LeadPhase.NEW]: new Date().toISOString() }
                 } as any);
                 targetLeadId = newLead.id;
-            } else if (leadSearch) {
-                // If the user typed a name but it's not a new lead and we don't have an ID, try to match or create
-                const matchedLead = leads.find(l => l.name.toLowerCase() === leadSearch.toLowerCase() || l.phone === leadSearch);
-                if (matchedLead) {
-                    targetLeadId = matchedLead.id;
-                } else {
-                    showToast('error', 'Por favor, selecione um cliente existente válido ou crie um novo registro.');
-                    return;
-                }
             }
 
             const lead = leads.find(l => l.id === targetLeadId);
             if (lead) {
-                const visitDateTime = new Date(`${scheduleForm.date}T${scheduleForm.time}`).toISOString();
+                const visitDateTime = new Date(`${formData.date}T${formData.time}`).toISOString();
                 const presentedVehicles = [...(lead.presentedVehicles || [])];
 
-                // Try to find the vehicle by ID based on search term matching brand + model
-                const matchedVehicle = vehicles.find(v => `${v.brand} ${v.model}`.toLowerCase() === scheduleForm.vehicleSearch.toLowerCase());
-                const vehicleIdToSave = matchedVehicle ? matchedVehicle.id : scheduleForm.vehicleSearch;
+                // Check if vehicleId is actually an ID or a search string
+                const matchedVehicle = vehicles.find(v => v.id === formData.vehicleId || `${v.brand} ${v.model}`.toLowerCase() === formData.vehicleSearch.toLowerCase());
+                const vehicleIdToSave = matchedVehicle ? matchedVehicle.id : formData.vehicleSearch;
 
                 if (vehicleIdToSave && !presentedVehicles.includes(vehicleIdToSave)) {
                     presentedVehicles.push(vehicleIdToSave);
@@ -342,7 +337,6 @@ const Agenda: React.FC = () => {
                     notes: 'Criado via agenda'
                 };
 
-                // Cria cópia do array para não mutar o estado diretamente
                 const existingAppointments = [...(lead.scheduling_data?.appointments || [])];
 
                 if (existingAppointments.length === 0 && lead.visit_date) {
@@ -370,10 +364,6 @@ const Agenda: React.FC = () => {
 
                 showToast('success', 'Visita agendada!');
                 setIsFormOpen(false);
-                setScheduleForm({
-                    leadId: '', vehicleId: '', date: format(new Date(), 'yyyy-MM-dd'), time: '09:00',
-                    isNewLead: false, newLeadName: '', newLeadPhone: '', vehicleSearch: ''
-                });
                 loadData();
             }
         } catch (error) {
@@ -381,7 +371,7 @@ const Agenda: React.FC = () => {
         }
     };
 
-    const handleMarkFollowUpDone = async (lead: Lead) => {
+    const handleMarkFollowUpDone = useCallback(async (lead: Lead) => {
         try {
             await updateLead({
                 ...lead,
@@ -394,7 +384,7 @@ const Agenda: React.FC = () => {
         } catch (error) {
             showToast('error', 'Erro ao atualizar follow-up.');
         }
-    };
+    }, [updateLead, showToast]);
 
     // Combined data for calendar view (ignores status filter for overview)
     const calendarItems = useMemo(() => {
@@ -660,7 +650,7 @@ const Agenda: React.FC = () => {
             <div>
                 {/* ===== VISITS TAB ===== */}
                 {agendaTab === 'visits' && viewType === 'list' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {visits.length > 0 ? (
                             visits.map((visit) => (
                                 <div key={visit.appointmentId} className="group relative bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden">
@@ -723,17 +713,21 @@ const Agenda: React.FC = () => {
 
                                             <div className="mb-3">
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Data</label>
-                                                <CustomDatePicker
+                                                <input
+                                                    type="date"
                                                     value={tempDate ? tempDate.split('T')[0] : ''}
-                                                    onChange={date => setTempDate(date + 'T' + (tempDate ? tempDate.split('T')[1] : '10:00'))}
+                                                    onChange={e => setTempDate(e.target.value + 'T' + (tempDate ? tempDate.split('T')[1] : '10:00'))}
+                                                    className="w-full px-4 py-2 border border-slate-100 rounded-lg text-xs"
                                                 />
                                             </div>
 
                                             <div className="mb-4">
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Horário</label>
-                                                <CustomTimePicker
+                                                <input
+                                                    type="time"
                                                     value={tempDate ? tempDate.split('T')[1] : ''}
-                                                    onChange={time => setTempDate((tempDate ? tempDate.split('T')[0] : new Date().toISOString().split('T')[0]) + 'T' + time)}
+                                                    onChange={e => setTempDate((tempDate ? tempDate.split('T')[0] : new Date().toISOString().split('T')[0]) + 'T' + e.target.value)}
+                                                    className="w-full px-4 py-2 border border-slate-100 rounded-lg text-xs"
                                                 />
                                             </div>
 
@@ -777,7 +771,7 @@ const Agenda: React.FC = () => {
                                     <h3 className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
                                         <Clock size={12} /> Atrasados
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {followups.filter(f => isPast(f.contactDate) && !isToday(f.contactDate)).map(followup => (
                                             <FollowUpCard key={followup.id} lead={followup} contactDate={followup.contactDate} vehicle={followup.vehicle} type="overdue" onViewLead={() => navigate(`/leads/${followup.id}`)} onMarkDone={() => handleMarkFollowUpDone(followup)} />
                                         ))}
@@ -791,7 +785,7 @@ const Agenda: React.FC = () => {
                                     <h3 className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
                                         <PhoneCall size={12} /> Contatos para Hoje
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {followups.filter(f => isToday(f.contactDate)).map(followup => (
                                             <FollowUpCard key={followup.id} lead={followup} contactDate={followup.contactDate} vehicle={followup.vehicle} type="today" onViewLead={() => navigate(`/leads/${followup.id}`)} onMarkDone={() => handleMarkFollowUpDone(followup)} />
                                         ))}
@@ -805,7 +799,7 @@ const Agenda: React.FC = () => {
                                     <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
                                         <CalendarDays size={12} /> Próximos Contatos
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {followups.filter(f => isAfter(f.contactDate, now) && !isToday(f.contactDate)).map(followup => (
                                             <FollowUpCard key={followup.id} lead={followup} contactDate={followup.contactDate} vehicle={followup.vehicle} type="upcoming" onViewLead={() => navigate(`/leads/${followup.id}`)} onMarkDone={() => handleMarkFollowUpDone(followup)} />
                                         ))}
@@ -819,7 +813,7 @@ const Agenda: React.FC = () => {
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
                                         <Users size={12} /> Follow-ups Sem Data Definida
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         {followupsNoDateFil.map(lead => (
                                             <div key={lead.id} className="bg-white border border-dashed border-slate-200 rounded-2xl p-4 flex items-center gap-3 hover:bg-slate-50/50 transition-all cursor-pointer" onClick={() => navigate(`/leads/${lead.id}`)}>
                                                 <div className="w-10 h-10 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center text-sm font-black shrink-0 overflow-hidden">
@@ -896,190 +890,14 @@ const Agenda: React.FC = () => {
                 }
             </div >
 
-            {/* Schedule Modal */}
-            {
-                isFormOpen && (
-                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
-                        <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl animate-fadeUp overflow-hidden flex flex-col max-h-[90vh]">
-                            <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-lg font-black uppercase tracking-tight italic">Agendar Atendimento</h2>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Visitante Presencial</p>
-                                </div>
-                                <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-50 rounded-lg transition-all group">
-                                    <X size={20} className="text-slate-300 group-hover:rotate-90 transition-all" />
-                                </button>
-                            </div>
-
-                            <form onSubmit={handleScheduleVisit} className="p-6 space-y-6 overflow-y-auto">
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button type="button" onClick={() => setScheduleForm(prev => ({ ...prev, isNewLead: false }))}
-                                            className={`py-3 rounded-xl border transition-all text-[9px] font-black uppercase flex flex-col items-center gap-1 ${!scheduleForm.isNewLead ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-50 bg-slate-50 text-slate-400'}`}>
-                                            <Users size={16} /> Existente
-                                        </button>
-                                        <button type="button" onClick={() => setScheduleForm(prev => ({ ...prev, isNewLead: true }))}
-                                            className={`py-3 rounded-xl border transition-all text-[9px] font-black uppercase flex flex-col items-center gap-1 ${scheduleForm.isNewLead ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-50 bg-slate-50 text-slate-400'}`}>
-                                            <UserPlus size={16} /> Novo Registro
-                                        </button>
-                                    </div>
-
-                                    {scheduleForm.isNewLead ? (
-                                        <div className="space-y-3 animate-fadeUp">
-                                            <input type="text" required placeholder="Nome Completo" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold outline-none"
-                                                value={scheduleForm.newLeadName} onChange={e => setScheduleForm(prev => ({ ...prev, newLeadName: e.target.value }))} />
-                                            <input type="text" required placeholder="WhatsApp" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold outline-none"
-                                                value={scheduleForm.newLeadPhone} onChange={e => setScheduleForm(prev => ({ ...prev, newLeadPhone: e.target.value }))} />
-                                        </div>
-                                    ) : (
-                                        <div className="relative animate-fadeUp">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Selecione o Cliente</label>
-                                            <input
-                                                type="text"
-                                                placeholder="Buscar por nome ou telefone..."
-                                                value={leadSearch}
-                                                onChange={(e) => {
-                                                    setLeadSearch(e.target.value);
-                                                    setIsLeadDropdownOpen(true);
-                                                }}
-                                                onFocus={() => setIsLeadDropdownOpen(true)}
-                                                onBlur={() => setTimeout(() => setIsLeadDropdownOpen(false), 200)}
-                                                className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 transition-all outline-none"
-                                            />
-                                            {isLeadDropdownOpen && leadSearch && (
-                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
-                                                    {leads
-                                                        .filter(l =>
-                                                            l.name.toLowerCase().includes(leadSearch.toLowerCase()) ||
-                                                            l.phone?.includes(leadSearch)
-                                                        )
-                                                        .map(l => (
-                                                            <div
-                                                                key={l.id}
-                                                                className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0"
-                                                                onClick={() => {
-                                                                    setLeadSearch(`${l.name} (${l.phone || 'Sem telefone'})`);
-                                                                    setScheduleForm(prev => ({ ...prev, leadId: l.id }));
-                                                                    setIsLeadDropdownOpen(false);
-                                                                }}
-                                                            >
-                                                                <p className="text-sm font-bold text-slate-700">{l.name}</p>
-                                                                <p className="text-[10px] font-bold text-emerald-600 mt-0.5">{l.phone || 'Sem telefone vazado'}</p>
-                                                            </div>
-                                                        ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="space-y-3">
-                                        <div className="relative">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Veículo de Interesse (Opcional)</label>
-                                            <input
-                                                type="text"
-                                                placeholder="Ex: BYD Dolphin"
-                                                value={scheduleForm.vehicleSearch}
-                                                onChange={(e) => {
-                                                    setScheduleForm({ ...scheduleForm, vehicleSearch: e.target.value });
-                                                    setIsVehicleDropdownOpen(true);
-                                                }}
-                                                onFocus={() => setIsVehicleDropdownOpen(true)}
-                                                onBlur={() => setTimeout(() => setIsVehicleDropdownOpen(false), 200)}
-                                                className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 transition-all outline-none"
-                                            />
-                                            {isVehicleDropdownOpen && scheduleForm.vehicleSearch && (
-                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
-                                                    {vehicles
-                                                        .filter(v => v.status === 'available' && `${v.brand} ${v.model}`.toLowerCase().includes(scheduleForm.vehicleSearch.toLowerCase()))
-                                                        .map(v => (
-                                                            <div
-                                                                key={v.id}
-                                                                className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0"
-                                                                onClick={() => {
-                                                                    setScheduleForm({ ...scheduleForm, vehicleSearch: `${v.brand} ${v.model}`, vehicleId: v.id });
-                                                                    setIsVehicleDropdownOpen(false);
-                                                                }}
-                                                            >
-                                                                <p className="text-sm font-bold text-slate-700">{v.brand} {v.model}</p>
-                                                                <p className="text-[10px] font-bold text-emerald-600 mt-0.5">R$ {formatCurrency(v.price)}</p>
-
-                                                            </div>
-                                                        ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <CustomDatePicker className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold outline-none"
-                                                value={scheduleForm.date} onChange={val => setScheduleForm(prev => ({ ...prev, date: val }))} />
-                                            <CustomTimePicker className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold outline-none"
-                                                value={scheduleForm.time} onChange={val => setScheduleForm(prev => ({ ...prev, time: val }))} />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 mt-4">
-                                    <Plus size={16} /> Finalizar Agendamento
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                )
-            }
+            <ScheduleVisitModal 
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                leads={leads}
+                vehicles={vehicles}
+                onSchedule={handleScheduleVisit}
+            />
         </div >
-    );
-};
-
-// Follow-Up Card Component
-interface FollowUpCardProps {
-    lead: Lead & { contactDate?: Date; vehicle?: any };
-    contactDate: Date;
-    vehicle?: any;
-    type: 'overdue' | 'today' | 'upcoming';
-    onViewLead: () => void;
-    onMarkDone: () => void;
-}
-
-const FollowUpCard: React.FC<FollowUpCardProps> = ({ lead, contactDate, vehicle, type, onViewLead, onMarkDone }) => {
-    const borderColor = type === 'overdue' ? 'border-red-200' : type === 'today' ? 'border-amber-200' : 'border-blue-100';
-    const bgTag = type === 'overdue' ? 'bg-red-500 text-white' : type === 'today' ? 'bg-amber-500 text-white' : 'bg-blue-100 text-blue-600';
-    const tagLabel = type === 'overdue' ? '⚠️ ATRASADO' : type === 'today' ? '📞 HOJE' : format(contactDate, "dd/MM/yyyy");
-
-    return (
-        <div className={`bg-white border ${borderColor} rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden`}>
-            <div className="p-4 border-b border-slate-50 flex items-center justify-between">
-                <div className={`px-2 py-1 rounded text-[9px] font-black uppercase ${bgTag}`}>
-                    {tagLabel}
-                </div>
-                {lead.follow_up_data?.notes && (
-                    <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest truncate max-w-[120px]" title={lead.follow_up_data.notes}>
-                        {lead.follow_up_data.notes}
-                    </span>
-                )}
-            </div>
-
-            <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onViewLead}>
-                <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center text-sm font-black shrink-0 overflow-hidden">
-                    {lead.foto_url ? (
-                        <img src={lead.foto_url} alt="" className="w-full h-full object-cover rounded-lg" />
-                    ) : (
-                        lead.name.charAt(0)
-                    )}
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h3 className="text-xs font-black text-slate-900 uppercase truncate leading-tight">{lead.name}</h3>
-                    <p className="text-[9px] font-bold text-slate-400 mt-0.5">{lead.phone}</p>
-                </div>
-            </div>
-
-            <div className="px-4 pb-4 mt-auto flex gap-2">
-                <button onClick={onMarkDone} className="flex-1 py-2.5 bg-emerald-50 text-emerald-600 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-emerald-100 transition-colors">
-                    <CheckCircle2 size={12} /> Feito
-                </button>
-                <button onClick={onViewLead} className="flex-1 py-2.5 bg-slate-50 text-slate-500 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors">
-                    <Eye size={12} /> Ver Lead
-                </button>
-            </div>
-        </div>
     );
 };
 

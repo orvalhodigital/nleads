@@ -8,6 +8,28 @@ import {
     ChevronLeft, ChevronRight, Gauge, Fuel, Settings,
     Calendar, Palette, Car, Shield, FileText, Star, MapPin, Send
 } from 'lucide-react';
+import useEmblaCarousel from 'embla-carousel-react';
+import { PhotoProvider, PhotoView } from 'react-photo-view';
+import 'react-photo-view/dist/react-photo-view.css';
+import Lottie from 'lottie-react';
+import whatsappAnimation from '../../assets/whatsapp-lottie.json';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
+// ─── Zod Schemas ─────────────────────────────────────────────────────────────
+
+const baseSchema = z.object({
+    name: z.string().min(2, "Digite seu nome"),
+    phone: z.string().min(10, "Telefone válido com DDD").refine(v => v.replace(/\D/g, '').length >= 10, "Telefone incompleto"),
+});
+
+const contactSchema = baseSchema.extend({ message: z.string().optional() });
+const testDriveSchema = baseSchema.extend({ date: z.string().min(1, "Data obrigatória"), time: z.string().min(1, "Horário obrigatório") });
+const financeSchema = baseSchema.extend({ entrada: z.string().optional(), parcelas: z.string().optional(), ideal: z.string().optional() });
+const tradeSchema = baseSchema.extend({ modelo: z.string().optional(), ano: z.string().optional(), placa: z.string().optional() });
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -15,6 +37,16 @@ const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL',
 const formatPrice = (n: number) => fmt.format(n);
 const formatKm = (n: number) => `${new Intl.NumberFormat('pt-BR').format(n)} km`;
 const PLACEHOLDER = 'https://placehold.co/800x600/e2e8f0/94a3b8?text=Sem+foto';
+
+const replaceVariables = (text: string, data: { vehicle?: Vehicle; profile?: PublicProfile }) => {
+    if (!text) return '';
+    return text
+        .replace(/\[NOME\]/gi, data.vehicle?.model || data.profile?.company_name || '')
+        .replace(/\[MARCA\]/gi, data.vehicle?.brand || '')
+        .replace(/\[MODELO\]/gi, data.vehicle?.model || '')
+        .replace(/\[ANO\]/gi, String(data.vehicle?.year || ''))
+        .replace(/\[PRECO\]/gi, data.vehicle ? fmt.format(data.vehicle.price) : '');
+};
 
 function buildWaUrl(phone: string, message: string) {
     const clean = phone.replace(/\D/g, '');
@@ -39,79 +71,172 @@ interface TC {
 function getTC(theme: string): TC {
     switch (theme) {
         case 'glass': return {
-            wrapper: 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 text-white',
-            nav: 'bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50',
-            backBtn: 'text-white/60 hover:text-white flex items-center gap-2 text-sm transition-colors',
-            thumbActive: 'border-2 border-white rounded-xl overflow-hidden cursor-pointer',
-            thumbInactive: 'border-2 border-white/10 rounded-xl overflow-hidden cursor-pointer opacity-60 hover:opacity-100 transition',
-            card: 'bg-white/8 backdrop-blur-xl border border-white/15 rounded-2xl p-6',
-            title: 'text-white', specLabel: 'text-white/40 text-xs', specValue: 'text-white font-semibold',
+            wrapper: 'min-h-screen text-white relative before:content-[""] before:fixed before:inset-0 before:bg-gradient-to-br before:from-slate-950 before:via-indigo-950 before:to-slate-900 before:-z-10 after:content-[""] after:fixed after:inset-0 after:bg-[radial-gradient(ellipse_at_top_left,rgba(56,189,248,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.15),transparent_50%)] after:-z-10 selection:bg-cyan-500/30',
+            nav: 'sticky top-0 z-50 bg-white/[0.03] backdrop-blur-xl border-b border-white/[0.08]',
+            backBtn: 'text-white/40 hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all px-6 py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10',
+            thumbActive: 'border-2 border-cyan-400 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.3)]',
+            thumbInactive: 'border border-white/10 rounded-2xl overflow-hidden cursor-pointer opacity-40 hover:opacity-100 transition duration-500',
+            card: 'bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl',
+            title: 'text-white',
+            specLabel: 'text-white/20 text-[10px] font-black uppercase tracking-widest',
+            specValue: 'text-white font-bold',
             divider: 'border-white/10',
-            ctaCard: 'bg-white/8 backdrop-blur-xl border border-white/15 rounded-2xl p-6 sticky top-24',
-            ctaTitle: 'text-white font-bold',
-            ctaBtnOutline: 'w-full py-3.5 rounded-xl font-bold border border-white/30 text-white text-sm hover:bg-white/10 transition-colors flex items-center justify-center gap-2',
-            badge: 'bg-white/15', badgeText: 'text-white/80',
-            similarCard: 'bg-white/8 backdrop-blur-xl border border-white/15 rounded-2xl overflow-hidden hover:border-white/30 hover:-translate-y-1 transition-all',
-            similarTitle: 'text-white font-semibold text-sm',
-            similarBtn: 'mt-2 w-full text-center py-2 rounded-xl border border-white/20 text-white/70 text-xs hover:bg-white/10 transition-colors',
-            check: 'text-green-400', cross: 'text-red-400',
-            footer: 'bg-black/40 border-t border-white/10 mt-16',
-            footerText: 'text-white/40 text-sm',
-            formCard: 'bg-white/8 backdrop-blur-xl border border-white/15 rounded-2xl p-6 md:p-8',
-            formLabel: 'text-white/60 text-xs font-semibold uppercase tracking-wider block mb-1',
-            formTitle: 'text-white font-bold text-xl mb-1',
-            inputField: 'w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-white/50',
-            textarea: 'w-full bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-white/50 resize-none',
+            ctaCard: 'bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 sticky top-24 shadow-2xl',
+            ctaTitle: 'text-white font-black uppercase tracking-tighter italic text-2xl',
+            ctaBtnOutline: 'w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/10 bg-white/5 text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2',
+            badge: 'bg-white/10 border border-white/10',
+            badgeText: 'text-white/80 font-bold',
+            similarCard: 'bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-cyan-400/40 transition-all duration-500',
+            similarTitle: 'text-white font-bold text-sm',
+            similarBtn: 'mt-2 w-full text-center py-3 rounded-xl border border-white/10 bg-white/5 text-white/50 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all',
+            check: 'text-cyan-400', cross: 'text-white/20',
+            footer: 'mt-32 bg-white/[0.02] border-t border-white/5 py-20',
+            footerText: 'text-white/20 text-[10px] font-black uppercase tracking-widest',
+            formCard: 'bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-16',
+            formLabel: 'text-white/20 text-[10px] font-black uppercase tracking-widest',
+            formTitle: 'text-4xl font-black text-white mb-2',
+            inputField: 'w-full bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-cyan-400/60 transition-all',
+            textarea: 'w-full bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-cyan-400/60 transition-all resize-none',
         };
         case 'premium': return {
-            wrapper: 'min-h-screen bg-[#0a0a12] text-white',
-            nav: 'bg-[#0a0a12]/95 backdrop-blur-xl border-b border-yellow-500/15 sticky top-0 z-50',
-            backBtn: 'text-gray-500 hover:text-yellow-400 flex items-center gap-2 text-sm transition-colors',
-            thumbActive: 'border-2 border-yellow-500 rounded-xl overflow-hidden cursor-pointer',
-            thumbInactive: 'border-2 border-yellow-500/10 rounded-xl overflow-hidden cursor-pointer opacity-60 hover:opacity-100 transition',
-            card: 'bg-[#12121e] border border-yellow-500/15 rounded-2xl p-6',
-            title: 'text-white', specLabel: 'text-gray-600 text-xs', specValue: 'text-white font-semibold',
-            divider: 'border-yellow-500/10',
-            ctaCard: 'bg-[#12121e] border border-yellow-500/15 rounded-2xl p-6 sticky top-24',
-            ctaTitle: 'text-white font-bold',
-            ctaBtnOutline: 'w-full py-3.5 rounded-xl font-bold border border-yellow-500/30 text-yellow-400 text-sm hover:bg-yellow-500/10 transition-colors flex items-center justify-center gap-2',
-            badge: 'bg-yellow-500/10', badgeText: 'text-yellow-300',
-            similarCard: 'bg-[#12121e] border border-yellow-500/15 rounded-2xl overflow-hidden hover:border-yellow-500/40 hover:-translate-y-1 transition-all',
-            similarTitle: 'text-white font-semibold text-sm',
-            similarBtn: 'mt-2 w-full text-center py-2 rounded-xl border border-yellow-500/20 text-yellow-400/70 text-xs hover:bg-yellow-500/10 transition-colors',
-            check: 'text-green-500', cross: 'text-red-500',
-            footer: 'bg-[#060610] border-t border-yellow-500/10 mt-16',
-            footerText: 'text-gray-600 text-sm',
-            formCard: 'bg-[#12121e] border border-yellow-500/15 rounded-2xl p-6 md:p-8',
-            formLabel: 'text-gray-500 text-xs font-semibold uppercase tracking-wider block mb-1',
-            formTitle: 'text-white font-bold text-xl mb-1',
-            inputField: 'w-full bg-[#1a1a2a] border border-yellow-500/20 text-white placeholder-gray-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-500/50',
-            textarea: 'w-full bg-[#1a1a2a] border border-yellow-500/20 text-white placeholder-gray-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-500/50 resize-none',
+            wrapper: 'min-h-screen bg-[#050508] text-white selection:bg-amber-500/30',
+            nav: 'bg-[#050508]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50',
+            backBtn: 'text-slate-500 hover:text-amber-500 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] transition-all',
+            thumbActive: 'border-2 border-amber-500 rounded-none overflow-hidden cursor-pointer shadow-lg shadow-amber-500/20',
+            thumbInactive: 'border border-white/5 rounded-none overflow-hidden cursor-pointer opacity-30 hover:opacity-100 transition duration-700',
+            card: 'bg-[#0a0a0f] border border-white/5 rounded-none p-10 md:p-16 shadow-2xl',
+            title: 'text-white uppercase tracking-tighter italic font-black',
+            specLabel: 'text-slate-600 text-[10px] font-black uppercase tracking-[0.2em]',
+            specValue: 'text-white font-bold',
+            divider: 'border-white/5',
+            ctaCard: 'bg-[#0a0a0f] border border-white/5 rounded-none p-10 md:p-12 sticky top-24 shadow-2xl',
+            ctaTitle: 'text-white font-black uppercase tracking-tighter italic text-3xl',
+            ctaBtnOutline: 'w-full py-5 rounded-none font-black uppercase tracking-[0.2em] text-[10px] border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2',
+            badge: 'bg-amber-500/10 border border-amber-500/20',
+            badgeText: 'text-amber-500 font-black uppercase text-[9px] tracking-widest',
+            similarCard: 'bg-[#0a0a0f] border border-white/5 rounded-none overflow-hidden hover:border-amber-500/30 transition-all duration-700',
+            similarTitle: 'text-white font-black uppercase tracking-tighter text-sm',
+            similarBtn: 'mt-2 w-full text-center py-4 rounded-none border border-white/10 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-all',
+            check: 'text-amber-500', cross: 'text-slate-800',
+            footer: 'mt-40 bg-black border-t border-white/5 py-24',
+            footerText: 'text-slate-700 text-[10px] font-black uppercase tracking-[0.4em]',
+            formCard: 'bg-[#0a0a0f] border border-white/5 rounded-none p-12 md:p-24 shadow-2xl',
+            formLabel: 'text-slate-700 text-[10px] font-black uppercase tracking-[0.3em]',
+            formTitle: 'text-6xl font-black text-white mb-6 uppercase tracking-tighter italic leading-none',
+            inputField: 'w-full bg-black border border-white/10 text-white placeholder-slate-800 rounded-none px-6 py-5 text-sm focus:outline-none focus:border-amber-500/50 transition-all',
+            textarea: 'w-full bg-black border border-white/10 text-white placeholder-slate-800 rounded-none px-6 py-5 text-sm focus:outline-none focus:border-amber-500/50 transition-all resize-none',
+        };
+        case 'bold': return {
+            wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-emerald-500/30',
+            nav: 'bg-slate-950 border-b-4 border-emerald-500 sticky top-0 z-50 shadow-2xl',
+            backBtn: 'text-white hover:text-emerald-500 flex items-center gap-3 text-sm font-black uppercase italic tracking-tighter transition-all',
+            thumbActive: 'border-4 border-emerald-500 rounded-none overflow-hidden cursor-pointer',
+            thumbInactive: 'border-4 border-slate-900 rounded-none overflow-hidden cursor-pointer opacity-40 hover:opacity-100 transition duration-300',
+            card: 'bg-slate-900 border-8 border-slate-800 rounded-none p-12 md:p-20 shadow-2xl',
+            title: 'text-white font-black text-5xl uppercase italic tracking-tighter leading-none',
+            specLabel: 'text-emerald-500 text-xs font-black uppercase tracking-widest',
+            specValue: 'text-white font-black text-xl italic uppercase',
+            divider: 'border-slate-800',
+            ctaCard: 'bg-slate-900 border-8 border-slate-800 rounded-none p-12 md:p-14 sticky top-24 shadow-2xl',
+            ctaTitle: 'text-white font-black text-4xl uppercase italic leading-none',
+            ctaBtnOutline: 'w-full py-5 rounded-none font-black uppercase tracking-tighter text-base border-4 border-slate-700 text-white hover:border-white transition-all flex items-center justify-center gap-3',
+            badge: 'bg-emerald-500 text-slate-950',
+            badgeText: 'font-black uppercase text-[10px] tracking-widest',
+            similarCard: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-emerald-500 transition-all duration-300',
+            similarTitle: 'text-white font-black uppercase italic text-base',
+            similarBtn: 'mt-2 w-full text-center py-4 rounded-none border-4 border-slate-700 text-white text-xs font-black uppercase hover:border-white transition-all',
+            check: 'text-emerald-500', cross: 'text-slate-700',
+            footer: 'mt-40 bg-black border-t-8 border-emerald-500 py-24',
+            footerText: 'text-slate-500 font-black uppercase tracking-[0.4em]',
+            formCard: 'bg-slate-900 border-8 border-slate-800 rounded-none p-16 md:p-32 shadow-2xl',
+            formLabel: 'text-emerald-500 text-sm font-black uppercase tracking-widest',
+            formTitle: 'text-8xl font-black text-white mb-10 uppercase italic leading-[0.85]',
+            inputField: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-emerald-500 transition-all',
+            textarea: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-emerald-500 transition-all resize-none',
+        };
+        case 'luxury': return {
+            wrapper: 'min-h-screen bg-[#0f0e0c] text-[#d4af37] font-serif selection:bg-[#d4af37]/20',
+            nav: 'bg-[#0f0e0c]/95 backdrop-blur-xl border-b border-[#d4af37]/10 sticky top-0 z-50',
+            backBtn: 'text-[#d4af37]/40 hover:text-[#d4af37] flex items-center gap-3 text-[10px] font-light uppercase tracking-[0.4em] transition-all',
+            thumbActive: 'border border-[#d4af37] rounded-none overflow-hidden cursor-pointer shadow-2xl',
+            thumbInactive: 'border border-[#d4af37]/5 rounded-none overflow-hidden cursor-pointer opacity-20 hover:opacity-100 transition duration-1000',
+            card: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-16 md:p-24 shadow-2xl',
+            title: 'text-[#d4af37] font-light text-6xl uppercase tracking-[0.3em] leading-tight',
+            specLabel: 'text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.4em]',
+            specValue: 'text-[#d4af37] font-serif text-lg tracking-widest uppercase',
+            divider: 'border-[#d4af37]/5',
+            ctaCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-16 md:p-20 sticky top-24 shadow-2xl',
+            ctaTitle: 'text-[#d4af37] font-extralight text-4xl uppercase tracking-[0.2em] leading-relaxed',
+            ctaBtnOutline: 'w-full py-6 rounded-none font-bold uppercase tracking-[0.4em] text-[10px] border border-[#d4af37]/20 text-[#d4af37]/50 hover:bg-[#d4af37]/5 hover:text-[#d4af37] transition-all flex items-center justify-center gap-3',
+            badge: 'border border-[#d4af37]/10',
+            badgeText: 'text-[#d4af37]/60 font-bold uppercase text-[8px] tracking-[0.3em]',
+            similarCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none overflow-hidden hover:border-[#d4af37]/30 transition-all duration-1000',
+            similarTitle: 'text-[#d4af37] font-serif uppercase tracking-widest text-sm',
+            similarBtn: 'mt-4 w-full text-center py-5 rounded-none border border-[#d4af37]/10 text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.4em] hover:bg-[#d4af37]/5 transition-all',
+            check: 'text-[#d4af37]', cross: 'text-[#d4af37]/10',
+            footer: 'mt-40 bg-black border-t border-[#d4af37]/5 py-32',
+            footerText: 'text-[#d4af37]/20 text-[10px] uppercase tracking-[0.6em]',
+            formCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-20 md:p-40 shadow-2xl',
+            formLabel: 'text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.6em]',
+            formTitle: 'text-6xl font-extralight text-[#d4af37] mb-16 uppercase tracking-[0.4em] leading-relaxed',
+            inputField: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-6 text-xl focus:outline-none focus:border-[#d4af37] transition-all',
+            textarea: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-6 text-xl focus:outline-none focus:border-[#d4af37] transition-all resize-none',
+        };
+        case 'modern': return {
+            wrapper: 'min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-500/10',
+            nav: 'bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm',
+            backBtn: 'text-slate-500 hover:text-slate-950 flex items-center gap-2 text-xs font-bold transition-all px-5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:shadow-lg',
+            thumbActive: 'border-2 border-blue-600 rounded-[20px] overflow-hidden cursor-pointer shadow-xl shadow-blue-600/20',
+            thumbInactive: 'border border-slate-200 rounded-[20px] overflow-hidden cursor-pointer opacity-50 hover:opacity-100 transition duration-500',
+            card: 'bg-white border border-slate-100 rounded-[48px] p-12 md:p-20 shadow-[0_20px_50px_rgba(0,0,0,0.03)]',
+            title: 'text-slate-950 font-black text-4xl tracking-tight leading-tight',
+            specLabel: 'text-slate-400 text-[10px] font-bold uppercase tracking-widest',
+            specValue: 'text-slate-900 font-bold',
+            divider: 'border-slate-100',
+            ctaCard: 'bg-white border border-slate-100 rounded-[40px] p-10 md:p-12 sticky top-24 shadow-2xl shadow-slate-900/5',
+            ctaTitle: 'text-slate-950 font-black text-3xl tracking-tight leading-none',
+            ctaBtnOutline: 'w-full py-4.5 rounded-2xl font-bold text-sm border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2',
+            badge: 'bg-slate-100',
+            badgeText: 'text-slate-600 font-bold text-[10px] uppercase tracking-wider',
+            similarCard: 'bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500',
+            similarTitle: 'text-slate-950 font-bold text-sm tracking-tight',
+            similarBtn: 'mt-2 w-full text-center py-3.5 rounded-xl bg-slate-50 text-slate-500 text-[11px] font-bold hover:bg-slate-100 transition-all',
+            check: 'text-blue-600', cross: 'text-slate-300',
+            footer: 'mt-32 bg-white border-t border-slate-200 py-24',
+            footerText: 'text-slate-400 text-xs font-bold uppercase tracking-widest',
+            formCard: 'bg-white border border-slate-100 rounded-[56px] p-16 md:p-32 shadow-2xl shadow-slate-900/5',
+            formLabel: 'text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2',
+            formTitle: 'text-6xl font-black text-slate-950 mb-6 tracking-tight',
+            inputField: 'w-full bg-slate-50 border border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all',
+            textarea: 'w-full bg-slate-50 border border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all resize-none',
         };
         default: return { // classic
-            wrapper: 'min-h-screen bg-gray-50 text-gray-900',
-            nav: 'bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50',
-            backBtn: 'text-gray-500 hover:text-gray-900 flex items-center gap-2 text-sm transition-colors',
-            thumbActive: 'border-2 border-gray-900 rounded-xl overflow-hidden cursor-pointer',
-            thumbInactive: 'border-2 border-gray-100 rounded-xl overflow-hidden cursor-pointer opacity-60 hover:opacity-100 transition',
-            card: 'bg-white border border-gray-100 rounded-2xl p-6 shadow-sm',
-            title: 'text-gray-900', specLabel: 'text-gray-400 text-xs', specValue: 'text-gray-900 font-semibold',
-            divider: 'border-gray-100',
-            ctaCard: 'bg-white border border-gray-100 rounded-2xl p-6 shadow-sm sticky top-24',
-            ctaTitle: 'text-gray-900 font-bold',
-            ctaBtnOutline: 'w-full py-3.5 rounded-xl font-bold border border-gray-200 text-gray-700 text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2',
-            badge: 'bg-gray-100', badgeText: 'text-gray-600',
-            similarCard: 'bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all',
-            similarTitle: 'text-gray-900 font-semibold text-sm',
-            similarBtn: 'mt-2 w-full text-center py-2 rounded-xl border border-gray-200 text-gray-600 text-xs hover:bg-gray-50 transition-colors',
-            check: 'text-green-500', cross: 'text-red-400',
-            footer: 'bg-white border-t border-gray-100 mt-16',
-            footerText: 'text-gray-400 text-sm',
-            formCard: 'bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-sm',
-            formLabel: 'text-gray-500 text-xs font-semibold uppercase tracking-wider block mb-1',
-            formTitle: 'text-gray-900 font-bold text-xl mb-1',
-            inputField: 'w-full bg-white border border-gray-200 text-gray-900 placeholder-gray-400 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10',
-            textarea: 'w-full bg-white border border-gray-200 text-gray-900 placeholder-gray-400 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 resize-none',
+            wrapper: 'min-h-screen bg-[#f8fafc] text-slate-900',
+            nav: 'bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50 shadow-sm',
+            backBtn: 'text-slate-500 hover:text-slate-900 flex items-center gap-2 text-sm font-bold transition-all',
+            thumbActive: 'border-2 border-slate-900 rounded-xl overflow-hidden cursor-pointer shadow-lg',
+            thumbInactive: 'border-2 border-slate-100 rounded-xl overflow-hidden cursor-pointer opacity-60 hover:opacity-100 transition duration-300',
+            card: 'bg-white border border-slate-100 rounded-[24px] p-8 md:p-12 shadow-[0_10px_28px_rgba(15,23,42,0.05)]',
+            title: 'text-slate-900 font-extrabold text-3xl tracking-tight leading-tight',
+            specLabel: 'text-slate-400 text-[10px] font-semibold uppercase tracking-wider',
+            specValue: 'text-slate-900 font-bold',
+            divider: 'border-slate-100',
+            ctaCard: 'bg-white border border-slate-100 rounded-[24px] p-8 md:p-10 sticky top-24 shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+            ctaTitle: 'text-slate-900 font-black text-2xl tracking-tight',
+            ctaBtnOutline: 'w-full py-4 rounded-xl font-bold border-2 border-slate-100 text-slate-600 text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2',
+            badge: 'bg-slate-100',
+            badgeText: 'text-slate-600 font-bold text-[10px] uppercase tracking-wider',
+            similarCard: 'bg-white border border-slate-100 rounded-[20px] overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300',
+            similarTitle: 'text-slate-900 font-extrabold text-sm',
+            similarBtn: 'mt-2 w-full text-center py-3 rounded-lg border-2 border-slate-50 text-slate-500 text-xs font-bold hover:bg-slate-50 transition-colors',
+            check: 'text-emerald-500', cross: 'text-slate-300',
+            footer: 'mt-32 bg-white border-t border-slate-100 py-20',
+            footerText: 'text-slate-400 text-[11px] font-bold uppercase tracking-widest',
+            formCard: 'bg-white rounded-[40px] border border-slate-100 p-12 md:p-20 shadow-[0_20px_50px_rgba(0,0,0,0.05)]',
+            formLabel: 'text-slate-400 text-[10px] font-black uppercase tracking-widest',
+            formTitle: 'text-4xl font-black text-slate-900 mb-2 tracking-tight',
+            inputField: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-emerald-500 transition-all',
+            textarea: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-emerald-500 transition-all resize-none',
         };
     }
 }
@@ -131,38 +256,36 @@ const SpecItem: React.FC<{ icon: React.ReactNode; label: string; value: string; 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 
 const ContactForm: React.FC<{ profile: PublicProfile; vehicle?: Vehicle; tc: TC }> = ({ profile, vehicle, tc }) => {
-    const [form, setForm] = useState({ name: '', phone: '', message: '' });
     const [sent, setSent] = useState(false);
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<z.infer<typeof contactSchema>>({ resolver: zodResolver(contactSchema) });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!profile.website_whatsapp || !form.name || !form.phone) return;
+    const onSubmit = (data: z.infer<typeof contactSchema>) => {
+        if (!profile.website_whatsapp) return;
         const vehicleRef = vehicle ? `o ${vehicle.brand} ${vehicle.model} ${vehicle.year} (${formatPrice(vehicle.price)})` : 'um veículo';
-        const msg = `Olá, *${profile.company_name}*! Me chamo *${form.name}*, telefone: ${form.phone}. Tenho interesse em ${vehicleRef}.${form.message ? ` ${form.message}` : ''}`;
+        const msg = `Olá, *${profile.company_name}*! Me chamo *${data.name}*, telefone: ${data.phone}. Tenho interesse em ${vehicleRef}.${data.message ? ` ${data.message}` : ''}`;
         window.open(buildWaUrl(profile.website_whatsapp, msg), '_blank');
         setSent(true);
-        setForm({ name: '', phone: '', message: '' });
+        reset();
         setTimeout(() => setSent(false), 4000);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label className={tc.formLabel}>Seu nome *</label>
-                    <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                        placeholder="Como podemos te chamar?" className={tc.inputField} />
+                    <input {...register('name')} placeholder="Como podemos te chamar?" className={`${tc.inputField} ${errors.name ? 'border-red-400 focus:border-red-500 ring-1 ring-red-400' : ''}`} />
+                    {errors.name && <span className="text-red-400 text-[10px] mt-1 font-semibold block">{errors.name.message}</span>}
                 </div>
                 <div>
                     <label className={tc.formLabel}>Telefone *</label>
-                    <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                        placeholder="(11) 99999-9999" className={tc.inputField} />
+                    <input {...register('phone', { onChange: e => e.target.value = e.target.value.replace(/[^0-9()\-\s]/g, '') })} placeholder="(11) 99999-9999" type="tel" className={`${tc.inputField} ${errors.phone ? 'border-red-400 focus:border-red-500 ring-1 ring-red-400' : ''}`} />
+                    {errors.phone && <span className="text-red-400 text-[10px] mt-1 font-semibold block">{errors.phone.message}</span>}
                 </div>
             </div>
             <div>
                 <label className={tc.formLabel}>Mensagem</label>
-                <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                    placeholder="Alguma dúvida? Quer agendar um test drive?" rows={3} className={tc.textarea} />
+                <textarea {...register('message')} placeholder="Alguma dúvida? Quer agendar um test drive?" rows={3} className={tc.textarea} />
             </div>
             <button type="submit"
                 className="w-full py-3.5 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-colors"
@@ -178,23 +301,17 @@ const ContactForm: React.FC<{ profile: PublicProfile; vehicle?: Vehicle; tc: TC 
 interface ModalProps { profile: PublicProfile; vehicle: Vehicle | null; tc: TC; onClose: () => void; }
 
 const InterestModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
-    const [form, setForm] = useState({ name: '', phone: '' });
-    const [submitting, setSubmitting] = useState(false);
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<z.infer<typeof baseSchema>>({ resolver: zodResolver(baseSchema) });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!form.name || !form.phone) return;
-        setSubmitting(true);
+    const onSubmit = async (data: z.infer<typeof baseSchema>) => {
         try {
             await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-tenho-interesse', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: form.name,
-                    phone: form.phone,
+                    name: data.name, phone: data.phone,
                     vehicle: vehicle ? { id: vehicle.id, brand: vehicle.brand, model: vehicle.model, year: vehicle.year, price: vehicle.price } : null,
-                    store_id: profile.id,
-                    store_name: profile.company_name
+                    store_id: profile.id, store_name: profile.company_name
                 })
             });
             if (profile.website_whatsapp) {
@@ -202,126 +319,134 @@ const InterestModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) 
                 window.open(buildWaUrl(profile.website_whatsapp, msg), '_blank');
             }
             onClose();
-        } finally { setSubmitting(false); }
+        } catch (e) { console.error(e); }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3">
-            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Seu nome" className={tc.inputField} />
-            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                placeholder="Seu telefone" className={tc.inputField} />
-            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
-                {submitting ? 'Enviando...' : 'Conversar no WhatsApp'}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+                <input {...register('name')} placeholder="Seu nome completo" className={`${tc.inputField} ${errors.name ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.name && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.name.message}</span>}
+            </div>
+            <div>
+                <input {...register('phone', { onChange: e => e.target.value = e.target.value.replace(/[^0-9()\-\s]/g, '') })} placeholder="Seu WhatsApp com DDD" type="tel" className={`${tc.inputField} ${errors.phone ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.phone && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.phone.message}</span>}
+            </div>
+            <button type="submit" disabled={isSubmitting} className={tc.ctaBtnOutline}>
+                {isSubmitting ? 'Enviando...' : 'Conversar no WhatsApp'}
             </button>
         </form>
     );
 };
 
 const TestDriveModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
-    const [form, setForm] = useState({ name: '', phone: '', date: '', time: '' });
-    const [submitting, setSubmitting] = useState(false);
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<z.infer<typeof testDriveSchema>>({ resolver: zodResolver(testDriveSchema) });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!form.name || !form.phone || !form.date || !form.time) return;
-        setSubmitting(true);
+    const onSubmit = async (data: z.infer<typeof testDriveSchema>) => {
         try {
             await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-test-drive', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: form.name, phone: form.phone, date: form.date, time: form.time, vehicle_id: vehicle?.id })
+                body: JSON.stringify({ name: data.name, phone: data.phone, date: data.date, time: data.time, vehicle_id: vehicle?.id })
             });
             onClose();
-        } finally { setSubmitting(false); }
+        } catch(e) { console.error(e); }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3">
-            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Seu nome" className={tc.inputField} />
-            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                placeholder="Seu telefone" className={tc.inputField} />
-            <input required type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-                className={tc.inputField} />
-            <input required type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
-                className={tc.inputField} />
-            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
-                {submitting ? 'Agendando...' : 'Agendar Test Drive'}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+                <input {...register('name')} placeholder="Seu nome" className={`${tc.inputField} ${errors.name ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.name && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.name.message}</span>}
+            </div>
+            <div>
+                <input {...register('phone', { onChange: e => e.target.value = e.target.value.replace(/[^0-9()\-\s]/g, '') })} placeholder="Seu telefone" type="tel" className={`${tc.inputField} ${errors.phone ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.phone && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.phone.message}</span>}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+                <div>
+                    <input {...register('date')} type="date" className={`${tc.inputField} ${errors.date ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                    {errors.date && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.date.message}</span>}
+                </div>
+                <div>
+                    <input {...register('time')} type="time" className={`${tc.inputField} ${errors.time ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                    {errors.time && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.time.message}</span>}
+                </div>
+            </div>
+            <button type="submit" disabled={isSubmitting} className={tc.ctaBtnOutline}>
+                {isSubmitting ? 'Agendando...' : 'Agendar Test Drive'}
             </button>
         </form>
     );
 };
 
 const FinancingModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
-    const [form, setForm] = useState({ name: '', phone: '', entrada: '', parcelas: '', ideal: '' });
-    const [submitting, setSubmitting] = useState(false);
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<z.infer<typeof financeSchema>>({ resolver: zodResolver(financeSchema) });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!form.name || !form.phone) return;
-        setSubmitting(true);
+    const onSubmit = async (data: z.infer<typeof financeSchema>) => {
         try {
             await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-simular-financiamento', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: form.name, phone: form.phone, entrada: form.entrada, parcelas: form.parcelas, ideal: form.ideal, vehicle_id: vehicle?.id })
+                body: JSON.stringify({ name: data.name, phone: data.phone, entrada: data.entrada, parcelas: data.parcelas, ideal: data.ideal, vehicle_id: vehicle?.id })
             });
             onClose();
-        } finally { setSubmitting(false); }
+        } catch(e) { console.error(e); }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3">
-            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Seu nome" className={tc.inputField} />
-            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                placeholder="Seu telefone" className={tc.inputField} />
-            <input value={form.entrada} onChange={e => setForm(f => ({ ...f, entrada: e.target.value }))}
-                placeholder="Valor de entrada" className={tc.inputField} />
-            <input value={form.parcelas} onChange={e => setForm(f => ({ ...f, parcelas: e.target.value }))}
-                placeholder="Nº de parcelas" className={tc.inputField} />
-            <input value={form.ideal} onChange={e => setForm(f => ({ ...f, ideal: e.target.value }))}
-                placeholder="Valor ideal de parcela" className={tc.inputField} />
-            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
-                {submitting ? 'Enviando...' : 'Simular Financiamento'}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+                <input {...register('name')} placeholder="Seu nome" className={`${tc.inputField} ${errors.name ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.name && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.name.message}</span>}
+            </div>
+            <div>
+                <input {...register('phone', { onChange: e => e.target.value = e.target.value.replace(/[^0-9()\-\s]/g, '') })} placeholder="Seu telefone" type="tel" className={`${tc.inputField} ${errors.phone ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.phone && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.phone.message}</span>}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+                <input {...register('entrada')} placeholder="Entrada R$" className={tc.inputField} />
+                <input {...register('parcelas')} placeholder="Nº de parcelas" className={tc.inputField} />
+            </div>
+            <input {...register('ideal')} placeholder="Valor ideal de parcela" className={tc.inputField} />
+            <button type="submit" disabled={isSubmitting} className={tc.ctaBtnOutline}>
+                {isSubmitting ? 'Enviando...' : 'Simular Financiamento'}
             </button>
         </form>
     );
 };
 
 const TradeModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => {
-    const [form, setForm] = useState({ name: '', phone: '', modelo: '', ano: '', placa: '' });
-    const [submitting, setSubmitting] = useState(false);
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<z.infer<typeof tradeSchema>>({ resolver: zodResolver(tradeSchema) });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!form.name || !form.phone) return;
-        setSubmitting(true);
+    const onSubmit = async (data: z.infer<typeof tradeSchema>) => {
         try {
             await fetch('https://webhook.orvalhodigital.com.br/webhook/BOTAO-troca', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: form.name, phone: form.phone, trade_model: form.modelo, trade_year: form.ano, trade_plate: form.placa, vehicle_id: vehicle?.id })
+                body: JSON.stringify({ name: data.name, phone: data.phone, trade_model: data.modelo, trade_year: data.ano, trade_plate: data.placa, vehicle_id: vehicle?.id })
             });
             onClose();
-        } finally { setSubmitting(false); }
+        } catch(e) { console.error(e); }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-3">
-            <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Seu nome" className={tc.inputField} />
-            <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                placeholder="Seu telefone" className={tc.inputField} />
-            <input value={form.modelo} onChange={e => setForm(f => ({ ...f, modelo: e.target.value }))}
-                placeholder="Modelo do carro" className={tc.inputField} />
-            <input value={form.ano} onChange={e => setForm(f => ({ ...f, ano: e.target.value }))}
-                placeholder="Ano" className={tc.inputField} />
-            <input value={form.placa} onChange={e => setForm(f => ({ ...f, placa: e.target.value }))}
-                placeholder="Placa (opcional)" className={tc.inputField} />
-            <button type="submit" disabled={submitting} className={tc.ctaBtnOutline}>
-                {submitting ? 'Enviando...' : 'Propor Troca'}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+                <input {...register('name')} placeholder="Seu nome" className={`${tc.inputField} ${errors.name ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.name && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.name.message}</span>}
+            </div>
+            <div>
+                <input {...register('phone', { onChange: e => e.target.value = e.target.value.replace(/[^0-9()\-\s]/g, '') })} placeholder="Seu telefone" type="tel" className={`${tc.inputField} ${errors.phone ? 'border-red-400 ring-1 ring-red-400' : ''}`} />
+                {errors.phone && <span className="text-red-400 text-[10px] mt-1.5 font-semibold block">{errors.phone.message}</span>}
+            </div>
+            <input {...register('modelo')} placeholder="Modelo do seu carro" className={tc.inputField} />
+            <div className="grid grid-cols-2 gap-3">
+                <input {...register('ano')} placeholder="Ano" className={tc.inputField} />
+                <input {...register('placa')} placeholder="Placa (opcional)" className={tc.inputField} />
+            </div>
+            <button type="submit" disabled={isSubmitting} className={tc.ctaBtnOutline}>
+                {isSubmitting ? 'Enviando...' : 'Propor Troca'}
             </button>
         </form>
     );
@@ -338,23 +463,57 @@ const PublicVehicleDetail: React.FC = () => {
     const [notFound, setNotFound] = useState(false);
     const [activeImg, setActiveImg] = useState(0);
     const [activeModal, setActiveModal] = useState<null | 'interest' | 'testdrive' | 'financing' | 'trade'>(null);
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        emblaApi.on('select', () => {
+            setActiveImg(emblaApi.selectedScrollSnap());
+        });
+    }, [emblaApi]);
+
+    const scrollTo = (index: number) => {
+        if (emblaApi) emblaApi.scrollTo(index);
+    };
 
     useEffect(() => {
         if (!slug || !id) return;
         (async () => {
-            const [p, v] = await Promise.all([
-                websiteService.getProfileBySlug(slug),
-                websiteService.getVehicleById(id),
-            ]);
-            if (!p || !v) { setNotFound(true); setLoading(false); return; }
-            setProfile(p);
-            setVehicle(v);
-            const all = await websiteService.getVehiclesByUserId(p.id);
-            setAllVehicles(all);
-            setLoading(false);
-            setActiveImg(0);
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            try {
+                setLoading(true);
+                const pResult = await websiteService.getProfileBySlug(slug);
+                const p = pResult.profile;
+                
+                if (!p) {
+                    setNotFound(true);
+                    setLoading(false);
+                    return;
+                }
+                
+                setProfile(p);
+
+                // Agora buscamos o veículo garantindo que ele pertence a este lojista
+                const v = await websiteService.getVehicleById(id, p.id);
+                
+                if (!v) {
+                    setNotFound(true);
+                    setLoading(false);
+                    return;
+                }
+                
+                setVehicle(v);
+                
+                // Buscar outros veículos do mesmo lojista para o "Veículos Similares"
+                const all = await websiteService.getVehiclesByUserId(p.id);
+                setAllVehicles(all);
+            } catch (err) {
+                console.error('[PublicVehicleDetail] Error:', err);
+                setNotFound(true);
+            } finally {
+                setLoading(false);
+                setActiveImg(0);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         })();
     }, [slug, id]);
 
@@ -389,11 +548,26 @@ const PublicVehicleDetail: React.FC = () => {
         </div>
     );
 
-    const waMsg = `Olá! Tenho interesse no ${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${formatPrice(vehicle.price)}. Poderia me dar mais informações?`;
+    const waMsg = profile.preset_messages?.[0] 
+        ? replaceVariables(profile.preset_messages[0], { vehicle, profile })
+        : `Olá! Tenho interesse no ${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${formatPrice(vehicle.price)}. Poderia me dar mais informações?`;
     const waUrl = profile.website_whatsapp ? buildWaUrl(profile.website_whatsapp, waMsg) : '#';
-    const mainWaUrl = profile.website_whatsapp
-        ? buildWaUrl(profile.website_whatsapp, `Olá! Vim pelo site ${profile.company_name}.`)
-        : '#';
+    const mainWaMsg = profile.preset_messages?.[0] 
+        ? replaceVariables(profile.preset_messages[0], { profile })
+        : `Olá! Vim pelo site ${profile.company_name}.`;
+    const mainWaUrl = profile.website_whatsapp ? buildWaUrl(profile.website_whatsapp, mainWaMsg) : '#';
+
+    // Dynamic Logo Logic
+    const theme = profile.website_theme || 'classic';
+    const displayLogo = useMemo(() => {
+        if (profile.website_branding?.enabled) {
+            const isDarkTheme = ['glass', 'premium', 'bold', 'luxury'].includes(theme);
+            return isDarkTheme 
+                ? (profile.website_branding.logo_dark || profile.website_branding.logo_primary || profile.company_logo)
+                : (profile.website_branding.logo_primary || profile.company_logo);
+        }
+        return profile.company_logo;
+    }, [profile, theme]);
 
     const ctaBtnPrimary = `w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors`;
     const ctaBtnPrimaryStyle = profile.website_theme === 'premium'
@@ -408,19 +582,27 @@ const PublicVehicleDetail: React.FC = () => {
             <Helmet>
                 <title>{seoTitle}</title>
                 <meta name="description" content={seoDesc} />
+                <meta property="og:type" content="product" />
+                <meta property="og:url" content={window.location.href} />
                 <meta property="og:title" content={seoTitle} />
                 <meta property="og:description" content={seoDesc} />
+                <meta property="og:site_name" content={profile.company_name} />
                 {allImages[0] && <meta property="og:image" content={allImages[0]} />}
-                <meta property="og:type" content="product" />
+                {allImages[0] && <meta property="og:image:secure_url" content={allImages[0]} />}
+                {allImages[0] && <meta property="og:image:alt" content={seoTitle} />}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={seoTitle} />
+                <meta name="twitter:description" content={seoDesc} />
+                {allImages[0] && <meta name="twitter:image" content={allImages[0]} />}
                 <meta name="robots" content="index, follow" />
             </Helmet>
 
             {/* Nav */}
             <nav className={tc.nav}>
-                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        {profile.company_logo
-                            ? <img src={profile.company_logo} alt={profile.company_name} className="h-9 w-auto object-contain" />
+                        {displayLogo
+                            ? <img src={displayLogo} alt={profile.company_name} className="h-9 w-auto object-contain" />
                             : <span className="text-base font-extrabold">{profile.company_name}</span>
                         }
                         {profile.website_city && (
@@ -439,7 +621,7 @@ const PublicVehicleDetail: React.FC = () => {
                 </div>
             </nav>
 
-            <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="max-w-[1600px] mx-auto px-4 py-8">
                 <Link to={`/site/${slug}`} className={`${tc.backBtn} mb-6 inline-flex`}>
                     <ArrowLeft size={16} /> Voltar ao estoque
                 </Link>
@@ -449,21 +631,31 @@ const PublicVehicleDetail: React.FC = () => {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Gallery */}
                         <div>
-                            <div className="relative rounded-2xl overflow-hidden aspect-[16/10] bg-gray-200">
-                                <img src={allImages[activeImg] || PLACEHOLDER} alt={`${vehicle.brand} ${vehicle.model}`}
-                                    className="w-full h-full object-cover"
-                                    onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
+                            <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-gray-200" ref={emblaRef}>
+                                <PhotoProvider>
+                                    <div className="flex h-full">
+                                        {allImages.map((img, i) => (
+                                            <div key={i} className="flex-[0_0_100%] min-w-0 relative">
+                                                <PhotoView src={img === PLACEHOLDER ? '' : img}>
+                                                    <img src={img} alt={`${vehicle.brand} ${vehicle.model} - foto ${i + 1}`}
+                                                        className="w-full h-full object-cover cursor-zoom-in"
+                                                        onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
+                                                </PhotoView>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </PhotoProvider>
                                 {allImages.length > 1 && (
                                     <>
-                                        <button onClick={() => setActiveImg(i => (i - 1 + allImages.length) % allImages.length)}
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors">
+                                        <button onClick={() => { if (emblaApi) emblaApi.scrollPrev(); }}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10">
                                             <ChevronLeft size={20} />
                                         </button>
-                                        <button onClick={() => setActiveImg(i => (i + 1) % allImages.length)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors">
+                                        <button onClick={() => { if (emblaApi) emblaApi.scrollNext(); }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10">
                                             <ChevronRight size={20} />
                                         </button>
-                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm">
+                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm z-10">
                                             {activeImg + 1} / {allImages.length}
                                         </div>
                                     </>
@@ -472,7 +664,7 @@ const PublicVehicleDetail: React.FC = () => {
                             {allImages.length > 1 && (
                                 <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                                     {allImages.map((img, i) => (
-                                        <button key={i} onClick={() => setActiveImg(i)}
+                                        <button key={i} onClick={() => scrollTo(i)}
                                             className={`shrink-0 w-16 h-12 ${i === activeImg ? tc.thumbActive : tc.thumbInactive}`}>
                                             <img src={img} alt="" className="w-full h-full object-cover"
                                                 onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
@@ -592,10 +784,10 @@ const PublicVehicleDetail: React.FC = () => {
                 {similar.length > 0 && (
                     <div className="mt-12">
                         <h2 className={`text-lg font-bold mb-5 ${tc.title}`}>Veículos Similares</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {similar.map(v => (
                                 <div key={v.id} className={tc.similarCard}>
-                                    <div className="aspect-[4/3] overflow-hidden">
+                                    <div className="aspect-[4/5] overflow-hidden">
                                         <img src={v.imageUrl || PLACEHOLDER} alt={`${v.brand} ${v.model}`}
                                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                                             onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
@@ -670,19 +862,21 @@ const PublicVehicleDetail: React.FC = () => {
                 )}
             </div>
 
-            {/* Modals Overlay */}
-            {activeModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setActiveModal(null)}>
-                    <div className={`${tc.formCard} max-w-md w-full`} onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className={tc.formTitle}>
+            {/* Modals Overlay (Shadcn Dialog) */}
+            <Dialog open={!!activeModal} onOpenChange={(open) => !open && setActiveModal(null)}>
+                <DialogContent className={`${tc.formCard} max-w-md w-[90%] border-none shadow-2xl p-0 gap-0 rounded-2xl md:rounded-3xl`}>
+                    <div className="p-6 md:p-8">
+                        <DialogHeader className="mb-6 text-left">
+                            <DialogTitle className={tc.formTitle}>
                                 {activeModal === 'interest' && 'Tenho Interesse'}
                                 {activeModal === 'testdrive' && 'Agendar Test Drive'}
                                 {activeModal === 'financing' && 'Simular Financiamento'}
                                 {activeModal === 'trade' && 'Propor Troca'}
-                            </h3>
-                            <button onClick={() => setActiveModal(null)} className="text-gray-500 hover:text-gray-700">✕</button>
-                        </div>
+                            </DialogTitle>
+                            <DialogDescription className={`text-xs mt-1 ${tc.specLabel}`}>
+                                Deixe seus dados corretos para entrarmos em contato com as melhores condições.
+                            </DialogDescription>
+                        </DialogHeader>
 
                         {activeModal === 'interest' && (
                             <InterestModal profile={profile} vehicle={vehicle} tc={tc} onClose={() => setActiveModal(null)} />
@@ -697,12 +891,12 @@ const PublicVehicleDetail: React.FC = () => {
                             <TradeModal profile={profile} vehicle={vehicle} tc={tc} onClose={() => setActiveModal(null)} />
                         )}
                     </div>
-                </div>
-            )}
+                </DialogContent>
+            </Dialog>
 
             {/* Footer */}
             <footer className={tc.footer}>
-                <div className="max-w-6xl mx-auto px-4 py-8 text-center">
+                <div className="max-w-[1600px] mx-auto px-4 py-8 text-center">
                     <p className={tc.footerText}>
                         © {new Date().getFullYear()} {profile.company_name}{profile.website_city ? ` — ${profile.website_city}` : ''}. Todos os direitos reservados.
                     </p>
@@ -713,8 +907,8 @@ const PublicVehicleDetail: React.FC = () => {
             {/* Floating WA */}
             {profile.website_whatsapp && (
                 <a href={waUrl} target="_blank" rel="noopener noreferrer"
-                    className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-400 hover:scale-110 transition-all z-50">
-                    <MessageCircle size={26} className="text-white" />
+                    className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-400 hover:scale-110 transition-all z-50 overflow-hidden">
+                    <Lottie animationData={whatsappAnimation} loop={true} className="w-16 h-16 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </a>
             )}
         </div>

@@ -34,7 +34,7 @@ const HomePage: React.FC = () => {
     const estoqueDisponivel = availableVehicles + availableMotos;
 
     return (
-        <div className="flex flex-col h-full justify-center animate-fadeUp pb-4 md:p-8 gap-8 lg:gap-12 max-w-6xl mx-auto w-full">
+        <div className="flex flex-col h-full justify-center animate-fadeUp pb-4 md:p-8 gap-8 lg:gap-12 w-full">
 
             {/* ════════════ HEADER & GREETING ════════════ */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 w-full mb-4 lg:mb-8">
@@ -56,11 +56,11 @@ const HomePage: React.FC = () => {
                 <div className="shrink-0 flex gap-4 w-full md:w-auto flex-col">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="w-full md:w-auto px-8 py-4 sm:py-5 bg-white/40 hover:bg-white/60 backdrop-blur-md shadow-[0_8px_32px_rgba(16,185,129,0.15)] hover:-translate-y-1 active:scale-95 text-emerald-600 rounded-full font-extrabold uppercase tracking-widest text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-3 group border border-white/80"
+                        className="w-full md:w-auto px-8 py-4 sm:py-5 bg-emerald-600 hover:bg-emerald-700 shadow-[0_8px_32px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:scale-95 text-white rounded-full font-extrabold uppercase tracking-widest text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-3 group border border-emerald-500/50"
                     >
-                        <TrendingUp size={20} className="text-emerald-500" />
+                        <TrendingUp size={20} className="text-white" />
                         Acessar Métricas
-                        <ArrowRight size={16} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight size={16} className="text-white group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
             </div>

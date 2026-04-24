@@ -36,11 +36,24 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
         temperature: LeadTemperature.COLD,
         source: 'Site',
         preferences: {
+            interesse_carro: true,
+            interesse_moto: false,
             tipos_veiculo: [] as VehicleType[],
-            valor_minimo: 0,
-            valor_maximo: 0,
+            tipos_moto: [] as VehicleType[],
+            carro_valor_min: 0,
+            carro_valor_max: 0,
+            carro_transmissao: [] as TransmissionType[],
+            carro_motorizacao: [] as EngineType[],
+            moto_valor_min: 0,
+            moto_valor_max: 0,
+            moto_transmissao: [] as TransmissionType[],
+            moto_motorizacao: [] as EngineType[],
+            valor_minimo: 0, // Legacy
+            valor_maximo: 0, // Legacy
             marcas: [] as string[],
             modelos: [] as string[],
+            marcas_moto: [] as string[],
+            modelos_moto: [] as string[],
             transmissao: [] as TransmissionType[],
             motorizacao: [] as EngineType[],
             observacoes_adicionais: '',
@@ -48,51 +61,53 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
             valor_entrada: 0,
             possui_troca: false,
             veiculo_troca: ''
-        } as Lead['preferences'],
+        } as any,
         tags: [] as string[]
     });
 
-    const availableBrands = Array.from(new Set([
-        ...(profile?.enable_cars !== false ? Object.keys(carDatabase) : []),
-        ...(profile?.enable_motorcycles ? Object.keys(motoDatabase) : []),
-        ...vehicles.map(v => v.brand)
+    const carBrands = Array.from(new Set([
+        ...Object.keys(carDatabase),
+        ...vehicles.filter(v => !v.isMoto).map(v => v.brand)
     ])).sort();
 
-    const selectedBrands = leadForm.preferences.marcas || [];
-
-    const availableModels = Array.from(new Set([
-        ...(selectedBrands.length > 0
-            ? selectedBrands.flatMap(brand => {
-                const models = [];
-                if (profile?.enable_cars !== false && carDatabase[brand]) {
-                    models.push(...carDatabase[brand]);
-                }
-                if (profile?.enable_motorcycles && motoDatabase[brand]) {
-                    models.push(...motoDatabase[brand].map(m => m.name));
-                }
-                return models;
-            })
-            : [
-                ...(profile?.enable_cars !== false ? Object.values(carDatabase).flat() : []),
-                ...(profile?.enable_motorcycles ? Object.values(motoDatabase).flatMap(motos => motos.map(m => m.name)) : [])
-            ]
-        ),
-        ...vehicles
-            .filter(v => selectedBrands.length === 0 || selectedBrands.includes(v.brand))
-            .map(v => v.model)
+    const motoBrands = Array.from(new Set([
+        ...Object.keys(motoDatabase),
+        ...vehicles.filter(v => v.isMoto).map(v => v.brand)
     ])).sort();
 
-    const dynamicVehicleTypes = Array.from(new Set([
-        ...(profile?.enable_cars !== false ? CAR_VEHICLE_TYPES : []),
-        ...(profile?.enable_motorcycles ? MOTO_VEHICLE_TYPES : []),
-        'Qualquer Um(a)'
-    ]));
+    const getAvailableModels = (brands: string[], isMoto: boolean) => {
+        const db = isMoto ? motoDatabase : carDatabase;
+        const models = new Set<string>();
+        
+        if (brands.length > 0) {
+            brands.forEach(brand => {
+                if (db[brand]) {
+                    if (isMoto) {
+                        (db[brand] as any[]).forEach(m => models.add(m.name));
+                    } else {
+                        (db[brand] as string[]).forEach(m => models.add(m));
+                    }
+                }
+            });
+        } else {
+            Object.values(db).forEach(list => {
+                if (isMoto) {
+                    (list as any[]).forEach(m => models.add(m.name));
+                } else {
+                    (list as string[]).forEach(m => models.add(m));
+                }
+            });
+        }
+        
+        vehicles
+            .filter(v => v.isMoto === isMoto && (brands.length === 0 || brands.includes(v.brand)))
+            .forEach(v => models.add(v.model));
+            
+        return Array.from(models).sort();
+    };
 
-    const dynamicEngineTypes = Array.from(new Set([
-        ...(profile?.enable_cars !== false ? CAR_ENGINE_TYPES : []),
-        ...(profile?.enable_motorcycles ? MOTO_ENGINE_TYPES : []),
-        'Qualquer Um(a)'
-    ]));
+    const carModels = getAvailableModels(leadForm.preferences.marcas || [], false);
+    const motoModels = getAvailableModels(leadForm.preferences.marcas_moto || [], true);
 
     useEffect(() => {
         if (initialData) {
@@ -100,13 +115,22 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                 ...initialData,
                 preferences: {
                     ...initialData.preferences,
-                    valor_minimo: initialData.preferences?.valor_minimo || 0,
-                    valor_maximo: initialData.preferences?.valor_maximo || 0,
+                    interesse_carro: initialData.preferences?.interesse_carro ?? (initialData.preferences?.marcas?.length > 0 || initialData.preferences?.tipos_veiculo?.some(t => CAR_VEHICLE_TYPES.includes(t))),
+                    interesse_moto: initialData.preferences?.interesse_moto ?? (initialData.preferences?.marcas_moto?.length > 0 || initialData.preferences?.tipos_moto?.length > 0 || initialData.preferences?.tipos_veiculo?.some(t => MOTO_VEHICLE_TYPES.includes(t))),
+                    carro_valor_min: initialData.preferences?.carro_valor_min || 0,
+                    carro_valor_max: initialData.preferences?.carro_valor_max || initialData.preferences?.valor_maximo || 0,
+                    carro_transmissao: initialData.preferences?.carro_transmissao || initialData.preferences?.transmissao || [],
+                    carro_motorizacao: initialData.preferences?.carro_motorizacao || initialData.preferences?.motorizacao || [],
+                    moto_valor_min: initialData.preferences?.moto_valor_min || 0,
+                    moto_valor_max: initialData.preferences?.moto_valor_max || (initialData.preferences?.interesse_moto ? initialData.preferences?.valor_maximo : 0) || 0,
+                    moto_transmissao: initialData.preferences?.moto_transmissao || (initialData.preferences?.interesse_moto ? initialData.preferences?.transmissao : []) || [],
+                    moto_motorizacao: initialData.preferences?.moto_motorizacao || (initialData.preferences?.interesse_moto ? initialData.preferences?.motorizacao : []) || [],
                     marcas: initialData.preferences?.marcas || [],
                     modelos: initialData.preferences?.modelos || [],
-                    transmissao: initialData.preferences?.transmissao || [],
-                    motorizacao: initialData.preferences?.motorizacao || [],
+                    marcas_moto: initialData.preferences?.marcas_moto || [],
+                    modelos_moto: initialData.preferences?.modelos_moto || [],
                     tipos_veiculo: initialData.preferences?.tipos_veiculo || [],
+                    tipos_moto: initialData.preferences?.tipos_moto || [],
                     observacoes_adicionais: initialData.preferences?.observacoes_adicionais || '',
                     possui_entrada: initialData.preferences?.possui_entrada || false,
                     valor_entrada: initialData.preferences?.valor_entrada || 0,
@@ -125,7 +149,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
     const phases = [LeadPhase.NEW, LeadPhase.VISIT, LeadPhase.SIMULATION, LeadPhase.FOLLOW_UP, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
 
     return (
-        <div className="max-w-2xl mx-auto w-full pb-32 animate-fadeUp">
+        <div className="max-w-[1600px] mx-auto w-full pb-32 animate-fadeUp">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-6">
                     <button
@@ -254,83 +278,192 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                             </section>
 
                             <section className="space-y-8 bg-slate-50/50 p-8 rounded-[40px] border border-slate-100">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Perfil de Interesse</h3>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Perfil de Interesse</h3>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, interesse_carro: !leadForm.preferences.interesse_carro } })}
+                                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${leadForm.preferences.interesse_carro ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-200'}`}
+                                        >
+                                            Carros
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, interesse_moto: !leadForm.preferences.interesse_moto } })}
+                                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${leadForm.preferences.interesse_moto ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-200'}`}
+                                        >
+                                            Motos
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <MultiSelect
-                                        label="Tipos de Veículo"
-                                        options={dynamicVehicleTypes}
-                                        value={leadForm.preferences.tipos_veiculo}
-                                        onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, tipos_veiculo: val as any } })}
-                                    />
+                                <div className="space-y-10">
+                                    {/* SEÇÃO CARROS */}
+                                    {leadForm.preferences.interesse_carro && (
+                                        <div className="space-y-6 p-6 bg-white rounded-3xl border border-slate-100 animate-fadeIn">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Target size={14} className="text-emerald-500" />
+                                                <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Interesse em Carros</h4>
+                                            </div>
+                                            
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tipos de Carro</label>
+                                                <MultiSelect
+                                                    label="Selecione os tipos..."
+                                                    options={CAR_VEHICLE_TYPES}
+                                                    value={leadForm.preferences.tipos_veiculo || []}
+                                                    onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, tipos_veiculo: val as any } })}
+                                                />
+                                            </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Valor Máximo (R$)</label>
-                                            <input
-                                                type="text"
-                                                value={formatCurrency(leadForm.preferences.valor_maximo)}
-                                                onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, valor_maximo: parseCurrency(e.target.value) } })}
-                                                className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm focus:border-emerald-500/30 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Motorização</label>
-                                            <MultiSelect
-                                                label="Motorização"
-                                                options={dynamicEngineTypes}
-                                                value={leadForm.preferences.motorizacao}
-                                                onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, motorizacao: val as any } })}
-                                            />
-                                        </div>
-                                    </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Marcas de Carro</label>
+                                                    <TagInput
+                                                        label=""
+                                                        placeholder="Ex: Toyota, BMW..."
+                                                        value={leadForm.preferences.marcas || []}
+                                                        onChange={tags => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, marcas: tags } })}
+                                                        suggestions={carBrands}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Modelos de Carro</label>
+                                                    <TagInput
+                                                        label=""
+                                                        placeholder="Ex: Corolla, X1..."
+                                                        value={leadForm.preferences.modelos || []}
+                                                        onChange={tags => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, modelos: tags } })}
+                                                        suggestions={carModels}
+                                                    />
+                                                </div>
+                                            </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Câmbio</label>
-                                            <MultiSelect
-                                                label="Câmbio"
-                                                options={['Manual', 'Automático', 'Qualquer Um(a)']}
-                                                value={leadForm.preferences.transmissao}
-                                                onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, transmissao: val as any } })}
-                                            />
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-50">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Valor Máximo (Carro)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={formatCurrency(leadForm.preferences.carro_valormax)}
+                                                        onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, carro_valormax: parseCurrency(e.target.value) } })}
+                                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-emerald-500/30 outline-none transition-all"
+                                                        placeholder="R$ 0,00"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Câmbio</label>
+                                                    <MultiSelect
+                                                        label="Câmbio"
+                                                        options={['Manual', 'Automático', 'Qualquer Um(a)']}
+                                                        value={leadForm.preferences.carro_transmissao || []}
+                                                        onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, carro_transmissao: val as any } })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Motorização</label>
+                                                    <MultiSelect
+                                                        label="Motorização"
+                                                        options={[...CAR_ENGINE_TYPES, 'Qualquer Um(a)']}
+                                                        value={leadForm.preferences.carro_motorizacao || []}
+                                                        onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, carro_motorizacao: val as any } })}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Etiquetas (Tags)</label>
-                                            <TagInput
-                                                label=""
-                                                placeholder="Adicionar tag..."
-                                                value={leadForm.tags || []}
-                                                onChange={tags => setLeadForm({ ...leadForm, tags })}
-                                                suggestions={[]}
-                                            />
+                                    )}
+
+                                    {/* SEÇÃO MOTOS */}
+                                    {leadForm.preferences.interesse_moto && (
+                                        <div className="space-y-6 p-6 bg-white rounded-3xl border border-slate-100 animate-fadeIn">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Target size={14} className="text-indigo-500" />
+                                                <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Interesse em Motos</h4>
+                                            </div>
+                                            
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tipos de Moto</label>
+                                                <MultiSelect
+                                                    label="Selecione os tipos..."
+                                                    options={MOTO_VEHICLE_TYPES}
+                                                    value={leadForm.preferences.tipos_moto || []}
+                                                    onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, tipos_moto: val as any } })}
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Marcas de Moto</label>
+                                                    <TagInput
+                                                        label=""
+                                                        placeholder="Ex: Honda, Yamaha..."
+                                                        value={leadForm.preferences.marcas_moto || []}
+                                                        onChange={tags => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, marcas_moto: tags } })}
+                                                        suggestions={motoBrands}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Modelos de Moto</label>
+                                                    <TagInput
+                                                        label=""
+                                                        placeholder="Ex: CB 500, MT-07..."
+                                                        value={leadForm.preferences.modelos_moto || []}
+                                                        onChange={tags => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, modelos_moto: tags } })}
+                                                        suggestions={motoModels}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-50">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Valor Máximo (Moto)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={formatCurrency(leadForm.preferences.moto__valormax)}
+                                                        onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, moto__valormax: parseCurrency(e.target.value) } })}
+                                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500/30 outline-none transition-all"
+                                                        placeholder="R$ 0,00"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Câmbio</label>
+                                                    <MultiSelect
+                                                        label="Câmbio"
+                                                        options={['Manual', 'Automático', 'Qualquer Um(a)']}
+                                                        value={leadForm.preferences.moto_transmissao || []}
+                                                        onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, moto_transmissao: val as any } })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Motorização</label>
+                                                    <MultiSelect
+                                                        label="Motorização"
+                                                        options={[...MOTO_ENGINE_TYPES, 'Qualquer Um(a)']}
+                                                        value={leadForm.preferences.moto_motorizacao || []}
+                                                        onChange={val => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, moto_motorizacao: val as any } })}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Marcas de Interesse</label>
-                                        <TagInput
-                                            label=""
-                                            placeholder="Digite e pressione Enter..."
-                                            value={leadForm.preferences.marcas}
-                                            onChange={tags => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, marcas: tags } })}
-                                            suggestions={availableBrands}
-                                        />
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Modelos de Interesse</label>
-                                        <TagInput
-                                            label=""
-                                            placeholder="Digite e pressione Enter..."
-                                            value={leadForm.preferences.modelos}
-                                            onChange={tags => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, modelos: tags } })}
-                                            suggestions={availableModels}
-                                        />
+                                    {/* Configurações Gerais */}
+                                    <div className="space-y-6 pt-6 border-t border-slate-100">
+                                        <div className="grid grid-cols-1 gap-8">
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Etiquetas (Tags)</label>
+                                                <TagInput
+                                                    label=""
+                                                    placeholder="Adicionar tag..."
+                                                    value={leadForm.tags || []}
+                                                    onChange={tags => setLeadForm({ ...leadForm, tags })}
+                                                    suggestions={[]}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -400,7 +533,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
 
             {/* Sticky Bottom Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-700/50 px-6 py-4">
-                <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+                <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
                     <div className="hidden sm:block">
                         <p className="text-xs font-bold text-slate-400">
                             {isEditing ? 'Editando lead' : 'Novo cadastro'}

@@ -1,0 +1,3 @@
+﻿src/components/UserArea.tsx(163,38): error TS2304: Cannot find name 'Edit2'.
+src/components/UserArea.tsx(184,79): error TS2304: Cannot find name 'Plus'.
+src/pages/MotorcyclesPage.tsx(4,10): error TS2459: Module '"../services/motorcycleService"' declares 'Motorcycle' locally, but it is not exported.

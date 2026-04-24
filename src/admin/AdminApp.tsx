@@ -1,25 +1,29 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy } from 'react';
 import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import AdminLogin from './AdminLogin';
-import AdminLayout from './AdminLayout';
-import AdminUsers from './AdminUsers';
-import AdminSettings from './AdminSettings';
-import AdminNotifications from './AdminNotifications';
-import AdminSetup from './AdminSetup';
-import AdminUserDetails from './AdminUserDetails';
-import AdminPlans from './AdminPlans';
-import AdminQuotes from './AdminQuotes';
-import AdminOnboarding from './AdminOnboarding';
-import AdminTickets from './AdminTickets';
+const UserLayout = lazy(() => import('../components/UserLayout'));
+const DashboardPage = lazy(() => import('../pages/DashboardPage'));
+const InventoryPage = lazy(() => import('../pages/InventoryPage'));
+const LeadsPage = lazy(() => import('../pages/LeadsPage'));
+const SalesClosedPage = lazy(() => import('../pages/SalesClosedPage'));
+const PlansPage = lazy(() => import('../pages/PlansPage'));
+const AdminLogin = lazy(() => import('./AdminLogin'));
+const AdminLayout = lazy(() => import('./AdminLayout'));
+const AdminUsers = lazy(() => import('./AdminUsers'));
+const AdminSettings = lazy(() => import('./AdminSettings'));
+const AdminNotifications = lazy(() => import('./AdminNotifications'));
+const AdminSetup = lazy(() => import('./AdminSetup'));
+const AdminUserDetails = lazy(() => import('./AdminUserDetails'));
+const AdminPlans = lazy(() => import('./AdminPlans'));
+const AdminQuotes = lazy(() => import('./AdminQuotes'));
+const AdminOnboarding = lazy(() => import('./AdminOnboarding'));
+const AdminTickets = lazy(() => import('./AdminTickets'));
+
 import { DataProvider } from '../contexts/DataContext';
-import UserLayout from '../components/UserLayout';
-import DashboardPage from '../pages/DashboardPage';
-import InventoryPage from '../pages/InventoryPage';
-import LeadsPage from '../pages/LeadsPage';
-import SalesClosedPage from '../pages/SalesClosedPage';
-import PlansPage from '../pages/PlansPage';
+import { Suspense } from 'react';
+
+const AdminLoader = () => <div className="h-screen flex items-center justify-center bg-slate-50">Carregando administração...</div>;
 
 function UserAppWrapper() {
     const { userId } = useParams();
@@ -27,15 +31,17 @@ function UserAppWrapper() {
     // because standard UserApp in App.tsx is at root path.
     return (
         <DataProvider impersonatedUserId={userId}>
-            <Routes>
-                <Route element={<UserLayout />}>
-                    <Route index element={<DashboardPage />} />
-                    <Route path="inventory" element={<InventoryPage />} />
-                    <Route path="leads" element={<LeadsPage />} />
-                    <Route path="sales-closed" element={<SalesClosedPage />} />
-                    <Route path="plans" element={<PlansPage />} />
-                </Route>
-            </Routes>
+            <Suspense fallback={<AdminLoader />}>
+                <Routes>
+                    <Route element={<UserLayout />}>
+                        <Route index element={<DashboardPage />} />
+                        <Route path="inventory" element={<InventoryPage />} />
+                        <Route path="leads" element={<LeadsPage />} />
+                        <Route path="sales-closed" element={<SalesClosedPage />} />
+                        <Route path="plans" element={<PlansPage />} />
+                    </Route>
+                </Routes>
+            </Suspense>
         </DataProvider>
     );
 }
@@ -112,47 +118,49 @@ export default function AdminApp() {
     // Actually, Router logic is better below.
 
     return (
-        <Routes>
-            <Route
-                path="setup"
-                element={
-                    systemInitialized === false
-                        ? <AdminSetup />
-                        : <Navigate to="/paineldoadm/login" replace />
-                }
-            />
+        <Suspense fallback={<AdminLoader />}>
+            <Routes>
+                <Route
+                    path="setup"
+                    element={
+                        systemInitialized === false
+                            ? <AdminSetup />
+                            : <Navigate to="/paineldoadm/login" replace />
+                    }
+                />
 
-            <Route
-                path="login"
-                element={
-                    systemInitialized === false
-                        ? <Navigate to="/paineldoadm/setup" replace />
-                        : <AdminLogin />
-                }
-            />
+                <Route
+                    path="login"
+                    element={
+                        systemInitialized === false
+                            ? <Navigate to="/paineldoadm/setup" replace />
+                            : <AdminLogin />
+                    }
+                />
 
-            <Route
-                path="/"
-                element={
-                    systemInitialized === false
-                        ? <Navigate to="/paineldoadm/setup" replace />
-                        : (isAdmin ? <AdminLayout /> : <Navigate to="/paineldoadm/login" replace />)
-                }
-            >
-                <Route index element={<AdminUsers />} />
-                <Route path="users/:userId" element={<AdminUserDetails />} />
-                <Route path="settings" element={<AdminSettings />} />
-                <Route path="notifications" element={<AdminNotifications />} />
-                <Route path="quotes" element={<AdminQuotes />} />
-                <Route path="plans" element={<AdminPlans />} />
-                <Route path="onboarding" element={<AdminOnboarding />} />
-                <Route path="tickets" element={<AdminTickets />} />
-            </Route>
+                <Route
+                    path="/"
+                    element={
+                        systemInitialized === false
+                            ? <Navigate to="/paineldoadm/setup" replace />
+                            : (isAdmin ? <AdminLayout /> : <Navigate to="/paineldoadm/login" replace />)
+                    }
+                >
+                    <Route index element={<AdminUsers />} />
+                    <Route path="users/:userId" element={<AdminUserDetails />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="notifications" element={<AdminNotifications />} />
+                    <Route path="quotes" element={<AdminQuotes />} />
+                    <Route path="plans" element={<AdminPlans />} />
+                    <Route path="onboarding" element={<AdminOnboarding />} />
+                    <Route path="tickets" element={<AdminTickets />} />
+                </Route>
 
-            <Route
-                path="user/:userId/*"
-                element={isAdmin ? <UserAppWrapper /> : <Navigate to="/paineldoadm/login" replace />}
-            />
-        </Routes>
+                <Route
+                    path="user/:userId/*"
+                    element={isAdmin ? <UserAppWrapper /> : <Navigate to="/paineldoadm/login" replace />}
+                />
+            </Routes>
+        </Suspense>
     );
 }

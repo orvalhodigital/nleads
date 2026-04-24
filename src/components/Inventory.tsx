@@ -253,14 +253,33 @@ const Inventory: React.FC<InventoryProps> = ({
 
   const matchingLeads = useMemo(() => {
     if (!selectedVehicle || selectedVehicle === 'new') return [];
-    const v = selectedVehicle as Vehicle;
-    return leads.filter(l =>
-      // Mostra leads que NÃO estão perdidos nem concluídos (já compraram)
-      l.phase !== LeadPhase.DISQUALIFIED && l.phase !== LeadPhase.COMPLETED &&
-      (l.preferences.tipos_veiculo.includes(v.type) ||
-        l.preferences.marcas.some(b => v.brand.toLowerCase().includes(b.toLowerCase()))) &&
-      (!l.preferences.valor_maximo || v.price <= l.preferences.valor_maximo)
-    );
+    const v = selectedVehicle as any;
+    const isMoto = !!v.category; // Motorcycle interface uses category, Vehicle uses type
+    
+    return leads.filter(l => {
+      // Ignore lost/completed leads
+      if (l.phase === LeadPhase.DISQUALIFIED || l.phase === LeadPhase.COMPLETED) return false;
+      
+      const pref = l.preferences;
+      
+      if (isMoto) {
+        if (!pref.interesse_moto) return false;
+        
+        const matchesCategory = pref.tipos_moto?.length === 0 || pref.tipos_moto?.includes(v.category);
+        const matchesBrand = pref.marcas_moto?.length === 0 || pref.marcas_moto?.some(b => v.brand.toLowerCase().includes(b.toLowerCase()));
+        const matchesPrice = !pref.moto_valor_max || v.price <= pref.moto_valor_max;
+        
+        return matchesCategory && matchesBrand && matchesPrice;
+      } else {
+        if (!pref.interesse_carro) return false;
+        
+        const matchesType = pref.tipos_veiculo?.length === 0 || pref.tipos_veiculo?.includes(v.type);
+        const matchesBrand = pref.marcas?.length === 0 || pref.marcas?.some(b => v.brand.toLowerCase().includes(b.toLowerCase()));
+        const matchesPrice = !pref.carro_valor_max || v.price <= pref.carro_valor_max;
+        
+        return matchesType && matchesBrand && matchesPrice;
+      }
+    });
   }, [selectedVehicle, leads]);
 
   // Manual Lead Selector Logic
@@ -391,7 +410,7 @@ const Inventory: React.FC<InventoryProps> = ({
           <div className="lg:col-span-2 space-y-8">
             <div className={`bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden ${selectedVehicle.status === 'sold' ? 'opacity-90' : ''}`}>
               {selectedVehicle.imageUrl ? (
-                <div className="w-full h-96 mb-8 rounded-[2rem] overflow-hidden">
+                <div className="w-full aspect-[4/5] max-h-[700px] mb-8 rounded-[2rem] overflow-hidden">
                   <img src={selectedVehicle.imageUrl} alt={selectedVehicle.model} className="w-full h-full object-cover" />
                 </div>
               ) : (
@@ -599,7 +618,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
         {/* Lead Selector Modal */}
         {isSelectorOpen && (
-          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-6" onClick={() => setIsSelectorOpen(false)}>
+          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSelectorOpen(false)}>
             <div className="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl animate-fadeUp overflow-hidden flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
               <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
                 <div>
@@ -724,7 +743,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
         {/* Message Modal */}
         {isMessageModalOpen && (
-          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-6" onClick={() => setIsMessageModalOpen(false)}>
+          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsMessageModalOpen(false)}>
             <div className="bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl animate-fadeUp overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
                 <div>
@@ -771,7 +790,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
         {/* Sell Vehicle Modal */}
         {isSellModalOpen && (
-          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[90] flex items-center justify-center p-6" onClick={() => setIsSellModalOpen(false)}>
+          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSellModalOpen(false)}>
             <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
               <form onSubmit={handleSellSubmit}>
                 <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
@@ -962,7 +981,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
         {/* GRID VIEW */}
         {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {displayedVehicles.map(vehicle => (
               <div
                 key={vehicle.id}
@@ -971,11 +990,11 @@ const Inventory: React.FC<InventoryProps> = ({
               >
                 <div className="relative p-3 pb-0">
                   {vehicle.imageUrl ? (
-                    <div className="w-full aspect-[4/3] rounded-xl overflow-hidden shadow-inner bg-slate-50">
+                    <div className="w-full aspect-[4/5] rounded-xl overflow-hidden shadow-inner bg-slate-50">
                       <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     </div>
                   ) : (
-                    <div className="w-full aspect-[4/3] rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50">
+                    <div className="w-full aspect-[4/5] rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50">
                       <Car size={48} strokeWidth={1} />
                       <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Sem Imagem</span>
                     </div>
@@ -1010,7 +1029,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
                   <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço Sugerido</span>
+                      <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço de Venda</span>
                       <p className={`text-lg font-black tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
                         R$ {vehicle.price.toLocaleString()}
                       </p>
@@ -1095,7 +1114,7 @@ const Inventory: React.FC<InventoryProps> = ({
                 {/* Price & Action */}
                 <div className="flex flex-row md:flex-col justify-between items-end pl-0 md:pl-10 border-t md:border-t-0 md:border-l border-slate-50 pt-6 md:pt-4 md:pb-4 min-w-[200px]">
                   <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1.5">Preço Sugerido</p>
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1.5">Preço de Venda</p>
                     <p className={`text-3xl font-black leading-none tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>R$ {vehicle.price.toLocaleString()}</p>
                     {vehicle.status === 'sold' && vehicle.saleDetails && (
                       <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-lg">

@@ -64,7 +64,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onCha
             </div>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 p-4 bg-white border border-slate-100 rounded-2xl shadow-xl z-[100] w-72 animate-fadeUp">
+                <div className="absolute top-full left-0 mt-2 p-4 bg-white border border-slate-100 rounded-2xl shadow-xl z-[20000] w-72 animate-fadeUp">
                     <div className="flex items-center justify-between mb-4">
                         <button onClick={prevMonth} className="p-1 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors">
                             <ChevronLeft size={18} />

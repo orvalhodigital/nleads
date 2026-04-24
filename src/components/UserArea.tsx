@@ -200,7 +200,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
     };
 
     return (
-        <div className="space-y-12 pb-20 max-w-5xl mx-auto">
+        <div className="space-y-12 pb-20 max-w-[1600px] mx-auto w-full">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 {/* Profile Settings */}
                 <div className="lg:col-span-12">

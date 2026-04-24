@@ -10,7 +10,7 @@ const LeadsPage: React.FC = () => {
     const {
         leads, vehicles, profile,
         addLead, updateLead, deleteLead,
-        loadData
+        loadData, hasMoreLeads, loadMoreLeads, loadingLeads
     } = useData();
 
     // Manage local focus state from router state
@@ -43,6 +43,9 @@ const LeadsPage: React.FC = () => {
             onClearFocus={() => setFocusedLeadId(null)}
             userEmail={profile?.email}
             onDataChange={loadData}
+            hasMoreLeads={hasMoreLeads}
+            onLoadMore={loadMoreLeads}
+            loadingLeads={loadingLeads}
         />
     );
 };

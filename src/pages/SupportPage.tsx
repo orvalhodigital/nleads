@@ -289,7 +289,7 @@ export default function SupportPage() {
 
     if (view === 'create') {
         return (
-            <div className="animate-fadeUp max-w-4xl mx-auto pb-20">
+            <div className="animate-fadeUp w-full pb-20">
                 <header className="flex items-center gap-6 mb-10">
                     <button
                         onClick={() => setView('list')}

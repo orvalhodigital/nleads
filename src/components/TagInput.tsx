@@ -114,7 +114,7 @@ const TagInput: React.FC<TagInputProps> = ({ label, value, onChange, suggestions
                         autoComplete="off"
                     />
                     {showSuggestions && (
-                        <div className="absolute top-full left-0 w-full bg-white border border-slate-100 rounded-xl shadow-lg mt-2 max-h-40 overflow-y-auto z-50">
+                        <div className="absolute top-full left-0 w-full bg-white border border-slate-100 rounded-xl shadow-lg mt-2 max-h-40 overflow-y-auto z-[20000]">
                             {filteredSuggestions.map((suggestion, index) => (
                                 <div
                                     key={suggestion}

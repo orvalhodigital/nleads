@@ -1,19 +1,75 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import Header from './Header';
 import Auth from './Auth';
 import TrialExpired from './TrialExpired';
+import GlobalSearch from './GlobalSearch';
 import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabaseClient';
 
 const UserLayout: React.FC = () => {
     const { session, loading, profile, impersonatedUserId } = useData();
     const location = useLocation();
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [showRetry, setShowRetry] = useState(false);
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setIsSearchOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handler);
+
+        // Escape hatch for long loading
+        let timeout: any;
+        if (loading) {
+            timeout = setTimeout(() => setShowRetry(true), 8000);
+        } else {
+            setShowRetry(false);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handler);
+            if (timeout) clearTimeout(timeout);
+        };
+    }, [loading]);
 
     if (loading) {
-        return <div className="h-screen w-screen flex items-center justify-center bg-[#FAFAFA] text-emerald-500 font-bold">Carregando...</div>
+        return (
+            <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
+                {/* Background Blobs */}
+                <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] bg-emerald-100/40 rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute bottom-[-10%] left-[-5%] w-[50vw] h-[50vw] bg-blue-100/40 rounded-full blur-[100px] animate-pulse" />
+                
+                <div className="relative flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
+                    <div className="relative">
+                        <img src="https://docs.nleads.pro/nleads-logo.png" alt="nLeads Logo" className="h-16 w-auto object-contain" />
+                        <div className="absolute -bottom-1 -right-1">
+                            <div className="w-4 h-4 bg-emerald-500 rounded-full border-4 border-white animate-ping" />
+                        </div>
+                    </div>
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
+                                <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                                Sincronizando seus dados...
+                            </div>
+                            
+                            {showRetry && (
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="mt-4 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-2"
+                                >
+                                    O carregamento está demorando? Clique para recarregar
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+        );
     }
 
     if (!session) {
@@ -58,11 +114,13 @@ const UserLayout: React.FC = () => {
                 )}
 
                 <div className="flex-1 overflow-y-auto p-4 pb-28 lg:p-10 flex flex-col">
-                    <div className="max-w-[1440px] mx-auto w-full flex-1 flex flex-col animate-fadeUp">
+                    <div className="w-full flex-1 flex flex-col animate-fadeUp">
                         <Outlet />
                     </div>
                 </div>
             </main>
+
+            <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </div>
     );
 };

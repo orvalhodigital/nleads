@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import {
-  Users, Car, Target, DollarSign, Flame, Clock, AlertTriangle, BadgeCheck,
-  CheckCircle2, Quote, Calendar, TrendingUp, TrendingDown, Eye, UserCheck,
-  UserX, ShoppingBag, BarChart3, Percent, ArrowRight, Gauge, Package,
-  Repeat, Handshake, Timer, MapPin, ThermometerSun, Sparkles, Award, Activity, PhoneCall, Info
+  Users, Car, Target, DollarSign, Flame, Clock, AlertTriangle,
+  CheckCircle2, Calendar, TrendingUp,
+  UserX, ShoppingBag, BarChart3, Percent, ArrowRight, Package,
+  Repeat, Handshake, Timer, Award, PhoneCall, Info
 } from 'lucide-react';
-import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, VisitStatus, Motorcycle, TransmissionType, EngineType } from '../types';
+import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, Motorcycle, TransmissionType } from '../types';
 import { supabase } from '../lib/supabaseClient';
-import confetti from 'canvas-confetti';
-import { isToday, isTomorrow, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, parse } from 'date-fns';
+
+import { isToday, isTomorrow, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, differenceInCalendarDays } from 'date-fns';
 import { formatCurrency } from '../utils/formatters';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 
@@ -42,7 +42,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
         ...m,
         type: m.category as any,
         transmission: 'Manual' as TransmissionType,
-        engine: m.engine as any
+        engine: m.engine as any,
+        createdAt: m.saleDetails?.saleDate || undefined,
       })));
     }
     return list;
@@ -170,8 +171,22 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     const salesCountGrowth = previousSales.length > 0 ? ((filteredSales.length - previousSales.length) / previousSales.length) * 100 : 0;
     const salesGrowth = revenueLastMonth > 0 ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100 : 0;
 
-    const conversionRate = filteredLeads.length > 0 ? (filteredSales.length / filteredLeads.length) * 100 : 0;
+    const completedLeads = leads.filter(l => l.phase === LeadPhase.COMPLETED).length;
+    const conversionRate = leads.length > 0 ? (completedLeads / leads.length) * 100 : 0;
     const ticketMedioVendas = filteredSales.length > 0 ? revenueThisMonth / filteredSales.length : 0;
+    const monthlyGrossProfit = filteredSales.reduce((acc, v) => {
+      const salePrice = v.saleDetails?.salePrice || 0;
+      const refurbishmentCosts = v.saleDetails?.refurbishmentCosts || 0;
+      const costBasis = v.fipePrice ?? v.price ?? 0;
+      return acc + (salePrice - refurbishmentCosts - costBasis);
+    }, 0);
+    const averageDaysToSell = filteredSales.length > 0
+      ? filteredSales.reduce((acc, v) => {
+        const createdReference = (v as any).createdAt || v.saleDetails?.saleDate;
+        if (!createdReference || !v.saleDetails?.saleDate) return acc;
+        return acc + Math.max(0, differenceInCalendarDays(parseISO(v.saleDetails.saleDate), parseISO(createdReference)));
+      }, 0) / filteredSales.length
+      : 0;
 
     // Funil
     const activeLeads = leads.filter(l => l.phase !== LeadPhase.COMPLETED && l.phase !== LeadPhase.DISQUALIFIED);
@@ -197,17 +212,29 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
     // Funnel Data p/ Gráfico
     const funnelPhases = [
-      { name: 'Contatos', color: '#10b981' },
-      { name: 'Visita', color: '#3b82f6' },
-      { name: 'Simulação', color: '#f59e0b' },
-      { name: 'Ag. Pagamento', color: '#ec4899' }
+      { phase: LeadPhase.NEW, name: 'Novo', color: '#10b981' },
+      { phase: LeadPhase.VISIT, name: 'Visita', color: '#3b82f6' },
+      { phase: LeadPhase.SIMULATION, name: 'Simulação', color: '#f59e0b' },
+      { phase: LeadPhase.FOLLOW_UP, name: 'Follow-up', color: '#8b5cf6' },
+      { phase: LeadPhase.WAITING_PAYMENT, name: 'Pagamento', color: '#ec4899' },
+      { phase: LeadPhase.DOCUMENTATION, name: 'Documentação', color: '#06b6d4' },
+      { phase: LeadPhase.DELIVERY, name: 'Entrega', color: '#f97316' },
+      { phase: LeadPhase.COMPLETED, name: 'Compradores', color: '#16a34a' },
     ];
 
     const funnelData = funnelPhases.map(p => ({
       name: p.name,
-      value: leads.filter(l => l.phase.includes(p.name)).length,
+      value: leads.filter(l => l.phase === p.phase).length,
       color: p.color
     }));
+
+    const stockByCategoryMap: Record<string, number> = {};
+    availableVehicles.forEach(v => {
+      stockByCategoryMap[v.type] = (stockByCategoryMap[v.type] || 0) + 1;
+    });
+    const stockByCategory = Object.entries(stockByCategoryMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
 
     // Comercial Actions
     const matchesProntos = activeLeads.filter(l =>
@@ -274,10 +301,10 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
     return {
       leadsThisMonth, leadsGrowth, salesThisMonth, salesCountGrowth, revenueThisMonth, salesGrowth,
-      conversionRate, ticketMedioVendas, activeLeads, attentionLeads, hotLeads, availableVehicles,
+      conversionRate, ticketMedioVendas, monthlyGrossProfit, averageDaysToSell, activeLeads, attentionLeads, hotLeads, availableVehicles,
       totalStockValue, stockTurnover, mostExpensive, cheapest, funnelData, matchesProntos,
       prontosParaFechar, leadsEsquecidos, leadsComEntrada, leadsComTroca, salesByBrand,
-      brandInterest, typeInterest, leadSources, monthlyGoal, isGoalReached, goalProgress,
+      brandInterest, typeInterest, leadSources, stockByCategory, monthlyGoal, isGoalReached, goalProgress,
       salesNeeded, daysLeftInMonth, salesPerDayNeeded, visToday, visitsDoneToday,
       followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest: [] // Placeholder for model interest
     };
@@ -285,10 +312,10 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
   const {
     leadsThisMonth, leadsGrowth, salesThisMonth, salesCountGrowth, revenueThisMonth, salesGrowth,
-    conversionRate, ticketMedioVendas, activeLeads, attentionLeads, hotLeads, availableVehicles,
+    conversionRate, ticketMedioVendas, monthlyGrossProfit, averageDaysToSell, activeLeads, attentionLeads, hotLeads, availableVehicles,
     totalStockValue, stockTurnover, mostExpensive, cheapest, funnelData, matchesProntos,
     prontosParaFechar, leadsEsquecidos, leadsComEntrada, leadsComTroca, salesByBrand,
-    brandInterest, typeInterest, leadSources, monthlyGoal, isGoalReached, goalProgress,
+    brandInterest, typeInterest, leadSources, stockByCategory, monthlyGoal, isGoalReached, goalProgress,
     salesNeeded, daysLeftInMonth, salesPerDayNeeded, visToday, visitsDoneToday,
     followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest
   } = metrics;
@@ -431,7 +458,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               />
               <KpiGlassCard
                 label="Receita (Mês)"
-                value={`R$ ${(revenueThisMonth / 1000).toFixed(0)}k`}
+                value={`R$ ${formatCurrency(revenueThisMonth)}`}
                 trend={salesGrowth}
                 icon={DollarSign}
                 colorClass="text-teal-600 bg-teal-500/10"
@@ -450,13 +477,20 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               />
               <KpiGlassCard
                 label="Tick. Médio"
-                value={`R$ ${(ticketMedioVendas / 1000).toFixed(0)}k`}
+                value={`R$ ${formatCurrency(ticketMedioVendas)}`}
                 icon={Target}
                 colorClass="text-rose-600 bg-rose-500/10"
                 glowClass="bg-rose-400/30"
                 info="Valor médio das suas vendas. Estratégia: Se quiser aumentar o faturamento sem aumentar o número de vendas, foque em produtos de maior valor."
                 onClick={() => navigate('/reporting')}
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <MiniStat label="Volume de Vendas Mensal" value={`R$ ${formatCurrency(revenueThisMonth)}`} icon={DollarSign} />
+              <MiniStat label="Lucro Bruto Estimado" value={`R$ ${formatCurrency(monthlyGrossProfit)}`} icon={TrendingUp} />
+              <MiniStat label="Tempo Méd. Venda" value={`${averageDaysToSell.toFixed(1)} dias`} icon={Timer} />
+              <MiniStat label="Leads Parados" value={attentionLeads.length} icon={AlertTriangle} subtitle="Sem atualização há mais de 15 dias" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
@@ -511,7 +545,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                   </div>
 
                   <div className="space-y-5">
-                    {funnelData.filter(d => ['Visita', 'Simulação', 'Ag. Pagamento'].includes(d.name)).map((item) => (
+                    {funnelData.filter(d => ['Visita', 'Simulação', 'Pagamento', 'Documentação', 'Entrega'].includes(d.name)).map((item) => (
                       <PhaseGlassBar key={item.name} label={item.name} value={item.value} total={activeLeads.length} color={item.color} />
                     ))}
                   </div>
@@ -548,7 +582,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
                 <MiniStat label="Com Entrada" value={leadsComEntrada} icon={Handshake} />
                 <MiniStat label="Com Troca" value={leadsComTroca} icon={Repeat} />
-                <MiniStat label="Tempo Méd. Venda" value={`${0} dias`} icon={Timer} />
+                <MiniStat label="Tempo Méd. Venda" value={`${averageDaysToSell.toFixed(1)} dias`} icon={Timer} />
                 <MiniStat label="Desqualificados" value={leads.filter(l => l.phase === LeadPhase.DISQUALIFIED).length} icon={UserX} />
               </div>
 
@@ -599,10 +633,16 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               </GlassSection>
 
               <GlassSection>
-                <SectionHeader icon={Package} title="Alerta de Estoque" subtitle="Carros que ninguém procurou" color="text-rose-500 bg-rose-500/10 border-rose-500/20" />
-                <div className="mt-8 flex flex-col items-center justify-center text-center py-16 border border-dashed border-rose-300 bg-rose-50/50 rounded-[32px]">
-                  <p className="text-6xl font-black text-rose-600 mb-4">{availableVehicles.length}</p>
-                  <p className="text-sm font-bold uppercase tracking-widest text-rose-500/80">veículos disponíveis para venda</p>
+                <SectionHeader icon={Package} title="Distribuição do Stock" subtitle="Categorias disponíveis" color="text-rose-500 bg-rose-500/10 border-rose-500/20" />
+                <div className="mt-8 space-y-5">
+                  {stockByCategory.length > 0 ? stockByCategory.slice(0, 6).map((item) => (
+                    <PhaseGlassBar key={item.name} label={item.name} value={item.value} total={availableVehicles.length} color="#3b82f6" />
+                  )) : (
+                    <div className="flex flex-col items-center justify-center text-center py-16 border border-dashed border-rose-300 bg-rose-50/50 rounded-[32px]">
+                      <p className="text-6xl font-black text-rose-600 mb-4">0</p>
+                      <p className="text-sm font-bold uppercase tracking-widest text-rose-500/80">veículos disponíveis para venda</p>
+                    </div>
+                  )}
                 </div>
               </GlassSection>
             </div>

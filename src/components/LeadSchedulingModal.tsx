@@ -84,7 +84,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white w-[80vw] max-w-5xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div>
@@ -146,7 +146,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             />
                         </div>
                         {isDropdownOpen && (vehicleOfInterest.trim() !== '' || availableVehicles.length > 0) && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden z-20 max-h-60 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden z-[20000] max-h-60 overflow-y-auto">
                                 {filteredVehicles.length > 0 ? (
                                     filteredVehicles.map(v => (
                                         <div

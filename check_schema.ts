@@ -8,11 +8,8 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function check() {
-    let { data: profiles, error: err1 } = await supabase.from('profiles').select('*').limit(1);
-    console.log("Profiles:", profiles, err1);
-
-    let { data: comms, error: err2 } = await supabase.from('lead_communications').select('*').limit(1);
-    console.log("Comms:", comms, err2);
+    let { data: vehicles, error: err1 } = await supabase.from('vehicles').select('*').limit(1);
+    console.log("Vehicles Schema Keys:", vehicles ? Object.keys(vehicles[0]) : "No data", err1);
 }
 
 check();

@@ -63,7 +63,7 @@ export const CustomTimePicker: React.FC<CustomTimePickerProps> = ({ value, onCha
             </div>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[100] w-full max-h-60 overflow-y-auto animate-fadeUp custom-scrollbar py-2">
+                <div className="absolute top-full left-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[20000] w-full max-h-60 overflow-y-auto animate-fadeUp custom-scrollbar py-2">
                     {options.map((time) => (
                         <div
                             key={time}

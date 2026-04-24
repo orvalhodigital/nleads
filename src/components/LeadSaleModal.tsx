@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { X, Check, Car, Calendar, DollarSign, Search, Loader2 } from 'lucide-react';
 import { Lead, Vehicle, LeadPhase } from '../types';
-import { vehicleService } from '../services/vehicleService';
 import { leadService } from '../services/leadService';
 import { useToast } from '../contexts/ToastContext';
 import { supabase } from '../lib/supabaseClient';
@@ -23,8 +22,14 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
     const [salePrice, setSalePrice] = useState<number>(0);
+    const [refurbishmentCosts, setRefurbishmentCosts] = useState<number>(0);
     const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Walk-in mode (cliente sem lead)
+    const [isWalkIn, setIsWalkIn] = useState(false);
+    const [walkInName, setWalkInName] = useState('');
+    const [walkInPhone, setWalkInPhone] = useState('');
 
     const lead = leads.find(l => l.id === leadId);
 
@@ -36,8 +41,18 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
     );
 
     const handleConfirm = async () => {
-        if (!leadId || !selectedVehicleId || salePrice <= 0) {
+        if (!selectedVehicleId || salePrice <= 0) {
             showToast('error', 'Preencha todos os campos corretamente.');
+            return;
+        }
+
+        if (isWalkIn && (!walkInName || !walkInPhone)) {
+            showToast('error', 'Nome e telefone são obrigatórios para cliente walk-in.');
+            return;
+        }
+
+        if (!isWalkIn && !leadId) {
+            showToast('error', 'Selecione um cliente.');
             return;
         }
 
@@ -46,28 +61,58 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
             const vehicle = vehicles.find(v => v.id === selectedVehicleId);
             if (!vehicle) throw new Error("Veículo não encontrado");
 
-            // 1. Update Vehicle to 'sold' and add sale details
+            let buyerLeadId = leadId;
+            let buyerName = lead?.name || 'Cliente nLeads';
+
+            // 1. Se é walk-in, criar lead on-the-fly
+            if (isWalkIn) {
+                const newLead = await leadService.create({
+                    name: walkInName,
+                    phone: walkInPhone,
+                    email: '',
+                    phase: LeadPhase.COMPLETED,
+                    temperature: 'Morna',
+                    source: 'Walk-in',
+                    notes: 'Lead criado via venda walk-in',
+                    preferences: {
+                        tipos_veiculo: [],
+                        marcas: [],
+                        modelos: [],
+                        transmissao: [],
+                        motorizacao: [],
+                        observacoes_adicionais: '',
+                        possui_entrada: false,
+                        possui_troca: false
+                    },
+                    is_buyer: true
+                } as any);
+                buyerLeadId = newLead.id;
+                buyerName = walkInName;
+            }
+
+            // 2. Update Vehicle to 'sold' and add sale details
             const saleDetails = {
                 salePrice,
                 saleDate,
-                buyerLeadId: leadId,
-                buyerName: lead?.name || 'Cliente nLeads',
-                isFollowUpSale: true
+                buyerLeadId,
+                buyerName,
+                isFollowUpSale: true,
+                refurbishmentCosts
             };
 
             const { error: vError } = await supabase
                 .from('vehicles')
                 .update({
                     status: 'sold',
-                    sale_details: saleDetails
+                    sale_details: saleDetails as any
                 })
                 .eq('id', selectedVehicleId);
 
             if (vError) throw vError;
 
-            // 2. Update Lead: mark as buyer (appears in "Compradores" on Leads page)
+            // 3. Update Lead: mark as buyer (appears in "Compradores" on Leads page)
             // and move to WAITING_PAYMENT (appears in Sales Closed kanban)
-            if (lead) {
+            if (!isWalkIn && lead) {
                 await leadService.update({
                     ...lead,
                     phase: LeadPhase.WAITING_PAYMENT,
@@ -89,17 +134,19 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[10000] flex items-center justify-center p-4 animate-fadeIn">
             <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-fadeUp">
                 {/* Header */}
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-1">
                         <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
                             <DollarSign size={24} />
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Registrar Venda</h2>
-                            <p className="text-xs font-bold text-slate-400">Cliente: <span className="text-slate-900">{lead?.name}</span></p>
+                            <p className="text-xs font-bold text-slate-400">
+                                {isWalkIn ? 'Cliente: Walk-in' : `Cliente: ${lead?.name || 'Não selecionado'}`}
+                            </p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 text-slate-300 hover:text-slate-600 transition-colors">
@@ -109,6 +156,52 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
 
                 {/* Content */}
                 <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    {/* Walk-in Toggle */}
+                    <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                        <input
+                            type="checkbox"
+                            id="walkInToggle"
+                            checked={isWalkIn}
+                            onChange={(e) => {
+                                setIsWalkIn(e.target.checked);
+                                if (e.target.checked) {
+                                    setWalkInName('');
+                                    setWalkInPhone('');
+                                }
+                            }}
+                            className="w-5 h-5 rounded border-slate-300 text-amber-600 cursor-pointer"
+                        />
+                        <label htmlFor="walkInToggle" className="flex-1 text-sm font-bold text-amber-800 cursor-pointer">
+                            Cliente Walk-in (sem cadastro prévio)
+                        </label>
+                    </div>
+
+                    {/* Walk-in Form */}
+                    {isWalkIn && (
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                            <div className="col-span-2 space-y-2">
+                                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">Nome do Cliente *</label>
+                                <input
+                                    type="text"
+                                    placeholder="Nome completo"
+                                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all"
+                                    value={walkInName}
+                                    onChange={e => setWalkInName(e.target.value)}
+                                />
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">Telefone *</label>
+                                <input
+                                    type="tel"
+                                    placeholder="(11) 99999-9999"
+                                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all"
+                                    value={walkInPhone}
+                                    onChange={e => setWalkInPhone(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Vehicle Selection */}
                     <div className="space-y-4">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">1. Selecione o Veículo Vendido</label>
@@ -159,7 +252,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Price */}
                         <div className="space-y-3">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">2. Valor da Venda (R$)</label>
@@ -174,9 +267,22 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                             </div>
                         </div>
 
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">3. Custos de Preparação</label>
+                            <div className="relative">
+                                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input
+                                    type="text"
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-emerald-500 transition-all"
+                                    value={formatCurrency(refurbishmentCosts)}
+                                    onChange={e => setRefurbishmentCosts(parseCurrency(e.target.value))}
+                                />
+                            </div>
+                        </div>
+
                         {/* Date */}
                         <div className="space-y-3">
-                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">3. Data da Venda</label>
+                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block px-2">4. Data da Venda</label>
                             <div className="relative">
                                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                                 <div className="ml-12">

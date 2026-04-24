@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabaseClient';
-import { SaleDetails, Motorcycle, MotorcycleCategory } from '../types';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
+import { SaleDetails, Motorcycle, MotorcycleCategory, MotoStartType, MotoFuelSystem, MotoCooling, MotoBrakeType, EngineType } from '../types';
 
 // ─── Row → App mapper ────────────────────────────────────────────────────────
 
@@ -11,9 +11,11 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
     year: row.year,
     modelYear: row.model_year ?? row.year,
     plate: row.plate ?? '',
+    chassis: row.chassis ?? '',
+    fipePrice: row.fipe_price,
     price: row.price,
     category: row.category as MotorcycleCategory,
-    engine: row.engine ?? '',
+    engine: row.engine as EngineType,
     mileage: row.mileage ?? 0,
     color: row.color ?? '',
     isSingleOwner: row.is_single_owner ?? false,
@@ -21,6 +23,13 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
     isIpvaPaid: row.is_ipva_paid ?? false,
     optionals: row.optionals ?? [],
     imageUrl: row.image_url ?? '',
+    galleryImages: row.gallery_images ?? [],
+    startType: row.start_type as MotoStartType || undefined,
+    brakeType: row.brake_type as MotoBrakeType || undefined,
+    fuelSystem: row.fuel_system as MotoFuelSystem || undefined,
+    cooling: row.cooling as MotoCooling || undefined,
+    hasSpareKey: row.has_spare_key ?? undefined,
+    hasOwnerManual: row.has_owner_manual ?? undefined,
     status: (row.status as 'available' | 'sold') ?? 'available',
     saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined,
 });
@@ -28,33 +37,32 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
 // ─── Service ─────────────────────────────────────────────────────────────────
 
 export const motorcycleService = {
-
     async getAll(userId?: string): Promise<Motorcycle[]> {
         const { data: { user } } = await supabase.auth.getUser();
         const targetUserId = userId || user?.id;
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('motorcycles')
             .select('*')
             .eq('user_id', targetUserId)
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToMotorcycle);
     },
 
-    async search(query: string, userId?: string): Promise<Motorcycle[]> {
+    async search(query: string, userId?: string, limit: number = 10): Promise<Motorcycle[]> {
         const { data: { user } } = await supabase.auth.getUser();
         const targetUserId = userId || user?.id;
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('motorcycles')
             .select('*')
             .eq('user_id', targetUserId)
             .or(`brand.ilike.%${query}%,model.ilike.%${query}%`)
-            .limit(5);
+            .limit(limit);
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToMotorcycle);
     },
 
@@ -62,7 +70,7 @@ export const motorcycleService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Usuário não autenticado ou sessão expirada.');
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('motorcycles')
             .insert({
                 user_id: user.id,
@@ -71,6 +79,8 @@ export const motorcycleService = {
                 year: moto.year,
                 model_year: moto.modelYear,
                 plate: moto.plate,
+                chassis: moto.chassis,
+                fipe_price: moto.fipePrice,
                 price: moto.price,
                 category: moto.category,
                 engine: moto.engine,
@@ -81,21 +91,26 @@ export const motorcycleService = {
                 is_ipva_paid: moto.isIpvaPaid,
                 optionals: moto.optionals,
                 image_url: moto.imageUrl,
+                gallery_images: moto.galleryImages ?? [],
+                start_type: moto.startType ?? null,
+                brake_type: moto.brakeType ?? null,
+                fuel_system: moto.fuelSystem ?? null,
+                cooling: moto.cooling ?? null,
+                has_spare_key: moto.hasSpareKey ?? null,
+                has_owner_manual: moto.hasOwnerManual ?? null,
                 status: moto.status,
                 sale_details: moto.saleDetails ?? null,
             })
             .select()
             .single();
 
-        if (error) {
-            console.error('Erro Supabase ao criar moto:', error);
-            throw new Error(error.message || 'Erro ao inserir moto no banco de dados');
-        }
+        const data = handleSupabaseResponse(response);
+        if (!data) throw new Error('Falha ao criar moto.');
         return mapRowToMotorcycle(data);
     },
 
     async update(moto: Motorcycle): Promise<Motorcycle> {
-        const { data, error } = await supabase
+        const response = await supabase
             .from('motorcycles')
             .update({
                 brand: moto.brand,
@@ -103,6 +118,8 @@ export const motorcycleService = {
                 year: moto.year,
                 model_year: moto.modelYear,
                 plate: moto.plate,
+                chassis: moto.chassis,
+                fipe_price: moto.fipePrice,
                 price: moto.price,
                 category: moto.category,
                 engine: moto.engine,
@@ -113,6 +130,13 @@ export const motorcycleService = {
                 is_ipva_paid: moto.isIpvaPaid,
                 optionals: moto.optionals,
                 image_url: moto.imageUrl,
+                gallery_images: moto.galleryImages ?? [],
+                start_type: moto.startType ?? null,
+                brake_type: moto.brakeType ?? null,
+                fuel_system: moto.fuelSystem ?? null,
+                cooling: moto.cooling ?? null,
+                has_spare_key: moto.hasSpareKey ?? null,
+                has_owner_manual: moto.hasOwnerManual ?? null,
                 status: moto.status,
                 sale_details: moto.saleDetails ?? null,
             })
@@ -120,36 +144,71 @@ export const motorcycleService = {
             .select()
             .single();
 
-        if (error) {
-            console.error('Erro Supabase ao atualizar moto:', error);
-            throw new Error(error.message || 'Erro ao atualizar moto');
-        }
+        const data = handleSupabaseResponse(response);
+        if (!data) throw new Error('Falha ao atualizar moto.');
         return mapRowToMotorcycle(data);
     },
 
     async delete(id: string): Promise<void> {
-        const { error } = await supabase.from('motorcycles').delete().eq('id', id);
-        if (error) throw error;
+        const responseSelect = await supabase
+            .from('motorcycles')
+            .select('image_url, gallery_images')
+            .eq('id', id)
+            .single();
+
+        const moto = handleSupabaseResponse(responseSelect);
+
+        if (moto) {
+            const allUrls = [moto.image_url, ...(moto.gallery_images || [])].filter(Boolean) as string[];
+            const paths = allUrls.map(url => {
+                if (!url.includes('/public/')) return null;
+                const parts = url.split('/public/')[1]?.split('/');
+                if (!parts) return null;
+                parts.shift();
+                return parts.join('/');
+            }).filter(Boolean) as string[];
+            if (paths.length) {
+                await handleSupabaseResponse(await supabase.storage.from('vehicles').remove(paths));
+            }
+        }
+
+        const responseDelete = await supabase.from('motorcycles').delete().eq('id', id);
+        handleSupabaseResponse(responseDelete);
     },
 
     async sell(id: string, details: SaleDetails): Promise<void> {
-        const { error } = await supabase
+        const response = await supabase
             .from('motorcycles')
-            .update({ status: 'sold', sale_details: details })
+            .update({ status: 'sold', sale_details: details as any })
             .eq('id', id);
-        if (error) throw error;
+        handleSupabaseResponse(response);
     },
 
     async uploadImage(file: File, userId: string): Promise<string> {
         const path = `moto-${userId}-${Date.now()}.webp`;
 
-        const { error } = await supabase.storage.from('vehicles').upload(path, file, {
+        const response = await supabase.storage.from('vehicles').upload(path, file, {
             cacheControl: '3600',
             upsert: false,
             contentType: 'image/webp'
         });
 
-        if (error) throw error;
+        handleSupabaseResponse(response);
+
+        const { data } = supabase.storage.from('vehicles').getPublicUrl(path);
+        return data.publicUrl;
+    },
+
+    async uploadGalleryImage(file: File, userId: string): Promise<string> {
+        const path = `moto-gallery/${userId}-${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
+
+        const response = await supabase.storage.from('vehicles').upload(path, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: 'image/webp'
+        });
+
+        handleSupabaseResponse(response);
 
         const { data } = supabase.storage.from('vehicles').getPublicUrl(path);
         return data.publicUrl;

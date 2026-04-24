@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabaseClient';
-import { Lead, LeadPhase, LeadTemperature, VisitStatus, VehicleType, TransmissionType, EngineType } from '../types';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
+import { Lead, LeadPhase, LeadTemperature, InteractionHistory, MarketingMetadata } from '../types';
 
 const mapRowToLead = (row: any): Lead => ({
     id: row.id,
@@ -9,11 +9,24 @@ const mapRowToLead = (row: any): Lead => ({
     phase: row.phase as LeadPhase,
     temperature: row.temperature as LeadTemperature,
     preferences: {
+        interesse_carro: row.interesse_carro ?? true,
+        interesse_moto: row.interesse_moto ?? false,
         tipos_veiculo: row.tipos_veiculo || [],
+        tipos_moto: row.tipos_moto || [],
         valor_minimo: row.valor_minimo,
         valor_maximo: row.valor_maximo,
+        carro_valor_min: row.carro_valor_min,
+        carro_valormax: row.carro_valormax,
+        carro_transmissao: row.carro_transmissao || [],
+        carro_motorizacao: row.carro_motorizacao || [],
+        moto_valor_min: row.moto_valor_min,
+        moto__valormax: row.moto__valormax,
+        moto_transmissao: row.moto_transmissao || [],
+        moto_motorizacao: row.moto_motorizacao || [],
         marcas: row.marcas || [],
         modelos: row.modelos || [],
+        marcas_moto: row.marcas_moto || [],
+        modelos_moto: row.modelos_moto || [],
         transmissao: row.transmissao || [],
         motorizacao: row.motorizacao || [],
         observacoes_adicionais: row.observacoes_adicionais || '',
@@ -36,59 +49,80 @@ const mapRowToLead = (row: any): Lead => ({
     scheduling_data: row.scheduling_data || {},
     simulation_data: row.simulation_data || {},
     follow_up_data: row.follow_up_data || {},
+    marketing_metadata: row.marketing_metadata as MarketingMetadata | undefined,
+    interaction_history: row.interaction_history as InteractionHistory[] || [],
     // is_buyer é armazenado dentro do JSONB follow_up_data para evitar problemas de cache do PostgREST
     is_buyer: row.follow_up_data?.is_buyer || false,
     foto_url: row.foto_url || undefined
 });
 
 export const leadService = {
-    async list(userId?: string): Promise<Lead[]> {
+    async list(userId?: string, limit: number = 50, offset: number = 0): Promise<Lead[]> {
         const { data: { user } } = await supabase.auth.getUser();
         const targetUserId = userId || user?.id;
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('leads')
             .select('*')
             .eq('user_id', targetUserId)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToLead);
     },
 
     async getAll(userId?: string): Promise<Lead[]> {
-        return this.list(userId);
+        // Agora o getAll é limitado por padrão, incentivando o uso do list com paginação no frontend
+        return this.list(userId, 100, 0); 
     },
 
-    async search(query: string, userId?: string): Promise<Lead[]> {
+    async search(query: string, userId?: string, limit: number = 20): Promise<Lead[]> {
         const { data: { user } } = await supabase.auth.getUser();
         const targetUserId = userId || user?.id;
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('leads')
             .select('*')
             .eq('user_id', targetUserId)
             .ilike('name', `%${query}%`)
-            .limit(10);
+            .limit(limit);
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToLead);
     },
 
     async create(lead: Omit<Lead, 'id' | 'createdAt' | 'lastUpdate'>): Promise<Lead> {
-        const { data, error } = await supabase
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado ou sessão expirada.');
+
+        const response = await supabase
             .from('leads')
             .insert({
+                user_id: user.id,
                 name: lead.name,
                 phone: lead.phone,
                 email: lead.email,
                 phase: lead.phase,
                 temperature: lead.temperature,
+                interesse_carro: lead.preferences.interesse_carro,
+                interesse_moto: lead.preferences.interesse_moto,
                 tipos_veiculo: lead.preferences.tipos_veiculo,
+                tipos_moto: lead.preferences.tipos_moto,
                 valor_minimo: lead.preferences.valor_minimo,
                 valor_maximo: lead.preferences.valor_maximo,
+                carro_valor_min: lead.preferences.carro_valor_min,
+                carro_valormax: lead.preferences.carro_valormax,
+                carro_transmissao: lead.preferences.carro_transmissao,
+                carro_motorizacao: lead.preferences.carro_motorizacao,
+                moto_valor_min: lead.preferences.moto_valor_min,
+                moto__valormax: lead.preferences.moto__valormax,
+                moto_transmissao: lead.preferences.moto_transmissao,
+                moto_motorizacao: lead.preferences.moto_motorizacao,
                 marcas: lead.preferences.marcas,
                 modelos: lead.preferences.modelos,
+                marcas_moto: lead.preferences.marcas_moto,
+                modelos_moto: lead.preferences.modelos_moto,
                 transmissao: lead.preferences.transmissao,
                 motorizacao: lead.preferences.motorizacao,
                 observacoes_adicionais: lead.preferences.observacoes_adicionais,
@@ -108,18 +142,21 @@ export const leadService = {
                 tags: lead.tags,
                 scheduling_data: lead.scheduling_data || {},
                 simulation_data: lead.simulation_data || {},
+                marketing_metadata: lead.marketing_metadata || null,
+                interaction_history: lead.interaction_history || [],
                 // is_buyer armazenado dentro do JSONB follow_up_data
                 follow_up_data: { ...(lead.follow_up_data || {}), is_buyer: lead.is_buyer || false },
             })
             .select()
             .single();
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
+        if (!data) throw new Error('Falha ao criar lead.');
         return mapRowToLead(data);
     },
 
     async update(lead: Lead): Promise<Lead> {
-        const { data, error } = await supabase
+        const response = await supabase
             .from('leads')
             .update({
                 name: lead.name,
@@ -127,11 +164,24 @@ export const leadService = {
                 email: lead.email,
                 phase: lead.phase,
                 temperature: lead.temperature,
+                interesse_carro: lead.preferences.interesse_carro,
+                interesse_moto: lead.preferences.interesse_moto,
                 tipos_veiculo: lead.preferences.tipos_veiculo,
+                tipos_moto: lead.preferences.tipos_moto,
                 valor_minimo: lead.preferences.valor_minimo,
                 valor_maximo: lead.preferences.valor_maximo,
+                carro_valor_min: lead.preferences.carro_valor_min,
+                carro_valormax: lead.preferences.carro_valormax,
+                carro_transmissao: lead.preferences.carro_transmissao,
+                carro_motorizacao: lead.preferences.carro_motorizacao,
+                moto_valor_min: lead.preferences.moto_valor_min,
+                moto__valormax: lead.preferences.moto__valormax,
+                moto_transmissao: lead.preferences.moto_transmissao,
+                moto_motorizacao: lead.preferences.moto_motorizacao,
                 marcas: lead.preferences.marcas,
                 modelos: lead.preferences.modelos,
+                marcas_moto: lead.preferences.marcas_moto,
+                modelos_moto: lead.preferences.modelos_moto,
                 transmissao: lead.preferences.transmissao,
                 motorizacao: lead.preferences.motorizacao,
                 observacoes_adicionais: lead.preferences.observacoes_adicionais,
@@ -152,6 +202,8 @@ export const leadService = {
                 tags: lead.tags,
                 scheduling_data: lead.scheduling_data || {},
                 simulation_data: lead.simulation_data || {},
+                marketing_metadata: lead.marketing_metadata || null,
+                interaction_history: lead.interaction_history || [],
                 // is_buyer armazenado dentro do JSONB follow_up_data
                 follow_up_data: { ...(lead.follow_up_data || {}), is_buyer: lead.is_buyer || false },
             })
@@ -159,16 +211,35 @@ export const leadService = {
             .select()
             .single();
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
+        if (!data) throw new Error('Falha ao atualizar lead.');
         return mapRowToLead(data);
     },
 
     async delete(id: string): Promise<void> {
-        const { error } = await supabase
+        const response = await supabase
             .from('leads')
             .delete()
             .eq('id', id);
 
-        if (error) throw error;
+        handleSupabaseResponse(response);
+    },
+
+    async addInteraction(leadId: string, interaction: Omit<InteractionHistory, 'id'>): Promise<Lead> {
+        const newInteraction: InteractionHistory = {
+            ...interaction,
+            id: crypto.randomUUID()
+        };
+
+        const response = await supabase
+            .rpc('append_lead_interaction', {
+                p_lead_id: leadId,
+                p_interaction: newInteraction,
+            });
+
+        const updatedData = handleSupabaseResponse(response);
+        if (!updatedData) throw new Error('Falha ao atualizar o histórico de interações.');
+        
+        return mapRowToLead(updatedData);
     }
 };

@@ -418,7 +418,15 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 <h1 className="text-6xl font-black text-slate-900 tracking-tighter leading-[0.9] uppercase mb-4">
                                     {m.brand} <br /> {m.model}
                                 </h1>
-                                <p className="text-4xl font-black text-emerald-500 tracking-tighter">R$ {m.price.toLocaleString('pt-BR')}</p>
+                                <div className="flex items-end gap-4 mb-4">
+                                    <p className="text-4xl font-black text-emerald-500 tracking-tighter">R$ {m.price.toLocaleString('pt-BR')}</p>
+                                    {m.fipePrice ? (
+                                        <div className="mb-1">
+                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tabela FIPE</p>
+                                            <p className="text-xs font-bold text-slate-400">R$ {m.fipePrice.toLocaleString('pt-BR')}</p>
+                                        </div>
+                                    ) : null}
+                                </div>
 
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 mt-12 pt-12 border-t border-slate-50">
                                     {[

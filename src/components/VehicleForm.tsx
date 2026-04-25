@@ -287,7 +287,11 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
     const getFieldClassName = (field: string, base: string) => `${base} ${errors[field] ? 'border-red-300 bg-red-50/60 focus:ring-red-500/10' : ''}`;
 
-    const validateForm = () => {
+    // Removed validateForm in favor of inline check in handleSubmit for instant scrolling
+    const validateForm = () => true;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         const nextErrors: Record<string, string> = {};
 
         if (!formData.brand.trim()) nextErrors.brand = 'Informe a marca.';
@@ -302,12 +306,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         }
 
         setErrors(nextErrors);
-        return Object.keys(nextErrors).length === 0;
-    };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) {
+        if (Object.keys(nextErrors).length > 0) {
+            const firstError = Object.keys(nextErrors)[0];
+            const element = document.getElementById(`field-${firstError}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return;
         }
 
@@ -351,428 +356,428 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             </div>
 
             <form id="vehicle-form" onSubmit={handleSubmit} className="space-y-8">
-                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-10">
+                <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-10">
 
-                            <section className="space-y-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Informações Básicas</h3>
-                                </div>
+                    <section className="space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Informações Básicas</h3>
+                        </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Marca</label>
-                                        <AutocompleteInput
-                                            required
-                                            value={formData.brand}
-                                            onChangeValue={(val) => setFormData({ ...formData, brand: val, model: '' })}
-                                            suggestions={Object.keys(carDatabase)}
-                                            className={getFieldClassName('brand', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm')}
-                                            placeholder="Ex: Chevrolet"
-                                        />
-                                        {errors.brand && <p className="text-[10px] font-bold text-red-500 px-1">{errors.brand}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Modelo</label>
-                                        <AutocompleteInput
-                                            required
-                                            value={formData.model}
-                                            onChangeValue={(val) => setFormData(prev => ({ ...prev, model: val }))}
-                                            suggestions={carDatabase[Object.keys(carDatabase).find(k => k.toLowerCase() === formData.brand.toLowerCase()) || ''] || []}
-                                            className={getFieldClassName('model', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm')}
-                                            placeholder="Ex: Onix"
-                                        />
-                                        {errors.model && <p className="text-[10px] font-bold text-red-500 px-1">{errors.model}</p>}
-                                    </div>
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2" id="field-brand">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Marca</label>
+                                <AutocompleteInput
+                                    required
+                                    value={formData.brand}
+                                    onChangeValue={(val) => setFormData({ ...formData, brand: val, model: '' })}
+                                    suggestions={Object.keys(carDatabase)}
+                                    className={getFieldClassName('brand', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm')}
+                                    placeholder="Ex: Chevrolet"
+                                />
+                                {errors.brand && <p className="text-[10px] font-bold text-red-500 px-1">{errors.brand}</p>}
+                            </div>
+                            <div className="space-y-2" id="field-model">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Modelo</label>
+                                <AutocompleteInput
+                                    required
+                                    value={formData.model}
+                                    onChangeValue={(val) => setFormData(prev => ({ ...prev, model: val }))}
+                                    suggestions={carDatabase[Object.keys(carDatabase).find(k => k.toLowerCase() === formData.brand.toLowerCase()) || ''] || []}
+                                    className={getFieldClassName('model', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm')}
+                                    placeholder="Ex: Onix"
+                                />
+                                {errors.model && <p className="text-[10px] font-bold text-red-500 px-1">{errors.model}</p>}
+                            </div>
+                        </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Placa</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                value={formData.plate}
-                                                onChange={e => {
-                                                    setPlateError(null);
-                                                    setFormData({ ...formData, plate: e.target.value.toUpperCase() });
-                                                }}
-                                                onKeyDown={handlePlateKeyDown}
-                                                placeholder="ABC1234"
-                                                maxLength={8}
-                                                className="flex-1 min-w-0 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm uppercase"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={lookupPlate}
-                                                disabled={lookupLoading}
-                                                title="Consultar placa"
-                                                className="shrink-0 w-14 h-14 flex items-center justify-center rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white transition-all shadow-sm disabled:opacity-60"
-                                            >
-                                                {lookupLoading
-                                                    ? <Loader2 size={18} className="animate-spin" />
-                                                    : <Search size={18} />}
-                                            </button>
-                                        </div>
-                                        {plateError && (
-                                            <p className="flex items-center gap-1.5 text-[10px] font-bold text-red-500 px-1 pt-1">
-                                                <AlertCircle size={11} /> {plateError}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Chassi</label>
-                                        <input type="text" value={formData.chassis || ''} onChange={e => setFormData({ ...formData, chassis: e.target.value.toUpperCase() })} maxLength={17} placeholder="Opcional" className={getFieldClassName('chassis', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm uppercase')} />
-                                        {errors.chassis && <p className="text-[10px] font-bold text-red-500 px-1">{errors.chassis}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Fab.</label>
-                                        <input type="number" required value={formData.year} onChange={e => setFormData({ ...formData, year: parseInt(e.target.value) })} className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
-                                        {errors.year && <p className="text-[10px] font-bold text-red-500 px-1">{errors.year}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Modelo</label>
-                                        <input type="number" required value={formData.modelYear || formData.year} onChange={e => setFormData({ ...formData, modelYear: parseInt(e.target.value) })} className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
-                                        {errors.modelYear && <p className="text-[10px] font-bold text-red-500 px-1">{errors.modelYear}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço de Venda</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 mt-[1px] text-emerald-700 font-bold text-sm">R$</span>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formatCurrency(formData.price)}
-                                                onChange={e => setFormData({ ...formData, price: parseCurrency(e.target.value) })}
-                                                className={getFieldClassName('price', 'w-full p-4 pl-12 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl outline-none font-bold text-sm')}
-                                            />
-                                        </div>
-                                        {errors.price && <p className="text-[10px] font-bold text-red-500 px-1">{errors.price}</p>}
-                                        <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest px-1">Preço de Venda</p>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço FIPE</label>
-                                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl h-[54px] flex items-center">
-                                            {formData.fipePrice ? (
-                                                <p className="text-sm font-bold text-blue-700">R$ {formatCurrency(formData.fipePrice)}</p>
-                                            ) : (
-                                                <p className="text-sm font-medium text-blue-300 italic">Consulte a placa</p>
-                                            )}
-                                        </div>
-                                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest px-1">Tabela FIPE</p>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">KM Rodados</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formatKM(formData.mileage)}
-                                            onChange={e => setFormData({ ...formData, mileage: parseKM(e.target.value) })}
-                                            className={getFieldClassName('mileage', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')}
-                                        />
-                                        {errors.mileage && <p className="text-[10px] font-bold text-red-500 px-1">{errors.mileage}</p>}
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section className="space-y-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações Técnicas</h3>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Tipo</label>
-                                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as VehicleType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
-                                            {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Câmbio</label>
-                                        <select value={formData.transmission} onChange={e => setFormData({ ...formData, transmission: e.target.value as TransmissionType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
-                                            {TRANSMISSION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Motor</label>
-                                        <select value={formData.engine} onChange={e => setFormData({ ...formData, engine: e.target.value as EngineType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
-                                            {ENGINE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Combustível</label>
-                                        <select
-                                            value={formData.fuelType || 'Flex'}
-                                            onChange={e => setFormData({ ...formData, fuelType: e.target.value as FuelType })}
-                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer"
-                                        >
-                                            {FUEL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Portas</label>
-                                        <select
-                                            value={formData.doors || 4}
-                                            onChange={e => setFormData({ ...formData, doors: parseInt(e.target.value) === 2 ? 2 : 4 })}
-                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer"
-                                        >
-                                            {DOOR_OPTIONS.map(d => <option key={d} value={d}>{d} Portas</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                                    {[
-                                        { label: 'Único Dono', key: 'isSingleOwner' },
-                                        { label: 'Revisões OK', key: 'isServiceHistoryComplete' },
-                                        { label: 'IPVA Pago', key: 'isIpvaPaid' },
-                                        { label: 'Garantia', key: 'hasWarranty' }
-                                    ].map(check => (
-                                        <button
-                                            type="button"
-                                            key={check.key}
-                                            onClick={() => setFormData(prev => ({ ...prev, [check.key]: !prev[check.key as keyof typeof prev] }))}
-                                            className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all gap-2 ${formData[check.key as keyof typeof formData] ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'}`}
-                                        >
-                                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData[check.key as keyof typeof formData] ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200'}`}>
-                                                {formData[check.key as keyof typeof formData] && <Check size={12} strokeWidth={4} />}
-                                            </div>
-                                            <span className="text-[9px] font-black uppercase tracking-widest">{check.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </section>
-
-                            <section className="space-y-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-4 bg-violet-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Documentação</h3>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasSpareKey ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
-                                        <div>
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Chave Reserva</p>
-                                            <p className={`text-sm font-bold mt-0.5 ${formData.hasSpareKey ? 'text-violet-700' : 'text-slate-400'}`}>
-                                                {formData.hasSpareKey ? 'Sim' : 'Não'}
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={!!formData.hasSpareKey}
-                                            onCheckedChange={(val) => setFormData(prev => ({ ...prev, hasSpareKey: val }))}
-                                        />
-                                    </div>
-
-                                    <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasOwnerManual ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
-                                        <div>
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Manual do Proprietário</p>
-                                            <p className={`text-sm font-bold mt-0.5 ${formData.hasOwnerManual ? 'text-violet-700' : 'text-slate-400'}`}>
-                                                {formData.hasOwnerManual ? 'Sim' : 'Não'}
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={!!formData.hasOwnerManual}
-                                            onCheckedChange={(val) => setFormData(prev => ({ ...prev, hasOwnerManual: val }))}
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50">
-                                        <div>
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Final da Placa</p>
-                                            <p className="text-2xl font-black text-slate-700 mt-0.5 tracking-widest">
-                                                {formData.plate?.replace(/[-\s]/g, '').slice(-1).toUpperCase() || '—'}
-                                            </p>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
-                                            <Hash size={18} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section className="space-y-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais do Veículo</h3>
-                                </div>
-
-                                <div className="space-y-5">
-                                    {CATEGORIZED_OPTIONS.map(category => (
-                                        <div key={category.label}>
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className={`w-1 h-3 ${category.color} rounded-full`} />
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{category.label}</p>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {category.items.map(opt => {
-                                                    const isSelected = formData.optionals.includes(opt);
-                                                    return (
-                                                        <button
-                                                            type="button"
-                                                            key={opt}
-                                                            onClick={() => {
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    optionals: isSelected
-                                                                        ? prev.optionals.filter(o => o !== opt)
-                                                                        : [...prev.optionals, opt]
-                                                                }));
-                                                            }}
-                                                            className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all border ${isSelected
-                                                                ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                                                                : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                                                            }`}
-                                                        >
-                                                            {opt}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="space-y-2" id="field-plate">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Placa</label>
                                 <div className="flex gap-2">
                                     <input
-                                        type="text"
-                                        value={customOption}
-                                        onChange={e => setCustomOption(e.target.value)}
-                                        onKeyDown={e => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                if (customOption.trim()) {
-                                                    const val = customOption.trim();
-                                                    if (!formData.optionals.includes(val)) {
-                                                        setFormData(prev => ({ ...prev, optionals: [...prev.optionals, val] }));
-                                                    }
-                                                    setCustomOption('');
-                                                }
-                                            }
+                                        value={formData.plate}
+                                        onChange={e => {
+                                            setPlateError(null);
+                                            setFormData({ ...formData, plate: e.target.value.toUpperCase() });
                                         }}
-                                        placeholder="Adicionar outro opcional..."
-                                        className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm"
+                                        onKeyDown={handlePlateKeyDown}
+                                        placeholder="ABC1234"
+                                        maxLength={8}
+                                        className="flex-1 min-w-0 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm uppercase"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            if (customOption.trim()) {
-                                                const val = customOption.trim();
-                                                if (!formData.optionals.includes(val)) {
-                                                    setFormData(prev => ({ ...prev, optionals: [...prev.optionals, val] }));
-                                                }
-                                                setCustomOption('');
-                                            }
-                                        }}
-                                        className="px-6 bg-slate-900 text-white rounded-2xl hover:bg-emerald-500 transition-colors"
+                                        onClick={lookupPlate}
+                                        disabled={lookupLoading}
+                                        title="Consultar placa"
+                                        className="shrink-0 w-14 h-14 flex items-center justify-center rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white transition-all shadow-sm disabled:opacity-60"
                                     >
-                                        <Plus size={20} />
+                                        {lookupLoading
+                                            ? <Loader2 size={18} className="animate-spin" />
+                                            : <Search size={18} />}
                                     </button>
                                 </div>
-                            </section>
-                        </div>
-
-                        {/* Media Section - inline */}
-                        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <ImagePlus size={13} /> Mídia do Veículo
-                                </h3>
+                                {plateError && (
+                                    <p className="flex items-center gap-1.5 text-[10px] font-bold text-red-500 px-1 pt-1">
+                                        <AlertCircle size={11} /> {plateError}
+                                    </p>
+                                )}
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Foto Principal */}
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
-                                    <div className="aspect-[4/5] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
-                                        {formData.imageUrl ? (
-                                            <>
-                                                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="w-12 h-12 rounded-full bg-white text-red-500 flex items-center justify-center shadow-xl">
-                                                        <X size={20} />
-                                                    </button>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-3">
-                                                <Upload size={40} strokeWidth={1} />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Nenhuma Foto</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <label className="block w-full cursor-pointer group">
-                                        <div className={`w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
-                                            {uploading ? (
-                                                <Loader2 size={16} className="animate-spin text-emerald-500" />
-                                            ) : (
-                                                <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />
-                                            )}
-                                            <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
-                                                {uploading ? 'Enviando...' : 'Fazer Upload'}
-                                            </span>
-                                        </div>
-                                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
-                                    </label>
-                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Padrão: 1080×1350px (4:5) · WebP</p>
-                                </div>
-
-                                {/* Galeria */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between px-1">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Galeria</label>
-                                        <span className="text-[10px] font-bold text-slate-300">{formData.galleryImages?.length || 0}/6 fotos</span>
-                                    </div>
-
-                                    {(formData.galleryImages?.length ?? 0) > 0 && (
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {formData.galleryImages!.map((url, i) => (
-                                                <div key={i} className="relative group aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
-                                                    <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeGalleryImage(url)}
-                                                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        <X size={16} className="text-white" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {(formData.galleryImages?.length || 0) < 6 && (
-                                        <label className="block w-full cursor-pointer group">
-                                            <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
-                                                {galleryUploading
-                                                    ? <Loader2 size={16} className="animate-spin text-emerald-500" />
-                                                    : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
-                                                <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
-                                                    {galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}
-                                                </span>
-                                            </div>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                multiple
-                                                className="hidden"
-                                                onChange={handleGalleryUpload}
-                                                disabled={galleryUploading}
-                                            />
-                                        </label>
-                                    )}
-                                    <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 1080×1350px · WebP</p>
-                                </div>
+                            <div className="space-y-2" id="field-chassis">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Chassi</label>
+                                <input type="text" value={formData.chassis || ''} onChange={e => setFormData({ ...formData, chassis: e.target.value.toUpperCase() })} maxLength={17} placeholder="Opcional" className={getFieldClassName('chassis', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm uppercase')} />
+                                {errors.chassis && <p className="text-[10px] font-bold text-red-500 px-1">{errors.chassis}</p>}
+                            </div>
+                            <div className="space-y-2" id="field-year">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Fab.</label>
+                                <input type="number" required value={formData.year} onChange={e => setFormData({ ...formData, year: parseInt(e.target.value) })} className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
+                                {errors.year && <p className="text-[10px] font-bold text-red-500 px-1">{errors.year}</p>}
+                            </div>
+                            <div className="space-y-2" id="field-modelYear">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Modelo</label>
+                                <input type="number" required value={formData.modelYear || formData.year} onChange={e => setFormData({ ...formData, modelYear: parseInt(e.target.value) })} className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
+                                {errors.modelYear && <p className="text-[10px] font-bold text-red-500 px-1">{errors.modelYear}</p>}
                             </div>
                         </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2" id="field-price">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço de Venda</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 mt-[1px] text-emerald-700 font-bold text-sm">R$</span>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formatCurrency(formData.price)}
+                                        onChange={e => setFormData({ ...formData, price: parseCurrency(e.target.value) })}
+                                        className={getFieldClassName('price', 'w-full p-4 pl-12 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl outline-none font-bold text-sm')}
+                                    />
+                                </div>
+                                {errors.price && <p className="text-[10px] font-bold text-red-500 px-1">{errors.price}</p>}
+                                <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest px-1">Preço de Venda</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço FIPE</label>
+                                <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl h-[54px] flex items-center">
+                                    {formData.fipePrice ? (
+                                        <p className="text-sm font-bold text-blue-700">R$ {formatCurrency(formData.fipePrice)}</p>
+                                    ) : (
+                                        <p className="text-sm font-medium text-blue-300 italic">Consulte a placa</p>
+                                    )}
+                                </div>
+                                <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest px-1">Tabela FIPE</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2" id="field-mileage">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">KM Rodados</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formatKM(formData.mileage)}
+                                    onChange={e => setFormData({ ...formData, mileage: parseKM(e.target.value) })}
+                                    className={getFieldClassName('mileage', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')}
+                                />
+                                {errors.mileage && <p className="text-[10px] font-bold text-red-500 px-1">{errors.mileage}</p>}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações Técnicas</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Tipo</label>
+                                <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as VehicleType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
+                                    {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Câmbio</label>
+                                <select value={formData.transmission} onChange={e => setFormData({ ...formData, transmission: e.target.value as TransmissionType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
+                                    {TRANSMISSION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Motor</label>
+                                <select value={formData.engine} onChange={e => setFormData({ ...formData, engine: e.target.value as EngineType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer">
+                                    {ENGINE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Combustível</label>
+                                <select
+                                    value={formData.fuelType || 'Flex'}
+                                    onChange={e => setFormData({ ...formData, fuelType: e.target.value as FuelType })}
+                                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer"
+                                >
+                                    {FUEL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Portas</label>
+                                <select
+                                    value={formData.doors || 4}
+                                    onChange={e => setFormData({ ...formData, doors: parseInt(e.target.value) === 2 ? 2 : 4 })}
+                                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm appearance-none cursor-pointer"
+                                >
+                                    {DOOR_OPTIONS.map(d => <option key={d} value={d}>{d} Portas</option>)}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+                            {[
+                                { label: 'Único Dono', key: 'isSingleOwner' },
+                                { label: 'Revisões OK', key: 'isServiceHistoryComplete' },
+                                { label: 'IPVA Pago', key: 'isIpvaPaid' },
+                                { label: 'Garantia', key: 'hasWarranty' }
+                            ].map(check => (
+                                <button
+                                    type="button"
+                                    key={check.key}
+                                    onClick={() => setFormData(prev => ({ ...prev, [check.key]: !prev[check.key as keyof typeof prev] }))}
+                                    className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all gap-2 ${formData[check.key as keyof typeof formData] ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+                                >
+                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData[check.key as keyof typeof formData] ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200'}`}>
+                                        {formData[check.key as keyof typeof formData] && <Check size={12} strokeWidth={4} />}
+                                    </div>
+                                    <span className="text-[9px] font-black uppercase tracking-widest">{check.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-1.5 h-4 bg-violet-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Documentação</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasSpareKey ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Chave Reserva</p>
+                                    <p className={`text-sm font-bold mt-0.5 ${formData.hasSpareKey ? 'text-violet-700' : 'text-slate-400'}`}>
+                                        {formData.hasSpareKey ? 'Sim' : 'Não'}
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={!!formData.hasSpareKey}
+                                    onCheckedChange={(val) => setFormData(prev => ({ ...prev, hasSpareKey: val }))}
+                                />
+                            </div>
+
+                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasOwnerManual ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Manual do Proprietário</p>
+                                    <p className={`text-sm font-bold mt-0.5 ${formData.hasOwnerManual ? 'text-violet-700' : 'text-slate-400'}`}>
+                                        {formData.hasOwnerManual ? 'Sim' : 'Não'}
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={!!formData.hasOwnerManual}
+                                    onCheckedChange={(val) => setFormData(prev => ({ ...prev, hasOwnerManual: val }))}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50">
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Final da Placa</p>
+                                    <p className="text-2xl font-black text-slate-700 mt-0.5 tracking-widest">
+                                        {formData.plate?.replace(/[-\s]/g, '').slice(-1).toUpperCase() || '—'}
+                                    </p>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                                    <Hash size={18} />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="space-y-6">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais do Veículo</h3>
+                        </div>
+
+                        <div className="space-y-5">
+                            {CATEGORIZED_OPTIONS.map(category => (
+                                <div key={category.label}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className={`w-1 h-3 ${category.color} rounded-full`} />
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{category.label}</p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {category.items.map(opt => {
+                                            const isSelected = formData.optionals.includes(opt);
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={opt}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            optionals: isSelected
+                                                                ? prev.optionals.filter(o => o !== opt)
+                                                                : [...prev.optionals, opt]
+                                                        }));
+                                                    }}
+                                                    className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all border ${isSelected
+                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                                                        : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                                                    }`}
+                                                >
+                                                    {opt}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={customOption}
+                                onChange={e => setCustomOption(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        if (customOption.trim()) {
+                                            const val = customOption.trim();
+                                            if (!formData.optionals.includes(val)) {
+                                                setFormData(prev => ({ ...prev, optionals: [...prev.optionals, val] }));
+                                            }
+                                            setCustomOption('');
+                                        }
+                                    }
+                                }}
+                                placeholder="Adicionar outro opcional..."
+                                className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (customOption.trim()) {
+                                        const val = customOption.trim();
+                                        if (!formData.optionals.includes(val)) {
+                                            setFormData(prev => ({ ...prev, optionals: [...prev.optionals, val] }));
+                                        }
+                                        setCustomOption('');
+                                    }
+                                }}
+                                className="px-6 bg-slate-900 text-white rounded-2xl hover:bg-emerald-500 transition-colors"
+                            >
+                                <Plus size={20} />
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                {/* Media Section - inline */}
+                <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-6">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
+                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <ImagePlus size={13} /> Mídia do Veículo
+                        </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Foto Principal */}
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
+                            <div className="aspect-[4/5] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                                {formData.imageUrl ? (
+                                    <>
+                                        <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="w-12 h-12 rounded-full bg-white text-red-500 flex items-center justify-center shadow-xl">
+                                                <X size={20} />
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-3">
+                                        <Upload size={40} strokeWidth={1} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Nenhuma Foto</span>
+                                    </div>
+                                )}
+                            </div>
+                            <label className="block w-full cursor-pointer group">
+                                <div className={`w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                    {uploading ? (
+                                        <Loader2 size={16} className="animate-spin text-emerald-500" />
+                                    ) : (
+                                        <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />
+                                    )}
+                                    <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
+                                        {uploading ? 'Enviando...' : 'Fazer Upload'}
+                                    </span>
+                                </div>
+                                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                            </label>
+                            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Padrão: 1080×1350px (4:5) · WebP</p>
+                        </div>
+
+                        {/* Galeria */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between px-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Galeria</label>
+                                <span className="text-[10px] font-bold text-slate-300">{formData.galleryImages?.length || 0}/6 fotos</span>
+                            </div>
+
+                            {(formData.galleryImages?.length ?? 0) > 0 && (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {formData.galleryImages!.map((url, i) => (
+                                        <div key={i} className="relative group aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
+                                            <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeGalleryImage(url)}
+                                                className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X size={16} className="text-white" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {(formData.galleryImages?.length || 0) < 6 && (
+                                <label className="block w-full cursor-pointer group">
+                                    <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                        {galleryUploading
+                                            ? <Loader2 size={16} className="animate-spin text-emerald-500" />
+                                            : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
+                                        <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>
+                                            {galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        className="hidden"
+                                        onChange={handleGalleryUpload}
+                                        disabled={galleryUploading}
+                                    />
+                                </label>
+                            )}
+                            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 1080×1350px · WebP</p>
+                        </div>
+                    </div>
+                </div>
             </form>
 
             {/* Sticky Bottom Action Bar */}

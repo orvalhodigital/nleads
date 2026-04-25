@@ -445,6 +445,16 @@ const Inventory: React.FC<InventoryProps> = ({
                         Revisões ok
                       </span>
                     )}
+                    {selectedVehicle.hasSpareKey && (
+                      <span className="text-[10px] font-extrabold text-violet-500 uppercase tracking-widest bg-violet-50 px-4 py-1.5 rounded-lg border border-violet-200/50">
+                        Chave Reserva
+                      </span>
+                    )}
+                    {selectedVehicle.hasOwnerManual && (
+                      <span className="text-[10px] font-extrabold text-pink-500 uppercase tracking-widest bg-pink-50 px-4 py-1.5 rounded-lg border border-pink-200/50">
+                        Manual
+                      </span>
+                    )}
                   </div>
                   {selectedVehicle.status === 'sold' && (
                     <span className="text-xs font-black text-white bg-red-500 px-4 py-2 rounded-lg uppercase tracking-widest shadow-lg shadow-red-500/20">
@@ -457,9 +467,17 @@ const Inventory: React.FC<InventoryProps> = ({
                   {selectedVehicle.brand} <br /> {selectedVehicle.model}
                 </h1>
 
-                <p className="text-4xl font-black text-emerald-500 tracking-tighter">
-                  R$ {selectedVehicle.price.toLocaleString('pt-BR')
-                  }</p>
+                <div className="flex items-end gap-4 mb-4">
+                  <p className="text-4xl font-black text-emerald-500 tracking-tighter">
+                    R$ {selectedVehicle.price.toLocaleString('pt-BR')}
+                  </p>
+                  {selectedVehicle.fipePrice ? (
+                    <div className="mb-1">
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tabela FIPE</p>
+                      <p className="text-xs font-bold text-slate-400">R$ {selectedVehicle.fipePrice.toLocaleString('pt-BR')}</p>
+                    </div>
+                  ) : null}
+                </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 mt-12 pt-12 border-t border-slate-50">
                   {[
@@ -467,8 +485,11 @@ const Inventory: React.FC<InventoryProps> = ({
                     { label: 'Ano Modelo', value: `${selectedVehicle.year}${selectedVehicle.modelYear && selectedVehicle.modelYear !== selectedVehicle.year ? ' / ' + selectedVehicle.modelYear : ''}`, icon: Calendar },
                     { label: 'Transmissão', value: selectedVehicle.transmission, icon: Car },
                     { label: 'Motorização', value: selectedVehicle.engine, icon: Zap },
+                    { label: 'Combustível', value: selectedVehicle.fuelType || 'N/A', icon: Search },
+                    { label: 'Portas', value: selectedVehicle.doors ? `${selectedVehicle.doors} Portas` : 'N/A', icon: Hash },
                     { label: 'Cor', value: selectedVehicle.color || 'N/A', icon: Search },
                     { label: 'Placa', value: selectedVehicle.plate || 'N/A', icon: Hash },
+                    { label: 'Chassi', value: selectedVehicle.chassis || 'N/A', icon: Hash },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0">

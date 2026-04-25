@@ -16,7 +16,8 @@ import {
     LayoutList,
     UserPlus,
     PhoneCall,
-    Eye
+    Eye,
+    X
 } from 'lucide-react';
 import { format, isToday, parseISO, startOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, addDays, isPast, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lead, LeadPhase, LeadTemperature, VisitStatus } from '../types';
 import FollowUpCard from './FollowUpCard';
 import ScheduleVisitModal, { ScheduleFormData } from './ScheduleVisitModal';
+import CustomDatePicker from './ui/CustomDatePicker';
 
 const Agenda: React.FC = () => {
     const { leads, vehicles, updateLead, addLead, loadData } = useData();

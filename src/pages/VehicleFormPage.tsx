@@ -26,11 +26,18 @@ const VehicleFormPage: React.FC = () => {
         <VehicleForm
             isEditing={isEditing}
             initialData={vehicleToEdit}
-            onSave={(v) => {
-                if (isEditing && id) {
-                    updateVehicle({ ...v, id } as any);
-                } else {
-                    addVehicle(v as any);
+            onSave={async (v) => {
+                try {
+                    if (isEditing && id) {
+                        await updateVehicle({ ...v, id } as any);
+                    } else {
+                        await addVehicle(v as any);
+                    }
+                } catch (err: any) {
+                    console.error('Erro ao salvar veículo:', err);
+                    const errorMsg = err.message || err.details || JSON.stringify(err);
+                    alert(`Erro ao salvar veículo: ${errorMsg}`);
+                    throw err; // Re-throw to prevent navigation in the form
                 }
             }}
         />

@@ -54,19 +54,19 @@ const AppSidebar: React.FC = () => {
             lg:relative lg:h-auto lg:bg-white/40 lg:backdrop-blur-3xl lg:border-r lg:border-white/50 lg:border-t-0 lg:flex-col lg:z-50 lg:shrink-0
             ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-64'}
         `}>
-            <div className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center px-4 py-5' : 'justify-between px-4 py-3'}`}>
+            <div className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center px-4 py-5' : 'justify-between px-4 py-4'}`}>
                 {!isCollapsed && (
                     <div
                         onClick={() => navigate('/')}
-                        className="cursor-pointer hover:opacity-80 transition-opacity flex-1 min-w-0 h-14 flex items-center"
+                        className="cursor-pointer hover:opacity-80 transition-opacity flex-1 min-w-0 flex items-center"
                         title="Página Inicial"
                     >
                         {profile?.company_logo ? (
-                            <img src={profile.company_logo} alt="Company Logo" className="w-full h-full object-contain object-left" />
+                            <img src={profile.company_logo} alt="Company Logo" className="w-full h-auto object-contain object-left" />
                         ) : logoUrl ? (
-                            <img src={logoUrl} alt="Logo" className="w-full h-full object-contain object-left" />
+                            <img src={logoUrl} alt="Logo" className="w-full h-auto object-contain object-left" />
                         ) : (
-                            <img src="https://docs.nleads.pro/nleads-logo.png" alt="Logo" className="h-[38px] w-auto object-contain" />
+                            <img src="https://docs.nleads.pro/nleads-logo.png" alt="Logo" className="h-[42px] w-auto object-contain" />
                         )}
                     </div>
                 )}

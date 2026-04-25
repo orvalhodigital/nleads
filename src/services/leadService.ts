@@ -53,41 +53,59 @@ const mapRowToLead = (row: any): Lead => ({
     interaction_history: row.interaction_history as InteractionHistory[] || [],
     // is_buyer é armazenado dentro do JSONB follow_up_data para evitar problemas de cache do PostgREST
     is_buyer: row.follow_up_data?.is_buyer || false,
-    foto_url: row.foto_url || undefined
+    foto_url: row.foto_url || undefined,
+    user_id: row.user_id || undefined,
+    admin_id: row.admin_id || undefined,
 });
 
 export const leadService = {
-    async list(userId?: string, limit: number = 50, offset: number = 0): Promise<Lead[]> {
+    /**
+     * Lista leads com contexto multi-usuário:
+     * - isAdminContext=true + adminId: empresa vê todos os leads da equipe (admin_id = adminId)
+     * - userId fornecido: vendedor vê apenas os seus (user_id = userId)
+     * - fallback: usuário logado vê os seus
+     */
+    async list(userId?: string, adminId?: string, isAdminContext: boolean = false, limit: number = 50, offset: number = 0): Promise<Lead[]> {
         const { data: { user } } = await supabase.auth.getUser();
-        const targetUserId = userId || user?.id;
 
-        const response = await supabase
+        let query = supabase
             .from('leads')
             .select('*')
-            .eq('user_id', targetUserId)
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
+        if (isAdminContext && adminId) {
+            query = query.eq('admin_id', adminId);
+        } else {
+            const targetUserId = userId || user?.id;
+            query = query.eq('user_id', targetUserId);
+        }
+
+        const response = await query;
         const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToLead);
     },
 
-    async getAll(userId?: string): Promise<Lead[]> {
-        // Agora o getAll é limitado por padrão, incentivando o uso do list com paginação no frontend
-        return this.list(userId, 100, 0); 
+    async getAll(userId?: string, adminId?: string, isAdminContext: boolean = false): Promise<Lead[]> {
+        return this.list(userId, adminId, isAdminContext, 200, 0);
     },
 
-    async search(query: string, userId?: string, limit: number = 20): Promise<Lead[]> {
+    async search(query: string, userId?: string, adminId?: string, limit: number = 20): Promise<Lead[]> {
         const { data: { user } } = await supabase.auth.getUser();
-        const targetUserId = userId || user?.id;
 
-        const response = await supabase
+        let q = supabase
             .from('leads')
             .select('*')
-            .eq('user_id', targetUserId)
             .ilike('name', `%${query}%`)
             .limit(limit);
 
+        if (adminId) {
+            q = q.eq('admin_id', adminId);
+        } else {
+            q = q.eq('user_id', userId || user?.id);
+        }
+
+        const response = await q;
         const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToLead);
     },
@@ -99,7 +117,8 @@ export const leadService = {
         const response = await supabase
             .from('leads')
             .insert({
-                user_id: user.id,
+                user_id: lead.user_id || user.id,
+                admin_id: lead.admin_id || null,
                 name: lead.name,
                 phone: lead.phone,
                 email: lead.email,

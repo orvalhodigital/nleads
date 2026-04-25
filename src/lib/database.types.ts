@@ -41,6 +41,8 @@ export interface Database {
                     status: string | null
                     sale_details: Json | null
                     sale_phase: string | null
+                    admin_id: string | null
+                    chassis: string | null
                 }
                 Insert: {
                     id?: string
@@ -71,6 +73,8 @@ export interface Database {
                     status?: string | null
                     sale_details?: Json | null
                     sale_phase?: string | null
+                    admin_id?: string | null
+                    chassis?: string | null
                 }
                 Update: {
                     id?: string
@@ -102,6 +106,8 @@ export interface Database {
                     status?: string | null
                     sale_details?: Json | null
                     sale_phase?: string | null
+                    admin_id?: string | null
+                    chassis?: string | null
                 }
             },
             leads: {

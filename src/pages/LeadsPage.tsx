@@ -10,7 +10,8 @@ const LeadsPage: React.FC = () => {
     const {
         leads, vehicles, profile,
         addLead, updateLead, deleteLead,
-        loadData, hasMoreLeads, loadMoreLeads, loadingLeads
+        loadData, hasMoreLeads, loadMoreLeads, loadingLeads,
+        isEmpresa, teamMembers
     } = useData();
 
     // Manage local focus state from router state
@@ -46,6 +47,8 @@ const LeadsPage: React.FC = () => {
             hasMoreLeads={hasMoreLeads}
             onLoadMore={loadMoreLeads}
             loadingLeads={loadingLeads}
+            isEmpresa={isEmpresa}
+            teamMembers={teamMembers}
         />
     );
 };

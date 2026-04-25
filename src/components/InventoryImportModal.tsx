@@ -142,11 +142,11 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
             { header: 'Ano Fab.', key: 'Ano Fab.', width: 10 },
             { header: 'Ano Mod.', key: 'Ano Mod.', width: 10 },
             { header: 'Placa', key: 'Placa', width: 12 },
-            { header: 'Preço', key: 'Preço', width: 15 },
+            { header: 'Preço de Venda', key: 'Preço de Venda', width: 15 },
             { header: 'Tipo', key: 'Tipo', width: 15 },
             { header: 'Câmbio', key: 'Câmbio', width: 15 },
             { header: 'Motor', key: 'Motor', width: 10 },
-            { header: 'Quilometragem', key: 'Quilometragem', width: 15 },
+            { header: 'KM', key: 'KM', width: 15 },
             { header: 'Cor', key: 'Cor', width: 15 },
             { header: 'Opcionais', key: 'Opcionais', width: 30 }
         ];
@@ -184,11 +184,11 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                 headers[colNumber] = cell.value?.toString().trim() || '';
             });
 
-            worksheet.eachRow((row, rowNumber) => {
+            worksheet.eachRow((excelRow, rowNumber) => {
                 if (rowNumber === 1) return; // Skip header
 
                 const rowData: any = {};
-                row.eachCell((cell, colNumber) => {
+                excelRow.eachCell((cell, colNumber) => {
                     const header = headers[colNumber];
                     if (header) {
                         let val = cell.value;
@@ -231,13 +231,13 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                     model: model,
                     year: year,
                     modelYear: finalModelYear,
-                    plate: (row['Placa'] || '').toUpperCase().replace(/[^A-Z0-9]/g, ''),
-                    price: parseFloat(row['Preço']) || 0,
-                    type: type || 'Em aberto',
-                    transmission: row['Câmbio'] || 'Em aberto',
-                    engine: row['Motor'] || 'Em aberto',
-                    mileage: parseInt(row['Quilometragem']) || 0,
-                    color: row['Cor'] || '',
+                    plate: (row['Placa'] || row['PLACA'] || '').toUpperCase().replace(/[^A-Z0-9]/g, ''),
+                    price: typeof row['Preço de Venda'] === 'number' ? row['Preço de Venda'] : (typeof row['Preço'] === 'number' ? row['Preço'] : parseCurrency(String(row['Preço de Venda'] || row['Preço'] || row['Valor'] || row['Venda'] || row['VENDA'] || '0'))),
+                    type: type || 'Sedan',
+                    transmission: row['Câmbio'] || 'Manual',
+                    engine: row['Motor'] || '1.0',
+                    mileage: typeof row['KM'] === 'number' ? row['KM'] : (typeof row['Quilometragem'] === 'number' ? row['Quilometragem'] : parseCurrency(String(row['KM'] || row['Km'] || row['km'] || row['Quilometragem'] || '0'))),
+                    color: row['Cor'] || 'Não informada',
                     isSingleOwner: false,
                     isServiceHistoryComplete: false,
                     isIpvaPaid: true,
@@ -302,6 +302,9 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
             try {
                 let successCount = 0;
                 let failCount = 0;
+                const adminId = profile?.role === 'vendedor' ? profile.parent_id : profile?.id;
+
+                let lastError: any = null;
 
                 // Loop sequential to avoid overwhelming the RPC fallback mechanism if needed
                 for (const v of toImport) {
@@ -313,16 +316,18 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                         await vehicleService.create({
                             ...vehicleData,
                             status: 'available'
-                        });
+                        }, undefined, adminId);
                         successCount++;
-                    } catch (innerErr) {
+                    } catch (innerErr: any) {
                         console.error(`Failed to import ${v.brand} ${v.model}:`, innerErr);
+                        lastError = innerErr;
                         failCount++;
                     }
                 }
 
                 if (successCount === 0 && failCount > 0) {
-                    throw new Error("Falha ao importar todos os veículos selecionados. Verifique o console.");
+                    const errorMsg = lastError?.message || lastError?.details || JSON.stringify(lastError);
+                    throw new Error(`Falha ao importar veículos. Erro: ${errorMsg}`);
                 }
 
                 showToast(

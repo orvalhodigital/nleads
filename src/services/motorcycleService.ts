@@ -37,49 +37,61 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
 // ─── Service ─────────────────────────────────────────────────────────────────
 
 export const motorcycleService = {
-    async getAll(userId?: string): Promise<Motorcycle[]> {
+    async getAll(userId?: string, adminId?: string): Promise<Motorcycle[]> {
         const { data: { user } } = await supabase.auth.getUser();
-        const targetUserId = userId || user?.id;
 
-        const response = await supabase
+        let query = supabase
             .from('motorcycles')
             .select('*')
-            .eq('user_id', targetUserId)
             .order('created_at', { ascending: false });
 
+        if (adminId) {
+            query = query.eq('admin_id', adminId);
+        } else {
+            const targetUserId = userId || user?.id;
+            query = query.eq('user_id', targetUserId);
+        }
+
+        const response = await query;
         const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToMotorcycle);
     },
 
-    async search(query: string, userId?: string, limit: number = 10): Promise<Motorcycle[]> {
+    async search(query: string, userId?: string, adminId?: string, limit: number = 10): Promise<Motorcycle[]> {
         const { data: { user } } = await supabase.auth.getUser();
-        const targetUserId = userId || user?.id;
 
-        const response = await supabase
+        let q = supabase
             .from('motorcycles')
             .select('*')
-            .eq('user_id', targetUserId)
             .or(`brand.ilike.%${query}%,model.ilike.%${query}%`)
             .limit(limit);
 
+        if (adminId) {
+            q = q.eq('admin_id', adminId);
+        } else {
+            q = q.eq('user_id', userId || user?.id);
+        }
+
+        const response = await q;
         const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToMotorcycle);
     },
 
-    async create(moto: Omit<Motorcycle, 'id'>): Promise<Motorcycle> {
+    async create(moto: Omit<Motorcycle, 'id'>, userId?: string, adminId?: string): Promise<Motorcycle> {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Usuário não autenticado ou sessão expirada.');
+        const targetUserId = userId || user?.id;
+        if (!targetUserId) throw new Error('Usuário não autenticado ou sessão expirada.');
 
         const response = await supabase
             .from('motorcycles')
             .insert({
-                user_id: user.id,
+                user_id: targetUserId,
+                admin_id: adminId || null,
                 brand: moto.brand,
                 model: moto.model,
                 year: moto.year,
                 model_year: moto.modelYear,
                 plate: moto.plate,
-                chassis: moto.chassis,
                 fipe_price: moto.fipePrice,
                 price: moto.price,
                 category: moto.category,
@@ -118,7 +130,6 @@ export const motorcycleService = {
                 year: moto.year,
                 model_year: moto.modelYear,
                 plate: moto.plate,
-                chassis: moto.chassis,
                 fipe_price: moto.fipePrice,
                 price: moto.price,
                 category: moto.category,

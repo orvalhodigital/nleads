@@ -10,7 +10,7 @@ import {
   AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Smartphone, Target, Info
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DraggableProvided, DraggableStateSnapshot } from '@hello-pangea/dnd';
-import { Lead, LeadPhase, LeadTemperature, Tag as TagType, Vehicle, VehicleType, TransmissionType, EngineType, SaleDetails } from '../types';
+import { Lead, LeadPhase, LeadTemperature, Tag as TagType, Vehicle, VehicleType, TransmissionType, EngineType, SaleDetails, Profile } from '../types';
 import { leadService } from '../services/leadService';
 import { notificationService } from '../services/notificationService';
 import TagInput from './TagInput';
@@ -47,14 +47,17 @@ interface LeadManagerProps {
   hasMoreLeads?: boolean;
   onLoadMore?: () => Promise<void>;
   loadingLeads?: boolean;
+  isEmpresa?: boolean;
+  teamMembers?: Profile[];
 }
 
 const SOURCES = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Indicação', 'Telefone', 'Outros'];
 
 const LeadManager: React.FC<LeadManagerProps> = ({
   type = 'leads', leads, phases: propPhases, onAddLead, onUpdateLead, onDeleteLead, onViewLead,
-  focusedLeadId, onClearFocus, onRefresh, userEmail, onDataChange, companyName, impersonatedUserId, 
-  vehicles = [], hasMoreLeads, onLoadMore, loadingLeads
+  focusedLeadId, onClearFocus, onRefresh, userEmail, onDataChange, companyName, impersonatedUserId,
+  vehicles = [], hasMoreLeads, onLoadMore, loadingLeads,
+  isEmpresa = false, teamMembers = []
 }) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -111,7 +114,20 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const [filterPhase, setFilterPhase] = useState<string>('all');
   const [filterSource, setFilterSource] = useState<string>('all');
   const [filterTemp, setFilterTemp] = useState<string>('all');
+  const [filterVendedor, setFilterVendedor] = useState<string>('all');
   const [searchQueryLeads, setSearchQueryLeads] = useState('');
+
+  const memberMap = useMemo(() => {
+    const map = new Map<string, Profile>();
+    teamMembers.forEach(m => map.set(m.id, m));
+    return map;
+  }, [teamMembers]);
+
+  const getVendorName = (lead: Lead): string | null => {
+    if (!isEmpresa || !lead.user_id) return null;
+    const member = memberMap.get(lead.user_id);
+    return member?.full_name?.split(' ')[0] || null;
+  };
 
   const [columnLimits, setColumnLimits] = useState<Record<string, number>>(
     phases.reduce((acc, phase) => ({ ...acc, [phase]: 14 }), {})
@@ -189,6 +205,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
       if (filterPhase !== 'all' && lead.phase !== filterPhase) return false;
       if (filterSource !== 'all' && lead.source !== filterSource) return false;
       if (filterTemp !== 'all' && lead.temperature !== filterTemp) return false;
+      if (isEmpresa && filterVendedor !== 'all' && lead.user_id !== filterVendedor) return false;
 
       if (searchQueryLeads) {
         const query = searchQueryLeads.toLowerCase();
@@ -373,6 +390,12 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                                           <span className="text-[10px] font-black text-slate-700">R$ {formatCurrency(lead.preferences.valor_maximo)}</span>
                                         </div>
                                       )}
+                                      {(() => { const vn = getVendorName(lead); return vn ? (
+                                        <div className="flex items-center gap-1 pt-0.5">
+                                          <User size={9} className="text-slate-300 shrink-0" />
+                                          <span className="text-[9px] text-slate-400 font-semibold truncate">{vn}</span>
+                                        </div>
+                                      ) : null; })()}
                                     </div>
                                   </div>
                                 );
@@ -412,6 +435,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cliente</th>
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fase Atual</th>
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temperatura</th>
+                {isEmpresa && <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vendedor</th>}
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Data de Cadastro</th>
               </tr>
             </thead>
@@ -445,6 +469,16 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                         <span className="text-[10px] font-bold text-slate-500 uppercase">{lead.temperature}</span>
                       </div>
                     </td>
+                    {isEmpresa && (
+                      <td className="p-5">
+                        {(() => { const vn = getVendorName(lead); return vn ? (
+                          <div className="flex items-center gap-1.5">
+                            <User size={12} className="text-slate-300" />
+                            <span className="text-xs font-semibold text-slate-500">{vn}</span>
+                          </div>
+                        ) : <span className="text-xs text-slate-300">—</span>; })()}
+                      </td>
+                    )}
                     <td className="p-5 text-right"><span className="text-xs font-semibold text-slate-400">{new Date(lead.createdAt).toLocaleDateString()}</span></td>
                   </tr>
                 );
@@ -472,7 +506,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     <div className="flex-1 flex flex-col h-full min-h-0 space-y-6 animate-fadeIn overflow-hidden">
       <div className="flex flex-col gap-6 shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-6 px-1">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
               <button onClick={() => setViewMode('kanban')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 font-semibold'}`}>
                 <LayoutGrid size={15} />
@@ -486,6 +520,18 @@ const LeadManager: React.FC<LeadManagerProps> = ({
             <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all ${isFilterOpen ? 'bg-slate-900 text-white' : 'bg-white text-slate-600'}`}>
               <Filter size={15} /> Filtrar
             </button>
+            {isEmpresa && teamMembers.length > 0 && (
+              <select
+                value={filterVendedor}
+                onChange={e => setFilterVendedor(e.target.value)}
+                className="px-4 py-3 bg-white border border-slate-100 rounded-xl text-[11px] font-bold text-slate-600 uppercase tracking-wide focus:outline-none focus:border-emerald-400 transition-all"
+              >
+                <option value="all">Todos os vendedores</option>
+                {teamMembers.map(m => (
+                  <option key={m.id} value={m.id}>{m.full_name || m.email}</option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="flex gap-2">
             <button onClick={() => setIsImportModalOpen(true)} className="px-5 py-3 bg-white border border-slate-100 text-slate-900 rounded-xl text-[11px] font-bold uppercase">Importar</button>

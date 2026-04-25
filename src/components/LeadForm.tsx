@@ -26,7 +26,7 @@ const MOTO_ENGINE_TYPES: EngineType[] = ['110cc', '125cc', '150cc', '160cc', '19
 
 const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = false }) => {
     const navigate = useNavigate();
-    const { vehicles, profile } = useData();
+    const { vehicles, motorcycles, profile } = useData();
 
     const [leadForm, setLeadForm] = useState({
         name: '',
@@ -67,12 +67,12 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
 
     const carBrands = Array.from(new Set([
         ...Object.keys(carDatabase),
-        ...vehicles.filter(v => !v.isMoto).map(v => v.brand)
+        ...vehicles.map(v => v.brand)
     ])).sort();
 
     const motoBrands = Array.from(new Set([
         ...Object.keys(motoDatabase),
-        ...vehicles.filter(v => v.isMoto).map(v => v.brand)
+        ...motorcycles.map(m => m.brand)
     ])).sort();
 
     const getAvailableModels = (brands: string[], isMoto: boolean) => {
@@ -99,9 +99,15 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
             });
         }
         
-        vehicles
-            .filter(v => v.isMoto === isMoto && (brands.length === 0 || brands.includes(v.brand)))
-            .forEach(v => models.add(v.model));
+        if (isMoto) {
+            motorcycles
+                .filter(m => brands.length === 0 || brands.includes(m.brand))
+                .forEach(m => models.add(m.model));
+        } else {
+            vehicles
+                .filter(v => brands.length === 0 || brands.includes(v.brand))
+                .forEach(v => models.add(v.model));
+        }
             
         return Array.from(models).sort();
     };
@@ -348,8 +354,8 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Valor Máximo (Carro)</label>
                                                     <input
                                                         type="text"
-                                                        value={formatCurrency(leadForm.preferences.carro_valormax)}
-                                                        onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, carro_valormax: parseCurrency(e.target.value) } })}
+                                                        value={formatCurrency(leadForm.preferences.carro_valor_max)}
+                                                        onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, carro_valor_max: parseCurrency(e.target.value) } })}
                                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-emerald-500/30 outline-none transition-all"
                                                         placeholder="R$ 0,00"
                                                     />
@@ -422,8 +428,8 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Valor Máximo (Moto)</label>
                                                     <input
                                                         type="text"
-                                                        value={formatCurrency(leadForm.preferences.moto__valormax)}
-                                                        onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, moto__valormax: parseCurrency(e.target.value) } })}
+                                                        value={formatCurrency(leadForm.preferences.moto_valor_max)}
+                                                        onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, moto_valor_max: parseCurrency(e.target.value) } })}
                                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500/30 outline-none transition-all"
                                                         placeholder="R$ 0,00"
                                                     />

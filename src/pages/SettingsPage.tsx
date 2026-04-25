@@ -13,7 +13,7 @@ import {
     CreditCard,
     MessageSquare,
     Wrench,
-    Globe,
+    Users,
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
@@ -23,6 +23,7 @@ import ProfileSettings from '../components/settings/ProfileSettings';
 import WhatsAppSettings from '../components/settings/WhatsAppSettings';
 import MessageSettings from '../components/settings/MessageSettings';
 import PlanSettings from '../components/settings/PlanSettings';
+import TeamManager from '../components/TeamManager';
 
 interface BusinessHourEntry {
     day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -31,8 +32,9 @@ interface BusinessHourEntry {
     end: string;
 }
 
-const TABS = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Geral'] as const;
-type Tab = typeof TABS[number];
+type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Geral' | 'Equipe';
+
+const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Geral'];
 
 const TAB_ICONS: Record<Tab, React.ReactNode> = {
     'Perfil': <User size={15} />,
@@ -40,12 +42,14 @@ const TAB_ICONS: Record<Tab, React.ReactNode> = {
     'Mensagens': <MessageSquare size={15} />,
     'Planos': <CreditCard size={15} />,
     'Geral': <Wrench size={15} />,
+    'Equipe': <Users size={15} />,
 };
 
 const SettingsPage: React.FC = () => {
-    const { profile, refreshProfile } = useData();
+    const { profile, refreshProfile, isEmpresa } = useData();
     const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<Tab>('Perfil');
+    const tabs: Tab[] = isEmpresa ? [...BASE_TABS, 'Equipe'] : BASE_TABS;
     const [loading, setLoading] = useState(false);
     const [enableCars, setEnableCars] = useState(profile?.enable_cars !== false);
     const [enableMotorcycles, setEnableMotorcycles] = useState(profile?.enable_motorcycles || false);
@@ -106,7 +110,7 @@ const SettingsPage: React.FC = () => {
 
             {/* Tab Navigation */}
             <div className="flex gap-2 flex-wrap">
-                {TABS.map(tab => (
+                {tabs.map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -137,6 +141,10 @@ const SettingsPage: React.FC = () => {
 
             {activeTab === 'Planos' && (
                 <PlanSettings profile={profile} />
+            )}
+
+            {activeTab === 'Equipe' && isEmpresa && (
+                <TeamManager adminProfile={profile} />
             )}
 
             {activeTab === 'Geral' && (

@@ -14,7 +14,7 @@ const MessageSettings: React.FC<Props> = ({ profile, onUpdate }) => {
     const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<string[]>(
-        profile.preset_messages?.length === 10 ? profile.preset_messages : DEFAULT_PRESET_MESSAGES
+        profile.preset_messages?.length === 6 ? profile.preset_messages : DEFAULT_PRESET_MESSAGES
     );
 
     const handleUpdateMessage = (index: number, content: string) => {
@@ -26,7 +26,7 @@ const MessageSettings: React.FC<Props> = ({ profile, onUpdate }) => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            const normalizedMessages = Array(10).fill('').map((_, i) => messages[i] || '');
+            const normalizedMessages = Array(6).fill('').map((_, i) => messages[i] || '');
             await profileService.updateProfile({ preset_messages: normalizedMessages });
             showToast('success', 'Mensagens predefinidas atualizadas!');
             onUpdate();
@@ -46,7 +46,7 @@ const MessageSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         Respostas Instantâneas
                     </div>
                     <h2 className="text-3xl font-black text-slate-900">Mensagens Rápidas</h2>
-                    <p className="text-slate-500 font-medium">Configure as 10 frases que o sistema usará para agilizar seu atendimento.</p>
+                    <p className="text-slate-500 font-medium">Configure as 6 frases que o sistema usará para agilizar seu atendimento.</p>
                 </div>
             </div>
 

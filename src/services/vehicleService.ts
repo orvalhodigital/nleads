@@ -55,49 +55,61 @@ async function deleteStorageUrls(urls: string[]): Promise<void> {
 }
 
 export const vehicleService = {
-    async getAll(userId?: string): Promise<Vehicle[]> {
+    async getAll(userId?: string, adminId?: string): Promise<Vehicle[]> {
         const { data: { user } } = await supabase.auth.getUser();
-        const targetUserId = userId || user?.id;
 
-        const response = await supabase
+        let query = supabase
             .from('vehicles')
             .select('*')
-            .eq('user_id', targetUserId)
             .order('created_at', { ascending: false });
 
+        if (adminId) {
+            query = query.eq('admin_id', adminId);
+        } else {
+            const targetUserId = userId || user?.id;
+            query = query.eq('user_id', targetUserId);
+        }
+
+        const response = await query;
         const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToVehicle);
     },
 
-    async search(query: string, userId?: string, limit: number = 10): Promise<Vehicle[]> {
+    async search(query: string, userId?: string, adminId?: string, limit: number = 10): Promise<Vehicle[]> {
         const { data: { user } } = await supabase.auth.getUser();
-        const targetUserId = userId || user?.id;
 
-        const response = await supabase
+        let q = supabase
             .from('vehicles')
             .select('*')
-            .eq('user_id', targetUserId)
             .or(`brand.ilike.%${query}%,model.ilike.%${query}%`)
             .limit(limit);
 
+        if (adminId) {
+            q = q.eq('admin_id', adminId);
+        } else {
+            q = q.eq('user_id', userId || user?.id);
+        }
+
+        const response = await q;
         const data = handleSupabaseResponse(response);
         return (data || []).map(mapRowToVehicle);
     },
 
-    async create(vehicle: Omit<Vehicle, 'id'>): Promise<Vehicle> {
+    async create(vehicle: Omit<Vehicle, 'id'>, userId?: string, adminId?: string): Promise<Vehicle> {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Usuário não autenticado ou sessão expirada.');
+        const targetUserId = userId || user?.id;
+        if (!targetUserId) throw new Error('Usuário não autenticado ou sessão expirada.');
 
         const response = await supabase
             .from('vehicles')
             .insert({
-                user_id: user.id,
+                user_id: targetUserId,
+                admin_id: adminId || null,
                 brand: vehicle.brand,
                 model: vehicle.model,
                 year: vehicle.year,
                 model_year: vehicle.modelYear,
                 plate: vehicle.plate,
-                chassis: vehicle.chassis,
                 fipe_price: vehicle.fipePrice,
                 price: vehicle.price,
                 type: vehicle.type,
@@ -137,7 +149,6 @@ export const vehicleService = {
                 year: vehicle.year,
                 model_year: vehicle.modelYear,
                 plate: vehicle.plate,
-                chassis: vehicle.chassis,
                 fipe_price: vehicle.fipePrice,
                 price: vehicle.price,
                 type: vehicle.type,

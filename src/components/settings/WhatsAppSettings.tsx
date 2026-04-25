@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle2, AlertCircle, Loader2, Smartphone, Zap, Database, RefreshCcw, SmartphoneIcon, Link, Save } from 'lucide-react';
+import { MessageCircle, CheckCircle2, AlertCircle, Loader2, Smartphone, Zap, RefreshCcw, SmartphoneIcon } from 'lucide-react';
 import { Profile } from '../../types';
 import { profileService } from '../../services/profileService';
 import { useToast } from '../../contexts/ToastContext';
@@ -11,15 +11,12 @@ interface Props {
 
 const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
     const { showToast } = useToast();
-    const [syncing, setSyncing] = useState(false);
-    const [savingWebhook, setSavingWebhook] = useState(false);
     const [useCompanyNumber, setUseCompanyNumber] = useState(profile.use_company_number || false);
     const [whatsappStatus, setWhatsappStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
     const [sessionData, setSessionData] = useState<{ number?: string; name?: string } | null>(null);
-    const [webhookUrl, setWebhookUrl] = useState(profile.whatsapp_webhook_url || '');
 
     const handleConnectWhatsApp = () => {
-        const url = 'https://webhook.orvalhodigital.com.br/webhook/nLeads-veiculos-criar-instancia';
+        const url = 'https://webhook.orvalhodigital.com.br/webhook/veiculos-criar-instancia';
         const width = 600;
         const height = 700;
         const left = (window.screen.width - width) / 2;
@@ -32,33 +29,7 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
         );
     };
 
-    const handleSyncContacts = async () => {
-        if (!confirm('Você deseja sincronizar todos os contatos do seu WhatsApp como Leads? Isso pode levar alguns minutos se você tiver muitos contatos.')) {
-            return;
-        }
 
-        setSyncing(true);
-        try {
-            const response = await fetch('https://webhook.orvalhodigital.com.br/webhook/veiculos-nleads-puxar-contatos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: profile?.id,
-                    email: profile?.email,
-                    companyName: profile?.company_name
-                }),
-            });
-
-            if (!response.ok) throw new Error('Falha na resposta do servidor');
-
-            showToast('success', 'Sincronização iniciada com sucesso!');
-        } catch (error) {
-            console.error('Erro na sincronização:', error);
-            showToast('error', 'Erro ao iniciar sincronização de contatos.');
-        } finally {
-            setSyncing(false);
-        }
-    };
 
     const handleVerifyConnection = async (silent = false) => {
         if (!profile?.email) return;
@@ -265,62 +236,7 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         </div>
                     )}
 
-                    <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50 space-y-8 animate-fadeUp">
-                        <div className="space-y-4">
-                            <h3 className="text-xl font-black text-slate-900 border-l-4 border-emerald-500 pl-4 uppercase tracking-tight">Configurações Avançadas</h3>
-                            <p className="text-sm font-medium text-slate-400">Vincule seu receptor oficial para automações personalizadas.</p>
-                        </div>
 
-                        <div className="space-y-6">
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
-                                    <Link size={12} />
-                                    Webhook de Envio de Mensagens
-                                </label>
-                                <div className="flex gap-3">
-                                    <input
-                                        type="url"
-                                        value={webhookUrl}
-                                        onChange={e => setWebhookUrl(e.target.value)}
-                                        placeholder="https://webhook.orvalhodigital.com.br/webhook/..."
-                                        className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-[1rem] text-sm font-medium text-slate-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10 transition-all placeholder:text-slate-300"
-                                    />
-                                    <button
-                                        onClick={async () => {
-                                            setSavingWebhook(true);
-                                            try {
-                                                await profileService.updateProfile({ whatsapp_webhook_url: webhookUrl });
-                                                showToast('success', 'Webhook salvo com sucesso!');
-                                                onUpdate();
-                                            } catch (e: any) {
-                                                showToast('error', e.message);
-                                            } finally {
-                                                setSavingWebhook(false);
-                                            }
-                                        }}
-                                        disabled={savingWebhook}
-                                        className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1rem] font-black text-sm transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-emerald-500/20"
-                                    >
-                                        {savingWebhook ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                                    </button>
-                                </div>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
-                                    URL do n8n responsável por enviar mensagens WhatsApp aos leads
-                                </p>
-                            </div>
-
-                            <div className="pt-6 border-t border-slate-100">
-                                <button
-                                    onClick={handleSyncContacts}
-                                    disabled={syncing}
-                                    className="w-full py-5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-[1.5rem] font-black text-sm flex items-center justify-center gap-3 transition-all active:scale-[0.98] border border-emerald-200 border-dashed"
-                                >
-                                    {syncing ? <Loader2 className="animate-spin" size={20} /> : <><Database size={20} /> Sincronizar todos os contatos como Leads</>}
-                                </button>
-                                <p className="text-[9px] text-center font-bold text-slate-400 uppercase tracking-widest mt-4">Ação recomendada ao iniciar a conta</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

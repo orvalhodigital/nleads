@@ -169,11 +169,13 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
     const [createEmail, setCreateEmail] = useState('');
     const [createName, setCreateName] = useState('');
     const [createPhone, setCreatePhone] = useState('');
+    const [createPassword, setCreatePassword] = useState('');
     const [createLoading, setCreateLoading] = useState(false);
 
     const [editMember, setEditMember] = useState<Profile | null>(null);
     const [editName, setEditName] = useState('');
     const [editPhone, setEditPhone] = useState('');
+    const [editPassword, setEditPassword] = useState('');
     const [editLoading, setEditLoading] = useState(false);
 
     const [removingId, setRemovingId] = useState<string | null>(null);
@@ -183,7 +185,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
             setLoading(true);
             const [membersData, leadsData] = await Promise.all([
                 profileService.getTeamMembers(adminProfile.id),
-                leadService.list(undefined)
+                leadService.list(undefined, adminProfile.id, true, 200, 0),
             ]);
             setMembers(membersData);
             setLeads(leadsData);
@@ -200,28 +202,28 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
         setCreateEmail('');
         setCreateName('');
         setCreatePhone('');
+        setCreatePassword('');
     };
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!createEmail || !createName) {
-            showToast('error', 'Nome e e-mail são obrigatórios.');
+        if (!createEmail || !createName || !createPassword) {
+            showToast('error', 'Nome, e-mail e senha são obrigatórios.');
+            return;
+        }
+        if (createPassword.length < 6) {
+            showToast('error', 'A senha deve ter pelo menos 6 caracteres.');
             return;
         }
         setCreateLoading(true);
         try {
-            await profileService.createTeamUser({
-                email: createEmail,
-                full_name: createName,
-                phone: createPhone || undefined,
-                adminId: adminProfile.id
-            });
-            showToast('success', 'Usuário criado com sucesso!');
+            await profileService.createTeamUser(createEmail, createPassword, createName);
+            showToast('success', 'Vendedor criado com sucesso!');
             setIsCreateOpen(false);
             resetCreate();
             await loadTeamData();
         } catch (error: any) {
-            showToast('error', error?.message || 'Erro ao criar usuário.');
+            showToast('error', error?.message || 'Erro ao criar vendedor.');
         } finally {
             setCreateLoading(false);
         }
@@ -231,17 +233,23 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
         setEditMember(member);
         setEditName(member.full_name || '');
         setEditPhone(member.phone || '');
+        setEditPassword('');
     };
 
     const handleEdit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editMember) return;
+        if (editPassword && editPassword.length < 6) {
+            showToast('error', 'A nova senha deve ter pelo menos 6 caracteres.');
+            return;
+        }
         setEditLoading(true);
         try {
-            await profileService.updateTeamUser(editMember.id, {
-                full_name: editName,
-                phone: editPhone || undefined
-            } as any);
+            await profileService.updateTeamUser(
+                editMember.id,
+                editName,
+                editPassword || undefined
+            );
             showToast('success', 'Dados atualizados!');
             setMembers(prev => prev.map(m => m.id === editMember.id ? {
                 ...m,
@@ -250,7 +258,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
             } : m));
             setEditMember(null);
         } catch (error: any) {
-            showToast('error', error?.message || 'Erro ao atualizar usuário.');
+            showToast('error', error?.message || 'Erro ao atualizar vendedor.');
         } finally {
             setEditLoading(false);
         }
@@ -271,7 +279,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
     };
 
     const getUserMetrics = (userId: string) => {
-        const userLeads = leads.filter(l => l.id && l.name);
+        const userLeads = leads.filter(l => l.user_id === userId);
         const conversions = userLeads.filter(l => l.is_buyer).length;
         return {
             leads: userLeads.length,
@@ -443,15 +451,18 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                     <Field label="E-mail (Login) *" icon={<Mail size={15} />}>
                         <input required type="email" value={createEmail} onChange={e => setCreateEmail(e.target.value)} placeholder="vendedor@empresa.com" className={inputCls} />
                     </Field>
+                    <Field label="Senha de Acesso *" icon={<Lock size={15} />}>
+                        <input required type="password" value={createPassword} onChange={e => setCreatePassword(e.target.value)} placeholder="Mínimo 6 caracteres" className={inputCls} />
+                    </Field>
                     <Field label="Telefone (Opcional)" icon={<Phone size={15} />}>
                         <input type="tel" value={createPhone} onChange={e => setCreatePhone(e.target.value)} placeholder="(11) 99999-9999" className={inputCls} />
                     </Field>
                     <p className="text-[11px] text-slate-400 bg-emerald-50 rounded-xl p-3 border border-emerald-100">
-                        ⚡ O usuário receberá um convite por e-mail para completar seu cadastro.
+                        ⚡ O vendedor acessa o sistema com o e-mail e senha definidos acima.
                     </p>
-                    <button type="submit" disabled={!createEmail || !createName || createLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <button type="submit" disabled={!createEmail || !createName || !createPassword || createLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
                         {createLoading ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
-                        {createLoading ? 'Criando...' : 'Criar Usuário'}
+                        {createLoading ? 'Criando...' : 'Criar Vendedor'}
                     </button>
                 </form>
             </Modal>
@@ -472,6 +483,9 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                 <form onSubmit={handleEdit} className="p-6 space-y-4">
                     <Field label="Nome Completo" icon={<User size={15} />}>
                         <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Nome do usuário" className={inputCls} />
+                    </Field>
+                    <Field label="Nova Senha (deixe em branco para não alterar)" icon={<Lock size={15} />}>
+                        <input type="password" value={editPassword} onChange={e => setEditPassword(e.target.value)} placeholder="Nova senha (opcional)" className={inputCls} />
                     </Field>
                     <Field label="Telefone" icon={<Phone size={15} />}>
                         <input type="tel" value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="(11) 99999-9999" className={inputCls} />

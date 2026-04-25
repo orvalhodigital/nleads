@@ -3,12 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, Key, Bell, Search, Filter } from 'lucide-react';
+import { LogIn, Key, Bell, Search, Users, List, ChevronDown, ChevronRight } from 'lucide-react';
 
 export default function AdminUsers() {
     const [users, setUsers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState<'list' | 'hierarchy'>('list');
+    const [expandedEmpresas, setExpandedEmpresas] = useState<Set<string>>(new Set());
     const navigate = useNavigate();
 
     // Notification State
@@ -74,6 +76,24 @@ export default function AdminUsers() {
     const filteredUsers = users.filter(user =>
         (user.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+    );
+
+    const empresas = users.filter(u => (u as any).role === 'empresa' || !(u as any).parent_id);
+    const vendedoresByEmpresa = (empresaId: string) =>
+        users.filter(u => (u as any).parent_id === empresaId);
+
+    const toggleEmpresa = (id: string) => {
+        setExpandedEmpresas(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const planBadge = (plan: string) => (
+        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${plan === 'pro' ? 'bg-black text-white' : 'bg-slate-100 text-slate-500'}`}>
+            {plan}
+        </span>
     );
 
     return (

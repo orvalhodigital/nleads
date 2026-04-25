@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Calendar, Clock, Car, FileText, Check } from 'lucide-react';
 import { Lead, Vehicle } from '../types';
 import { vehicleService } from '../services/vehicleService';
+import { motorcycleService } from '../services/motorcycleService';
+import { useData } from '../contexts/DataContext';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { CustomTimePicker } from './ui/CustomTimePicker';
 
@@ -13,6 +15,7 @@ interface Props {
 }
 
 export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, onConfirm }) => {
+    const { profile } = useData();
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [vehicleOfInterest, setVehicleOfInterest] = useState('');
@@ -27,8 +30,14 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
         if (isOpen) {
             const fetchVehicles = async () => {
                 try {
-                    const data = await vehicleService.getAll();
-                    setAvailableVehicles(data.filter(v => v.status === 'available'));
+                    const isAdmin = ['empresa', 'super_admin', 'admin'].includes(profile?.role || '');
+                    const adminId = isAdmin ? profile?.id : profile?.parent_id;
+                    
+                    const [vData, mData] = await Promise.all([
+                        vehicleService.getAll(undefined, adminId || undefined),
+                        motorcycleService.getAll(undefined, adminId || undefined)
+                    ]);
+                    setAvailableVehicles([...vData, ...mData.map(m => ({ ...m, isMoto: true } as any))].filter(v => v.status === 'available'));
                 } catch (error) {
                     console.error("Erro ao carregar veículos", error);
                 }

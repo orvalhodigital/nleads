@@ -15,14 +15,19 @@ function buildProfile(data: any, user: any): Profile {
         id: data.id,
         email: data.email,
         full_name: data.full_name || '',
+        role: data.role || 'empresa',
+        parent_id: data.parent_id || undefined,
         plan: (data.plan === 'pro' && data.trial_ends_at && new Date() > new Date(data.trial_ends_at)) ? 'trial' : data.plan,
         planStatus: ((data.plan === 'trial' || data.plan === 'pro') && data.trial_ends_at && new Date() > new Date(data.trial_ends_at)) ? 'expired' : data.plan_status,
         trialEndsAt: data.trial_ends_at,
         created_at: data.created_at,
         webhook_url: data.webhook_url,
+        whatsapp_webhook_url: data.whatsapp_webhook_url,
         avatar_url: user?.user_metadata?.avatar_url || data.avatar_url || '',
         company_name: data.company_name || '',
         company_logo: user?.user_metadata?.company_logo || data.company_logo || '',
+        phone: data.phone || '',
+        use_company_number: data.use_company_number || false,
         monthly_sales_goal: data.monthly_sales_goal,
         enable_cars: user?.user_metadata?.enable_cars !== false,
         enable_motorcycles: user?.user_metadata?.enable_motorcycles || false,
@@ -83,6 +88,7 @@ function buildFallback(user: any): Profile {
         id: user.id,
         email: user.email || '',
         full_name: resolveFullName(user),
+        role: 'empresa',
         company_name: user.user_metadata?.company_name || '',
         plan: 'trial',
         planStatus: 'active',
@@ -149,7 +155,35 @@ export const profileService = {
                     company_name: resolvedCompany,
                 }).eq('id', data.id).then(() => {});
             }
-            return buildProfile({ ...data, full_name: resolvedName, company_name: resolvedCompany }, user);
+
+            const profile = buildProfile({ ...data, full_name: resolvedName, company_name: resolvedCompany }, user);
+
+            // Vendedor herda dados da empresa-mãe em tempo de leitura
+            if (profile.role === 'vendedor' && profile.parent_id) {
+                const { data: adminData } = await supabase
+                    .from('profiles')
+                    .select('company_name, company_logo, plan, plan_status, trial_ends_at, webhook_url, whatsapp_webhook_url, preset_messages, phone')
+                    .eq('id', profile.parent_id)
+                    .single();
+
+                if (adminData) {
+                    profile.company_name = adminData.company_name || profile.company_name;
+                    profile.company_logo = adminData.company_logo || profile.company_logo;
+                    profile.plan = adminData.plan;
+                    profile.planStatus = adminData.plan_status;
+                    profile.trialEndsAt = adminData.trial_ends_at;
+
+                    if (profile.use_company_number) {
+                        profile.webhook_url = adminData.webhook_url;
+                        profile.whatsapp_webhook_url = adminData.whatsapp_webhook_url;
+                        if (adminData.preset_messages?.length > 0) {
+                            profile.preset_messages = adminData.preset_messages;
+                        }
+                    }
+                }
+            }
+
+            return profile;
         }
 
         if (!userId && user) {
@@ -200,51 +234,33 @@ export const profileService = {
         return (data || []).map(row => buildProfile(row, null));
     },
 
-    async createTeamUser(userData: { email: string; full_name: string; phone?: string; adminId: string }): Promise<Profile> {
-        const response = await supabase
-            .from('profiles')
-            .insert({
-                email: userData.email,
-                full_name: userData.full_name,
-                phone: userData.phone || null,
-                parent_id: userData.adminId,
-                plan: 'trial',
-                plan_status: 'active',
-                trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                role: 'user'
-            })
-            .select()
-            .single();
-
-        const data = handleSupabaseResponse(response);
-        if (!data) throw new Error('Falha ao criar usuário da equipe.');
-        return buildProfile(data, null);
+    async createTeamUser(email: string, password: string, fullName: string): Promise<void> {
+        const { data, error } = await supabase.functions.invoke('invite_user', {
+            body: { action: 'create', email, password, full_name: fullName }
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
     },
 
-    async updateTeamUser(userId: string, updates: Partial<Profile>): Promise<void> {
-        const dbUpdates: any = { ...updates };
-
-        if (updates.planStatus !== undefined) {
-            dbUpdates.plan_status = updates.planStatus;
-            delete dbUpdates.planStatus;
-        }
-        if (updates.trialEndsAt !== undefined) {
-            dbUpdates.trial_ends_at = updates.trialEndsAt;
-            delete dbUpdates.trialEndsAt;
-        }
-
-        const response = await supabase
-            .from('profiles')
-            .update(dbUpdates)
-            .eq('id', userId);
-
-        handleSupabaseResponse(response);
+    async updateTeamUser(targetUserId: string, fullName: string, newPassword?: string, monthlySalesGoal?: number): Promise<void> {
+        const { data, error } = await supabase.functions.invoke('invite_user', {
+            body: {
+                action: 'update',
+                target_user_id: targetUserId,
+                full_name: fullName,
+                ...(newPassword ? { password: newPassword } : {}),
+                ...(monthlySalesGoal !== undefined ? { monthly_sales_goal: monthlySalesGoal } : {})
+            }
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
     },
 
     async removeTeamUser(userId: string): Promise<void> {
-        const response = await supabase
-            .rpc('invite_user', { p_user_id: userId, p_action: 'remove' });
-
-        handleSupabaseResponse(response);
+        const { data, error } = await supabase.functions.invoke('invite_user', {
+            body: { action: 'remove', target_user_id: userId }
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
     }
 };

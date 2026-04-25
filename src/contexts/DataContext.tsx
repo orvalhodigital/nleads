@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
@@ -8,12 +8,23 @@ import { motorcycleService } from '../services/motorcycleService';
 import { Profile, Lead, Vehicle, Motorcycle, SaleDetails } from '../types';
 import { useToast } from './ToastContext';
 
+const EMPRESA_ROLES = ['empresa', 'super_admin', 'admin'] as const;
+const isEmpresaRole = (role?: string): boolean => EMPRESA_ROLES.includes(role as any);
+
+const getAdminContext = (p: Profile | null) => {
+    const isEmpresa = isEmpresaRole(p?.role);
+    const adminId: string | undefined = isEmpresa ? p?.id : p?.parent_id ?? undefined;
+    return { isEmpresa, adminId };
+};
+
 interface DataContextType {
     session: Session | null;
     profile: Profile | null;
     leads: Lead[];
     vehicles: Vehicle[];
     motorcycles: Motorcycle[];
+    teamMembers: Profile[];
+    isEmpresa: boolean;
     loading: boolean;
     loadingLeads: boolean;
     hasMoreLeads: boolean;
@@ -68,15 +79,17 @@ export const useInventory = () => {
     };
 };
 
-export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUserId?: string }> = ({ 
-    children, 
-    impersonatedUserId: propImpersonatedUserId 
+export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUserId?: string }> = ({
+    children,
+    impersonatedUserId: propImpersonatedUserId
 }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
+    const profileRef = useRef<Profile | null>(null);
     const [leads, setLeads] = useState<Lead[]>([]);
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([]);
+    const [teamMembers, setTeamMembers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingLeads, setLoadingLeads] = useState(false);
     const [hasMoreLeads, setHasMoreLeads] = useState(true);
@@ -85,19 +98,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const { showToast } = useToast();
 
-    // Determine impersonated ID (prop or URL)
     const impersonatedUserId = useMemo(() => {
         if (propImpersonatedUserId) return propImpersonatedUserId;
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('impersonate') || undefined;
     }, [propImpersonatedUserId]);
 
-    const refreshProfile = useCallback(async () => {
+    const refreshProfile = useCallback(async (): Promise<Profile | null> => {
         try {
             const data = await profileService.getProfile(impersonatedUserId);
             setProfile(data);
+            profileRef.current = data;
+            return data;
         } catch (err) {
             console.error('Error refreshing profile:', err);
+            return null;
         }
     }, [impersonatedUserId]);
 
@@ -107,7 +122,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
         setLoadingLeads(true);
         try {
-            const data = await leadService.list(impersonatedUserId, PAGE_SIZE, pageNum * PAGE_SIZE);
+            const p = profileRef.current;
+            const { isEmpresa, adminId } = getAdminContext(p);
+            const data = isEmpresa
+                ? await leadService.list(undefined, adminId, true, PAGE_SIZE, pageNum * PAGE_SIZE)
+                : await leadService.list(p?.id || impersonatedUserId, undefined, false, PAGE_SIZE, pageNum * PAGE_SIZE);
+
             if (append) {
                 setLeads(prev => [...prev, ...data]);
             } else {
@@ -136,32 +156,50 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const refreshVehicles = useCallback(async () => {
         try {
-            const data = await vehicleService.getAll(impersonatedUserId);
+            const { adminId } = getAdminContext(profileRef.current);
+            const data = await vehicleService.getAll(undefined, adminId);
             setVehicles(data);
         } catch (err) {
             console.error('Error loading vehicles:', err);
         }
-    }, [impersonatedUserId]);
+    }, []);
 
     const refreshMotorcycles = useCallback(async () => {
         try {
-            const data = await motorcycleService.getAll(impersonatedUserId);
+            const { adminId } = getAdminContext(profileRef.current);
+            const data = await motorcycleService.getAll(undefined, adminId);
             setMotorcycles(data);
         } catch (err) {
             console.error('Error loading motorcycles:', err);
         }
-    }, [impersonatedUserId]);
+    }, []);
 
-    const loadData = useCallback(async () => {
-        setLoading(true);
-        await Promise.allSettled([
-            refreshProfile(),
-            refreshLeads(),
-            refreshVehicles(),
-            refreshMotorcycles()
-        ]);
-        setLoading(false);
-    }, [refreshProfile, refreshLeads, refreshVehicles, refreshMotorcycles]);
+    const refreshTeamMembers = useCallback(async () => {
+        const p = profileRef.current;
+        if (!p || !isEmpresaRole(p.role)) return;
+        try {
+            const members = await profileService.getTeamMembers(p.id);
+            setTeamMembers(members);
+        } catch (err) {
+            console.error('Error loading team members:', err);
+        }
+    }, []);
+
+    const loadData = useCallback(async (showLoader = true) => {
+        if (showLoader) setLoading(true);
+        try {
+            await refreshProfile();
+            setPage(0);
+            await Promise.allSettled([
+                fetchLeads(0, false),
+                refreshVehicles(),
+                refreshMotorcycles(),
+                refreshTeamMembers(),
+            ]);
+        } finally {
+            if (showLoader) setLoading(false);
+        }
+    }, [refreshProfile, fetchLeads, refreshVehicles, refreshMotorcycles, refreshTeamMembers]);
 
     // Auth Listeners
     useEffect(() => {
@@ -174,78 +212,93 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setSession(session);
             if (!session) {
                 setProfile(null);
+                profileRef.current = null;
                 setLeads([]);
                 setVehicles([]);
                 setMotorcycles([]);
+                setTeamMembers([]);
                 setLoading(false);
             } else {
-                loadData();
+                const shouldShowLoader = !profileRef.current && event === 'SIGNED_IN';
+                loadData(shouldShowLoader);
             }
         });
 
         return () => subscription.unsubscribe();
     }, [loadData]);
 
+    const isEmpresa = isEmpresaRole(profile?.role);
+
     // Actions
-    const addLead = async (leadData: any) => {
-        const newLead = await leadService.create(leadData);
-        setLeads(prev => [newLead, ...prev]);
+    const addLead = useCallback(async (leadData: Lead) => {
+        const { adminId } = getAdminContext(profileRef.current);
+        const enriched = {
+            ...leadData,
+            user_id: leadData.user_id || profileRef.current?.id,
+            admin_id: leadData.admin_id || adminId || null,
+        };
+        const newLead = await leadService.create(enriched);
+        setLeads((prev: Lead[]) => [newLead, ...prev]);
         return newLead;
-    };
+    }, []);
 
-    const updateLead = async (leadData: Lead) => {
+    const updateLead = useCallback(async (leadData: Lead) => {
         const updated = await leadService.update(leadData);
-        setLeads(prev => prev.map(l => l.id === updated.id ? updated : l));
+        setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === updated.id ? updated : l));
         return updated;
-    };
+    }, []);
 
-    const deleteLead = async (id: string) => {
+    const deleteLead = useCallback(async (id: string) => {
         await leadService.delete(id);
-        setLeads(prev => prev.filter(l => l.id !== id));
-    };
+        setLeads((prev: Lead[]) => prev.filter((l: Lead) => l.id !== id));
+    }, []);
 
-    const addVehicle = async (vehicleData: any) => {
-        const res = await vehicleService.create(vehicleData);
-        setVehicles(prev => [res, ...prev]);
+    const addVehicle = useCallback(async (vehicleData: Omit<Vehicle, 'id'>) => {
+        const p = profileRef.current;
+        const { adminId } = getAdminContext(p);
+        const res = await vehicleService.create(vehicleData, p?.id || impersonatedUserId, adminId);
+        setVehicles((prev: Vehicle[]) => [res, ...prev]);
         return res;
-    };
+    }, [impersonatedUserId]);
 
-    const updateVehicle = async (vehicleData: Vehicle) => {
+    const updateVehicle = useCallback(async (vehicleData: Vehicle) => {
         const res = await vehicleService.update(vehicleData);
-        setVehicles(prev => prev.map(v => v.id === res.id ? res : v));
+        setVehicles((prev: Vehicle[]) => prev.map((v: Vehicle) => v.id === res.id ? res : v));
         return res;
-    };
+    }, []);
 
-    const deleteVehicle = async (id: string) => {
+    const deleteVehicle = useCallback(async (id: string) => {
         await vehicleService.delete(id);
-        setVehicles(prev => prev.filter(v => v.id !== id));
-    };
+        setVehicles((prev: Vehicle[]) => prev.filter((v: Vehicle) => v.id !== id));
+    }, []);
 
-    const handleSellVehicle = async (id: string, details: SaleDetails) => {
+    const handleSellVehicle = useCallback(async (id: string, details: SaleDetails) => {
         await vehicleService.sell(id, details);
         await refreshVehicles();
-    };
+    }, [refreshVehicles]);
 
-    const addMotorcycle = async (motoData: any) => {
-        const res = await motorcycleService.create(motoData);
-        setMotorcycles(prev => [res, ...prev]);
+    const addMotorcycle = useCallback(async (motoData: Omit<Motorcycle, 'id'>) => {
+        const p = profileRef.current;
+        const { adminId } = getAdminContext(p);
+        const res = await motorcycleService.create(motoData, p?.id || impersonatedUserId, adminId);
+        setMotorcycles((prev: Motorcycle[]) => [res, ...prev]);
         return res;
-    };
+    }, [impersonatedUserId]);
 
-    const updateMotorcycle = async (motoData: Motorcycle) => {
+    const updateMotorcycle = useCallback(async (motoData: Motorcycle) => {
         const res = await motorcycleService.update(motoData);
-        setMotorcycles(prev => prev.map(m => m.id === res.id ? res : m));
+        setMotorcycles((prev: Motorcycle[]) => prev.map((m: Motorcycle) => m.id === res.id ? res : m));
         return res;
-    };
+    }, []);
 
-    const deleteMotorcycle = async (id: string) => {
+    const deleteMotorcycle = useCallback(async (id: string) => {
         await motorcycleService.delete(id);
-        setMotorcycles(prev => prev.filter(m => m.id !== id));
-    };
+        setMotorcycles((prev: Motorcycle[]) => prev.filter((m: Motorcycle) => m.id !== id));
+    }, []);
 
     const value = useMemo(() => ({
         session,
@@ -253,6 +306,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         leads,
         vehicles,
         motorcycles,
+        teamMembers,
+        isEmpresa,
         loading,
         loadingLeads,
         hasMoreLeads,
@@ -274,7 +329,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         updateMotorcycle,
         deleteMotorcycle
     }), [
-        session, profile, leads, vehicles, motorcycles, loading, loadingLeads, hasMoreLeads, impersonatedUserId,
+        session, profile, leads, vehicles, motorcycles, teamMembers, isEmpresa,
+        loading, loadingLeads, hasMoreLeads, impersonatedUserId,
         loadData, refreshLeads, loadMoreLeads, refreshProfile, refreshVehicles, refreshMotorcycles
     ]);
 

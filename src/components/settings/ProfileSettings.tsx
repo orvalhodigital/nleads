@@ -52,8 +52,8 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
         if (!file) return;
         setLoading(true);
         try {
-            const width = type === 'avatar' ? 200 : 500;
-            const height = type === 'avatar' ? 200 : 125;
+            const width = type === 'avatar' ? 200 : 600;
+            const height = type === 'avatar' ? 200 : 300;
 
             const resized = await resizeImage(file, width, height);
             const fileName = `${profile.id}/${type}-${Date.now()}.png`;
@@ -78,59 +78,68 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
 
     return (
         <div className="space-y-6">
-            {/* Fotos — faixa horizontal */}
-            <div className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col sm:flex-row items-center gap-6">
-                {/* Avatar */}
-                <div className="flex flex-col items-center gap-3">
-                    <div className="relative">
-                        <div className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center">
+            {/* Fotos — Grid de upload */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Foto de Perfil */}
+                <div className="bg-white rounded-3xl border border-slate-100 p-6 flex items-start gap-5 transition-all hover:shadow-sm">
+                    <div className="relative shrink-0">
+                        <div className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center shadow-inner group">
                             {profile.avatar_url ? (
-                                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                             ) : (
                                 <User size={32} className="text-slate-200" />
                             )}
                         </div>
-                        <label className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-emerald-600 text-white rounded-lg cursor-pointer hover:bg-emerald-700 transition-all flex items-center justify-center shadow-md">
-                            <Camera size={13} />
+                        <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-600 text-white rounded-xl cursor-pointer hover:bg-emerald-700 transition-all flex items-center justify-center shadow-lg border-2 border-white">
+                            <Camera size={14} />
                             <input type="file" className="hidden" accept="image/*" onChange={e => handleUpload(e, 'avatar')} />
                         </label>
                     </div>
-                    <div className="text-center">
-                        <p className="text-sm font-bold text-slate-700">{profile.full_name || 'Seu Nome'}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                            {profile.role === 'super_admin' ? 'Super Admin' : profile.role === 'admin' ? 'Proprietário' : 'Vendedor'}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-sm font-bold text-slate-800 truncate">Foto de Perfil</h3>
+                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-md shrink-0">
+                                {profile.role === 'super_admin' ? 'Super Admin' : profile.role === 'admin' ? 'Proprietário' : 'Vendedor'}
+                            </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed mb-2">
+                            Sua foto de identificação no painel, chat de equipe e notificações.
                         </p>
+                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg">
+                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                            <span className="text-[10px] font-bold text-slate-400">Tamanho ideal: 200x200 px</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Logo — apenas admins */}
-                {profile.role !== 'user' && <>
-                    <div className="w-px h-16 bg-slate-100 hidden sm:block" />
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="relative">
-                            <div className="w-32 h-10 rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden p-1">
+                {/* Logo da Empresa */}
+                {profile.role !== 'user' && (
+                    <div className="bg-white rounded-3xl border border-slate-100 p-6 flex items-start gap-5 transition-all hover:shadow-sm">
+                        <div className="relative shrink-0">
+                            <div className="w-32 h-20 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center p-2 shadow-inner group">
                                 {profile.company_logo ? (
-                                    <img src={profile.company_logo} alt="" className="w-full h-full object-fill" />
+                                    <img src={profile.company_logo} alt="" className="w-full h-full object-contain transition-transform group-hover:scale-105" />
                                 ) : (
-                                    <Building2 size={20} className="text-slate-200" />
+                                    <Building2 size={32} className="text-slate-200" />
                                 )}
                             </div>
-                            <label className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-slate-800 text-white rounded-lg cursor-pointer hover:bg-slate-900 transition-all flex items-center justify-center shadow-md">
-                                <Camera size={13} />
+                            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-slate-800 text-white rounded-xl cursor-pointer hover:bg-slate-900 transition-all flex items-center justify-center shadow-lg border-2 border-white">
+                                <Camera size={14} />
                                 <input type="file" className="hidden" accept="image/*" onChange={e => handleUpload(e, 'logo')} />
                             </label>
                         </div>
-                        <div className="text-center">
-                            <p className="text-sm font-bold text-slate-700">{profile.company_name || 'Minha Empresa'}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Logo da Empresa</p>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-bold text-slate-800 mb-1">Logotipo da Empresa</h3>
+                            <p className="text-[11px] text-slate-500 leading-relaxed mb-2">
+                                Exibida no cabeçalho do sistema e no seu site público de vendas para clientes.
+                            </p>
+                            <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg">
+                                <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                <span className="text-[10px] font-bold text-slate-400">Tamanho ideal: 600x300 px</span>
+                            </div>
                         </div>
                     </div>
-                    <div className="sm:ml-auto text-[11px] text-slate-400 text-center sm:text-right max-w-[200px] leading-relaxed">
-                        A logo é exibida para todos os funcionários da equipe.
-                        <br/>
-                        <span className="text-emerald-500 font-bold">Tamanho ideal: 500x125 pixels.</span>
-                    </div>
-                </>}
+                )}
             </div>
 
             {/* Formulário */}

@@ -230,6 +230,9 @@ export interface Lead {
   interaction_history?: InteractionHistory[];
 
   is_buyer?: boolean;
+  user_id?: string;
+  admin_id?: string;
+  user_name?: string;
 }
 
 
@@ -248,7 +251,8 @@ export interface Profile {
   avatar_url?: string;
   company_name?: string;
   company_logo?: string;
-  role?: string;
+  role?: 'empresa' | 'vendedor' | 'super_admin' | 'admin';
+  parent_id?: string;
   phone?: string;
   // Vehicle Source Settings
   enable_manual_vehicles?: boolean;

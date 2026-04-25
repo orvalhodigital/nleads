@@ -32,7 +32,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavigate, companyName }) => {
     const navigate = useNavigate();
-    const { profile } = useData();
+    const { profile, isEmpresa } = useData();
+    const adminId = isEmpresa ? profile?.id : profile?.parent_id;
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
     // Search State
@@ -53,16 +54,17 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                 setSearching(true);
                 setShowSearchDropdown(true);
                 try {
+                    const effectiveUserId = isEmpresa ? undefined : (profile?.id || impersonatedUserId);
                     const searchPromises: Promise<{ type: string, data: any[] }>[] = [
-                        leadService.search(searchTerm, impersonatedUserId).then(data => ({ type: 'leads', data }))
+                        leadService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'leads', data }))
                     ];
 
                     if (profile?.enable_cars !== false) {
-                        searchPromises.push(vehicleService.search(searchTerm, impersonatedUserId).then(data => ({ type: 'vehicles', data })));
+                        searchPromises.push(vehicleService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'vehicles', data })));
                     }
 
                     if (profile?.enable_motorcycles) {
-                        searchPromises.push(motorcycleService.search(searchTerm, impersonatedUserId).then(data => ({ type: 'motorcycles', data })));
+                        searchPromises.push(motorcycleService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'motorcycles', data })));
                     }
 
                     const results = await Promise.all(searchPromises);
@@ -179,9 +181,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
     const handleExportData = async () => {
         setExporting(true);
         try {
+            const effectiveUserId = isEmpresa ? undefined : (profile?.id || impersonatedUserId);
             const [leads, vehicles] = await Promise.all([
-                leadService.getAll(impersonatedUserId),
-                vehicleService.getAll(impersonatedUserId)
+                leadService.getAll(effectiveUserId, adminId, isEmpresa),
+                vehicleService.getAll(effectiveUserId, adminId)
             ]);
 
             const data = {

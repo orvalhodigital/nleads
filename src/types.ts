@@ -32,8 +32,6 @@ export type VehicleType =
   'SUV' | 'Sedan' | 'Hatch' | 'Picape' | 'Esportivo' | 'Conversível' | 'Van' |
   // Motos
   'Naked' | 'Sport' | 'Trail' | 'Custom' | 'Scooter' | 'Touring' | 'Elétrica' | 'Street' | 
-  // Caminhões
-  'Caminhão Leve' | 'Caminhão Pesado' | 'Cavalo Mecânico' | 'Carreta' |
   'Qualquer Um(a)';
 
 /**
@@ -49,8 +47,6 @@ export type EngineType =
   '1.0' | '1.3' | '1.4' | '1.5' | '1.6' | '1.8' | '2.0' | '2.0+' | 'Elétrico' | 'Híbrido' | 
   // Motos
   '110cc' | '125cc' | '150cc' | '160cc' | '190cc' | '250cc' | '300cc' | '400cc' | '600cc' | '750cc' | '1000cc' | '1200cc+' |
-  // Caminhões
-  'Diesel Leve' | 'Diesel Pesado' |
   'Qualquer Um(a)';
 
 export type FuelType = 'Gasolina' | 'Álcool' | 'Flex' | 'Diesel' | 'GNV' | 'Elétrico' | 'Híbrido';
@@ -123,10 +119,6 @@ export interface LeadPreference {
   moto_transmissao: TransmissionType[];
   moto_motorizacao: EngineType[];
 
-  valor_minimo?: number;
-  valor_maximo?: number;
-  transmissao: TransmissionType[];
-  motorizacao: EngineType[];
   observacoes_adicionais: string;
   possui_entrada: boolean;
   valor_entrada?: number;
@@ -272,7 +264,6 @@ export interface Profile {
   monthly_sales_goal?: number;
   enable_cars?: boolean;
   enable_motorcycles?: boolean;
-  enable_trucks?: boolean;
   preset_messages?: string[];
   // Website settings
   website_active?: boolean;

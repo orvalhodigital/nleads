@@ -7,7 +7,6 @@ const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const InventoryPage = lazy(() => import('../pages/InventoryPage'));
 const LeadsPage = lazy(() => import('../pages/LeadsPage'));
 const SalesClosedPage = lazy(() => import('../pages/SalesClosedPage'));
-const PlansPage = lazy(() => import('../pages/PlansPage'));
 const AdminLogin = lazy(() => import('./AdminLogin'));
 const AdminLayout = lazy(() => import('./AdminLayout'));
 const AdminUsers = lazy(() => import('./AdminUsers'));
@@ -38,7 +37,7 @@ function UserAppWrapper() {
                         <Route path="inventory" element={<InventoryPage />} />
                         <Route path="leads" element={<LeadsPage />} />
                         <Route path="sales-closed" element={<SalesClosedPage />} />
-                        <Route path="plans" element={<PlansPage />} />
+                        <Route path="plans" element={<Navigate to="../settings" replace />} />
                     </Route>
                 </Routes>
             </Suspense>

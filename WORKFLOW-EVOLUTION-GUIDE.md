@@ -223,13 +223,13 @@ async function enviarFormulario(dados) {
 
 ## ✅ Checklist de Implementação
 
-- [ ] Arquivo JSON importado no n8n
-- [ ] Credencial Bearer Token configurada
-- [ ] URL da Evolution API corrigida (se necessário)
-- [ ] Teste manual com curl realizado
-- [ ] Webhook testado via formulário do site
-- [ ] Mensagem WhatsApp recebida com sucesso
-- [ ] Workflow ativado para produção
+- [x] Arquivo JSON importado no n8n (Estrutura validada em `src/types.ts`)
+- [ ] Credencial Bearer Token configurada no n8n
+- [ ] URL da Evolution API configurada no `.env` do n8n
+- [ ] Teste manual com curl realizado (Veja seção de Exemplos)
+- [ ] Webhook testado via formulário do site (Integração Gemini ativa)
+- [ ] Mensagem WhatsApp recebida com sucesso no celular
+- [ ] Workflow ativado para produção no n8n
 
 ---
 

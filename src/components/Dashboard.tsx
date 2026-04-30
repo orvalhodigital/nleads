@@ -149,7 +149,6 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       const d = parseISO(v.saleDetails.saleDate);
       const isDateInRange = timeRange === 'all' || (isAfter(d, rangeStart) && isBefore(d, effectiveEnd));
 
-      // Need to find the lead to check source/temp for sales too?
       const buyerLead = leads.find(l => l.id === v.saleDetails?.buyerLeadId);
       const isSourceMatch = filterSource === 'all' || (buyerLead && buyerLead.source === filterSource);
       const isTempMatch = filterTemp === 'all' || (buyerLead && buyerLead.temperature === filterTemp);
@@ -281,6 +280,16 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     leads.forEach(l => leadSourcesMap[l.source] = (leadSourcesMap[l.source] || 0) + 1);
     const leadSources = Object.entries(leadSourcesMap).map(([name, value]) => ({ name, value }));
 
+    const modelInterestMap: Record<string, number> = {};
+    leads.forEach(l => {
+      l.preferences.modelos?.forEach(m => modelInterestMap[m] = (modelInterestMap[m] || 0) + 1);
+      l.preferences.modelos_moto?.forEach(m => modelInterestMap[m] = (modelInterestMap[m] || 0) + 1);
+    });
+    const modelInterest = Object.entries(modelInterestMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+
     // Agenda stuff
     const appointmentsToday = leads.flatMap(l => l.scheduling_data?.appointments || []).filter(a => isToday(parseISO(a.date)));
     const visToday = appointmentsToday.length;
@@ -306,7 +315,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       prontosParaFechar, leadsEsquecidos, leadsComEntrada, leadsComTroca, salesByBrand,
       brandInterest, typeInterest, leadSources, stockByCategory, monthlyGoal, isGoalReached, goalProgress,
       salesNeeded, daysLeftInMonth, salesPerDayNeeded, visToday, visitsDoneToday,
-      followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest: [] // Placeholder for model interest
+      followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest
     };
   }, [leads, unifiedVehicles, profile, now, timeRange, customStartDate, customEndDate, filterSource, filterTemp]);
 

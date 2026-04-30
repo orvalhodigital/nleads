@@ -95,22 +95,36 @@ const Inventory: React.FC<InventoryProps> = ({
   const [selectorSearch, setSelectorSearch] = useState('');
   const [selectorSelectedIds, setSelectorSelectedIds] = useState<string[]>([]);
   const location = useLocation();
+    useEffect(() => {
+        if (location.state?.selectedVehicleId && vehicles.length > 0) {
+            const found = vehicles.find(v => v.id === location.state.selectedVehicleId);
+            if (found) {
+                setSelectedVehicle(found);
+                window.history.replaceState({}, document.title);
+            }
+        }
+        if (location.state?.search !== undefined) {
+            setFilterQuery(location.state.search);
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state, vehicles]);
 
-  React.useEffect(() => {
-    if (location.state?.selectedVehicleId && vehicles.length > 0) {
-      const vehicle = vehicles.find(v => v.id === location.state.selectedVehicleId);
-      if (vehicle) {
-        setSelectedVehicle(vehicle);
-        // Clean state
-        window.history.replaceState({}, document.title);
-      }
-    }
-    if (location.state?.search !== undefined) {
-      setFilterQuery(location.state.search);
-      // Clean state
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state, vehicles]);
+    // ── LocalStorage Selected Persistence ───────────────────────────────────────
+    useEffect(() => {
+        const savedId = localStorage.getItem('inventory_selected_id');
+        if (savedId && !selectedVehicle && vehicles.length > 0) {
+            const found = vehicles.find(v => v.id === savedId);
+            if (found) setSelectedVehicle(found);
+        }
+    }, [vehicles.length]);
+
+    useEffect(() => {
+        if (selectedVehicle && typeof selectedVehicle === 'object') {
+            localStorage.setItem('inventory_selected_id', selectedVehicle.id);
+        } else {
+            localStorage.removeItem('inventory_selected_id');
+        }
+    }, [selectedVehicle]);
 
   // Fetch communications for the selected vehicle
   React.useEffect(() => {
@@ -410,12 +424,39 @@ const Inventory: React.FC<InventoryProps> = ({
           <div className="lg:col-span-2 space-y-8">
             <div className={`bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden ${selectedVehicle.status === 'sold' ? 'opacity-90' : ''}`}>
               {selectedVehicle.imageUrl ? (
-                <div className="w-full aspect-[4/5] max-h-[700px] mb-8 rounded-[2rem] overflow-hidden">
+                <div className="w-full aspect-[4/5] max-h-[700px] mb-8 rounded-[2rem] overflow-hidden group relative">
                   <img src={selectedVehicle.imageUrl} alt={selectedVehicle.model} className="w-full h-full object-cover" />
+                  
+                  {/* Gallery Overlays if more than one image */}
+                  {(selectedVehicle.galleryImages?.length ?? 0) > 0 && (
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                      <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                      {selectedVehicle.galleryImages?.map((_, i) => (
+                        <div key={i} className="w-2.5 h-2.5 rounded-full bg-white/40" />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="absolute top-0 right-0 p-10 opacity-5">
                   <Car size={300} />
+                </div>
+              )}
+
+              {/* Mini Gallery Row */}
+              {(selectedVehicle.galleryImages?.length ?? 0) > 0 && (
+                <div className="grid grid-cols-6 gap-3 mb-10">
+                  <div className="aspect-[4/5] rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 cursor-pointer">
+                    <img src={selectedVehicle.imageUrl} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  {selectedVehicle.galleryImages?.map((url, i) => (
+                    <div key={i} className="aspect-[4/5] rounded-xl overflow-hidden border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer opacity-60 hover:opacity-100" 
+                         onClick={() => {
+                           // Swap logic or open lightbox could go here, for now just visual
+                         }}>
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -469,12 +510,12 @@ const Inventory: React.FC<InventoryProps> = ({
 
                 <div className="flex items-end gap-4 mb-4">
                   <p className="text-4xl font-black text-emerald-500 tracking-tighter">
-                    R$ {selectedVehicle.price.toLocaleString('pt-BR')}
+                    R$ {(selectedVehicle.price || 0).toLocaleString('pt-BR')}
                   </p>
                   {selectedVehicle.fipePrice ? (
                     <div className="mb-1">
                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tabela FIPE</p>
-                      <p className="text-xs font-bold text-slate-400">R$ {selectedVehicle.fipePrice.toLocaleString('pt-BR')}</p>
+                      <p className="text-xs font-bold text-slate-400">R$ {(selectedVehicle.fipePrice || 0).toLocaleString('pt-BR')}</p>
                     </div>
                   ) : null}
                 </div>

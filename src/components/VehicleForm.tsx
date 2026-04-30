@@ -133,12 +133,39 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         optionals: [], imageUrl: '', galleryImages: []
     });
 
+    // ── LocalStorage Draft Management ──────────────────────────────────────────
     useEffect(() => {
-        if (initialData) {
+        const draftKey = `vehicle_form_draft_${initialData?.id || 'new'}`;
+        
+        // On mount: Load draft if it exists
+        const savedDraft = localStorage.getItem(draftKey);
+        if (savedDraft) {
+            try {
+                const parsed = JSON.parse(savedDraft);
+                setFormData(prev => ({ ...prev, ...parsed }));
+            } catch (e) {
+                console.error("Error loading draft:", e);
+            }
+        } else if (initialData) {
+            // If no draft but editing, use initialData
             const { id, status, saleDetails, ...rest } = initialData;
-            setFormData(rest);
+            setFormData({
+                ...rest,
+                galleryImages: rest.galleryImages || []
+            });
         }
-    }, [initialData]);
+    }, [initialData?.id]);
+
+    // Save draft on every change
+    useEffect(() => {
+        const draftKey = `vehicle_form_draft_${initialData?.id || 'new'}`;
+        localStorage.setItem(draftKey, JSON.stringify(formData));
+    }, [formData, initialData?.id]);
+
+    const clearDraft = () => {
+        const draftKey = `vehicle_form_draft_${initialData?.id || 'new'}`;
+        localStorage.removeItem(draftKey);
+    };
 
     const lookupPlate = async () => {
         const rawPlate = formData.plate.replace(/[-\s]/g, '').toUpperCase();
@@ -343,6 +370,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             } else {
                 await onSave({ ...formData, status: 'available' });
             }
+            clearDraft();
+            showToast('success', isEditing ? 'Veículo atualizado com sucesso!' : 'Veículo cadastrado com sucesso!');
             navigate('/inventory');
         } finally {
             setSubmitting(false);
@@ -821,7 +850,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                     <div className="flex items-center gap-3 ml-auto">
                         <button
                             type="button"
-                            onClick={() => navigate('/inventory')}
+                            onClick={() => { clearDraft(); navigate('/inventory'); }}
                             className="px-6 py-3.5 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
                         >
                             Cancelar

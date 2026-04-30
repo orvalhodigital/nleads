@@ -100,7 +100,9 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
         if (type === 'lead') {
             navigate(`/leads/${id}`);
         } else {
-            navigate(isMoto ? `/motorcycles/details/${id}` : `/inventory/details/${id}`);
+            const path = isMoto ? '/motorcycles' : '/inventory';
+            const stateKey = isMoto ? 'selectedMotorcycleId' : 'selectedVehicleId';
+            navigate(path, { state: { [stateKey]: id } });
         }
     };
 

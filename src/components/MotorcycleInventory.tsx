@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Plus, Search, Filter, Gauge, Calendar, DollarSign,
     Edit3, Trash2, ChevronLeft, Upload, Loader2, X, Check,
@@ -107,6 +107,19 @@ const MotorcycleInventory: React.FC<Props> = ({
         return true;
     }), [motorcycles, inventoryView, filterQuery, filterCategory, filterPriceMin, filterPriceMax]);
 
+    // ── Handle navigation state ────────────────────────────────────────────────
+    const location = useLocation();
+    React.useEffect(() => {
+        if (location.state?.selectedMotorcycleId && motorcycles.length > 0) {
+            const found = motorcycles.find(m => m.id === location.state.selectedMotorcycleId);
+            if (found) {
+                setSelected(found);
+                // Clear state to avoid re-selecting on back navigation
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [location.state, motorcycles, navigate, location.pathname]);
+
     // ── Leads compatíveis ───────────────────────────────────────────────────────
     const matchingLeads = useMemo(() => {
         if (!selected || selected === 'new') return [];
@@ -118,6 +131,48 @@ const MotorcycleInventory: React.FC<Props> = ({
             (!l.preferences.valor_maximo || m.price <= l.preferences.valor_maximo)
         );
     }, [selected, leads]);
+
+    // ── LocalStorage Draft Management ──────────────────────────────────────────
+    React.useEffect(() => {
+        const savedSelectedId = localStorage.getItem('moto_inventory_selected_id');
+        if (savedSelectedId && !selected) {
+            if (savedSelectedId === 'new') {
+                setSelected('new');
+            } else {
+                const found = motorcycles.find(m => m.id === savedSelectedId);
+                if (found) setSelected(found);
+            }
+        }
+
+        const savedFormDraft = localStorage.getItem('moto_form_draft');
+        if (savedFormDraft) {
+            try {
+                const parsed = JSON.parse(savedFormDraft);
+                setForm(prev => ({ ...prev, ...parsed }));
+            } catch (e) {
+                console.error("Error loading moto draft:", e);
+            }
+        }
+    }, [motorcycles.length]);
+
+    React.useEffect(() => {
+        if (selected) {
+            localStorage.setItem('moto_inventory_selected_id', typeof selected === 'string' ? selected : selected.id);
+        } else {
+            localStorage.removeItem('moto_inventory_selected_id');
+        }
+    }, [selected]);
+
+    React.useEffect(() => {
+        if (form.model || form.brand || form.price > 0) {
+            localStorage.setItem('moto_form_draft', JSON.stringify(form));
+        }
+    }, [form]);
+
+    const clearDraft = () => {
+        localStorage.removeItem('moto_form_draft');
+        localStorage.removeItem('moto_inventory_selected_id');
+    };
 
     // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -198,8 +253,10 @@ const MotorcycleInventory: React.FC<Props> = ({
                 await motorcycleService.update({ ...(selected as Motorcycle), ...form });
             }
             onDataChange();
+            clearDraft();
             setSelected(null);
             setForm(EMPTY_MOTO);
+            alert(selected === 'new' ? 'Moto cadastrada com sucesso!' : 'Moto atualizada com sucesso!');
         } catch (err: any) {
             console.error('Erro ao salvar:', err);
             const errorMsg = err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
@@ -352,6 +409,7 @@ const MotorcycleInventory: React.FC<Props> = ({
     };
 
     const openEdit = (m: Motorcycle) => {
+        setSelected(m);
         setForm({
             brand: m.brand, model: m.model, year: m.year, modelYear: m.modelYear ?? m.year,
             plate: m.plate ?? '', fipePrice: m.fipePrice, price: m.price,
@@ -398,11 +456,35 @@ const MotorcycleInventory: React.FC<Props> = ({
                     <div className="lg:col-span-2 space-y-8">
                         <div className={`bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden ${m.status === 'sold' ? 'opacity-90' : ''}`}>
                             {m.imageUrl ? (
-                                <div className="w-full h-96 mb-8 rounded-[2rem] overflow-hidden">
+                                <div className="w-full aspect-[4/5] max-h-[600px] mb-8 rounded-[2rem] overflow-hidden relative group">
                                     <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover" />
+                                    
+                                    {/* Gallery Dots overlay */}
+                                    {(m.galleryImages?.length ?? 0) > 0 && (
+                                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                                            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                                            {m.galleryImages?.map((_, i) => (
+                                                <div key={i} className="w-2.5 h-2.5 rounded-full bg-white/40" />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="absolute top-0 right-0 p-10 opacity-5"><Bike size={300} /></div>
+                            )}
+
+                            {/* Mini Gallery Row */}
+                            {(m.galleryImages?.length ?? 0) > 0 && (
+                                <div className="grid grid-cols-6 gap-3 mb-10">
+                                    <div className="aspect-[4/5] rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 cursor-pointer">
+                                        <img src={m.imageUrl} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                    {m.galleryImages?.map((url, i) => (
+                                        <div key={i} className="aspect-[4/5] rounded-xl overflow-hidden border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer opacity-60 hover:opacity-100">
+                                            <img src={url} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                             <div className="relative z-10">
                                 <div className="flex items-center justify-between mb-6">
@@ -419,11 +501,11 @@ const MotorcycleInventory: React.FC<Props> = ({
                                     {m.brand} <br /> {m.model}
                                 </h1>
                                 <div className="flex items-end gap-4 mb-4">
-                                    <p className="text-4xl font-black text-emerald-500 tracking-tighter">R$ {m.price.toLocaleString('pt-BR')}</p>
+                                    <p className="text-4xl font-black text-emerald-500 tracking-tighter">R$ {(m.price || 0).toLocaleString('pt-BR')}</p>
                                     {m.fipePrice ? (
                                         <div className="mb-1">
                                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tabela FIPE</p>
-                                            <p className="text-xs font-bold text-slate-400">R$ {m.fipePrice.toLocaleString('pt-BR')}</p>
+                                            <p className="text-xs font-bold text-slate-400">R$ {(m.fipePrice || 0).toLocaleString('pt-BR')}</p>
                                         </div>
                                     ) : null}
                                 </div>
@@ -910,7 +992,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                     </div>
 
                     <div className="flex gap-4 pt-8">
-                        <button type="button" onClick={() => { setSelected(null); setForm(EMPTY_MOTO); }} className="flex-1 py-4 bg-white border border-slate-200 rounded-[1.5rem] text-sm font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 transition-all">Cancelar</button>
+                        <button type="button" onClick={() => { clearDraft(); setSelected(null); setForm(EMPTY_MOTO); }} className="flex-1 py-4 bg-white border border-slate-200 rounded-[1.5rem] text-sm font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 transition-all">Cancelar</button>
                         <button type="submit" disabled={submitting} className="flex-[2] py-4 bg-slate-900 text-white rounded-[1.5rem] text-sm font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 disabled:opacity-50">
                             {submitting ? <Loader2 className="animate-spin mx-auto" /> : (selected === 'new' ? 'Cadastrar Moto' : 'Salvar Alterações')}
                         </button>

@@ -73,6 +73,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                     tag: v.status === 'sold' ? 'Vendido' : 'Disponível',
                     tagColor: v.status === 'sold' ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600',
                     href: `/inventory`,
+                    state: { selectedVehicleId: v.id }
                 });
             }
         });
@@ -92,6 +93,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                     tag: m.status === 'sold' ? 'Vendido' : 'Disponível',
                     tagColor: m.status === 'sold' ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600',
                     href: `/motorcycles`,
+                    state: { selectedMotorcycleId: m.id }
                 });
             }
         });
@@ -100,7 +102,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
     }, [query, leads, vehicles, motorcycles]);
 
     const handleSelect = useCallback((result: SearchResult) => {
-        navigate(result.href);
+        navigate(result.href, { state: result.state });
         onClose();
     }, [navigate, onClose]);
 

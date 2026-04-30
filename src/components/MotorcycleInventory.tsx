@@ -39,12 +39,13 @@ const MOTO_BRAKE_TYPES: MotoBrakeType[] = ['Disco', 'Tambor', 'ABS', 'CBS', 'Dis
 
 const EMPTY_MOTO: Omit<Motorcycle, 'id'> = {
     brand: 'Honda', model: '', year: new Date().getFullYear(),
-    modelYear: new Date().getFullYear(), plate: '', chassis: '', fipePrice: 0, price: 0,
+    modelYear: new Date().getFullYear(), plate: '', fipePrice: 0, price: 0,
     category: 'Naked', engine: '150cc', mileage: 0, color: '',
     isSingleOwner: false, hasWarranty: false, isIpvaPaid: false,
     optionals: [], imageUrl: '', galleryImages: [],
     startType: 'Elétrica', fuelSystem: 'Injeção Eletrônica', cooling: 'Ar', brakeType: 'Disco',
     hasSpareKey: false, hasOwnerManual: false,
+    shortDescription: '', description: '',
     status: 'available',
 };
 
@@ -127,7 +128,6 @@ const MotorcycleInventory: React.FC<Props> = ({
         try {
             const resized = await resizeImage(file, 1200, 900);
             const { data: { user } } = await supabase.auth.getUser();
-            // resizeImage returns a Blob; wrap it as File for the service
             const asFile = new File([resized], 'image.webp', { type: 'image/webp' });
             const url = await motorcycleService.uploadImage(asFile, user!.id);
             setForm(prev => ({ ...prev, imageUrl: url }));
@@ -180,9 +180,7 @@ const MotorcycleInventory: React.FC<Props> = ({
         if (form.modelYear && form.modelYear < form.year) nextErrors.modelYear = 'O ano modelo não pode ser menor que o ano de fabricação.';
         if (!form.price) nextErrors.price = 'Informe o preço de venda.';
         if (form.mileage < 0) nextErrors.mileage = 'A quilometragem não pode ser negativa.';
-        if (form.chassis && form.chassis.replace(/\s/g, '').length > 0 && form.chassis.replace(/\s/g, '').length < 17) {
-            nextErrors.chassis = 'O chassi deve ter 17 caracteres ou ficar vazio.';
-        }
+
 
         setFormErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
@@ -259,7 +257,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                 }
             }
 
-            // Try to normalize engine from cilindradas field
             const cilindradas = parseInt(extra.cilindradas || '0');
             let engine = form.engine;
             if (cilindradas > 0) {
@@ -267,7 +264,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                 engine = MOTO_ENGINES.find(e => e === ccStr) || (cilindradas >= 1200 ? '1200cc+' : ccStr);
             }
 
-            // Try to infer category from segment data
             const seg = ((data.segmento || extra.segmento || '') + ' ' + (data.sub_segmento || extra.sub_segmento || '')).toUpperCase();
             let category = form.category;
             if (seg.includes('SCOOTER') || seg.includes('SCÚTER')) category = 'Scooter';
@@ -358,13 +354,17 @@ const MotorcycleInventory: React.FC<Props> = ({
     const openEdit = (m: Motorcycle) => {
         setForm({
             brand: m.brand, model: m.model, year: m.year, modelYear: m.modelYear ?? m.year,
-            plate: m.plate ?? '', chassis: m.chassis ?? '', fipePrice: m.fipePrice, price: m.price,
+            plate: m.plate ?? '', fipePrice: m.fipePrice, price: m.price,
             category: m.category, engine: m.engine, mileage: m.mileage, color: m.color,
             isSingleOwner: m.isSingleOwner, hasWarranty: m.hasWarranty, isIpvaPaid: m.isIpvaPaid,
-            optionals: m.optionals, imageUrl: m.imageUrl, galleryImages: m.galleryImages ?? [],
-            startType: m.startType, brakeType: m.brakeType, fuelSystem: m.fuelSystem, cooling: m.cooling,
             hasSpareKey: m.hasSpareKey ?? false, hasOwnerManual: m.hasOwnerManual ?? false,
-            status: m.status, saleDetails: m.saleDetails
+            shortDescription: m.shortDescription || '', description: m.description || '',
+            optionals: m.optionals, imageUrl: m.imageUrl, galleryImages: m.galleryImages ?? [],
+            status: m.status, saleDetails: m.saleDetails,
+            startType: m.startType || 'Elétrica',
+            fuelSystem: m.fuelSystem || 'Injeção Eletrônica',
+            cooling: m.cooling || 'Ar',
+            brakeType: m.brakeType || 'Disco'
         });
         setSelected(m);
     };
@@ -469,7 +469,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                         )}
                     </div>
 
-                    {/* Leads Compatíveis */}
                     <div className="space-y-6">
                         <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
                             <div className="flex items-center gap-3 mb-2"><UserCheck size={24} className="text-emerald-500" /><h3 className="text-lg font-extrabold text-slate-900">Leads Compatíveis</h3></div>
@@ -498,7 +497,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                     </div>
                 </div>
 
-                {/* Sell Modal */}
                 {isSellModalOpen && (
                     <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSellModalOpen(false)}>
                         <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
@@ -540,7 +538,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                     </div>
                 )}
 
-                {/* Message Modal */}
                 {isMessageModalOpen && (
                     <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsMessageModalOpen(false)}>
                         <div className="bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl animate-fadeUp overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -568,7 +565,7 @@ const MotorcycleInventory: React.FC<Props> = ({
     }
 
     // ── FORM VIEW (new / edit) ───────────────────────────────────────────────────
-    if (selected === 'new') {
+    if (selected) {
         return (
             <div className="animate-fadeUp max-w-4xl mx-auto w-full pb-20">
                 <div className="flex items-center justify-between mb-8">
@@ -579,9 +576,8 @@ const MotorcycleInventory: React.FC<Props> = ({
                 </div>
 
                 <form onSubmit={handleSave} className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8">
-                    <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Nova Moto</h2>
+                    <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{selected === 'new' ? 'Nova Moto' : 'Editar Moto'}</h2>
 
-                    {/* Identificação */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Marca</label>
@@ -682,11 +678,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 </p>
                             )}
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Chassi</label>
-                            <input type="text" value={form.chassis || ''} onChange={e => setForm(p => ({ ...p, chassis: e.target.value.toUpperCase() }))} maxLength={17} placeholder="Opcional" className={getFieldClassName('chassis', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm uppercase')} />
-                            {formErrors.chassis && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.chassis}</p>}
-                        </div>
+
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Preço de Venda</label>
                             <div className="relative">
@@ -726,7 +718,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                     </div>
 
-                    {/* Boleanos */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {[
                             { key: 'isSingleOwner', label: 'Único Dono' },
@@ -743,7 +734,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                         ))}
                     </div>
 
-                    {/* Especificações Técnicas */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
@@ -777,8 +767,39 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                     </div>
 
-                    {/* Documentação */}
-                    <div className="space-y-4">
+                    <div className="space-y-6 pt-6 border-t border-slate-100">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Descrições do Anúncio</h3>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center px-1">
+                                <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Descrição Curta (SEO)</label>
+                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{form.shortDescription?.length || 0}/160</span>
+                            </div>
+                            <textarea
+                                value={form.shortDescription}
+                                onChange={e => setForm({ ...form, shortDescription: e.target.value })}
+                                placeholder="Ex: Oferta imperdível! Moto em excelente estado, revisada e com garantia. Confira agora!"
+                                maxLength={160}
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-sm h-24 resize-none"
+                            />
+                            <p className="text-[9px] font-medium text-slate-400 px-1 italic">Dica: Este texto aparece abaixo do título nas pesquisas do Google.</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Descrição Longa / Detalhes</label>
+                            <textarea
+                                value={form.description}
+                                onChange={e => setForm({ ...form, description: e.target.value })}
+                                placeholder="Descreva detalhadamente a moto, acessórios, histórico de manutenção, etc..."
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-sm h-48 resize-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 pt-6 border-t border-slate-100">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-4 bg-violet-500 rounded-full" />
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Documentação</h3>
@@ -812,7 +833,6 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                     </div>
 
-                    {/* Opcionais */}
                     <div className="space-y-3">
                         <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais</label>
                         <div className="flex flex-wrap gap-2">
@@ -828,17 +848,15 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                     </div>
 
-                    {/* Mídia */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><ImagePlus size={13} /> Mídia da Moto</h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Foto Principal */}
                             <div className="space-y-3">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
-                                <div className="aspect-[4/5] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                                <div className="aspect-[4/5] max-w-[280px] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
                                     {form.imageUrl ? (
                                         <>
                                             <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -854,14 +872,13 @@ const MotorcycleInventory: React.FC<Props> = ({
                                     )}
                                 </div>
                                 <label className="block w-full cursor-pointer group">
-                                    <div className={`w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                    <div className={`max-w-[280px] w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
                                         {uploading ? <Loader2 size={16} className="animate-spin text-emerald-500" /> : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
                                         <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>{uploading ? 'Enviando...' : 'Fazer Upload'}</span>
                                     </div>
                                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
                                 </label>
                             </div>
-                            {/* Galeria */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between px-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Galeria</label>
@@ -880,23 +897,22 @@ const MotorcycleInventory: React.FC<Props> = ({
                                     </div>
                                 )}
                                 {(form.galleryImages?.length || 0) < 6 && (
-                                    <label className="block w-full cursor-pointer group">
-                                        <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
-                                            {galleryUploading ? <Loader2 size={16} className="animate-spin text-emerald-500" /> : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
-                                            <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>{galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}</span>
+                                    <label className="block max-w-[280px] w-full cursor-pointer group">
+                                        <div className={`w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-indigo-500 hover:bg-indigo-50'}`}>
+                                            {galleryUploading ? <Loader2 size={16} className="animate-spin text-indigo-500" /> : <ImagePlus size={16} className="text-slate-400 group-hover:text-indigo-500" />}
+                                            <span className={`text-[11px] font-black uppercase tracking-widest ${galleryUploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-indigo-600'}`}>{galleryUploading ? 'Enviando...' : 'Galeria (Max 6)'}</span>
                                         </div>
                                         <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={galleryUploading} />
                                     </label>
                                 )}
-                                <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 1080×1350px (4:5) · WebP</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex gap-4 pt-4">
-                        <button type="button" onClick={() => { setSelected(null); setForm(EMPTY_MOTO); }} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl font-extrabold text-slate-500 uppercase tracking-widest text-sm hover:bg-slate-50">Cancelar</button>
-                        <button type="submit" disabled={uploading || galleryUploading || submitting} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl font-extrabold uppercase tracking-widest text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-60">
-                            {submitting ? <><Loader2 size={18} className="animate-spin" /> Salvando...</> : <><Bike size={18} /> Salvar Moto</>}
+                    <div className="flex gap-4 pt-8">
+                        <button type="button" onClick={() => { setSelected(null); setForm(EMPTY_MOTO); }} className="flex-1 py-4 bg-white border border-slate-200 rounded-[1.5rem] text-sm font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 transition-all">Cancelar</button>
+                        <button type="submit" disabled={submitting} className="flex-[2] py-4 bg-slate-900 text-white rounded-[1.5rem] text-sm font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 disabled:opacity-50">
+                            {submitting ? <Loader2 className="animate-spin mx-auto" /> : (selected === 'new' ? 'Cadastrar Moto' : 'Salvar Alterações')}
                         </button>
                     </div>
                 </form>
@@ -904,119 +920,115 @@ const MotorcycleInventory: React.FC<Props> = ({
         );
     }
 
-    // ── LIST VIEW ────────────────────────────────────────────────────────────────
-
+    // ── LIST VIEW ───────────────────────────────────────────────────────────────
     return (
-        <div className="animate-fadeUp w-full pb-20">
-            {/* Header */}
-            <div className="flex flex-wrap items-center gap-4 mb-8">
-                <div className="flex bg-white/40 backdrop-blur-xl p-1 rounded-[18px] border border-white/60 shadow-sm">
-                    <button onClick={() => setInventoryView('available')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${inventoryView === 'available' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'}`}>Disponíveis ({motorcycles.filter(m => m.status === 'available').length})</button>
-                    <button onClick={() => setInventoryView('sold')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${inventoryView === 'sold' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'}`}>Vendidas ({motorcycles.filter(m => m.status === 'sold').length})</button>
+        <div className="max-w-[1400px] mx-auto w-full">
+            {/* Header / Filtros */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                <div>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">Estoque de Motos</h1>
+                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Gerencie seu inventário de motocicletas</p>
                 </div>
-
-                <div className="relative flex-1 max-w-xs">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                    <input type="text" placeholder="Buscar moto..." value={filterQuery} onChange={e => setFilterQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white/60 backdrop-blur-xl border border-white/60 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-400 shadow-sm" />
+                <div className="flex items-center gap-3">
+                    <div className="flex bg-white p-1 rounded-2xl border border-slate-100 shadow-sm">
+                        <button onClick={() => setInventoryView('available')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${inventoryView === 'available' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}>Disponíveis</button>
+                        <button onClick={() => setInventoryView('sold')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${inventoryView === 'sold' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}>Vendidas</button>
+                    </div>
+                    <button onClick={() => { setSelected('new'); setForm(EMPTY_MOTO); }} className="px-6 py-3.5 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center gap-2"><Plus size={16} strokeWidth={3} /> Nova Moto</button>
                 </div>
-
-                <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isFilterOpen ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg' : 'bg-white/60 text-slate-500 border-white/60 hover:bg-white'}`}>
-                    <Filter size={14} /> Filtros
-                </button>
-
-                <div className="flex bg-white/40 backdrop-blur-xl p-1 rounded-[18px] border border-white/60 shadow-sm ml-auto">
-                    <button onClick={() => setViewMode('grid')} className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-white/50'}`}><LayoutGrid size={16} /></button>
-                    <button onClick={() => setViewMode('list')} className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-900 text-white' : 'text-slate-400 hover:bg-white/50'}`}><List size={16} /></button>
-                </div>
-
-                <button onClick={() => { setForm(EMPTY_MOTO); setSelected('new'); }} className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all">
-                    <Plus size={18} /> Nova Moto
-                </button>
             </div>
 
-            {/* Filtros extras */}
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+                <div className="flex-1 relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={20} />
+                    <input type="text" placeholder="Buscar por marca, modelo ou placa..." value={filterQuery} onChange={e => setFilterQuery(e.target.value)} className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all" />
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-6 py-4 bg-white border rounded-2xl flex items-center gap-3 transition-all ${isFilterOpen ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-500'}`}><Filter size={18} /><span className="font-black text-[10px] uppercase tracking-widest">Filtros</span></button>
+                    <div className="bg-white p-1 rounded-2xl border border-slate-100 flex shadow-sm">
+                        <button onClick={() => setViewMode('grid')} className={`p-3 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-slate-100 text-slate-900' : 'text-slate-300 hover:text-slate-400'}`}><LayoutGrid size={18} /></button>
+                        <button onClick={() => setViewMode('list')} className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-100 text-slate-900' : 'text-slate-300 hover:text-slate-400'}`}><List size={18} /></button>
+                    </div>
+                </div>
+            </div>
+
             {isFilterOpen && (
-                <div className="bg-white/60 backdrop-blur-xl border border-white/60 rounded-[24px] p-6 mb-6 shadow-sm animate-fadeUp flex flex-wrap gap-4">
-                    <div className="space-y-1">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Categoria</label>
-                        <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700 outline-none text-sm">
-                            <option value="">Todas</option>
-                            {MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}
-                        </select>
+                <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm mb-8 animate-fadeUp">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Categoria</label><select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none"><option value="">Todas</option>{MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Mín.</label><input type="number" value={filterPriceMin} onChange={e => setFilterPriceMin(e.target.value)} placeholder="0" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Máx.</label><input type="number" value={filterPriceMax} onChange={e => setFilterPriceMax(e.target.value)} placeholder="999.999" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
+                        <div className="flex items-end"><button onClick={() => { setFilterCategory(''); setFilterPriceMin(''); setFilterPriceMax(''); setFilterQuery(''); }} className="w-full py-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Limpar Filtros</button></div>
                     </div>
-                    <div className="space-y-1">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Preço Mín</label>
-                        <input type="number" value={filterPriceMin} onChange={e => setFilterPriceMin(e.target.value)} placeholder="0" className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700 outline-none text-sm w-32" />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Preço Máx</label>
-                        <input type="number" value={filterPriceMax} onChange={e => setFilterPriceMax(e.target.value)} placeholder="999999" className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700 outline-none text-sm w-32" />
-                    </div>
-                    <button onClick={() => { setFilterCategory(''); setFilterPriceMin(''); setFilterPriceMax(''); }} className="self-end px-4 py-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest hover:text-red-500 transition-colors">Limpar</button>
                 </div>
             )}
 
-            {/* Grid / List */}
-            {displayed.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-32 text-center">
-                    <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6"><Bike size={40} className="text-slate-300" /></div>
-                    <h3 className="text-xl font-black text-slate-800 mb-2">Nenhuma moto encontrada</h3>
-                    <p className="text-slate-400 font-medium text-sm mb-8">Adicione a primeira moto ao seu estoque.</p>
-                    <button onClick={() => { setForm(EMPTY_MOTO); setSelected('new'); }} className="flex items-center gap-2 px-8 py-4 bg-emerald-500 text-white rounded-2xl font-extrabold uppercase tracking-wider shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all">
-                        <Plus size={20} /> Cadastrar Moto
-                    </button>
-                </div>
-            ) : viewMode === 'grid' ? (
+            {/* Grid/List de Cards */}
+            {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {displayed.map(m => (
-                        <div key={m.id} onClick={() => setSelected(m)} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group overflow-hidden">
-                            {m.imageUrl ? (
-                                <div className="aspect-[4/5] overflow-hidden"><img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /></div>
-                            ) : (
-                                <div className="aspect-[4/5] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center"><Bike size={64} className="text-slate-200" /></div>
-                            )}
-                            <div className="p-6">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-[9px] font-extrabold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-lg">{m.category}</span>
-                                    {m.status === 'sold' && <span className="text-[9px] font-black text-white bg-red-500 px-3 py-1 rounded-lg uppercase">Vendida</span>}
-                                </div>
-                                <h3 className="font-black text-slate-900 uppercase tracking-tight leading-tight text-lg">{m.brand}</h3>
-                                <p className="text-sm font-bold text-slate-500 mb-4">{m.model} • {m.year}</p>
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xl font-black text-emerald-500">R$ {m.price.toLocaleString('pt-BR')}</p>
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                                        <Gauge size={12} />{m.mileage.toLocaleString()} km
+                        <div key={m.id} onClick={() => setSelected(m)} className="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-500 cursor-pointer flex flex-col h-full">
+                            <div className="aspect-[4/5] relative overflow-hidden bg-slate-50">
+                                {m.imageUrl ? (
+                                    <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-200">
+                                        <Bike size={64} strokeWidth={1} />
+                                        <span className="text-[8px] font-black uppercase tracking-[0.2em] mt-4 opacity-50">Sem Imagem</span>
                                     </div>
+                                )}
+                                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                                    <span className="bg-white/90 backdrop-blur-md text-[9px] font-black text-slate-900 px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-sm">{m.year}</span>
+                                    {m.isSingleOwner && <span className="bg-emerald-500 text-white text-[8px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg shadow-emerald-500/20">Único Dono</span>}
                                 </div>
-                                <p className="text-[10px] font-bold text-slate-300 mt-2 uppercase tracking-widest">{m.engine} • {m.color}</p>
+                                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <p className="text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"><Gauge size={12} /> {m.mileage.toLocaleString()} km</p>
+                                </div>
+                            </div>
+                            <div className="p-6 flex flex-col flex-1">
+                                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">{m.brand}</p>
+                                <h3 className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight mb-4 flex-1">{m.model}</h3>
+                                <div className="flex items-center justify-between mt-auto">
+                                    <p className="text-2xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
+                                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all"><ChevronLeft className="rotate-180" size={20} /></div>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {displayed.map(m => (
-                        <div key={m.id} onClick={() => setSelected(m)} className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all cursor-pointer group flex items-center gap-6 p-5">
-                            {m.imageUrl ? (
-                                <div className="w-20 h-16 rounded-2xl overflow-hidden shrink-0"><img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover" /></div>
-                            ) : (
-                                <div className="w-20 h-16 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0"><Bike size={28} className="text-slate-200" /></div>
-                            )}
+                        <div key={m.id} onClick={() => setSelected(m)} className="group bg-white p-4 rounded-[1.5rem] border border-slate-100 flex items-center gap-6 hover:shadow-xl transition-all cursor-pointer">
+                            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 shrink-0">
+                                {m.imageUrl ? <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-200"><Bike size={24} /></div>}
+                            </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-2"><h3 className="font-black text-slate-900 uppercase">{m.brand} {m.model}</h3><span className="text-[10px] font-extrabold text-slate-400">{m.year}</span></div>
-                                <div className="flex items-center gap-3 mt-1 flex-wrap">
-                                    <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg uppercase tracking-widest">{m.category}</span>
-                                    <span className="text-[10px] font-bold text-slate-400">{m.engine}</span>
-                                    <span className="text-[10px] font-bold text-slate-400">{m.mileage.toLocaleString()} km</span>
-                                    <span className="text-[10px] font-bold text-slate-400">{m.color}</span>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{m.brand}</span>
+                                    <span className="text-[9px] font-bold text-slate-300 uppercase">/</span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{m.year}</span>
                                 </div>
+                                <h3 className="text-lg font-black text-slate-900 uppercase truncate leading-tight">{m.model}</h3>
+                            </div>
+                            <div className="hidden md:block px-6 border-x border-slate-50">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Quilometragem</p>
+                                <p className="text-sm font-black text-slate-700">{m.mileage.toLocaleString()} km</p>
                             </div>
                             <div className="text-right shrink-0">
-                                <p className="text-xl font-black text-emerald-500">R$ {m.price.toLocaleString('pt-BR')}</p>
-                                {m.status === 'sold' && <span className="text-[9px] font-black text-white bg-red-500 px-2.5 py-1 rounded-lg uppercase">Vendida</span>}
+                                <p className="text-xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
+                                <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Disponível</p>
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {displayed.length === 0 && (
+                <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
+                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6"><Bike size={40} className="text-slate-200" /></div>
+                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Nenhuma moto encontrada</h3>
+                    <p className="text-slate-400 font-medium text-sm mt-2">Tente ajustar seus filtros ou busca.</p>
                 </div>
             )}
         </div>

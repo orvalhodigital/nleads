@@ -12,7 +12,6 @@ const mapRowToVehicle = (row: any): Vehicle => ({
     modelYear: row.model_year || row.year,
     year: row.year,
     plate: row.plate || '',
-    chassis: row.chassis || '',
     fipePrice: row.fipe_price,
     price: row.price,
     type: row.type as VehicleType,
@@ -31,6 +30,8 @@ const mapRowToVehicle = (row: any): Vehicle => ({
     optionals: row.optionals || [],
     imageUrl: row.image_url || '',
     galleryImages: row.gallery_images || [],
+    shortDescription: row.short_description || '',
+    description: row.description || '',
     status: (row.status as 'available' | 'sold') || 'available',
     sale_phase: row.sale_phase,
     saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined
@@ -128,6 +129,8 @@ export const vehicleService = {
                 optionals: vehicle.optionals,
                 image_url: vehicle.imageUrl,
                 gallery_images: vehicle.galleryImages || [],
+                short_description: vehicle.shortDescription || null,
+                description: vehicle.description || null,
                 status: vehicle.status,
                 sale_phase: vehicle.sale_phase,
                 sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null
@@ -160,7 +163,6 @@ export const vehicleService = {
                 has_owner_manual: vehicle.hasOwnerManual ?? null,
                 mileage: vehicle.mileage,
                 color: vehicle.color,
-                chassis: vehicle.chassis || null,
                 is_single_owner: vehicle.isSingleOwner,
                 is_service_history_complete: vehicle.isServiceHistoryComplete,
                 is_ipva_paid: vehicle.isIpvaPaid,
@@ -168,6 +170,8 @@ export const vehicleService = {
                 optionals: vehicle.optionals,
                 image_url: vehicle.imageUrl,
                 gallery_images: vehicle.galleryImages || [],
+                short_description: vehicle.shortDescription || null,
+                description: vehicle.description || null,
                 status: vehicle.status,
                 sale_phase: vehicle.sale_phase,
                 sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null

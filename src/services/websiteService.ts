@@ -24,6 +24,8 @@ export interface PublicProfile {
     website_hero_image: string;
     website_hero_text: string;
     website_hero_subtitle: string;
+    website_typography?: 'inter' | 'serif' | 'oswald';
+    website_card_style?: 'rounded' | 'square';
     website_whatsapp: string;
     website_cta_text: string;
     website_slug: string;

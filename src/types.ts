@@ -79,7 +79,6 @@ export interface Vehicle {
   year: number;
   modelYear?: number;
   plate?: string;
-  chassis?: string;
   fipePrice?: number;
   price: number;
   type: VehicleType;
@@ -98,6 +97,8 @@ export interface Vehicle {
   optionals: string[];
   imageUrl: string;
   galleryImages: string[];
+  shortDescription?: string;
+  description?: string;
   status: 'available' | 'sold';
   sale_phase?: VehicleKanbanPhase;
   saleDetails?: SaleDetails;
@@ -283,9 +284,17 @@ export interface Profile {
   website_bg_gradient?: boolean;
   website_hero_button_text?: string;
   website_about_text?: string;
+  website_typography?: string;
+  website_card_style?: string;
+  website_hero_images?: string[];
+  website_video_url?: string;
+  website_privacy_policy?: string;
+  website_terms_of_use?: string;
   website_instagram?: string;
   website_facebook?: string;
   website_youtube?: string;
+  website_tiktok?: string;
+  website_business_hours?: string;
   website_show_sold?: boolean;
   website_show_filters?: boolean;
   website_sections?: {
@@ -299,6 +308,10 @@ export interface Profile {
     show_testimonials?: boolean;
     show_announcement_bar?: boolean;
     show_social_media?: boolean;
+    show_floating_whatsapp?: boolean;
+    show_financing_form?: boolean;
+    show_exit_popup?: boolean;
+    show_differentials?: boolean;
   };
   website_branding?: {
     logo_primary?: string;
@@ -382,7 +395,6 @@ export interface Motorcycle {
   year: number;
   modelYear?: number;
   plate?: string;
-  chassis?: string;
   fipePrice?: number;
   price: number;
   category: MotorcycleCategory;
@@ -395,6 +407,8 @@ export interface Motorcycle {
   optionals: string[];
   imageUrl: string;
   galleryImages: string[];
+  shortDescription?: string;
+  description?: string;
   startType?: MotoStartType;
   brakeType?: MotoBrakeType;
   fuelSystem?: MotoFuelSystem;

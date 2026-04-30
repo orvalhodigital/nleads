@@ -12,6 +12,7 @@ import { resizeImage } from '../utils/imageProcessor';
 import { carDatabase } from '../data/carDb';
 import AutocompleteInput from './ui/AutocompleteInput';
 import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
+import { useToast } from '../contexts/ToastContext';
 
 
 interface VehicleFormProps {
@@ -98,6 +99,19 @@ function normalizeVehicleType(segmento: string, subSegmento: string): VehicleTyp
     return 'Sedan';
 }
 
+function normalizeFuelType(val: string): FuelType {
+    if (!val) return 'Flex';
+    const c = val.toUpperCase();
+    if (c.includes('FLEX')) return 'Flex';
+    if (c.includes('GASOLINA')) return 'Gasolina';
+    if (c.includes('ÁLCOOL') || c.includes('ALCOOL') || c.includes('ETANOL')) return 'Álcool';
+    if (c.includes('DIESEL')) return 'Diesel';
+    if (c.includes('GNV')) return 'GNV';
+    if (c.includes('ELÉTRI') || c.includes('ELETRI')) return 'Elétrico';
+    if (c.includes('HÍBRI') || c.includes('HIBRI')) return 'Híbrido';
+    return 'Flex';
+}
+
 const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditing = false }) => {
     const navigate = useNavigate();
     const [uploading, setUploading] = useState(false);
@@ -106,14 +120,16 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     const [lookupLoading, setLookupLoading] = useState(false);
     const [plateError, setPlateError] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const { showToast } = useToast();
 
     const [galleryUploading, setGalleryUploading] = useState(false);
 
     const [formData, setFormData] = useState<Omit<Vehicle, 'id' | 'status'>>({
-        brand: '', model: '', year: new Date().getFullYear(), modelYear: new Date().getFullYear(), plate: '', chassis: '', fipePrice: 0, price: 0, type: 'Sedan',
+        brand: '', model: '', year: new Date().getFullYear(), modelYear: new Date().getFullYear(), plate: '', fipePrice: 0, price: 0, type: 'Sedan',
         transmission: 'Automático', engine: '1.6', fuelType: 'Flex', doors: 4, mileage: 0, color: '',
         isSingleOwner: false, isServiceHistoryComplete: false, isIpvaPaid: true, hasWarranty: false,
         hasSpareKey: false, hasOwnerManual: false,
+        shortDescription: '', description: '',
         optionals: [], imageUrl: '', galleryImages: []
     });
 
@@ -161,6 +177,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             const transmission = normalizeTransmission(extra.caixa_cambio || '');
             const engine = normalizeEngine(extra.combustivel || '', extra.cilindradas || '0');
             const type = normalizeVehicleType(data.segmento || extra.segmento || '', data.sub_segmento || extra.sub_segmento || '');
+            const fuelType = normalizeFuelType(extra.combustivel || data.combustivel || '');
+            const doors = parseInt(extra.qtde_portas || data.portas || data.num_portas || '4');
+            const finalDoors = (doors === 2 || doors === 4) ? doors as 2 | 4 : 4;
 
             let fipePrice = 0;
             if (data.fipe && data.fipe.dados && data.fipe.dados.length > 0) {
@@ -182,6 +201,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 transmission,
                 engine,
                 type,
+                fuelType,
+                doors: finalDoors,
                 fipePrice: fipePrice > 0 ? fipePrice : prev.fipePrice,
             }));
         } catch (err: any) {
@@ -301,13 +322,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         if (formData.modelYear && formData.modelYear < formData.year) nextErrors.modelYear = 'O ano modelo não pode ser menor que o ano de fabricação.';
         if (!formData.price) nextErrors.price = 'Informe o preço de venda.';
         if (formData.mileage < 0) nextErrors.mileage = 'A quilometragem não pode ser negativa.';
-        if (formData.chassis && formData.chassis.replace(/\s/g, '').length > 0 && formData.chassis.replace(/\s/g, '').length < 17) {
-            nextErrors.chassis = 'O chassi deve ter 17 caracteres ou ficar vazio.';
-        }
-
+        if (!formData.mileage && formData.mileage !== 0) nextErrors.mileage = 'Informe a quilometragem.';
+        
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
+            showToast('error', 'Por favor, preencha todos os campos obrigatórios corretamente.');
             const firstError = Object.keys(nextErrors)[0];
             const element = document.getElementById(`field-${firstError}`);
             if (element) {
@@ -319,9 +339,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         setSubmitting(true);
         try {
             if (isEditing && initialData) {
-                await Promise.resolve(onSave({ ...initialData, ...formData }));
+                await onSave({ ...initialData, ...formData });
             } else {
-                await Promise.resolve(onSave({ ...formData, status: 'available' }));
+                await onSave({ ...formData, status: 'available' });
             }
             navigate('/inventory');
         } finally {
@@ -330,7 +350,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto w-full pb-32 animate-fadeUp">
+        <div className="max-w-[1200px] mx-auto w-full pb-32 animate-fadeUp">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-6">
                     <button
@@ -424,19 +444,29 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     </p>
                                 )}
                             </div>
-                            <div className="space-y-2" id="field-chassis">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Chassi</label>
-                                <input type="text" value={formData.chassis || ''} onChange={e => setFormData({ ...formData, chassis: e.target.value.toUpperCase() })} maxLength={17} placeholder="Opcional" className={getFieldClassName('chassis', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm uppercase')} />
-                                {errors.chassis && <p className="text-[10px] font-bold text-red-500 px-1">{errors.chassis}</p>}
-                            </div>
+
                             <div className="space-y-2" id="field-year">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Fab.</label>
-                                <input type="number" required value={formData.year} onChange={e => setFormData({ ...formData, year: parseInt(e.target.value) })} className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
+                                <input 
+                                    type="number" 
+                                    required 
+                                    value={formData.year || ''} 
+                                    onChange={e => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value) : 0 })} 
+                                    onFocus={e => e.target.select()}
+                                    className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} 
+                                />
                                 {errors.year && <p className="text-[10px] font-bold text-red-500 px-1">{errors.year}</p>}
                             </div>
                             <div className="space-y-2" id="field-modelYear">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Modelo</label>
-                                <input type="number" required value={formData.modelYear || formData.year} onChange={e => setFormData({ ...formData, modelYear: parseInt(e.target.value) })} className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} />
+                                <input 
+                                    type="number" 
+                                    required 
+                                    value={formData.modelYear || ''} 
+                                    onChange={e => setFormData({ ...formData, modelYear: e.target.value ? parseInt(e.target.value) : 0 })} 
+                                    onFocus={e => e.target.select()}
+                                    className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} 
+                                />
                                 {errors.modelYear && <p className="text-[10px] font-bold text-red-500 px-1">{errors.modelYear}</p>}
                             </div>
                         </div>
@@ -697,7 +727,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         {/* Foto Principal */}
                         <div className="space-y-4">
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
-                            <div className="aspect-[4/5] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                            <div className="aspect-[4/5] max-w-[280px] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
                                 {formData.imageUrl ? (
                                     <>
                                         <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -715,7 +745,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 )}
                             </div>
                             <label className="block w-full cursor-pointer group">
-                                <div className={`w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                <div className={`max-w-[280px] w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
                                     {uploading ? (
                                         <Loader2 size={16} className="animate-spin text-emerald-500" />
                                     ) : (
@@ -756,7 +786,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
                             {(formData.galleryImages?.length || 0) < 6 && (
                                 <label className="block w-full cursor-pointer group">
-                                    <div className={`w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
+                                    <div className={`max-w-[280px] w-full py-3 px-4 rounded-2xl border transition-all text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
                                         {galleryUploading
                                             ? <Loader2 size={16} className="animate-spin text-emerald-500" />
                                             : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}

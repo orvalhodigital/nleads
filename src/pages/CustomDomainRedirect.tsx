@@ -16,9 +16,9 @@ const CustomDomainRedirect: React.FC = () => {
             const hostname = window.location.hostname;
             console.log('CustomDomainRedirect: Checking hostname:', hostname);
 
-            // Check if it's a custom domain (not nleads.pro and not localhost/127.0.0.1)
+            // Check if it's a custom domain (not nleads.pro, not nleads.com.br, and not localhost/127.0.0.1)
             const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168');
-            const isNleadsPro = hostname.includes('nleads.pro');
+            const isNleadsPro = hostname.includes('nleads.pro') || hostname.includes('nleads.com.br');
             const isCustomDomain = !isLocalhost && !isNleadsPro;
 
             console.log('CustomDomainRedirect:', { isLocalhost, isNleadsPro, isCustomDomain });

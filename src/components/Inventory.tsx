@@ -481,7 +481,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 mt-12 pt-12 border-t border-slate-50">
                   {[
-                    { label: 'Quilometragem', value: `${selectedVehicle.mileage?.toLocaleString() || 0} km`, icon: Gauge },
+                    { label: 'Quilometragem', value: selectedVehicle.mileage > 0 ? `${selectedVehicle.mileage.toLocaleString()} km` : '---', icon: Gauge },
                     { label: 'Ano Modelo', value: `${selectedVehicle.year}${selectedVehicle.modelYear && selectedVehicle.modelYear !== selectedVehicle.year ? ' / ' + selectedVehicle.modelYear : ''}`, icon: Calendar },
                     { label: 'Transmissão', value: selectedVehicle.transmission, icon: Car },
                     { label: 'Motorização', value: selectedVehicle.engine, icon: Zap },
@@ -489,7 +489,6 @@ const Inventory: React.FC<InventoryProps> = ({
                     { label: 'Portas', value: selectedVehicle.doors ? `${selectedVehicle.doors} Portas` : 'N/A', icon: Hash },
                     { label: 'Cor', value: selectedVehicle.color || 'N/A', icon: Search },
                     { label: 'Placa', value: selectedVehicle.plate || 'N/A', icon: Hash },
-                    { label: 'Chassi', value: selectedVehicle.chassis || 'N/A', icon: Hash },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0">
@@ -1043,7 +1042,7 @@ const Inventory: React.FC<InventoryProps> = ({
                       <div className="w-1 h-1 rounded-full bg-slate-200"></div>
                       <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
                         <Gauge size={10} className="text-slate-300" />
-                        <span>{vehicle.mileage.toLocaleString()} km</span>
+                        <span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span>
                       </div>
                     </div>
                   </div>
@@ -1108,7 +1107,7 @@ const Inventory: React.FC<InventoryProps> = ({
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
                         <div className="flex items-center gap-2">
                           <Gauge size={14} className="text-slate-200" />
-                          <span>{vehicle.mileage.toLocaleString()} km</span>
+                          <span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span>
                         </div>
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
                         <div className="flex items-center gap-2">
@@ -1199,7 +1198,7 @@ const Inventory: React.FC<InventoryProps> = ({
                       <td className="p-6">
                         <div className="flex flex-col">
                           <p className="font-black text-slate-700 text-xs">{vehicle.year}</p>
-                          <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase">{vehicle.mileage.toLocaleString()} km</p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase">{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</p>
                         </div>
                       </td>
                       <td className="p-6 text-right">

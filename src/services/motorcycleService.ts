@@ -11,7 +11,6 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
     year: row.year,
     modelYear: row.model_year ?? row.year,
     plate: row.plate ?? '',
-    chassis: row.chassis ?? '',
     fipePrice: row.fipe_price,
     price: row.price,
     category: row.category as MotorcycleCategory,
@@ -24,6 +23,8 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
     optionals: row.optionals ?? [],
     imageUrl: row.image_url ?? '',
     galleryImages: row.gallery_images ?? [],
+    shortDescription: row.short_description || '',
+    description: row.description || '',
     startType: row.start_type as MotoStartType || undefined,
     brakeType: row.brake_type as MotoBrakeType || undefined,
     fuelSystem: row.fuel_system as MotoFuelSystem || undefined,
@@ -104,6 +105,8 @@ export const motorcycleService = {
                 optionals: moto.optionals,
                 image_url: moto.imageUrl,
                 gallery_images: moto.galleryImages ?? [],
+                short_description: moto.shortDescription || null,
+                description: moto.description || null,
                 start_type: moto.startType ?? null,
                 brake_type: moto.brakeType ?? null,
                 fuel_system: moto.fuelSystem ?? null,
@@ -142,6 +145,8 @@ export const motorcycleService = {
                 optionals: moto.optionals,
                 image_url: moto.imageUrl,
                 gallery_images: moto.galleryImages ?? [],
+                short_description: moto.shortDescription || null,
+                description: moto.description || null,
                 start_type: moto.startType ?? null,
                 brake_type: moto.brakeType ?? null,
                 fuel_system: moto.fuelSystem ?? null,
@@ -188,9 +193,40 @@ export const motorcycleService = {
     },
 
     async sell(id: string, details: SaleDetails): Promise<void> {
+        const responseSelect = await supabase
+            .from('motorcycles')
+            .select('gallery_images')
+            .eq('id', id)
+            .single();
+
+        const moto = handleSupabaseResponse(responseSelect);
+
+        if (moto?.gallery_images?.length) {
+            try {
+                const allUrls = moto.gallery_images as string[];
+                const paths = allUrls.map(url => {
+                    if (!url.includes('/public/')) return null;
+                    const parts = url.split('/public/')[1]?.split('/');
+                    if (!parts) return null;
+                    parts.shift();
+                    return parts.join('/');
+                }).filter(Boolean) as string[];
+                
+                if (paths.length) {
+                    await handleSupabaseResponse(await supabase.storage.from('vehicles').remove(paths));
+                }
+            } catch (err) {
+                console.error("Erro ao deletar galeria na venda:", err);
+            }
+        }
+
         const response = await supabase
             .from('motorcycles')
-            .update({ status: 'sold', sale_details: details as any })
+            .update({ 
+                status: 'sold', 
+                gallery_images: [],
+                sale_details: details as any 
+            })
             .eq('id', id);
         handleSupabaseResponse(response);
     },

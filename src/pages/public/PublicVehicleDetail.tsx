@@ -532,6 +532,31 @@ const PublicVehicleDetail: React.FC = () => {
         [allVehicles, vehicle]
     );
 
+    // Hooks must be called before any early returns
+    const theme = profile?.website_theme || 'classic';
+    const displayLogo = useMemo(() => {
+        if (profile?.website_branding?.enabled) {
+            const isDarkTheme = ['glass', 'premium', 'bold', 'luxury'].includes(theme);
+            return isDarkTheme 
+                ? (profile.website_branding.logo_dark || profile.website_branding.logo_primary || profile.company_logo)
+                : (profile.website_branding.logo_primary || profile.company_logo);
+        }
+        return profile?.company_logo;
+    }, [profile, theme]);
+
+    const ctaBtnPrimary = `w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors`;
+    const ctaBtnPrimaryStyle = profile?.website_theme === 'premium'
+        ? { backgroundColor: '#eab308', color: '#000' }
+        : { backgroundColor: primary, color: '#fff' };
+
+    const seoTitle = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${profile?.company_name}` : 'Veículo — nLeads';
+    const seoDesc = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}, ${formatKm(vehicle.mileage)}, ${vehicle.transmission}. ${formatPrice(vehicle.price)} em ${profile?.company_name}.` : '';
+    const fontStyle = { 
+        fontFamily: profile?.website_typography === 'serif' ? 'Playfair Display, serif' : 
+                    profile?.website_typography === 'oswald' ? 'Oswald, sans-serif' : 
+                    'Inter, sans-serif' 
+    };
+
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
@@ -557,28 +582,8 @@ const PublicVehicleDetail: React.FC = () => {
         : `Olá! Vim pelo site ${profile.company_name}.`;
     const mainWaUrl = profile.website_whatsapp ? buildWaUrl(profile.website_whatsapp, mainWaMsg) : '#';
 
-    // Dynamic Logo Logic
-    const theme = profile.website_theme || 'classic';
-    const displayLogo = useMemo(() => {
-        if (profile.website_branding?.enabled) {
-            const isDarkTheme = ['glass', 'premium', 'bold', 'luxury'].includes(theme);
-            return isDarkTheme 
-                ? (profile.website_branding.logo_dark || profile.website_branding.logo_primary || profile.company_logo)
-                : (profile.website_branding.logo_primary || profile.company_logo);
-        }
-        return profile.company_logo;
-    }, [profile, theme]);
-
-    const ctaBtnPrimary = `w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors`;
-    const ctaBtnPrimaryStyle = profile.website_theme === 'premium'
-        ? { backgroundColor: '#eab308', color: '#000' }
-        : { backgroundColor: primary, color: '#fff' };
-
-    const seoTitle = `${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${profile.company_name}`;
-    const seoDesc = `${vehicle.brand} ${vehicle.model} ${vehicle.year}, ${formatKm(vehicle.mileage)}, ${vehicle.transmission}. ${formatPrice(vehicle.price)} em ${profile.company_name}.`;
-
     return (
-        <div className={tc.wrapper}>
+        <div className={tc.wrapper} style={fontStyle}>
             <Helmet>
                 <title>{seoTitle}</title>
                 <meta name="description" content={seoDesc} />
@@ -599,11 +604,11 @@ const PublicVehicleDetail: React.FC = () => {
 
             {/* Nav */}
             <nav className={tc.nav}>
-                <div className="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-[1250px] mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         {displayLogo
-                            ? <img src={displayLogo} alt={profile.company_name} className="h-9 w-auto object-contain" />
-                            : <span className="text-base font-extrabold">{profile.company_name}</span>
+                            ? <img src={displayLogo} alt={profile.company_name} className="h-14 w-auto object-contain" />
+                            : <span className="text-2xl font-extrabold">{profile.company_name}</span>
                         }
                         {profile.website_city && (
                             <span className="hidden sm:flex items-center gap-1 text-xs opacity-50">
@@ -621,7 +626,7 @@ const PublicVehicleDetail: React.FC = () => {
                 </div>
             </nav>
 
-            <div className="max-w-[1600px] mx-auto px-4 py-8">
+            <div className="max-w-[1250px] mx-auto px-4 py-8">
                 <Link to={`/site/${slug}`} className={`${tc.backBtn} mb-6 inline-flex`}>
                     <ArrowLeft size={16} /> Voltar ao estoque
                 </Link>
@@ -636,11 +641,18 @@ const PublicVehicleDetail: React.FC = () => {
                                     <div className="flex h-full">
                                         {allImages.map((img, i) => (
                                             <div key={i} className="flex-[0_0_100%] min-w-0 relative">
-                                                <PhotoView src={img === PLACEHOLDER ? '' : img}>
-                                                    <img src={img} alt={`${vehicle.brand} ${vehicle.model} - foto ${i + 1}`}
-                                                        className="w-full h-full object-cover cursor-zoom-in"
-                                                        onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
-                                                </PhotoView>
+                                                {img === PLACEHOLDER ? (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl m-4">
+                                                        <Car size={80} strokeWidth={1} />
+                                                        <span className="text-xs font-black uppercase tracking-widest opacity-40 mt-4">Nenhuma foto disponível</span>
+                                                    </div>
+                                                ) : (
+                                                    <PhotoView src={img}>
+                                                        <img src={img} alt={`${vehicle.brand} ${vehicle.model} - foto ${i + 1}`}
+                                                            className="w-full h-full object-cover cursor-zoom-in"
+                                                            onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
+                                                    </PhotoView>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -896,7 +908,7 @@ const PublicVehicleDetail: React.FC = () => {
 
             {/* Footer */}
             <footer className={tc.footer}>
-                <div className="max-w-[1600px] mx-auto px-4 py-8 text-center">
+                <div className="max-w-[1250px] mx-auto px-4 py-8 text-center">
                     <p className={tc.footerText}>
                         © {new Date().getFullYear()} {profile.company_name}{profile.website_city ? ` — ${profile.website_city}` : ''}. Todos os direitos reservados.
                     </p>

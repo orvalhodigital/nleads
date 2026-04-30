@@ -11,6 +11,7 @@ import { useData } from '../contexts/DataContext';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
 
+const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
 
 interface InventoryImportModalProps {
     isOpen: boolean;
@@ -30,7 +31,7 @@ interface ImportedVehicle extends Omit<Vehicle, 'id'> {
 // Helper: Parse adaptive year formats (e.g., "22/23", "2022/23", "2022/2023", "2022")
 const parseYears = (yearStr: string | number): { year: number, modelYear: number } => {
     const currentYear = new Date().getFullYear();
-    if (!yearStr) return { year: currentYear, modelYear: currentYear };
+    if (!yearStr) return { year: 0, modelYear: 0 };
 
     const s = String(yearStr).trim();
 
@@ -55,9 +56,43 @@ const parseYears = (yearStr: string | number): { year: number, modelYear: number
 
     // Default fallback
     const parsed = parseInt(s);
-    if (!parsed || isNaN(parsed)) return { year: currentYear, modelYear: currentYear };
+    if (!parsed || isNaN(parsed)) return { year: 0, modelYear: 0 };
 
     return { year: parsed, modelYear: parsed };
+};
+
+// Helper: Safely parse numbers from Excel (handles Currency, Text, and Numbers)
+const safeParseNumber = (val: any): number => {
+    if (val === undefined || val === null || val === '') return 0;
+    if (typeof val === 'number') return val;
+    
+    // Clean string: remove "R$", whitespace, and handle Brazilian format
+    let s = String(val).replace('R$', '').trim();
+    if (!s) return 0;
+
+    // Check if it's Brazilian format (e.g., 50.000,00 or 50.000)
+    // Rule: if it has a comma and the last part is 2 digits, it's decimal
+    if (s.includes(',') && (s.split(',').pop()?.length === 2 || s.split(',').pop()?.length === 1)) {
+        s = s.replace(/\./g, '').replace(',', '.');
+        const res = parseFloat(s);
+        return isNaN(res) ? 0 : res;
+    }
+    
+    // If it has dots and no commas, and it's like 50.000
+    if (s.includes('.') && !s.includes(',')) {
+        // Could be 50.000 (BR thousands) or 50.50 (US decimal)
+        // Heuristic: if more than 2 digits after last dot, it's likely thousands
+        const lastPart = s.split('.').pop() || '';
+        if (lastPart.length > 2) {
+            s = s.replace(/\./g, '');
+        }
+    } else {
+        // Remove any other non-numeric chars except dot
+        s = s.replace(/[^\d.]/g, '');
+    }
+
+    const res = parseFloat(s);
+    return isNaN(res) ? 0 : res;
 };
 
 // Helper: Infer Brand from Model
@@ -128,6 +163,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState(false);
+    const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
 
     if (!isOpen) return null;
 
@@ -197,47 +233,68 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                             else if ('result' in val) val = (val as any).result;
                         }
                         rowData[header] = val;
+                        rowData[header.toLowerCase().trim()] = val;
+                        // Special handling for slashes like "ANO/MOD"
+                        if (header.includes('/')) {
+                            header.split('/').forEach(p => rowData[p.toLowerCase().trim()] = val);
+                        }
                     }
                 });
-                data.push(rowData);
+                const hasData = Object.values(rowData).some(v => v !== null && v !== undefined && String(v).trim() !== '');
+                if (hasData) {
+                    data.push(rowData);
+                }
             });
 
-            // Process data
-            const processed: ImportedVehicle[] = data.map((row, index) => {
+            // Process data WITHOUT intelligent lookup (save credits for later)
+            const processed: ImportedVehicle[] = [];
+            
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+
                 // Adaptive Year Parsing
-                const rawYear = row['Ano'] || row['Ano Fab.'] || row['Ano/Modelo'] || '';
-                const { year, modelYear } = parseYears(rawYear);
+                const rawYear = row['ano'] || row['ano fab.'] || row['ano/mod'] || row['ano/modelo'] || '';
+                let { year, modelYear } = parseYears(rawYear);
 
                 // If explicit 'Ano Mod.' exists, override
-                const explicitModelYear = row['Ano Mod.'] || row['Modelo Ano'];
-                const finalModelYear = explicitModelYear ? (parseInt(explicitModelYear) < 100 ? parseInt(explicitModelYear) + 2000 : parseInt(explicitModelYear)) : modelYear;
+                const explicitModelYear = row['ano mod.'] || row['modelo ano'] || row['mod'];
+                let finalModelYear = explicitModelYear ? (parseInt(explicitModelYear) < 100 ? parseInt(explicitModelYear) + 2000 : parseInt(explicitModelYear)) : modelYear;
 
-                // Brand Inference
-                let brand = row['Marca'];
-                const model = row['Modelo'] || '';
+                // Basic data from row
+                const plate = (row['placa'] || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                const model = row['modelo'] || '';
+                let brand = row['marca'] || '';
+                let type = row['tipo'] || '';
+                let engine = row['motor'] || '1.0';
+
+                // Inferences for UI display
                 if (!brand && model) {
                     brand = inferBrand(model, profile?.enable_cars !== false, !!profile?.enable_motorcycles);
                 }
-
-                // Type Inference
-                let type = row['Tipo'];
                 if (!type && model) {
                     type = inferType(model, profile?.enable_cars !== false, !!profile?.enable_motorcycles);
                 }
 
-                return {
-                    importId: `imp-${index}`,
-                    brand: brand || '',
-                    model: model,
+                // Skip if we still don't have at least a brand and model, or a plate
+                if (!brand && !model && !plate) {
+                    continue;
+                }
+
+                // Final merged data (minimal for now)
+                processed.push({
+                    importId: `imp-${i}`,
+                    brand: brand || 'Não informada',
+                    model: model || 'Não informado',
                     year: year,
                     modelYear: finalModelYear,
-                    plate: (row['Placa'] || row['PLACA'] || '').toUpperCase().replace(/[^A-Z0-9]/g, ''),
-                    price: typeof row['Preço de Venda'] === 'number' ? row['Preço de Venda'] : (typeof row['Preço'] === 'number' ? row['Preço'] : parseCurrency(String(row['Preço de Venda'] || row['Preço'] || row['Valor'] || row['Venda'] || row['VENDA'] || '0'))),
+                    plate: plate,
+                    price: safeParseNumber(row['preço de venda'] || row['preço'] || row['valor'] || row['venda']),
+                    fipePrice: 0,
                     type: type || 'Sedan',
-                    transmission: row['Câmbio'] || 'Manual',
-                    engine: row['Motor'] || '1.0',
-                    mileage: typeof row['KM'] === 'number' ? row['KM'] : (typeof row['Quilometragem'] === 'number' ? row['Quilometragem'] : parseCurrency(String(row['KM'] || row['Km'] || row['km'] || row['Quilometragem'] || '0'))),
-                    color: row['Cor'] || 'Não informada',
+                    transmission: row['câmbio'] || row['cambio'] || 'Manual',
+                    engine: engine,
+                    mileage: safeParseNumber(row['km'] || row['quilometragem']),
+                    color: row['cor'] || 'Não informada',
                     isSingleOwner: false,
                     isServiceHistoryComplete: false,
                     isIpvaPaid: true,
@@ -246,8 +303,8 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                     imageUrl: '',
                     galleryImages: [],
                     status: 'available'
-                };
-            });
+                });
+            }
 
             // Compare with current Inventory
             const newV: ImportedVehicle[] = [];
@@ -303,14 +360,88 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                 let successCount = 0;
                 let failCount = 0;
                 const adminId = profile?.role === 'vendedor' ? profile.parent_id : profile?.id;
-
                 let lastError: any = null;
 
+                setImportProgress({ current: 0, total: toImport.length });
+
                 // Loop sequential to avoid overwhelming the RPC fallback mechanism if needed
-                for (const v of toImport) {
+                for (let i = 0; i < toImport.length; i++) {
+                    const v = toImport[i];
+                    setImportProgress({ current: i + 1, total: toImport.length });
+
                     try {
+                        let finalData = { ...v };
+
+                        // NOW we call the API for the selected vehicle
+                        if (v.plate && v.plate.length >= 7) {
+                            try {
+                                const res = await fetch(`https://wdapi2.com.br/consulta/${v.plate}/${APIPLACAS_TOKEN}`);
+                                if (res.ok) {
+                                    const apiData = await res.json();
+                                    const msg: string = apiData.mensagemRetorno || '';
+                                    const isError = msg.toLowerCase().startsWith('erro') || msg.toLowerCase().includes('não encontrada') || msg.toLowerCase().includes('invalida');
+                                    
+                                    if (!isError) {
+                                        // Enrich data from API
+                                        // Check for various casing (some APIs return MARCA, others marca)
+                                        const brandApi = apiData.MARCA || apiData.marca || apiData.Marca;
+                                        const modelApi = apiData.MODELO || apiData.modelo || apiData.Modelo;
+                                        
+                                        if (brandApi) finalData.brand = String(brandApi);
+                                        if (modelApi) finalData.model = String(modelApi);
+                                        
+                                        const yearApi = parseInt(apiData.ano || apiData.ANO || apiData.ano_fabricacao);
+                                        const modelYearApi = parseInt(apiData.ano_modelo || apiData.ANO_MODELO);
+                                        
+                                        if (yearApi) finalData.year = yearApi;
+                                        if (modelYearApi) finalData.modelYear = modelYearApi;
+                                        else if (yearApi) finalData.modelYear = yearApi;
+                                        
+                                        const colorApi = apiData.cor || (apiData.extra && apiData.extra.cor) || apiData.COR;
+                                        if (colorApi) finalData.color = String(colorApi);
+
+                                        // Fuel and Doors
+                                        const fuelApi = apiData.combustivel || (apiData.extra && apiData.extra.combustivel) || apiData.tipo_combustivel || apiData.COMBUSTIVEL;
+                                        if (fuelApi) {
+                                            const fuel = String(fuelApi).toLowerCase();
+                                            if (fuel.includes('flex')) finalData.fuelType = 'Flex';
+                                            else if (fuel.includes('gasolina')) finalData.fuelType = 'Gasolina';
+                                            else if (fuel.includes('álcool') || fuel.includes('alcool') || fuel.includes('etanol')) finalData.fuelType = 'Álcool';
+                                            else if (fuel.includes('diesel')) finalData.fuelType = 'Diesel';
+                                            else if (fuel.includes('gnv')) finalData.fuelType = 'GNV';
+                                            else if (fuel.includes('elétrico') || fuel.includes('eletrico')) finalData.fuelType = 'Elétrico';
+                                            else if (fuel.includes('híbrido') || fuel.includes('hibrido')) finalData.fuelType = 'Híbrido';
+                                        }
+
+                                        const doorsApi = (apiData.extra && apiData.extra.qtde_portas) || (apiData.extra && apiData.extra.portas) || apiData.portas || apiData.num_portas || apiData.PORTAS;
+                                        if (doorsApi) {
+                                            const d = parseInt(doorsApi);
+                                            if (d === 2 || d === 4) finalData.doors = d as 2 | 4;
+                                        }
+                                        
+                                        // Fipe
+                                        if (apiData.fipe && apiData.fipe.dados && apiData.fipe.dados.length > 0) {
+                                            const fipeItem = apiData.fipe.dados[0];
+                                            if (fipeItem && fipeItem.texto_valor) {
+                                                const rawString = fipeItem.texto_valor.replace('R$', '').trim();
+                                                const numString = rawString.replace(/\./g, '').replace(',', '.');
+                                                finalData.fipePrice = parseFloat(numString);
+                                            }
+                                        }
+
+                                        // Engine
+                                        const engineApi = (apiData.extra && (apiData.extra.cilindrada || apiData.extra.potencia)) || apiData.potencia || apiData.motor;
+                                        if (engineApi) finalData.engine = String(engineApi);
+                                    }
+
+                                }
+                            } catch (err) {
+                                console.warn(`API lookup failed for ${v.plate}, using spreadsheet data:`, err);
+                            }
+                        }
+
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        const { importId, ...vehicleData } = v;
+                        const { importId, ...vehicleData } = finalData;
 
                         // Ensure we pass only what vehicleService expects
                         await vehicleService.create({
@@ -487,7 +618,23 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                             <label className="cursor-pointer group">
                                 <div className="px-10 py-16 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 group-hover:bg-emerald-50/30 group-hover:border-emerald-300 transition-all text-center">
                                     {loading ? (
-                                        <span className="text-slate-400 font-bold animate-pulse">Processando arquivo...</span>
+                                        <div className="space-y-4">
+                                            <span className="text-emerald-600 font-black text-2xl block animate-pulse">
+                                                {importProgress.total > 0 
+                                                    ? `${Math.round((importProgress.current / importProgress.total) * 100)}%`
+                                                    : 'Processando...'
+                                                }
+                                            </span>
+                                            <div className="w-64 h-2 bg-slate-100 rounded-full overflow-hidden mx-auto">
+                                                <div 
+                                                    className="h-full bg-emerald-500 transition-all duration-300"
+                                                    style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }}
+                                                />
+                                            </div>
+                                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">
+                                                Analisando veículo {importProgress.current} de {importProgress.total}
+                                            </p>
+                                        </div>
                                     ) : (
                                         <>
                                             <Upload className="mx-auto text-slate-300 group-hover:text-emerald-500 mb-4 transition-colors" size={32} />

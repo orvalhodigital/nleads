@@ -199,28 +199,28 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             formTitle: 'text-5xl font-black text-slate-950 mb-4 tracking-tight',
         };
         default: return { // classic
-            wrapper: 'min-h-screen bg-[#f8fafc] text-slate-900',
-            nav: 'bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50 shadow-sm',
-            heroText: 'text-slate-900 text-5xl md:text-6xl font-black tracking-tight leading-[1.1]',
-            heroSubText: 'text-slate-600 text-lg md:text-xl font-medium mt-4 max-w-2xl',
-            heroAlign: 'text-left items-start',
+            wrapper: `min-h-screen ${profile?.website_card_style === 'square' ? 'rounded-none' : ''} ${profile?.website_theme === 'glass' ? '' : 'bg-[#f8fafc] text-slate-900'}`,
+            nav: 'bg-white/80 backdrop-blur-2xl border-b border-slate-100/50 sticky top-0 z-50 shadow-sm transition-all',
+            heroText: 'text-slate-900 text-5xl md:text-7xl font-black tracking-tight leading-[1.05] text-center',
+            heroSubText: 'text-slate-600 text-lg md:text-xl font-medium mt-4 max-w-2xl text-center mx-auto',
+            heroAlign: 'text-center items-center justify-center',
             heroBtnOutline: 'border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all shadow-sm bg-white',
             sectionTitle: 'text-slate-900 font-black text-3xl md:text-4xl tracking-tight leading-none',
-            card: 'bg-white border border-slate-100 rounded-[24px] overflow-hidden shadow-[0_10px_28px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_40px_rgba(15,23,42,0.1)] hover:-translate-y-1 transition-all duration-300',
-            cardTitle: 'text-slate-900 font-extrabold text-lg tracking-tight',
-            cardSub: 'text-slate-500 font-medium text-xs',
-            cardBadge: 'bg-slate-100 text-slate-700 text-[10px] font-semibold px-3 py-1 rounded-full uppercase tracking-wider',
-            cardBtnDetail: 'flex-1 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl py-3 hover:bg-slate-50 transition-colors text-center shadow-sm',
-            cardBtnWa: 'flex-1 bg-emerald-500 text-white text-sm font-bold rounded-xl py-3 hover:bg-emerald-600 hover:shadow-lg transition-all text-center flex items-center justify-center gap-1.5',
-            filterPill: 'px-5 py-2.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-all',
-            filterPillActive: 'px-5 py-2.5 rounded-full bg-slate-900 text-white text-xs font-bold shadow-lg shadow-slate-900/20 transition-all',
-            input: 'bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all shadow-sm',
-            inputField: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all',
-            textarea: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all resize-none',
-            footer: 'mt-24 bg-slate-50 border-t border-slate-100',
-            footerText: 'text-slate-500 text-[11px] font-bold uppercase tracking-widest',
-            formCard: 'bg-white rounded-[40px] border border-slate-100 p-8 md:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.05)]',
-            formLabel: 'text-slate-400 text-[10px] font-black uppercase tracking-widest',
+            card: `bg-white border border-slate-100 ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-[24px]'} overflow-hidden shadow-[0_10px_28px_rgba(15,23,42,0.03)] hover:shadow-[0_20px_40px_rgba(15,23,42,0.08)] hover:-translate-y-1 transition-all duration-300`,
+            cardTitle: 'text-slate-900 font-bold text-xl tracking-tight',
+            cardSub: 'text-slate-400 font-bold text-[10px] uppercase tracking-widest',
+            cardBadge: 'bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider border border-slate-100',
+            cardBtnDetail: 'hidden',
+            cardBtnWa: 'flex items-center justify-center gap-1.5 bg-slate-50 border border-slate-100 text-slate-700 text-xs font-bold rounded-xl px-4 py-2 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all text-center',
+            filterPill: 'px-5 py-2.5 rounded-full bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-all shadow-sm',
+            filterPillActive: 'px-5 py-2.5 rounded-full bg-slate-900 text-white text-xs font-bold shadow-lg shadow-slate-900/20 transition-all border border-slate-900',
+            input: 'bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all shadow-sm',
+            inputField: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all',
+            textarea: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all resize-none',
+            footer: 'mt-24 bg-slate-900 border-t border-slate-800 pt-16 pb-8',
+            footerText: 'text-slate-400 text-[11px] font-bold uppercase tracking-widest',
+            formCard: `bg-white ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-[32px]'} border border-slate-100 p-8 md:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.05)]`,
+            formLabel: 'text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5 block',
             formTitle: 'text-4xl font-black text-slate-900 mb-2 tracking-tight',
         };
     }
@@ -341,10 +341,17 @@ const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: P
     return (
         <Link to={`/site/${slug}/veiculo/${vehicle.id}`} className="block h-full">
             <div className={tc.card + " flex flex-col h-full group"}>
-                <div className="relative aspect-[4/5] overflow-hidden bg-slate-200">
-                    <img src={vehicle.imageUrl || PLACEHOLDER} alt={`${vehicle.brand} ${vehicle.model}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
+                <div className="relative aspect-[4/5] overflow-hidden bg-slate-100">
+                    {vehicle.imageUrl ? (
+                        <img src={vehicle.imageUrl} alt={`${vehicle.brand} ${vehicle.model}`}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 border-2 border-dashed border-slate-200 rounded-2xl m-2">
+                            <Car size={64} strokeWidth={1} />
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mt-2">Sem Foto</span>
+                        </div>
+                    )}
                     <div className="absolute top-4 left-4">
                         <span className={tc.cardBadge}>{vehicle.year}</span>
                     </div>
@@ -473,6 +480,15 @@ const PublicSiteHome: React.FC = () => {
         return filtered.slice(0, limit);
     }, [filtered, showAll, theme]);
 
+    const scrollToStock = (e?: React.MouseEvent | React.KeyboardEvent) => {
+        if (e) e.preventDefault();
+        const el = document.getElementById('estoque');
+        if (el) {
+            const y = el.getBoundingClientRect().top + window.scrollY - 100;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+    };
+
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-950">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
@@ -499,8 +515,14 @@ const PublicSiteHome: React.FC = () => {
         }
     }
 
+    const fontStyle = { 
+        fontFamily: profile?.website_typography === 'serif' ? 'Playfair Display, serif' : 
+                    profile?.website_typography === 'oswald' ? 'Oswald, sans-serif' : 
+                    'Inter, sans-serif' 
+    };
+
     return (
-        <div className={tc.wrapper} style={bgStyle}>
+        <div className={tc.wrapper} style={{ ...bgStyle, ...fontStyle }}>
             <Helmet>
                 <title>{seoTitle}</title>
                 <meta name="description" content={seoDesc} />
@@ -512,22 +534,27 @@ const PublicSiteHome: React.FC = () => {
             {/* Nav */}
             {profile.website_theme === 'classic' ? (
                 <nav className={tc.nav}>
-                    <div className="max-w-[1600px] mx-auto px-4 py-4 flex items-center justify-between">
+                    <div className="max-w-[1250px] mx-auto px-4 h-20 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             {displayLogo
-                                ? <img src={displayLogo} alt={profile.company_name} className="h-10 w-auto object-contain" />
-                                : <span className="text-2xl font-black text-slate-900 tracking-tight">{profile.company_name}</span>
+                                ? <img src={displayLogo} alt={profile.company_name} className="h-16 w-auto object-contain" />
+                                : <span className="text-3xl font-black tracking-tight">{profile.company_name}</span>
                             }
+                            {profile.website_city && (
+                                <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-bold bg-slate-100/80 px-3 py-1.5 rounded-full border border-slate-200 ml-2">
+                                    <MapPin size={12} className="text-slate-400" /> {profile.website_city}
+                                </div>
+                            )}
                         </div>
-                        <div className="flex items-center gap-6">
-                            <div className="hidden md:flex gap-6">
-                                <a href="#estoque" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Estoque</a>
-                                {profile.website_about_text && <a href="#sobre" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Sobre Nós</a>}
-                                <a href="#contato" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Contato</a>
+                        <div className="flex items-center gap-8">
+                            <div className="hidden md:flex items-center gap-8">
+                                <a href="#estoque" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Estoque</a>
+                                {profile.website_about_text && <a href="#sobre" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sobre Nós</a>}
+                                <a href="#contato" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Contato</a>
                             </div>
                             {profile.website_whatsapp && (
                                 <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                                    className={`flex items-center gap-2 text-white text-sm font-bold px-6 py-3 transition-all hover:-translate-y-0.5 hover:shadow-lg ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'}`}
                                     style={{ backgroundColor: primary }}>
                                     <MessageCircle size={16} />
                                     <span className="hidden sm:inline">WhatsApp</span>
@@ -535,21 +562,14 @@ const PublicSiteHome: React.FC = () => {
                             )}
                         </div>
                     </div>
-                    {profile.website_city && (
-                        <div className="max-w-[1600px] mx-auto px-4 pb-4 hidden sm:block">
-                            <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 font-bold bg-slate-100 px-3 py-1.5 rounded-full">
-                                <MapPin size={12} /> {profile.website_city}
-                            </span>
-                        </div>
-                    )}
                 </nav>
             ) : (
                 <nav className={tc.nav}>
-                    <div className="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="max-w-[1250px] mx-auto px-4 h-16 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             {displayLogo
-                                ? <img src={displayLogo} alt={profile.company_name} className="h-9 w-auto object-contain" />
-                                : <span className="text-lg font-extrabold">{profile.company_name}</span>
+                                ? <img src={displayLogo} alt={profile.company_name} className="h-14 w-auto object-contain" />
+                                : <span className="text-2xl font-extrabold">{profile.company_name}</span>
                             }
                             {profile.website_city && (
                                 <span className="hidden sm:flex items-center gap-1 text-xs opacity-50">
@@ -578,7 +598,7 @@ const PublicSiteHome: React.FC = () => {
                         </>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-purple-500/5" />
-                    <div className="relative z-10 max-w-[1600px] mx-auto px-4 h-full flex items-center justify-center">
+                    <div className="relative z-10 max-w-[1250px] mx-auto px-4 h-full flex items-center justify-center">
                         <div className="text-center max-w-2xl">
                             <h1 className="text-5xl md:text-6xl font-black text-white mb-4 drop-shadow-lg">
                                 {profile.website_hero_text || `Explore nossa coleção`}
@@ -682,58 +702,55 @@ const PublicSiteHome: React.FC = () => {
                 </section>
             ) : profile.website_theme === 'classic' ? (
                 <>
-                <section className="relative overflow-hidden"
+                <section className="relative z-20 pb-24"
                     style={{
-                        minHeight: '460px',
-                        background: profile.website_use_gradient
-                            ? `linear-gradient(135deg, ${primary}, ${secondary})`
-                            : `linear-gradient(135deg, #ffffff, #f8fafc)`
+                        minHeight: '500px',
+                        backgroundColor: profile?.website_branding?.dark_mode ? '#0f172a' : '#0f172a' // Always dark background for the hero mask
                     }}>
-                    {/* Hero image */}
-                    {profile.website_hero_image && (
-                        <img src={profile.website_hero_image} alt="Hero" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                    {/* Hero image with dark overlay */}
+                    {profile.website_hero_image ? (
+                        <>
+                            <img src={profile.website_hero_image} alt="Hero" className="absolute inset-0 w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-slate-900/60" />
+                        </>
+                    ) : (
+                        <div className="absolute inset-0 bg-slate-900" />
                     )}
-                    {/* Dot pattern overlay */}
-                    <div className="absolute inset-0 opacity-20"
-                        style={{ backgroundImage: 'radial-gradient(circle, rgba(15,23,42,0.08) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/85 to-transparent" />
 
-                    <div className="relative z-10 max-w-[1600px] mx-auto px-4 py-20 flex flex-col justify-center">
-                        <div className="max-w-2xl">
-                            <div className="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full mb-5">
-                                <Car size={11} />
-                                {profile.company_name}{profile.website_city ? ` · ${profile.website_city}` : ''}
-                            </div>
-                            <h1 className="text-5xl md:text-6xl font-black text-slate-900 mb-5 leading-[1.05] drop-shadow-sm"
-                                style={{ fontFamily: "'Fraunces', Georgia, serif" }}>
-                                {profile.website_hero_text || `Encontre seu veículo ideal`}
+                    <div className="relative z-10 max-w-[1250px] mx-auto px-4 h-full flex flex-col justify-center pt-24 pb-16">
+                        <div className={`w-full flex flex-col items-center justify-center text-center ${tc.heroAlign}`}>
+                            <h1 className={tc.heroText + " text-white text-center"}>
+                                {profile.website_hero_text || `Encontre seu próximo veículo`}
                             </h1>
                             {profile.website_hero_subtitle && (
-                                <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-xl">
+                                <p className={tc.heroSubText + " text-white/80 text-center mx-auto"}>
                                     {profile.website_hero_subtitle}
                                 </p>
                             )}
-                            <div className="flex flex-wrap gap-3">
-                                <a href="#estoque"
-                                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-bold text-sm transition-all hover:shadow-xl hover:scale-[1.02] shadow-lg"
-                                    style={{ backgroundColor: primary }}>
-                                    <Car size={16} />
-                                    {profile.website_hero_button_text || `Ver ${filtered.length} Veículo${filtered.length !== 1 ? 's' : ''}`}
+                        </div>
+                    </div>
+
+                    {/* Floating Search Bar */}
+                    <div className="absolute -bottom-8 left-0 right-0 z-20 max-w-[800px] mx-auto px-4 w-full">
+                        <div className={`bg-white ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-2xl'} p-2 md:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col md:flex-row gap-2 border border-slate-100`}>
+                            <div className="flex-1 relative flex items-center">
+                                <Search size={20} className="absolute left-4 text-slate-400" />
+                                <input value={search} onChange={e => setSearch(e.target.value)} 
+                                    onKeyDown={e => e.key === 'Enter' && scrollToStock(e)}
+                                    placeholder="Busque por marca ou modelo..."
+                                    className="w-full pl-12 pr-4 py-4 md:py-3 bg-transparent text-slate-900 font-bold placeholder-slate-400 focus:outline-none" />
+                            </div>
+                            <div className="w-full md:w-auto flex items-center gap-2">
+                                <a href="#estoque" onClick={scrollToStock} className={`flex-1 md:flex-none px-8 py-4 md:py-3 ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'} text-white font-bold transition-all text-center cursor-pointer`} style={{ backgroundColor: primary }}>
+                                    Buscar Ofertas
                                 </a>
-                                {profile.website_whatsapp && (
-                                    <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border-2 border-slate-900 text-slate-900 font-bold text-sm hover:bg-slate-900 hover:text-white transition-all bg-white">
-                                        <MessageCircle size={16} />
-                                        WhatsApp
-                                    </a>
-                                )}
                             </div>
                         </div>
                     </div>
                 </section>
 
                 <div className={`${profile.website_theme === 'premium' ? 'bg-[#0a0a0f] border-y border-white/5' : 'bg-white border-y border-slate-100'}`}>
-                    <div className="max-w-[1600px] mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="max-w-[1250px] mx-auto px-4 pt-16 pb-8 grid grid-cols-2 md:grid-cols-4 gap-6">
                         {[
                             { active: profile.website_diff1_active ?? true, icon: profile.website_diff1_icon || 'Shield', label: profile.website_diff1_title || 'Veículos Revisados', sub: profile.website_diff1_sub || 'Inspeção completa' },
                             { active: profile.website_diff2_active ?? true, icon: profile.website_diff2_icon || 'Award', label: profile.website_diff2_title || 'Garantia Inclusa', sub: profile.website_diff2_sub || 'Pós-venda' },
@@ -766,7 +783,7 @@ const PublicSiteHome: React.FC = () => {
                     ) : (
                         <div className={`absolute inset-0 ${profile.website_theme === 'glass' ? 'bg-gradient-to-r from-indigo-900/80 to-purple-900/80' : profile.website_theme === 'premium' ? 'bg-gradient-to-r from-yellow-900/30 to-orange-900/20' : ''}`} style={!profile.website_hero_image ? heroStyle : undefined} />
                     )}
-                    <div className={`relative z-10 max-w-[1600px] mx-auto px-4 py-16 space-y-4 w-full flex flex-col ${tc.heroAlign}`}>
+                    <div className={`relative z-10 max-w-[1250px] mx-auto px-4 py-16 space-y-4 w-full flex flex-col ${tc.heroAlign}`}>
                         <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg">
                             {profile.website_hero_text || `Bem-vindo à ${profile.company_name}`}
                         </h1>
@@ -794,7 +811,7 @@ const PublicSiteHome: React.FC = () => {
 
             {/* MISSÃO / VISÃO / VALORES */}
             {profile.website_sections?.show_mission_vision_values && (profile.website_sections.mission || profile.website_sections.vision || profile.website_sections.values) && (
-                <section className="max-w-[1600px] mx-auto px-4 py-16">
+                <section className="max-w-[1250px] mx-auto px-4 py-16">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {profile.website_sections.mission && (
                             <div className={`p-8 rounded-2xl ${profile.website_theme === 'classic' ? 'bg-white shadow-lg border border-slate-100' : profile.website_theme === 'glass' ? 'bg-white/10 backdrop-blur-lg border border-white/20' : 'bg-slate-800 border border-slate-700'}`}>
@@ -825,7 +842,7 @@ const PublicSiteHome: React.FC = () => {
             )}
 
             {/* Inventory */}
-            <section id="estoque" className={`max-w-[1600px] mx-auto px-4 py-16 ${profile.website_theme === 'classic' ? 'pt-20' : profile.website_theme === 'glass' ? 'pt-24' : ''}`}>
+            <section id="estoque" className={`max-w-[1250px] mx-auto px-4 py-16 ${profile.website_theme === 'classic' ? 'pt-20' : profile.website_theme === 'glass' ? 'pt-24' : ''}`}>
                 {/* Premium layout */}
                 {profile.website_theme === 'premium' ? (
                     <div className="space-y-12">
@@ -1050,87 +1067,13 @@ const PublicSiteHome: React.FC = () => {
                 )}
             </section>
 
-            {/* CATEGORIAS DE VEÍCULOS (seções) */}
-            {profile.website_sections?.show_vehicle_categories && (
-                <section id="categorias" className="max-w-[1600px] mx-auto px-4 py-16 space-y-16">
-                    {(() => {
-                        const { carros, motos } = groupVehiclesByMainType(vehicles);
-                        return (
-                            <>
-                                {/* SEÇÃO CARROS */}
-                                {carros.length > 0 && (
-                                    <CategorySection
-                                        title="Carros"
-                                        vehicles={carros}
-                                        slug={slug!}
-                                        tc={tc}
-                                        profile={profile}
-                                        theme={profile.website_theme || 'classic'}
-                                        primary={primary}
-                                        onViewMore={() => {/* link para página de carros */}}
-                                    />
-                                )}
 
-                                {/* SUBCATEGORIAS DE CARROS */}
-                                {carros.length > 0 && (() => {
-                                    const carroTypes = Array.from(new Set(carros.map(v => v.type)));
-                                    return carroTypes.slice(0, 3).map(type => (
-                                        <CategorySection
-                                            key={`carro-${type}`}
-                                            title={`${type}s`}
-                                            vehicles={carros.filter(v => v.type === type)}
-                                            slug={slug!}
-                                            tc={tc}
-                                            profile={profile}
-                                            theme={profile.website_theme || 'classic'}
-                                            primary={primary}
-                                            onViewMore={() => {/* link para página da categoria */}}
-                                        />
-                                    ));
-                                })()}
-
-                                {/* SEÇÃO MOTOS */}
-                                {motos.length > 0 && (
-                                    <CategorySection
-                                        title="Motos"
-                                        vehicles={motos}
-                                        slug={slug!}
-                                        tc={tc}
-                                        profile={profile}
-                                        theme={profile.website_theme || 'classic'}
-                                        primary={primary}
-                                        onViewMore={() => {/* link para página de motos */}}
-                                    />
-                                )}
-
-                                {/* SUBCATEGORIAS DE MOTOS */}
-                                {motos.length > 0 && (() => {
-                                    const motoTypes = Array.from(new Set(motos.map(v => v.type)));
-                                    return motoTypes.slice(0, 3).map(type => (
-                                        <CategorySection
-                                            key={`moto-${type}`}
-                                            title={`${type}s`}
-                                            vehicles={motos.filter(v => v.type === type)}
-                                            slug={slug!}
-                                            tc={tc}
-                                            profile={profile}
-                                            theme={profile.website_theme || 'classic'}
-                                            primary={primary}
-                                            onViewMore={() => {/* link para página da categoria */}}
-                                        />
-                                    ));
-                                })()}
-                            </>
-                        );
-                    })()}
-                </section>
-            )}
 
             {/* CTA Banner */}
             {profile.website_whatsapp && (
                 profile.website_theme === 'classic' ? (
                     <section className="py-2 px-4">
-                        <div className="max-w-[1600px] mx-auto">
+                        <div className="max-w-[1250px] mx-auto">
                             <div className="relative overflow-hidden rounded-2xl p-10 md:p-14 text-white"
                                 style={{ background: profile.website_use_gradient ? `linear-gradient(135deg, ${primary}, ${secondary})` : `linear-gradient(135deg, #1c2a3a, #2d3f52)` }}>
                                 <div className="absolute inset-0 opacity-10"
@@ -1152,7 +1095,7 @@ const PublicSiteHome: React.FC = () => {
                         </div>
                     </section>
                 ) : (
-                    <section className="max-w-[1600px] mx-auto px-4 pb-8">
+                    <section className="max-w-[1250px] mx-auto px-4 pb-8">
                         <div className="rounded-2xl p-8 text-center text-white"
                             style={{ background: profile.website_use_gradient ? `linear-gradient(135deg, ${primary}, ${secondary})` : `linear-gradient(135deg, ${primary}dd, ${primary}99)` }}>
                             <h2 className="text-2xl font-extrabold mb-2">Não encontrou o que procurava?</h2>
@@ -1170,7 +1113,7 @@ const PublicSiteHome: React.FC = () => {
 
             {/* Contact Form + Google Maps */}
             {(profile.website_sections?.show_contact_form && profile.website_whatsapp) || (profile.website_sections?.show_maps && profile.website_google_maps) ? (
-                <section id="contato" className="max-w-[1600px] mx-auto px-4 pb-8">
+                <section id="contato" className="max-w-[1250px] mx-auto px-4 pb-8">
                     <div className={tc.formCard}>
                         <h2 className={tc.formTitle}>Entre em Contato</h2>
                         {profile.website_city && (
@@ -1202,13 +1145,13 @@ const PublicSiteHome: React.FC = () => {
             {/* Footer */}
             {profile.website_theme === 'classic' ? (
                 <footer className="bg-slate-950 text-white mt-16 rounded-t-[40px] shadow-2xl">
-                    <div className="max-w-[1600px] mx-auto px-4 py-16">
+                    <div className="max-w-[1250px] mx-auto px-4 py-16">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12">
                             {/* Col 1: Brand & About */}
                             <div className="md:col-span-2">
                                 {profile.company_logo
-                                    ? <img src={profile.company_logo} alt={profile.company_name} className="h-12 w-auto object-contain mb-6 brightness-0 invert" />
-                                    : <p className="text-3xl font-black mb-6 tracking-tight">{profile.company_name}</p>
+                                    ? <img src={profile.company_logo} alt={profile.company_name} className="h-16 w-auto object-contain mb-6 brightness-0 invert" />
+                                    : <p className="text-4xl font-black mb-6 tracking-tight">{profile.company_name}</p>
                                 }
                                 {(profile.website_about_text || profile.website_hero_subtitle) && (
                                     <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-6 whitespace-pre-wrap">
@@ -1274,16 +1217,59 @@ const PublicSiteHome: React.FC = () => {
                 </footer>
             ) : (
                 <footer className={tc.footer}>
-                    <div className="max-w-[1600px] mx-auto px-4 py-8 text-center">
-                        <p className={tc.footerText}>
-                            © {new Date().getFullYear()} {profile.company_name}. Todos os direitos reservados.
-                        </p>
-                        {profile.website_city && (
-                            <p className="mt-2 text-xs text-slate-500 inline-flex items-center gap-1.5">
-                                <MapPin size={12} /> {profile.website_city}
-                            </p>
-                        )}
-                        <p className="text-xs opacity-25 mt-1">Powered by nLeads</p>
+                    <div className="max-w-[1250px] mx-auto px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                            <div className="md:col-span-2">
+                                <h3 className="text-xl font-black text-white mb-4 tracking-tight">{profile.company_name}</h3>
+                                <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-6">
+                                    {profile.website_about_text ? profile.website_about_text.slice(0, 150) + '...' : 'Ajudando você a encontrar o veículo perfeito com total transparência e segurança.'}
+                                </p>
+                                <div className="flex items-center gap-3">
+                                    {profile.website_instagram && (
+                                        <a href={profile.website_instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">IG</a>
+                                    )}
+                                    {profile.website_facebook && (
+                                        <a href={profile.website_facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">FB</a>
+                                    )}
+                                    {profile.website_youtube && (
+                                        <a href={profile.website_youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">YT</a>
+                                    )}
+                                    {profile.website_tiktok && (
+                                        <a href={profile.website_tiktok} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">TK</a>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Links Rápidos</p>
+                                <div className="space-y-4">
+                                    <a href="#estoque" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Ver Estoque</a>
+                                    {profile.website_about_text && <a href="#sobre" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Sobre a Loja</a>}
+                                    {profile.website_terms_of_use && <a href="#termos" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Termos de Uso</a>}
+                                    {profile.website_privacy_policy && <a href="#privacidade" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Política de Privacidade</a>}
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Contato</p>
+                                <div className="space-y-4">
+                                    {profile.website_city && (
+                                        <p className="flex items-start gap-3 text-sm font-medium text-slate-400">
+                                            <MapPin size={18} className="text-slate-600 shrink-0 mt-0.5" /> 
+                                            <span>{profile.website_city}</span>
+                                        </p>
+                                    )}
+                                    {profile.website_whatsapp && (
+                                        <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
+                                            className="flex items-center gap-3 text-sm font-medium text-slate-400 hover:text-white transition-colors">
+                                            <MessageCircle size={18} className="text-slate-600 shrink-0" /> WhatsApp
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-slate-500 text-sm font-medium">© {new Date().getFullYear()} {profile.company_name}. Todos os direitos reservados.</p>
+                            <p className="text-slate-700 text-xs font-bold tracking-wider">POWERED BY NLEADS</p>
+                        </div>
                     </div>
                 </footer>
             )}

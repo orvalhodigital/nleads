@@ -573,7 +573,7 @@ const LeadDetailPage: React.FC = () => {
                                             <div>
                                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Valor Máx</p>
                                                 <p className="text-sm font-black text-emerald-600">
-                                                    R$ {formatCurrency(lead.preferences.carro_valormax || lead.preferences.valor_maximo || 0)}
+                                                    R$ {formatCurrency(lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 0)}
                                                 </p>
                                             </div>
                                             <div>
@@ -635,7 +635,7 @@ const LeadDetailPage: React.FC = () => {
                                             <div>
                                                 <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Valor Máx</p>
                                                 <p className="text-sm font-black text-indigo-600">
-                                                    R$ {formatCurrency(lead.preferences.moto__valormax || 0)}
+                                                    R$ {formatCurrency(lead.preferences.moto_valor_max || 0)}
                                                 </p>
                                             </div>
                                             <div>

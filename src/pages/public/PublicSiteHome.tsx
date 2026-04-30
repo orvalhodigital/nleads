@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { websiteService, PublicProfile } from '../../services/websiteService';
 import { Vehicle } from '../../types';
-import { MessageCircle, Search, ChevronDown, Car, MapPin, Send, Shield, Award, CreditCard, RefreshCw, Filter, SlidersHorizontal, ExternalLink } from 'lucide-react';
+import { MessageCircle, Search, ChevronDown, Car, MapPin, Send, Shield, Award, CreditCard, RefreshCw, Filter, SlidersHorizontal, ExternalLink, Menu, X } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
@@ -76,8 +76,8 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
         case 'glass': return {
             wrapper: 'min-h-screen text-white relative before:content-[""] before:fixed before:inset-0 before:bg-gradient-to-br before:from-slate-950 before:via-indigo-950 before:to-slate-900 before:-z-10 after:content-[""] after:fixed after:inset-0 after:bg-[radial-gradient(ellipse_at_top_left,rgba(56,189,248,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.15),transparent_50%)] after:-z-10 selection:bg-cyan-500/30',
             nav: 'sticky top-0 z-50 bg-white/[0.03] backdrop-blur-xl border-b border-white/[0.08]',
-            heroText: 'text-white text-5xl md:text-7xl font-black tracking-tight leading-[1.05]',
-            heroSubText: 'text-white/60 text-lg md:text-xl font-light tracking-wide',
+            heroText: 'text-3xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[1.1] md:leading-[1.05]',
+            heroSubText: 'text-white/60 text-base md:text-xl font-light tracking-wide',
             heroAlign: 'text-center items-center',
             heroBtnOutline: 'border border-white/20 bg-white/5 backdrop-blur-xl text-white hover:bg-white/10 font-bold transition-all px-8 py-4 rounded-2xl shadow-2xl',
             sectionTitle: 'text-white/30 font-black text-xs uppercase tracking-[0.4em]',
@@ -94,18 +94,18 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             textarea: 'w-full bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-cyan-400/60 transition-all resize-none',
             footer: 'mt-24 border-t border-white/5 bg-white/[0.02] backdrop-blur-3xl',
             footerText: 'text-white/20 text-[10px] font-bold uppercase tracking-widest',
-            formCard: 'bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 md:p-16 shadow-2xl',
+            formCard: 'bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-3xl md:rounded-[40px] p-6 md:p-16 shadow-2xl',
             formLabel: 'text-white/20 text-[10px] font-black uppercase tracking-[0.2em]',
-            formTitle: 'text-4xl font-black text-white mb-2',
+            formTitle: 'text-2xl md:text-4xl font-black text-white mb-2',
         };
         case 'premium': return {
             wrapper: 'min-h-screen bg-[#050508] text-white selection:bg-amber-500/30',
             nav: 'bg-[#050508]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50',
-            heroText: 'text-white text-5xl md:text-8xl font-black tracking-tight leading-[0.9] italic uppercase',
-            heroSubText: 'text-slate-500 text-lg md:text-xl font-light tracking-wide max-w-xl',
+            heroText: 'text-white text-4xl sm:text-6xl md:text-8xl font-black tracking-tight leading-[1] md:leading-[0.9] italic uppercase',
+            heroSubText: 'text-slate-500 text-base md:text-xl font-light tracking-wide max-w-xl',
             heroAlign: 'text-left items-start',
             heroBtnOutline: 'border border-amber-500/50 text-amber-500 hover:bg-amber-500/10 font-black tracking-[0.2em] uppercase text-xs transition-all px-10 py-5 rounded-sm',
-            sectionTitle: 'text-white font-black text-3xl tracking-tighter uppercase italic',
+            sectionTitle: 'text-white font-black text-2xl md:text-3xl tracking-tighter uppercase italic',
             card: 'bg-[#0a0a0f] border border-white/5 rounded-none overflow-hidden hover:border-amber-500/30 transition-all duration-700 shadow-2xl',
             cardTitle: 'text-white font-black text-xl uppercase tracking-tighter',
             cardSub: 'text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]',
@@ -119,93 +119,93 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             textarea: 'w-full bg-[#0a0a0f] border border-white/10 text-white placeholder-slate-700 rounded-none px-6 py-4 text-sm focus:outline-none focus:border-amber-500/50 transition-all resize-none',
             footer: 'mt-32 border-t border-white/5 bg-black',
             footerText: 'text-slate-600 text-[10px] font-black uppercase tracking-[0.3em]',
-            formCard: 'bg-[#0a0a0f] border border-white/5 rounded-none p-12 md:p-24 shadow-2xl',
+            formCard: 'bg-[#0a0a0f] border border-white/5 rounded-none p-8 md:p-24 shadow-2xl',
             formLabel: 'text-slate-700 text-[10px] font-black uppercase tracking-[0.4em]',
-            formTitle: 'text-6xl font-black text-white mb-4 uppercase tracking-tighter italic',
+            formTitle: 'text-3xl md:text-6xl font-black text-white mb-4 uppercase tracking-tighter italic',
         };
         case 'bold': return {
             wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-emerald-500/30',
             nav: 'bg-slate-950 border-b-4 border-emerald-500 sticky top-0 z-50 shadow-2xl',
-            heroText: 'text-white text-5xl md:text-8xl font-black italic uppercase tracking-tighter leading-[0.85]',
-            heroSubText: 'text-slate-400 text-lg md:text-xl font-medium mt-4',
+            heroText: 'text-white text-4xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-[1] md:leading-[0.85]',
+            heroSubText: 'text-slate-400 text-base md:text-xl font-medium mt-4',
             heroAlign: 'text-left items-start',
-            heroBtnOutline: 'border-4 border-white text-white hover:bg-white hover:text-black font-black uppercase transition-all px-10 py-5 text-lg',
-            sectionTitle: 'text-white font-black text-6xl italic uppercase tracking-tighter',
+            heroBtnOutline: 'border-4 border-white text-white hover:bg-white hover:text-black font-black uppercase transition-all px-8 py-4 md:px-10 md:py-5 text-base md:text-lg',
+            sectionTitle: 'text-white font-black text-3xl md:text-6xl italic uppercase tracking-tighter',
             card: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-emerald-500 transition-all duration-300',
             cardTitle: 'text-white font-black text-2xl uppercase tracking-tight italic',
             cardSub: 'text-emerald-500 text-xs font-black uppercase tracking-widest',
             cardBadge: 'bg-slate-800 text-white text-[10px] font-black px-4 py-1 uppercase tracking-widest',
             cardBtnDetail: 'flex-1 border-4 border-slate-700 text-white text-sm font-black uppercase py-4 hover:border-white transition-all text-center',
             cardBtnWa: 'flex-1 bg-emerald-500 text-slate-950 text-sm font-black uppercase py-4 hover:bg-emerald-400 transition-all text-center shadow-[0_0_30px_rgba(16,185,129,0.3)]',
-            filterPill: 'px-8 py-4 rounded-none border-4 border-slate-800 bg-transparent text-white text-sm font-black uppercase hover:border-white transition-all',
-            filterPillActive: 'px-8 py-4 rounded-none bg-emerald-500 text-slate-950 text-sm font-black uppercase transition-all',
+            filterPill: 'px-6 md:px-8 py-3 md:py-4 rounded-none border-4 border-slate-800 bg-transparent text-white text-xs md:text-sm font-black uppercase hover:border-white transition-all',
+            filterPillActive: 'px-6 md:px-8 py-3 md:py-4 rounded-none bg-emerald-500 text-slate-950 text-xs md:text-sm font-black uppercase transition-all',
             input: 'bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-emerald-500 transition-all',
             inputField: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-emerald-500 transition-all',
             textarea: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-emerald-500 transition-all resize-none',
             footer: 'mt-32 bg-black border-t-8 border-emerald-500 py-16',
             footerText: 'text-slate-500 font-black uppercase tracking-[0.4em]',
-            formCard: 'bg-slate-900 border-8 border-slate-800 rounded-none p-12 md:p-24 shadow-2xl',
+            formCard: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-8 md:p-24 shadow-2xl',
             formLabel: 'text-emerald-500 text-sm font-black uppercase tracking-widest',
-            formTitle: 'text-7xl font-black text-white mb-6 uppercase italic leading-none',
+            formTitle: 'text-4xl md:text-7xl font-black text-white mb-6 uppercase italic leading-none',
         };
         case 'luxury': return {
             wrapper: 'min-h-screen bg-[#0f0e0c] text-[#d4af37] font-serif selection:bg-[#d4af37]/20',
             nav: 'bg-[#0f0e0c]/95 backdrop-blur-xl border-b border-[#d4af37]/10 sticky top-0 z-50',
-            heroText: 'text-[#d4af37] text-6xl md:text-8xl font-light uppercase tracking-[0.3em] leading-tight',
-            heroSubText: 'text-[#d4af37]/40 text-lg md:text-2xl font-light tracking-[0.4em] mt-8 italic',
+            heroText: 'text-[#d4af37] text-4xl sm:text-6xl md:text-8xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em] leading-tight',
+            heroSubText: 'text-[#d4af37]/40 text-base md:text-2xl font-light tracking-[0.2em] md:tracking-[0.4em] mt-6 md:mt-8 italic',
             heroAlign: 'text-center items-center',
-            heroBtnOutline: 'border border-[#d4af37]/40 text-[#d4af37] hover:bg-[#d4af37] hover:text-[#0f0e0c] uppercase tracking-[0.5em] text-[10px] transition-all px-12 py-6 rounded-none',
-            sectionTitle: 'text-[#d4af37] font-extralight text-5xl uppercase tracking-[0.6em] text-center',
+            heroBtnOutline: 'border border-[#d4af37]/40 text-[#d4af37] hover:bg-[#d4af37] hover:text-[#0f0e0c] uppercase tracking-[0.3em] md:tracking-[0.5em] text-[9px] md:text-[10px] transition-all px-8 py-4 md:px-12 md:py-6 rounded-none',
+            sectionTitle: 'text-[#d4af37] font-extralight text-3xl md:text-5xl uppercase tracking-[0.4em] md:tracking-[0.6em] text-center',
             card: 'bg-[#1a1814] border border-[#d4af37]/5 overflow-hidden hover:border-[#d4af37]/30 transition-all duration-1000 shadow-2xl',
             cardTitle: 'text-[#d4af37] font-serif text-2xl tracking-widest uppercase',
             cardSub: 'text-[#d4af37]/30 text-[10px] uppercase tracking-[0.5em] italic',
             cardBadge: 'border border-[#d4af37]/10 text-[#d4af37]/60 text-[9px] px-4 py-1.5 uppercase tracking-widest',
             cardBtnDetail: 'flex-1 border border-[#d4af37]/10 text-[#d4af37]/50 text-[10px] uppercase tracking-[0.4em] py-5 hover:bg-[#d4af37]/5 transition-all text-center',
             cardBtnWa: 'flex-1 bg-[#d4af37] text-[#0f0e0c] text-[10px] font-bold uppercase tracking-[0.4em] py-5 hover:bg-[#b8962d] transition-all text-center shadow-[0_10px_30px_rgba(212,175,55,0.15)]',
-            filterPill: 'px-10 py-4 bg-transparent border border-[#d4af37]/10 text-[#d4af37]/40 text-[10px] font-bold uppercase tracking-[0.5em] hover:border-[#d4af37]/40 transition-all',
-            filterPillActive: 'px-10 py-4 bg-[#d4af37] text-[#0f0e0c] text-[10px] font-bold uppercase tracking-[0.5em] transition-all shadow-2xl',
-            input: 'bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-6 text-lg focus:outline-none focus:border-[#d4af37] transition-all',
-            inputField: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-6 text-lg focus:outline-none focus:border-[#d4af37] transition-all',
-            textarea: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-6 text-lg focus:outline-none focus:border-[#d4af37] transition-all resize-none',
+            filterPill: 'px-6 md:px-10 py-3 md:py-4 bg-transparent border border-[#d4af37]/10 text-[#d4af37]/40 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] hover:border-[#d4af37]/40 transition-all',
+            filterPillActive: 'px-6 md:px-10 py-3 md:py-4 bg-[#d4af37] text-[#0f0e0c] text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] transition-all shadow-2xl',
+            input: 'bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-base md:text-lg focus:outline-none focus:border-[#d4af37] transition-all',
+            inputField: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-base md:text-lg focus:outline-none focus:border-[#d4af37] transition-all',
+            textarea: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-base md:text-lg focus:outline-none focus:border-[#d4af37] transition-all resize-none',
             footer: 'mt-40 bg-black border-t border-[#d4af37]/5 py-24',
             footerText: 'text-[#d4af37]/20 text-[10px] uppercase tracking-[0.6em]',
-            formCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-16 md:p-32 shadow-2xl',
+            formCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-8 md:p-32 shadow-2xl',
             formLabel: 'text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.6em]',
-            formTitle: 'text-5xl font-extralight text-[#d4af37] mb-12 uppercase tracking-[0.4em] leading-relaxed',
+            formTitle: 'text-3xl md:text-5xl font-extralight text-[#d4af37] mb-8 md:mb-12 uppercase tracking-[0.3em] md:tracking-[0.4em] leading-relaxed',
         };
         case 'modern': return {
             wrapper: 'min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-500/10',
             nav: 'bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm',
-            heroText: 'text-slate-950 text-5xl md:text-7xl font-black tracking-tight leading-[1.05]',
-            heroSubText: 'text-slate-600 text-lg md:text-xl font-medium mt-6 max-w-2xl',
+            heroText: 'text-slate-950 text-3xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[1.1] md:leading-[1.05]',
+            heroSubText: 'text-slate-600 text-base md:text-xl font-medium mt-4 md:mt-6 max-w-2xl',
             heroAlign: 'text-center items-center',
-            heroBtnOutline: 'bg-slate-950 text-white hover:bg-slate-800 font-bold px-10 py-4.5 rounded-2xl transition-all shadow-xl shadow-slate-900/20',
-            sectionTitle: 'text-slate-900 font-black text-4xl tracking-tight',
+            heroBtnOutline: 'bg-slate-950 text-white hover:bg-slate-800 font-bold px-8 py-3.5 md:px-10 md:py-4.5 rounded-2xl transition-all shadow-xl shadow-slate-900/20',
+            sectionTitle: 'text-slate-900 font-black text-2xl md:text-4xl tracking-tight',
             card: 'bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500',
             cardTitle: 'text-slate-900 font-bold text-xl tracking-tight',
             cardSub: 'text-slate-400 font-bold text-[10px] uppercase tracking-widest',
             cardBadge: 'bg-slate-100 text-slate-600 text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider',
             cardBtnDetail: 'flex-1 bg-white border border-slate-200 text-slate-900 text-sm font-bold rounded-2xl py-3.5 hover:bg-slate-50 transition-all text-center',
             cardBtnWa: 'flex-1 bg-blue-600 text-white text-sm font-bold rounded-2xl py-3.5 hover:bg-blue-700 transition-all text-center shadow-lg shadow-blue-600/20',
-            filterPill: 'px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-500 text-sm font-bold hover:bg-slate-100 transition-all',
-            filterPillActive: 'px-6 py-3 rounded-2xl bg-slate-950 text-white text-sm font-bold transition-all shadow-xl shadow-slate-950/20',
+            filterPill: 'px-5 py-2.5 md:px-6 md:py-3 rounded-2xl bg-white border border-slate-200 text-slate-500 text-xs md:text-sm font-bold hover:bg-slate-100 transition-all',
+            filterPillActive: 'px-5 py-2.5 md:px-6 md:py-3 rounded-2xl bg-slate-950 text-white text-xs md:text-sm font-bold transition-all shadow-xl shadow-slate-950/20',
             input: 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all',
             inputField: 'w-full bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all',
             textarea: 'w-full bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all resize-none',
             footer: 'mt-32 bg-white border-t border-slate-200 py-16',
             footerText: 'text-slate-400 text-xs font-bold uppercase tracking-widest',
-            formCard: 'bg-white border border-slate-100 rounded-[48px] p-12 md:p-20 shadow-2xl',
+            formCard: 'bg-white border border-slate-100 rounded-3xl md:rounded-[48px] p-6 md:p-20 shadow-2xl',
             formLabel: 'text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2',
-            formTitle: 'text-5xl font-black text-slate-950 mb-4 tracking-tight',
+            formTitle: 'text-3xl md:text-5xl font-black text-slate-950 mb-4 tracking-tight',
         };
         default: return { // classic
             wrapper: `min-h-screen ${profile?.website_card_style === 'square' ? 'rounded-none' : ''} ${profile?.website_theme === 'glass' ? '' : 'bg-[#f8fafc] text-slate-900'}`,
             nav: 'bg-white/80 backdrop-blur-2xl border-b border-slate-100/50 sticky top-0 z-50 shadow-sm transition-all',
-            heroText: 'text-slate-900 text-5xl md:text-7xl font-black tracking-tight leading-[1.05] text-center',
-            heroSubText: 'text-slate-600 text-lg md:text-xl font-medium mt-4 max-w-2xl text-center mx-auto',
+            heroText: 'text-slate-900 text-3xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[1.1] md:leading-[1.05] text-center',
+            heroSubText: 'text-slate-600 text-base md:text-xl font-medium mt-4 max-w-2xl text-center mx-auto',
             heroAlign: 'text-center items-center justify-center',
             heroBtnOutline: 'border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all shadow-sm bg-white',
-            sectionTitle: 'text-slate-900 font-black text-3xl md:text-4xl tracking-tight leading-none',
+            sectionTitle: 'text-slate-900 font-black text-2xl md:text-4xl tracking-tight leading-none',
             card: `bg-white border border-slate-100 ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-[24px]'} overflow-hidden shadow-[0_10px_28px_rgba(15,23,42,0.03)] hover:shadow-[0_20px_40px_rgba(15,23,42,0.08)] hover:-translate-y-1 transition-all duration-300`,
             cardTitle: 'text-slate-900 font-bold text-xl tracking-tight',
             cardSub: 'text-slate-400 font-bold text-[10px] uppercase tracking-widest',
@@ -219,9 +219,9 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             textarea: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all resize-none',
             footer: 'mt-24 bg-slate-900 border-t border-slate-800 pt-16 pb-8',
             footerText: 'text-slate-400 text-[11px] font-bold uppercase tracking-widest',
-            formCard: `bg-white ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-[32px]'} border border-slate-100 p-8 md:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.05)]`,
+            formCard: `bg-white ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-3xl md:rounded-[32px]'} border border-slate-100 p-6 md:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.05)]`,
             formLabel: 'text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5 block',
-            formTitle: 'text-4xl font-black text-slate-900 mb-2 tracking-tight',
+            formTitle: 'text-2xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight',
         };
     }
 }
@@ -254,7 +254,7 @@ const CategorySection: React.FC<{
                 </p>
             </div>
 
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6`}>
+            <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6`}>
                 {displayed.map((vehicle, i) => (
                     <motion.div 
                         key={vehicle.id}
@@ -330,6 +330,58 @@ const ContactForm: React.FC<{ profile: PublicProfile; tc: TC }> = ({ profile, tc
     );
 };
 
+// ─── Mobile Menu ─────────────────────────────────────────────────────────────
+const MobileMenu: React.FC<{ 
+    isOpen: boolean; 
+    onClose: () => void; 
+    profile: PublicProfile | null;
+    primary: string;
+    theme: string;
+}> = ({ isOpen, onClose, profile, primary, theme }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: isOpen ? 1 : 0, x: isOpen ? 0 : '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[100] bg-white text-slate-900 flex flex-col md:hidden"
+            style={theme === 'glass' || theme === 'premium' || theme === 'bold' || theme === 'luxury' 
+                ? { backgroundColor: theme === 'luxury' ? '#0f0e0c' : '#050508', color: 'white' } 
+                : {}}
+        >
+            <div className="p-6 flex items-center justify-between border-b border-white/5">
+                <span className="font-black tracking-tight">{profile?.company_name}</span>
+                <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors">
+                    <X size={24} />
+                </button>
+            </div>
+            <div className="flex-1 p-8 flex flex-col gap-6 overflow-y-auto">
+                <a href="#estoque" onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Estoque</a>
+                {profile?.website_about_text && <a href="#sobre" onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Sobre Nós</a>}
+                <a href="#contato" onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Contato</a>
+                
+                {profile?.website_whatsapp && (
+                    <button 
+                        onClick={() => {
+                            const mainWaMsg = profile?.preset_messages?.[0] ? profile.preset_messages[0].replace(/\[NOME\]/gi, profile.company_name) : `Olá! Vim pelo site ${profile.company_name}.`;
+                            window.open(`https://wa.me/${profile.website_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mainWaMsg)}`, '_blank');
+                            onClose();
+                        }}
+                        className="mt-4 w-full py-4 rounded-xl font-black text-white text-center shadow-xl"
+                        style={{ backgroundColor: primary }}
+                    >
+                        WhatsApp
+                    </button>
+                )}
+            </div>
+            <div className="p-8 border-t border-white/5 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">
+                    © {new Date().getFullYear()} {profile?.company_name}
+                </p>
+            </div>
+        </motion.div>
+    );
+};
+
 // ─── Premium Card ─────────────────────────────────────────────────────────────
 
 const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: PublicProfile }> = ({ vehicle, slug, tc, profile }) => {
@@ -356,28 +408,27 @@ const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: P
                         <span className={tc.cardBadge}>{vehicle.year}</span>
                     </div>
                 </div>
-                <div className="p-6 flex flex-col flex-1">
-                    <div className="mb-4">
-                        <p className={tc.cardSub}>{vehicle.type}</p>
-                        <h3 className={tc.cardTitle}>{vehicle.brand} {vehicle.model}</h3>
+                <div className="p-3 md:p-6 flex flex-col flex-1">
+                    <div className="mb-2 md:mb-4">
+                        <p className={tc.cardSub + " !text-[8px] md:!text-[10px]"}>{vehicle.type}</p>
+                        <h3 className={tc.cardTitle + " !text-sm md:!text-xl line-clamp-1"}>{vehicle.brand} {vehicle.model}</h3>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2 mb-6">
-                        <span className={tc.cardBadge}>{formatKm(vehicle.mileage)}</span>
-                        <span className={tc.cardBadge}>{vehicle.transmission.split(' ')[0]}</span>
-                        <span className={tc.cardBadge}>{vehicle.engine}</span>
+                    <div className="flex flex-wrap gap-1 md:gap-2 mb-4 md:mb-6">
+                        <span className={tc.cardBadge + " !px-2 !py-0.5 !text-[8px] md:!text-[10px]"}>{formatKm(vehicle.mileage)}</span>
+                        <span className={tc.cardBadge + " !px-2 !py-0.5 !text-[8px] md:!text-[10px]"}>{vehicle.transmission.split(' ')[0]}</span>
                     </div>
 
                     <div className="mt-auto pt-4 border-t border-white/5 flex items-end justify-between">
                         <div>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Preço</p>
-                            <p className="text-2xl font-black tracking-tight" style={profile.website_theme === 'classic' ? { color: profile.website_primary_color } : undefined}>
+                            <p className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 md:mb-1">Preço</p>
+                            <p className="text-base md:text-2xl font-black tracking-tight" style={profile.website_theme === 'classic' ? { color: profile.website_primary_color } : undefined}>
                                 {formatPrice(vehicle.price)}
                             </p>
                         </div>
                         {profile.website_whatsapp && (
-                            <a href={waUrl} target="_blank" rel="noopener noreferrer" className={tc.cardBtnWa + " !flex-initial px-4"} onClick={e => e.stopPropagation()}>
-                                <MessageCircle size={18} />
+                            <a href={waUrl} target="_blank" rel="noopener noreferrer" className={tc.cardBtnWa + " !flex-initial px-2 md:px-4 !py-2 md:!py-3"} onClick={e => e.stopPropagation()}>
+                                <MessageCircle size={14} className="md:w-[18px] md:h-[18px]" />
                             </a>
                         )}
                     </div>
@@ -399,6 +450,7 @@ const PublicSiteHome: React.FC = () => {
     const [activeType, setActiveType] = useState('Todos');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [showAll, setShowAll] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         if (!slug) return;
@@ -531,6 +583,14 @@ const PublicSiteHome: React.FC = () => {
                 <meta name="robots" content="index, follow" />
             </Helmet>
 
+            <MobileMenu 
+                isOpen={isMenuOpen} 
+                onClose={() => setIsMenuOpen(false)} 
+                profile={profile} 
+                primary={primary}
+                theme={theme}
+            />
+
             {/* Nav */}
             {profile.website_theme === 'classic' ? (
                 <nav className={tc.nav}>
@@ -546,7 +606,7 @@ const PublicSiteHome: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-4">
                             <div className="hidden md:flex items-center gap-8">
                                 <a href="#estoque" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Estoque</a>
                                 {profile.website_about_text && <a href="#sobre" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sobre Nós</a>}
@@ -554,12 +614,15 @@ const PublicSiteHome: React.FC = () => {
                             </div>
                             {profile.website_whatsapp && (
                                 <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                    className={`flex items-center gap-2 text-white text-sm font-bold px-6 py-3 transition-all hover:-translate-y-0.5 hover:shadow-lg ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'}`}
+                                    className={`hidden sm:flex items-center gap-2 text-white text-sm font-bold px-6 py-3 transition-all hover:-translate-y-0.5 hover:shadow-lg ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'}`}
                                     style={{ backgroundColor: primary }}>
                                     <MessageCircle size={16} />
-                                    <span className="hidden sm:inline">WhatsApp</span>
+                                    <span>WhatsApp</span>
                                 </a>
                             )}
+                            <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                                <Menu size={24} />
+                            </button>
                         </div>
                     </div>
                 </nav>
@@ -578,11 +641,16 @@ const PublicSiteHome: React.FC = () => {
                             )}
                         </div>
                         {profile.website_whatsapp && (
-                            <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                className="flex items-center gap-2 bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-green-400 transition-colors">
-                                <MessageCircle size={16} />
-                                <span className="hidden sm:inline">WhatsApp</span>
-                            </a>
+                            <div className="flex items-center gap-3">
+                                <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
+                                    className="hidden sm:flex items-center gap-2 bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-green-400 transition-colors">
+                                    <MessageCircle size={16} />
+                                    <span>WhatsApp</span>
+                                </a>
+                                <button onClick={() => setIsMenuOpen(true)} className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                    <Menu size={24} />
+                                </button>
+                            </div>
                         )}
                     </div>
                 </nav>
@@ -862,7 +930,7 @@ const PublicSiteHome: React.FC = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                                     {displayedVehicles.map((vehicle, i) => (
                                         <motion.div 
                                             key={vehicle.id}
@@ -904,7 +972,7 @@ const PublicSiteHome: React.FC = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                                     {displayedVehicles.map((vehicle, i) => (
                                         <motion.div
                                             key={vehicle.id}
@@ -979,7 +1047,7 @@ const PublicSiteHome: React.FC = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                                         {displayedVehicles.map((vehicle, i) => (
                                             <motion.div 
                                                 key={vehicle.id}
@@ -1039,7 +1107,7 @@ const PublicSiteHome: React.FC = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                                     {displayedVehicles.map((vehicle, i) => (
                                         <motion.div 
                                             key={vehicle.id}

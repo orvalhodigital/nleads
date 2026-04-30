@@ -109,7 +109,7 @@ export interface LeadPreference {
   marcas: string[];
   modelos: string[];
   carro_valor_min?: number;
-  carro_valormax?: number;
+  carro_valor_max?: number;
   carro_transmissao: TransmissionType[];
   carro_motorizacao: EngineType[];
   
@@ -119,7 +119,7 @@ export interface LeadPreference {
   marcas_moto?: string[];
   modelos_moto?: string[];
   moto_valor_min?: number;
-  moto__valormax?: number;
+  moto_valor_max?: number;
   moto_transmissao: TransmissionType[];
   moto_motorizacao: EngineType[];
 

@@ -14,7 +14,7 @@ interface QuickLeadModalProps {
 
 const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const { showToast } = useToast();
-    const { refreshData } = useData();
+    const { loadData } = useData();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -65,7 +65,7 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
             } as any);
 
             showToast('success', 'Lead cadastrado com sucesso!');
-            await refreshData();
+            await loadData();
             setFormData({ name: '', phone: '', email: '' });
             onSuccess(newLead.id);
             onClose();

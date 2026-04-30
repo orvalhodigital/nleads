@@ -638,7 +638,7 @@ const Inventory: React.FC<InventoryProps> = ({
                         )}
                         <div>
                           <p className="font-extrabold text-slate-900 uppercase leading-none">{lead.name}</p>
-                          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Orçamento: R$ {lead.preferences.maxPrice?.toLocaleString()}</p>
+                          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Orçamento: R$ {lead.preferences.carro_valor_max?.toLocaleString()}</p>
                         </div>
                       </div>
                     </div>

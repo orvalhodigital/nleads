@@ -235,22 +235,36 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     // Actions
     const addLead = useCallback(async (leadData: Lead) => {
-        const { adminId } = getAdminContext(profileRef.current);
-        const enriched = {
-            ...leadData,
-            user_id: leadData.user_id || profileRef.current?.id,
-            admin_id: leadData.admin_id || adminId || null,
-        };
-        const newLead = await leadService.create(enriched);
-        setLeads((prev: Lead[]) => [newLead, ...prev]);
-        return newLead;
-    }, []);
+        try {
+            const { adminId } = getAdminContext(profileRef.current);
+            const enriched = {
+                ...leadData,
+                user_id: leadData.user_id || profileRef.current?.id,
+                admin_id: leadData.admin_id || adminId || null,
+            };
+            const newLead = await leadService.create(enriched);
+            setLeads((prev: Lead[]) => [newLead, ...prev]);
+            showToast('success', 'Lead cadastrado com sucesso!');
+            return newLead;
+        } catch (err) {
+            console.error('Error adding lead:', err);
+            showToast('error', 'Erro ao cadastrar lead. Verifique os dados e tente novamente.');
+            throw err;
+        }
+    }, [showToast]);
 
     const updateLead = useCallback(async (leadData: Lead) => {
-        const updated = await leadService.update(leadData);
-        setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === updated.id ? updated : l));
-        return updated;
-    }, []);
+        try {
+            const updated = await leadService.update(leadData);
+            setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === updated.id ? updated : l));
+            showToast('success', 'Lead atualizado com sucesso!');
+            return updated;
+        } catch (err) {
+            console.error('Error updating lead:', err);
+            showToast('error', 'Erro ao atualizar lead.');
+            throw err;
+        }
+    }, [showToast]);
 
     const deleteLead = useCallback(async (id: string) => {
         await leadService.delete(id);

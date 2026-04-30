@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lead, LeadPhase, LeadTemperature, VisitStatus } from '../types';
 import FollowUpCard from './FollowUpCard';
 import ScheduleVisitModal, { ScheduleFormData } from './ScheduleVisitModal';
-import CustomDatePicker from './ui/CustomDatePicker';
+import { CustomDatePicker } from './ui/CustomDatePicker';
 
 const Agenda: React.FC = () => {
     const { leads, vehicles, updateLead, addLead, loadData } = useData();

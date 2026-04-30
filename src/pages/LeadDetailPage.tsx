@@ -4,7 +4,7 @@ import { useData } from '../contexts/DataContext';
 import { useBasePath } from '../hooks/useBasePath';
 import {
     ArrowLeft, Edit2, DollarSign, Phone, Mail, Clock, Car,
-    ExternalLink, Plus, MessageCircle, CheckCircle2, X, History
+    ExternalLink, Plus, MessageCircle, CheckCircle2, X, History, Target
 } from 'lucide-react';
 
 import { LeadTemperature, LeadPhase } from '../types';

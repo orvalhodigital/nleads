@@ -344,64 +344,66 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                         >
                           <div className={`sticky top-0 left-0 right-0 h-1.5 rounded-t-2xl ${colors.btnBg} opacity-50 z-10 shrink-0`} />
                           {paginatedLeads.map((lead, index) => (
-                            <Draggable key={String(lead.id)} draggableId={String(lead.id)} index={index}>
-                              {(provided, snapshot) => {
-                                const card = (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    onClick={() => !snapshot.isDragging && navigate(`/leads/${lead.id}`)}
-                                    className={`group bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 cursor-grab active:cursor-grabbing ${snapshot.isDragging ? 'shadow-xl ring-1 ring-emerald-500/50' : ''} shrink-0`}
-                                    style={provided.draggableProps.style}
-                                  >
-                                    <div className="flex items-center gap-2.5 mb-2 relative">
-                                      <div className={`relative w-9 h-9 shrink-0 rounded-lg ${colors.btnBg} text-white flex items-center justify-center font-bold text-xs shadow-sm`}>
-                                        {lead.name.charAt(0)}
-                                        <div className={`absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white ${lead.temperature === LeadTemperature.HOT ? 'bg-rose-500' : lead.temperature === LeadTemperature.WARM ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                            <React.Fragment key={lead.id}>
+                              <Draggable draggableId={lead.id} index={index}>
+                                {(provided, snapshot) => {
+                                  const card = (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      onClick={() => !snapshot.isDragging && navigate(`/leads/${lead.id}`)}
+                                      className={`group bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 cursor-grab active:cursor-grabbing ${snapshot.isDragging ? 'shadow-xl ring-1 ring-emerald-500/50' : ''} shrink-0`}
+                                      style={provided.draggableProps.style}
+                                    >
+                                      <div className="flex items-center gap-2.5 mb-2 relative">
+                                        <div className={`relative w-9 h-9 shrink-0 rounded-lg ${colors.btnBg} text-white flex items-center justify-center font-bold text-xs shadow-sm`}>
+                                          {lead.name.charAt(0)}
+                                          <div className={`absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white ${lead.temperature === LeadTemperature.HOT ? 'bg-rose-500' : lead.temperature === LeadTemperature.WARM ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                                        </div>
+                                        <div className="flex-1 min-w-0 pr-6">
+                                          <h4 className="text-[13px] font-bold text-slate-900 truncate tracking-tight">{lead.name}</h4>
+                                          <p className="text-[10px] font-medium text-slate-400 mt-0.5">{lead.source} • {lead.phone}</p>
+                                        </div>
                                       </div>
-                                      <div className="flex-1 min-w-0 pr-6">
-                                        <h4 className="text-[13px] font-bold text-slate-900 truncate tracking-tight">{lead.name}</h4>
-                                        <p className="text-[10px] font-medium text-slate-400 mt-0.5">{lead.source} • {lead.phone}</p>
+                                      <div className="space-y-1.5 mb-2.5">
+                                        {lead.preferences.interesse_carro && (lead.preferences.carro_valor_max || lead.preferences.valor_maximo) && (
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
+                                            <div className="flex items-center gap-1.5">
+                                              <Car size={10} className="text-emerald-500" />
+                                              <span className="text-[8px] font-black text-emerald-600 uppercase tracking-wider">Carro</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-emerald-700">R$ {formatCurrency(lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 0)}</span>
+                                          </div>
+                                        )}
+                                        {lead.preferences.interesse_moto && lead.preferences.moto_valor_max && (
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                                            <div className="flex items-center gap-1.5">
+                                              <Target size={10} className="text-indigo-500" />
+                                              <span className="text-[8px] font-black text-indigo-600 uppercase tracking-wider">Moto</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-indigo-700">R$ {formatCurrency(lead.preferences.moto_valor_max)}</span>
+                                          </div>
+                                        )}
+                                        {!lead.preferences.interesse_carro && !lead.preferences.interesse_moto && lead.preferences.valor_maximo && (
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100/50">
+                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Geral</span>
+                                            <span className="text-[10px] font-black text-slate-700">R$ {formatCurrency(lead.preferences.valor_maximo)}</span>
+                                          </div>
+                                        )}
+                                        {(() => { const vn = getVendorName(lead); return vn ? (
+                                          <div className="flex items-center gap-1 pt-0.5">
+                                            <User size={9} className="text-slate-300 shrink-0" />
+                                            <span className="text-[9px] text-slate-400 font-semibold truncate">{vn}</span>
+                                          </div>
+                                        ) : null; })()}
                                       </div>
                                     </div>
-                                    <div className="space-y-1.5 mb-2.5">
-                                      {lead.preferences.interesse_carro && (lead.preferences.carro_valor_max || lead.preferences.valor_maximo) && (
-                                        <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
-                                          <div className="flex items-center gap-1.5">
-                                            <Car size={10} className="text-emerald-500" />
-                                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-wider">Carro</span>
-                                          </div>
-                                          <span className="text-[10px] font-black text-emerald-700">R$ {formatCurrency(lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 0)}</span>
-                                        </div>
-                                      )}
-                                      {lead.preferences.interesse_moto && lead.preferences.moto_valor_max && (
-                                        <div className="flex items-center justify-between px-3 py-1.5 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
-                                          <div className="flex items-center gap-1.5">
-                                            <Target size={10} className="text-indigo-500" />
-                                            <span className="text-[8px] font-black text-indigo-600 uppercase tracking-wider">Moto</span>
-                                          </div>
-                                          <span className="text-[10px] font-black text-indigo-700">R$ {formatCurrency(lead.preferences.moto_valor_max)}</span>
-                                        </div>
-                                      )}
-                                      {!lead.preferences.interesse_carro && !lead.preferences.interesse_moto && lead.preferences.valor_maximo && (
-                                        <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100/50">
-                                          <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Geral</span>
-                                          <span className="text-[10px] font-black text-slate-700">R$ {formatCurrency(lead.preferences.valor_maximo)}</span>
-                                        </div>
-                                      )}
-                                      {(() => { const vn = getVendorName(lead); return vn ? (
-                                        <div className="flex items-center gap-1 pt-0.5">
-                                          <User size={9} className="text-slate-300 shrink-0" />
-                                          <span className="text-[9px] text-slate-400 font-semibold truncate">{vn}</span>
-                                        </div>
-                                      ) : null; })()}
-                                    </div>
-                                  </div>
-                                );
-                                return snapshot.isDragging ? createPortal(card, document.body) : card;
-                              }}
-                            </Draggable>
+                                  );
+                                  return snapshot.isDragging ? createPortal(card, document.body) : card;
+                                }}
+                              </Draggable>
+                            </React.Fragment>
                           ))}
                           {provided.placeholder}
                           {loadingLeads && (

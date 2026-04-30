@@ -236,6 +236,18 @@ export interface Lead {
   user_name?: string;
 }
 
+export interface LeadCommunication {
+  id: string;
+  lead_id: string;
+  vehicle_id: string;
+  contact_name: string;
+  contact_phone: string;
+  message_body: string;
+  is_sent: 'sim' | 'não';
+  email_user?: string;
+  created_at?: string;
+}
+
 
 /**
  * Perfil do usuário e Configurações da Loja.

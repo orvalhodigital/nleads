@@ -506,7 +506,8 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                         salePrice: v.price,
                         saleDate: new Date().toISOString().split('T')[0],
                         buyerName: 'Não Informado',
-                        isFollowUpSale: false
+                        isFollowUpSale: false,
+                        refurbishmentCosts: 0
                     };
 
                     if (config?.leadId) {

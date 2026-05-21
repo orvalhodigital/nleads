@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Plus, Search, Filter, MoreHorizontal, MapPin, Gauge, Calendar,
@@ -34,7 +34,7 @@ const VEHICLE_TYPES: VehicleType[] = ['SUV', 'Sedan', 'Hatch', 'Picape', 'Esport
 const TRANSMISSION_TYPES: TransmissionType[] = ['Manual', 'Automático'];
 const ENGINE_TYPES: EngineType[] = ['1.0', '1.4', '1.6', '2.0+', 'Elétrico', 'Híbrido'];
 
-import InventoryImportModal from './InventoryImportModal';
+const InventoryImportModal = lazy(() => import('./InventoryImportModal'));
 
 const Inventory: React.FC<InventoryProps> = ({
   vehicles, onAddVehicle, onUpdateVehicle, onDeleteVehicle, onSellVehicle, leads, onAddLead, onViewLead, userEmail, onDataChange
@@ -1284,18 +1284,22 @@ const Inventory: React.FC<InventoryProps> = ({
           </div>
         )}
 
-        <InventoryImportModal
-          isOpen={isImportModalOpen}
-          onClose={() => { if (onDataChange) onDataChange(); setIsImportModalOpen(false); }}
-          onSuccess={() => {
-            if (onDataChange) onDataChange();
-            else window.location.reload();
-            setIsImportModalOpen(false);
-          }}
-          currentVehicles={vehicles}
-          leads={leads}
-          onSellVehicle={onSellVehicle}
-        />
+        <Suspense fallback={null}>
+          {isImportModalOpen && (
+            <InventoryImportModal
+              isOpen={true}
+              onClose={() => { if (onDataChange) onDataChange(); setIsImportModalOpen(false); }}
+              onSuccess={() => {
+                if (onDataChange) onDataChange();
+                else window.location.reload();
+                setIsImportModalOpen(false);
+              }}
+              currentVehicles={vehicles}
+              leads={leads}
+              onSellVehicle={onSellVehicle}
+            />
+          )}
+        </Suspense>
       </div>
 
     </div>

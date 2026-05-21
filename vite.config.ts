@@ -46,8 +46,8 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            // framer-motion removido: auto-chunk com páginas públicas (lazy)
-            'vendor-ui': ['lucide-react', '@hello-pangea/dnd', '@base-ui/react'],
+            // framer-motion e @hello-pangea/dnd removidos: auto-chunk com páginas lazy que os usam
+            'vendor-ui': ['lucide-react', '@base-ui/react'],
             'vendor-charts': ['recharts'],
             // exceljs removido: auto-chunk com InventoryImportModal/LeadImportModal (lazy)
             'vendor-utils': ['date-fns', 'zod', '@supabase/supabase-js'],

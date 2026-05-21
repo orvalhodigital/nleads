@@ -36,10 +36,10 @@
   - Aba "Website" com ícone Globe
 
 ### Investigação Ativa
-- [ ] Descobrir por que remove retorna 500 após fix de escopo
-  - Hipótese 1: env vars ausentes no Vercel (verificar com `/api/health`)
-  - Hipótese 2: profileError no Supabase (RLS bloqueando service role?)
-  - Hipótese 3: `req.body` undefined (middleware de JSON não aplicado)
+- [x] ✅ Causa raiz do erro 500 identificada: **env vars ausentes no Vercel**
+  - `SUPABASE_SERVICE_ROLE_KEY` → ❌ ausente → adicionar via Supabase Dashboard → Settings → API → service_role
+  - `VERCEL_API_TOKEN` → ❌ ausente → criar em vercel.com/account/tokens
+  - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VERCEL_PROJECT_ID` → ✅ presentes
 
 ---
 

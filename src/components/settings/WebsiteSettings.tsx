@@ -99,6 +99,8 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
         setDomainStatus('registering');
         try {
             const { data: { session } } = await supabase.auth.getSession();
+            console.log('[WebsiteSettings] Registering domain:', domain);
+
             const response = await fetch('/api/register-custom-domain', {
                 method: 'POST',
                 headers: {
@@ -108,7 +110,18 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                 body: JSON.stringify({ domain, websiteSlug: website_slug }),
             });
 
-            const data = await response.json();
+            console.log('[WebsiteSettings] Register API response status:', response.status);
+            let data: any;
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.error('[WebsiteSettings] Failed to parse register response as JSON');
+                const text = await response.text();
+                showToast('error', `Erro ao registrar domínio: resposta inválida (${response.status})`);
+                setDomainStatus('error');
+                return;
+            }
+
             if (!response.ok) {
                 setDomainStatus('error');
                 showToast('error', data.error || 'Erro ao registrar domínio.');
@@ -122,6 +135,7 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             showToast('success', 'Domínio registrado com sucesso!');
         } catch (err: any) {
             setDomainStatus('error');
+            console.error('[WebsiteSettings] Register error:', err);
             showToast('error', err.message || 'Erro ao registrar domínio.');
         }
     };
@@ -130,29 +144,50 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
         if (!custom_domain || !window.confirm(`Remover "${custom_domain}"?`)) return;
         setLoading(true);
         try {
+            console.log('[WebsiteSettings] Removing domain:', custom_domain);
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch('/api/remove-custom-domain', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.access_token ?? ''}`,
-                },
-                body: JSON.stringify({ domain: custom_domain }),
-            });
 
-            if (!response.ok) {
-                try {
-                    const data = await response.json();
-                    showToast('error', data.error || `Erro ao remover domínio (${response.status}).`);
-                } catch (e) {
-                    showToast('error', `Erro ao remover domínio: resposta inválida (${response.status})`);
-                }
+            if (!session?.access_token) {
+                showToast('error', 'Sessão expirada. Faça login novamente.');
                 setLoading(false);
                 return;
             }
 
+            console.log('[WebsiteSettings] Calling remove API...');
+            const response = await fetch('/api/remove-custom-domain', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ domain: custom_domain }),
+            });
+
+            console.log('[WebsiteSettings] Remove API response status:', response.status);
+            let data: any;
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.error('[WebsiteSettings] Failed to parse remove response as JSON');
+                const text = await response.text();
+                console.error('[WebsiteSettings] Raw response:', text);
+                showToast('error', `Erro ao remover domínio: resposta inválida (${response.status})`);
+                setLoading(false);
+                return;
+            }
+
+            console.log('[WebsiteSettings] Remove response data:', data);
+
+            if (!response.ok) {
+                showToast('error', data.error || `Erro ao remover domínio (${response.status}).`);
+                setLoading(false);
+                return;
+            }
+
+            // Success - clear the domain and refresh
+            console.log('[WebsiteSettings] Domain removed successfully');
             setCustomDomain('');
-            showToast('success', 'Domínio removido.');
+            showToast('success', 'Domínio removido com sucesso!');
 
             // Force refresh after 500ms to ensure DB is updated
             setTimeout(() => {
@@ -160,7 +195,8 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                 setLoading(false);
             }, 500);
         } catch (err: any) {
-            showToast('error', err.message || 'Erro ao remover.');
+            console.error('[WebsiteSettings] Remove error:', err);
+            showToast('error', err.message || 'Erro ao remover domínio.');
             setLoading(false);
         }
     };

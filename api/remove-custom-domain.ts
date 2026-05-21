@@ -63,28 +63,33 @@ async function removeDomainFromVercel(domain: string): Promise<{
 }
 
 export default async function handler(req: any, res: any) {
-    // CORS configuration
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+    try {
+        // CORS configuration
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+        res.setHeader(
+            'Access-Control-Allow-Headers',
+            'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+        );
 
-    // Handle preflight
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+        // Handle preflight
+        if (req.method === 'OPTIONS') {
+            return res.status(200).end();
+        }
 
-    // Only allow POST
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed. Use POST.' });
-    }
+        // Only allow POST
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+        }
 
-    const verifiedUserId = await getVerifiedUserId(req);
-    if (!verifiedUserId) {
-        return res.status(401).json({ error: 'Unauthorized. Valid session token required.' });
+        const verifiedUserId = await getVerifiedUserId(req);
+        if (!verifiedUserId) {
+            return res.status(401).json({ error: 'Unauthorized. Valid session token required.' });
+        }
+    } catch (err: any) {
+        console.error('[remove-custom-domain] Init error:', err);
+        return res.status(500).json({ error: 'Server initialization error', details: err.message });
     }
 
     try {
@@ -141,23 +146,23 @@ export default async function handler(req: any, res: any) {
 
         if (updateError) {
             console.error('Supabase update error:', updateError);
-            return res.status(500).json({ error: 'Failed to remove domain from database' });
+            return res.status(500).json({ error: 'Failed to remove domain from database', details: updateError.message });
         }
 
         // Return success - domain is removed from database regardless of Vercel status
-        const response = {
+        const responsePayload = {
             success: true,
             message: 'Domain removed successfully',
             domain: normalizedDomain,
         };
-        console.log('[remove-custom-domain] Sending response:', response);
-        return res.status(200).json(response);
+        console.log('[remove-custom-domain] Sending response:', responsePayload);
+        return res.status(200).json(responsePayload);
 
     } catch (error: any) {
-        console.error('Handler error:', error);
+        console.error('[remove-custom-domain] Handler error:', error);
         return res.status(500).json({
             error: 'Internal Server Error',
-            details: error.message,
+            details: error.message || 'Unknown error',
         });
     }
 }

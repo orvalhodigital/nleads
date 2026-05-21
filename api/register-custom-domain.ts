@@ -98,28 +98,33 @@ async function registerDomainWithVercel(domain: string): Promise<{
 
 // Main handler
 export default async function handler(req: any, res: any) {
-    // CORS configuration
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+    try {
+        // CORS configuration
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+        res.setHeader(
+            'Access-Control-Allow-Headers',
+            'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+        );
 
-    // Handle preflight
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+        // Handle preflight
+        if (req.method === 'OPTIONS') {
+            return res.status(200).end();
+        }
 
-    // Only allow POST
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed. Use POST.' });
-    }
+        // Only allow POST
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+        }
 
-    const verifiedUserId = await getVerifiedUserId(req);
-    if (!verifiedUserId) {
-        return res.status(401).json({ error: 'Unauthorized. Valid session token required.' });
+        const verifiedUserId = await getVerifiedUserId(req);
+        if (!verifiedUserId) {
+            return res.status(401).json({ error: 'Unauthorized. Valid session token required.' });
+        }
+    } catch (err: any) {
+        console.error('[register-custom-domain] Init error:', err);
+        return res.status(500).json({ error: 'Server initialization error', details: err.message });
     }
 
     try {
@@ -150,8 +155,8 @@ export default async function handler(req: any, res: any) {
             .maybeSingle();
 
         if (checkError && checkError.code !== 'PGRST116') {
-            console.error('Supabase check error:', checkError);
-            return res.status(500).json({ error: 'Database error while checking domain availability' });
+            console.error('[register-custom-domain] Supabase check error:', checkError);
+            return res.status(500).json({ error: 'Database error while checking domain availability', details: checkError.message });
         }
 
         if (existingDomain) {
@@ -176,7 +181,7 @@ export default async function handler(req: any, res: any) {
             .eq('id', verifiedUserId);
 
         if (updateError) {
-            console.error('Supabase update error:', updateError);
+            console.error('[register-custom-domain] Supabase update error:', updateError);
             // Try to remove from Vercel if DB save fails
             try {
                 await fetch(`${VERCEL_API_URL}/v10/projects/${VERCEL_PROJECT_ID}/domains/${normalizedDomain}`, {
@@ -186,9 +191,9 @@ export default async function handler(req: any, res: any) {
                     },
                 });
             } catch (err) {
-                console.error('Failed to rollback domain from Vercel:', err);
+                console.error('[register-custom-domain] Failed to rollback domain from Vercel:', err);
             }
-            return res.status(500).json({ error: 'Failed to save domain to database' });
+            return res.status(500).json({ error: 'Failed to save domain to database', details: updateError.message });
         }
 
         return res.status(200).json({
@@ -201,10 +206,10 @@ export default async function handler(req: any, res: any) {
         });
 
     } catch (error: any) {
-        console.error('Handler error:', error);
+        console.error('[register-custom-domain] Handler error:', error);
         return res.status(500).json({
             error: 'Internal Server Error',
-            details: error.message,
+            details: error.message || 'Unknown error',
         });
     }
 }

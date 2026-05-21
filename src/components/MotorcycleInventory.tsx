@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Plus, Search, Filter, Gauge, Calendar, DollarSign,
@@ -60,7 +60,63 @@ interface Props {
     onViewLead: (id: string) => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Memoized card components ─────────────────────────────────────────────────
+interface MotoCardProps { moto: Motorcycle; onSelect: (m: Motorcycle) => void; }
+
+const MotoGridCard = memo(({ moto: m, onSelect }: MotoCardProps) => (
+    <div onClick={() => onSelect(m)} className="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-500 cursor-pointer flex flex-col h-full">
+        <div className="aspect-[4/5] relative overflow-hidden bg-slate-50">
+            {m.imageUrl ? (
+                <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+            ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-slate-200">
+                    <Bike size={64} strokeWidth={1} />
+                    <span className="text-[8px] font-black uppercase tracking-[0.2em] mt-4 opacity-50">Sem Imagem</span>
+                </div>
+            )}
+            <div className="absolute top-4 left-4 flex flex-col gap-2">
+                <span className="bg-white/90 backdrop-blur-md text-[9px] font-black text-slate-900 px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-sm">{m.year}</span>
+                {m.isSingleOwner && <span className="bg-emerald-500 text-white text-[8px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg shadow-emerald-500/20">Único Dono</span>}
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"><Gauge size={12} /> {m.mileage.toLocaleString()} km</p>
+            </div>
+        </div>
+        <div className="p-6 flex flex-col flex-1">
+            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">{m.brand}</p>
+            <h3 className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight mb-4 flex-1">{m.model}</h3>
+            <div className="flex items-center justify-between mt-auto">
+                <p className="text-2xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all"><ChevronLeft className="rotate-180" size={20} /></div>
+            </div>
+        </div>
+    </div>
+));
+
+const MotoListCard = memo(({ moto: m, onSelect }: MotoCardProps) => (
+    <div onClick={() => onSelect(m)} className="group bg-white p-4 rounded-[1.5rem] border border-slate-100 flex items-center gap-6 hover:shadow-xl transition-all cursor-pointer">
+        <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 shrink-0">
+            {m.imageUrl ? <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-200"><Bike size={24} /></div>}
+        </div>
+        <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{m.brand}</span>
+                <span className="text-[9px] font-bold text-slate-300 uppercase">/</span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{m.year}</span>
+            </div>
+            <h3 className="text-lg font-black text-slate-900 uppercase truncate leading-tight">{m.model}</h3>
+        </div>
+        <div className="hidden md:block px-6 border-x border-slate-50">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Quilometragem</p>
+            <p className="text-sm font-black text-slate-700">{m.mileage.toLocaleString()} km</p>
+        </div>
+        <div className="text-right shrink-0">
+            <p className="text-xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
+            <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Disponível</p>
+        </div>
+    </div>
+));
+// ──────────────────────────────────────────────────────────────────────────────
 
 const MotorcycleInventory: React.FC<Props> = ({
     motorcycles, leads, userEmail, onDataChange, onAddLead, onViewLead
@@ -70,11 +126,9 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [selected, setSelected] = useState<Motorcycle | 'new' | null>(null);
     const [inventoryView, setInventoryView] = useState<'available' | 'sold'>('available');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [filterQuery, setFilterQuery] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [filterPriceMin, setFilterPriceMin] = useState('');
-    const [filterPriceMax, setFilterPriceMax] = useState('');
-    const [filterCategory, setFilterCategory] = useState('');
+    const [filters, setFilters] = useState({ query: '', priceMin: '', priceMax: '', category: '' });
+    const clearFilters = useCallback(() => setFilters({ query: '', priceMin: '', priceMax: '', category: '' }), []);
     const [uploading, setUploading] = useState(false);
     const [galleryUploading, setGalleryUploading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -95,17 +149,19 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     // ── Filtro de listagem ──────────────────────────────────────────────────────
 
+    const handleSelectMoto = useCallback((m: Motorcycle) => setSelected(m), []);
+
     const displayed = useMemo(() => motorcycles.filter(m => {
         if (m.status !== inventoryView) return false;
-        if (filterQuery) {
-            const q = filterQuery.toLowerCase();
+        if (filters.query) {
+            const q = filters.query.toLowerCase();
             if (!m.brand.toLowerCase().includes(q) && !m.model.toLowerCase().includes(q) && !m.plate?.toLowerCase().includes(q)) return false;
         }
-        if (filterCategory && m.category !== filterCategory) return false;
-        if (filterPriceMin && m.price < parseFloat(filterPriceMin)) return false;
-        if (filterPriceMax && m.price > parseFloat(filterPriceMax)) return false;
+        if (filters.category && m.category !== filters.category) return false;
+        if (filters.priceMin && m.price < parseFloat(filters.priceMin)) return false;
+        if (filters.priceMax && m.price > parseFloat(filters.priceMax)) return false;
         return true;
-    }), [motorcycles, inventoryView, filterQuery, filterCategory, filterPriceMin, filterPriceMax]);
+    }), [motorcycles, inventoryView, filters]);
 
     // ── Handle navigation state ────────────────────────────────────────────────
     const location = useLocation();
@@ -1023,7 +1079,7 @@ const MotorcycleInventory: React.FC<Props> = ({
             <div className="flex flex-col md:flex-row gap-4 mb-8">
                 <div className="flex-1 relative group">
                     <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={20} />
-                    <input type="text" placeholder="Buscar por marca, modelo ou placa..." value={filterQuery} onChange={e => setFilterQuery(e.target.value)} className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all" />
+                    <input type="text" placeholder="Buscar por marca, modelo ou placa..." value={filters.query} onChange={e => setFilters(f => ({ ...f, query: e.target.value }))} className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all" />
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-6 py-4 bg-white border rounded-2xl flex items-center gap-3 transition-all ${isFilterOpen ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-500'}`}><Filter size={18} /><span className="font-black text-[10px] uppercase tracking-widest">Filtros</span></button>
@@ -1037,10 +1093,10 @@ const MotorcycleInventory: React.FC<Props> = ({
             {isFilterOpen && (
                 <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm mb-8 animate-fadeUp">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Categoria</label><select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none"><option value="">Todas</option>{MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Mín.</label><input type="number" value={filterPriceMin} onChange={e => setFilterPriceMin(e.target.value)} placeholder="0" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Máx.</label><input type="number" value={filterPriceMax} onChange={e => setFilterPriceMax(e.target.value)} placeholder="999.999" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
-                        <div className="flex items-end"><button onClick={() => { setFilterCategory(''); setFilterPriceMin(''); setFilterPriceMax(''); setFilterQuery(''); }} className="w-full py-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Limpar Filtros</button></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Categoria</label><select value={filters.category} onChange={e => setFilters(f => ({ ...f, category: e.target.value }))} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none"><option value="">Todas</option>{MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Mín.</label><input type="number" value={filters.priceMin} onChange={e => setFilters(f => ({ ...f, priceMin: e.target.value }))} placeholder="0" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Máx.</label><input type="number" value={filters.priceMax} onChange={e => setFilters(f => ({ ...f, priceMax: e.target.value }))} placeholder="999.999" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
+                        <div className="flex items-end"><button onClick={clearFilters} className="w-full py-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Limpar Filtros</button></div>
                     </div>
                 </div>
             )}
@@ -1048,61 +1104,11 @@ const MotorcycleInventory: React.FC<Props> = ({
             {/* Grid/List de Cards */}
             {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {displayed.map(m => (
-                        <div key={m.id} onClick={() => setSelected(m)} className="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-500 cursor-pointer flex flex-col h-full">
-                            <div className="aspect-[4/5] relative overflow-hidden bg-slate-50">
-                                {m.imageUrl ? (
-                                    <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-200">
-                                        <Bike size={64} strokeWidth={1} />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.2em] mt-4 opacity-50">Sem Imagem</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                    <span className="bg-white/90 backdrop-blur-md text-[9px] font-black text-slate-900 px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-sm">{m.year}</span>
-                                    {m.isSingleOwner && <span className="bg-emerald-500 text-white text-[8px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg shadow-emerald-500/20">Único Dono</span>}
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <p className="text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"><Gauge size={12} /> {m.mileage.toLocaleString()} km</p>
-                                </div>
-                            </div>
-                            <div className="p-6 flex flex-col flex-1">
-                                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">{m.brand}</p>
-                                <h3 className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight mb-4 flex-1">{m.model}</h3>
-                                <div className="flex items-center justify-between mt-auto">
-                                    <p className="text-2xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
-                                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all"><ChevronLeft className="rotate-180" size={20} /></div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                    {displayed.map(m => <MotoGridCard key={m.id} moto={m} onSelect={handleSelectMoto} />)}
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {displayed.map(m => (
-                        <div key={m.id} onClick={() => setSelected(m)} className="group bg-white p-4 rounded-[1.5rem] border border-slate-100 flex items-center gap-6 hover:shadow-xl transition-all cursor-pointer">
-                            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 shrink-0">
-                                {m.imageUrl ? <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-200"><Bike size={24} /></div>}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{m.brand}</span>
-                                    <span className="text-[9px] font-bold text-slate-300 uppercase">/</span>
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{m.year}</span>
-                                </div>
-                                <h3 className="text-lg font-black text-slate-900 uppercase truncate leading-tight">{m.model}</h3>
-                            </div>
-                            <div className="hidden md:block px-6 border-x border-slate-50">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Quilometragem</p>
-                                <p className="text-sm font-black text-slate-700">{m.mileage.toLocaleString()} km</p>
-                            </div>
-                            <div className="text-right shrink-0">
-                                <p className="text-xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
-                                <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Disponível</p>
-                            </div>
-                        </div>
-                    ))}
+                    {displayed.map(m => <MotoListCard key={m.id} moto={m} onSelect={handleSelectMoto} />)}
                 </div>
             )}
 

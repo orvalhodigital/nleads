@@ -147,6 +147,7 @@ export default async function handler(req: any, res: any) {
         }
 
         // Check if domain is already in use by another user
+        console.log('[register-custom-domain] Checking domain availability:', normalizedDomain);
         const { data: existingDomain, error: checkError } = await supabase
             .from('profiles')
             .select('id')
@@ -154,17 +155,25 @@ export default async function handler(req: any, res: any) {
             .neq('id', verifiedUserId)
             .maybeSingle();
 
+        console.log('[register-custom-domain] Domain check result:', { existingDomain, checkError: checkError?.message });
+
         if (checkError && checkError.code !== 'PGRST116') {
             console.error('[register-custom-domain] Supabase check error:', checkError);
-            return res.status(500).json({ error: 'Database error while checking domain availability', details: checkError.message });
+            return res.status(500).json({
+                error: 'Database error while checking domain availability',
+                details: checkError.message
+            });
         }
 
         if (existingDomain) {
+            console.warn('[register-custom-domain] Domain already in use:', normalizedDomain);
             return res.status(409).json({ error: 'This domain is already in use by another account.' });
         }
 
         // Register domain with Vercel
+        console.log('[register-custom-domain] Registering with Vercel:', normalizedDomain);
         const vercelResult = await registerDomainWithVercel(normalizedDomain);
+        console.log('[register-custom-domain] Vercel result:', { success: vercelResult.success, error: vercelResult.error });
 
         if (!vercelResult.success) {
             return res.status(400).json({
@@ -173,6 +182,7 @@ export default async function handler(req: any, res: any) {
         }
 
         // Save domain to Supabase
+        console.log('[register-custom-domain] Saving to database:', { userId: verifiedUserId, domain: normalizedDomain });
         const { error: updateError } = await supabase
             .from('profiles')
             .update({

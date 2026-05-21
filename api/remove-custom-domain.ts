@@ -105,22 +105,43 @@ export default async function handler(req: any, res: any) {
         const normalizedDomain = domain.toLowerCase().trim();
 
         // Verify the domain belongs to this user
+        console.log('[remove-custom-domain] Fetching profile for user:', verifiedUserId);
         const { data: profile, error: checkError } = await supabase
             .from('profiles')
             .select('custom_domain')
             .eq('id', verifiedUserId)
             .single();
 
-        console.log('[remove-custom-domain] Profile check:', { profile, error: checkError });
+        console.log('[remove-custom-domain] Profile check:', { profile, checkError: checkError?.message, code: checkError?.code });
 
-        if (checkError || !profile) {
-            console.error('Supabase check error:', checkError);
-            return res.status(500).json({ error: 'Database error while verifying domain ownership' });
+        // Handle not found error (PGRST116)
+        if (checkError && checkError.code !== 'PGRST116') {
+            console.error('[remove-custom-domain] Supabase check error:', checkError);
+            return res.status(500).json({
+                error: 'Database error while verifying domain ownership',
+                details: checkError.message
+            });
+        }
+
+        if (!profile) {
+            console.error('[remove-custom-domain] Profile not found for user:', verifiedUserId);
+            return res.status(404).json({ error: 'User profile not found' });
         }
 
         const storedDomain = (profile.custom_domain || '').toLowerCase().trim();
+        console.log('[remove-custom-domain] Domain comparison:', {
+            stored: `"${storedDomain}"`,
+            requested: `"${normalizedDomain}"`,
+            match: storedDomain === normalizedDomain
+        });
+
+        if (!storedDomain) {
+            console.warn('[remove-custom-domain] User has no domain registered');
+            return res.status(404).json({ error: 'No custom domain found for this account' });
+        }
+
         if (storedDomain !== normalizedDomain) {
-            console.warn(`Domain mismatch: stored="${storedDomain}" vs request="${normalizedDomain}"`);
+            console.warn(`[remove-custom-domain] Domain mismatch: stored="${storedDomain}" vs request="${normalizedDomain}"`);
             return res.status(403).json({ error: 'This domain does not belong to your account.' });
         }
 

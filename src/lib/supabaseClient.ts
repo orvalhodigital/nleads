@@ -4,7 +4,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_PU
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables! Check your .env setup or Vercel Environment Variables (accepts VITE_SUPABASE_... or VITE_PUBLIC_SUPABASE_...).')
+  console.error('🚨 SUPABASE CONFIGURATION ERROR: Missing Supabase credentials!')
+  console.error('Please add these variables to your .env.local file:')
+  console.error('VITE_SUPABASE_URL=your-project-url')
+  console.error('VITE_SUPABASE_ANON_KEY=your-anon-key')
+  console.error('Get these from your Supabase project dashboard: https://app.supabase.com')
 }
 
 /**

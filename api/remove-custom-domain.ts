@@ -1,14 +1,35 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://cjcfmbgzuxqprzldighp.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseKey!);
+if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing required env vars: VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Vercel Configuration
-const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN || 'vcp_6pJXKRydo1KvxemNVravEnrOG50Nk2gtquWVTPdeJ1qkOZPOmP1Cj8A8';
-const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_eStX0gJ75PS2ktfzTB6UJjyyCd59';
+const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN;
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
+
+if (!VERCEL_API_TOKEN || !VERCEL_PROJECT_ID) {
+    throw new Error('Missing required env vars: VERCEL_API_TOKEN and VERCEL_PROJECT_ID');
+}
 const VERCEL_API_URL = 'https://api.vercel.com';
+
+// Verify JWT and return authenticated user ID
+async function getVerifiedUserId(req: any): Promise<string | null> {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) return null;
+    const token = authHeader.slice(7);
+    if (!supabaseAnonKey) return null;
+    const authClient = createClient(supabaseUrl!, supabaseAnonKey);
+    const { data: { user }, error } = await authClient.auth.getUser(token);
+    if (error || !user) return null;
+    return user.id;
+}
 
 // Remove domain from Vercel
 async function removeDomainFromVercel(domain: string): Promise<{
@@ -61,12 +82,17 @@ export default async function handler(req: any, res: any) {
         return res.status(405).json({ error: 'Method not allowed. Use POST.' });
     }
 
+    const verifiedUserId = await getVerifiedUserId(req);
+    if (!verifiedUserId) {
+        return res.status(401).json({ error: 'Unauthorized. Valid session token required.' });
+    }
+
     try {
-        const { domain, userId } = req.body;
+        const { domain } = req.body;
 
         // Validation
-        if (!domain || !userId) {
-            return res.status(400).json({ error: 'Missing required fields: domain, userId' });
+        if (!domain) {
+            return res.status(400).json({ error: 'Missing required field: domain' });
         }
 
         // Normalize domain
@@ -76,7 +102,7 @@ export default async function handler(req: any, res: any) {
         const { data: profile, error: checkError } = await supabase
             .from('profiles')
             .select('custom_domain')
-            .eq('id', userId)
+            .eq('id', verifiedUserId)
             .single();
 
         if (checkError || !profile) {
@@ -103,9 +129,8 @@ export default async function handler(req: any, res: any) {
             .from('profiles')
             .update({
                 custom_domain: null,
-                custom_domain_status: null,
             })
-            .eq('id', userId);
+            .eq('id', verifiedUserId);
 
         if (updateError) {
             console.error('Supabase update error:', updateError);

@@ -188,18 +188,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     const loadData = useCallback(async (showLoader = true) => {
         if (showLoader) setLoading(true);
         try {
-            await refreshProfile();
-            setPage(0);
-            await Promise.allSettled([
-                fetchLeads(0, false),
-                refreshVehicles(),
-                refreshMotorcycles(),
-                refreshTeamMembers(),
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Carregamento expirou. Verifique sua conexão e credenciais Supabase.')), 15000)
+            );
+
+            await Promise.race([
+                (async () => {
+                    await refreshProfile();
+                    setPage(0);
+                    await Promise.allSettled([
+                        fetchLeads(0, false),
+                        refreshVehicles(),
+                        refreshMotorcycles(),
+                        refreshTeamMembers(),
+                    ]);
+                })(),
+                timeoutPromise
             ]);
+        } catch (err) {
+            console.error('loadData error:', err);
+            showToast('error', (err as Error).message || 'Erro ao carregar dados. Verifique sua conexão e credenciais Supabase em .env.local');
         } finally {
             if (showLoader) setLoading(false);
         }
-    }, [refreshProfile, fetchLeads, refreshVehicles, refreshMotorcycles, refreshTeamMembers]);
+    }, [refreshProfile, fetchLeads, refreshVehicles, refreshMotorcycles, refreshTeamMembers, showToast]);
 
     // Auth Listeners
     useEffect(() => {

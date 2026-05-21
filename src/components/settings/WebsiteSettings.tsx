@@ -3,7 +3,7 @@ import {
     Save, Globe, Palette, Image as ImageIcon, MapPin, Loader2, Camera, Check,
     AlertCircle, Layers, Layout, MessageSquare, Search, Code, Smartphone,
     Monitor, Zap, Sparkles, Link as LinkIcon, ShieldCheck, Sun, Moon,
-    Instagram, Facebook, Youtube, Twitter, Phone, Clock
+    Instagram, Facebook, Youtube, Twitter, Phone, Clock, Trash2, Copy
 } from 'lucide-react';
 import { Profile } from '../../types';
 import { profileService } from '../../services/profileService';
@@ -74,6 +74,88 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
     // Branding
     const [brandingEnabled, setBrandingEnabled] = useState(profile.website_branding?.enabled || false);
 
+    // Custom Domain (Vercel)
+    const [customDomainInput, setCustomDomainInput] = useState('');
+    const [domainStatus, setDomainStatus] = useState<'idle' | 'registering' | 'error'>('idle');
+
+    const handleRegisterDomain = async () => {
+        if (!customDomainInput || customDomainInput.trim().length === 0) {
+            showToast('error', 'Digite um domínio válido.');
+            return;
+        }
+
+        const domain = customDomainInput.toLowerCase().trim();
+        const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i;
+        if (!domainRegex.test(domain)) {
+            showToast('error', 'Formato de domínio inválido. Ex: seu-dominio.com.br');
+            return;
+        }
+
+        if (!website_slug) {
+            showToast('error', 'Configure um slug do website antes de registrar um domínio customizado.');
+            return;
+        }
+
+        setDomainStatus('registering');
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch('/api/register-custom-domain', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token ?? ''}`,
+                },
+                body: JSON.stringify({ domain, websiteSlug: website_slug }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                setDomainStatus('error');
+                showToast('error', data.error || 'Erro ao registrar domínio.');
+                return;
+            }
+
+            setCustomDomain(domain);
+            setCustomDomainInput('');
+            setDomainStatus('idle');
+            onUpdate();
+            showToast('success', 'Domínio registrado com sucesso!');
+        } catch (err: any) {
+            setDomainStatus('error');
+            showToast('error', err.message || 'Erro ao registrar domínio.');
+        }
+    };
+
+    const handleRemoveDomain = async () => {
+        if (!custom_domain || !window.confirm(`Remover "${custom_domain}"?`)) return;
+        setLoading(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch('/api/remove-custom-domain', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token ?? ''}`,
+                },
+                body: JSON.stringify({ domain: custom_domain }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                showToast('error', data.error || 'Erro ao remover domínio.');
+                return;
+            }
+
+            setCustomDomain('');
+            onUpdate();
+            showToast('success', 'Domínio removido.');
+        } catch (err: any) {
+            showToast('error', err.message || 'Erro ao remover.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSave = async () => {
         if (!website_slug.trim()) {
             showToast('error', 'URL do site é obrigatória');
@@ -85,7 +167,6 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             await profileService.updateProfile({
                 website_active,
                 website_slug: website_slug.toLowerCase().trim(),
-                custom_domain: custom_domain.trim().toLowerCase(),
                 website_theme,
                 website_primary_color,
                 website_background_color,
@@ -197,12 +278,40 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         )}
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Domínio Próprio</label>
-                        <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 focus-within:bg-white focus-within:border-emerald-500 transition-all">
-                            <Globe size={12} className="text-slate-400 mr-2" />
-                            <input value={custom_domain} onChange={e => setCustomDomain(e.target.value.toLowerCase())}
-                                placeholder="www.sualoja.com.br" className="bg-transparent border-none outline-none font-black text-slate-900 text-xs flex-1" />
-                        </div>
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Domínio Profissional</label>
+                        {custom_domain ? (
+                            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+                                <Globe size={12} className="text-emerald-600 shrink-0" />
+                                <span className="font-black text-emerald-900 text-xs flex-1 uppercase">{custom_domain}</span>
+                                <button
+                                    onClick={handleRemoveDomain}
+                                    disabled={loading}
+                                    className="p-1 text-rose-500 hover:bg-rose-50 rounded transition-all disabled:opacity-50"
+                                    title="Remover"
+                                >
+                                    <Trash2 size={12} />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1">
+                                <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 focus-within:bg-white focus-within:border-emerald-500 transition-all flex-1">
+                                    <Globe size={12} className="text-slate-400 mr-2" />
+                                    <input
+                                        value={customDomainInput}
+                                        onChange={e => setCustomDomainInput(e.target.value.toLowerCase())}
+                                        onKeyPress={e => e.key === 'Enter' && handleRegisterDomain()}
+                                        placeholder="seu-dominio.com.br"
+                                        className="bg-transparent border-none outline-none font-black text-slate-900 text-xs flex-1" />
+                                </div>
+                                <button
+                                    onClick={handleRegisterDomain}
+                                    disabled={domainStatus === 'registering'}
+                                    className="px-2 py-2.5 bg-emerald-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 active:scale-95"
+                                >
+                                    {domainStatus === 'registering' ? <Loader2 size={12} className="animate-spin" /> : 'OK'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

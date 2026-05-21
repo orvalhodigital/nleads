@@ -14,6 +14,7 @@ import {
     MessageSquare,
     Wrench,
     Users,
+    Globe,
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
@@ -24,6 +25,7 @@ import WhatsAppSettings from '../components/settings/WhatsAppSettings';
 import MessageSettings from '../components/settings/MessageSettings';
 import PlanSettings from '../components/settings/PlanSettings';
 import TeamManager from '../components/TeamManager';
+import WebsiteSettings from '../components/settings/WebsiteSettings';
 
 interface BusinessHourEntry {
     day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -32,15 +34,16 @@ interface BusinessHourEntry {
     end: string;
 }
 
-type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Geral' | 'Equipe';
+type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Website' | 'Geral' | 'Equipe';
 
-const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Geral'];
+const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Website', 'Geral'];
 
 const TAB_ICONS: Record<Tab, React.ReactNode> = {
     'Perfil': <User size={15} />,
     'WhatsApp': <MessageCircle size={15} />,
     'Mensagens': <MessageSquare size={15} />,
     'Planos': <CreditCard size={15} />,
+    'Website': <Globe size={15} />,
     'Geral': <Wrench size={15} />,
     'Equipe': <Users size={15} />,
 };
@@ -141,6 +144,10 @@ const SettingsPage: React.FC = () => {
 
             {activeTab === 'Planos' && (
                 <PlanSettings profile={profile} />
+            )}
+
+            {activeTab === 'Website' && (
+                <WebsiteSettings profile={profile} onUpdate={refreshProfile} />
             )}
 
             {activeTab === 'Equipe' && isEmpresa && (

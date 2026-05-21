@@ -20,8 +20,7 @@ const LeadDetailPage: React.FC = () => {
     const basePath = useBasePath();
     const { leads, vehicles, motorcycles, updateLead, showToast, profile } = useData();
     const [lead, setLead] = useState(leads.find(l => l.id === id) || null);
-    const [editingVisitNotesId, setEditingVisitNotesId] = useState<string | null>(null);
-    const [visitNotesDraft, setVisitNotesDraft] = useState('');
+    const [visitNoteEdit, setVisitNoteEdit] = useState<{ id: string | null; draft: string }>({ id: null, draft: '' });
 
     // Updates/Notes system
     const [showUpdatesPanel, setShowUpdatesPanel] = useState(false);
@@ -110,20 +109,20 @@ const LeadDetailPage: React.FC = () => {
     };
 
     const handleSaveVisitNotes = async () => {
-        if (!lead || !editingVisitNotesId) return;
+        if (!lead || !visitNoteEdit.id) return;
 
         let updatedAppointments = lead.scheduling_data?.appointments ? [...lead.scheduling_data.appointments] : [];
-        const appointmentIndex = updatedAppointments.findIndex(a => a.id === editingVisitNotesId);
+        const appointmentIndex = updatedAppointments.findIndex(a => a.id === visitNoteEdit.id);
 
         if (appointmentIndex !== -1) {
-            updatedAppointments[appointmentIndex] = { ...updatedAppointments[appointmentIndex], notes: visitNotesDraft };
-        } else if (lead.visit_date && editingVisitNotesId === 'legacy') {
+            updatedAppointments[appointmentIndex] = { ...updatedAppointments[appointmentIndex], notes: visitNoteEdit.draft };
+        } else if (lead.visit_date && visitNoteEdit.id === 'legacy') {
             updatedAppointments.push({
                 id: crypto.randomUUID(),
                 date: lead.visit_date,
                 status: lead.visit_status || 'pending',
                 vehicleOfInterest: lead.scheduling_data?.vehicleOfInterest,
-                notes: visitNotesDraft
+                notes: visitNoteEdit.draft
             });
         }
 
@@ -131,11 +130,11 @@ const LeadDetailPage: React.FC = () => {
             ...lead,
             scheduling_data: {
                 ...(lead.scheduling_data || {}),
-                notes: editingVisitNotesId === 'legacy' ? visitNotesDraft : lead.scheduling_data?.notes,
+                notes: visitNoteEdit.id === 'legacy' ? visitNoteEdit.draft : lead.scheduling_data?.notes,
                 appointments: updatedAppointments
             }
         });
-        setEditingVisitNotesId(null);
+        setVisitNoteEdit({ id: null, draft: '' });
     };
 
     const handleScheduleNewVisit = async () => {
@@ -439,10 +438,7 @@ const LeadDetailPage: React.FC = () => {
                                                 </div>
                                                 <div className="flex gap-1">
                                                     <button
-                                                        onClick={() => {
-                                                            setVisitNotesDraft(app.notes || '');
-                                                            setEditingVisitNotesId(app.id);
-                                                        }}
+                                                        onClick={() => setVisitNoteEdit({ id: app.id, draft: app.notes || '' })}
                                                         className="p-2 text-slate-300 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all"
                                                         title="Anotações"
                                                     >
@@ -793,20 +789,20 @@ const LeadDetailPage: React.FC = () => {
             </div>
 
             {/* Editing Notes Modal */}
-            {editingVisitNotesId && (
+            {visitNoteEdit.id && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-xl animate-fadeIn">
                         <h3 className="text-lg font-black text-slate-800 mb-4">Anotações da Visita</h3>
                         <textarea
-                            value={visitNotesDraft}
-                            onChange={(e) => setVisitNotesDraft(e.target.value)}
+                            value={visitNoteEdit.draft}
+                            onChange={(e) => setVisitNoteEdit(v => ({ ...v, draft: e.target.value }))}
                             rows={4}
                             className="w-full text-sm font-medium p-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 transition-all outline-none resize-none mb-4"
                             placeholder="Como foi a visita? Detalhes sobre o interesse do cliente..."
                         />
                         <div className="flex gap-3">
                             <button
-                                onClick={() => setEditingVisitNotesId(null)}
+                                onClick={() => setVisitNoteEdit({ id: null, draft: '' })}
                                 className="flex-1 py-3 text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                             >
                                 Cancelar

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense, useCallback, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Plus, Search, Filter, MoreHorizontal, MapPin, Gauge, Calendar,
@@ -36,6 +36,171 @@ const ENGINE_TYPES: EngineType[] = ['1.0', '1.4', '1.6', '2.0+', 'Elétrico', 'H
 
 const InventoryImportModal = lazy(() => import('./InventoryImportModal'));
 
+// ─── Memoized card components — não re-renderizam quando filtros mudam ────────
+interface VehicleCardProps { vehicle: Vehicle; onSelect: (v: Vehicle) => void; }
+
+const VehicleGridCard = memo(({ vehicle, onSelect }: VehicleCardProps) => (
+  <div
+    onClick={() => onSelect(vehicle)}
+    className={`bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : 'hover:border-emerald-200/60'}`}
+  >
+    <div className="relative p-3 pb-0">
+      {vehicle.imageUrl ? (
+        <div className="w-full aspect-[4/5] rounded-xl overflow-hidden shadow-inner bg-slate-50">
+          <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        </div>
+      ) : (
+        <div className="w-full aspect-[4/5] rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50">
+          <Car size={48} strokeWidth={1} />
+          <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Sem Imagem</span>
+        </div>
+      )}
+      {vehicle.status === 'sold' ? (
+        <div className="absolute top-6 right-6 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-rose-500/30 animate-pulse">Vendido</div>
+      ) : (
+        <div className="absolute top-6 right-6 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-emerald-500/30">Em Estoque</div>
+      )}
+      <div className="absolute bottom-4 left-7 z-20">
+        <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{vehicle.type}</span>
+      </div>
+    </div>
+    <div className="p-5 pt-4 flex flex-col flex-1">
+      <div className="mb-4">
+        <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mb-1.5 group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</h3>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+            <Calendar size={10} className="text-slate-300" />
+            <span>{vehicle.year}{vehicle.modelYear ? ` / ${String(vehicle.modelYear).slice(-2)}` : ''}</span>
+          </div>
+          <div className="w-1 h-1 rounded-full bg-slate-200" />
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+            <Gauge size={10} className="text-slate-300" />
+            <span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span>
+          </div>
+        </div>
+      </div>
+      <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
+        <div className="flex flex-col">
+          <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço de Venda</span>
+          <p className={`text-lg font-black tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
+            R$ {vehicle.price.toLocaleString()}
+          </p>
+        </div>
+        <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
+          <ChevronRight size={16} strokeWidth={3} />
+        </div>
+      </div>
+    </div>
+    <div className={`h-1 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
+  </div>
+));
+
+const VehicleListCard = memo(({ vehicle, onSelect }: VehicleCardProps) => (
+  <div
+    onClick={() => onSelect(vehicle)}
+    className={`bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-emerald-100 transition-all cursor-pointer group flex flex-col md:flex-row gap-8 relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : ''}`}
+  >
+    <div className="w-full md:w-72 aspect-video md:aspect-[4/3] rounded-[1.8rem] overflow-hidden shrink-0 bg-slate-50 relative border border-slate-100 shadow-inner">
+      {vehicle.imageUrl ? (
+        <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-slate-200">
+          <Car size={48} strokeWidth={1} />
+        </div>
+      )}
+      {vehicle.status === 'sold' && (
+        <div className="absolute top-4 right-4 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg z-10 shadow-lg shadow-rose-500/20">Vendido</div>
+      )}
+    </div>
+    <div className="flex-1 flex flex-col py-4 pr-4">
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-md border border-emerald-100/50">{vehicle.type}</span>
+            {vehicle.plate && <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-2">{vehicle.plate}</span>}
+          </div>
+          <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</h3>
+          <div className="flex items-center gap-4 text-[13px] font-bold text-slate-400 mt-2.5">
+            <div className="flex items-center gap-2"><Calendar size={14} className="text-slate-200" /><span>{vehicle.year} {vehicle.modelYear ? `/ ${vehicle.modelYear}` : ''}</span></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
+            <div className="flex items-center gap-2"><Gauge size={14} className="text-slate-200" /><span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
+            <div className="flex items-center gap-2"><Zap size={14} className="text-slate-200" /><span>{vehicle.transmission}</span></div>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2 mt-auto">
+        {vehicle.optionals?.slice(0, 5).map((opt, i) => (
+          <span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-wide group-hover:bg-white transition-colors">{opt}</span>
+        ))}
+        {vehicle.optionals?.length > 5 && (
+          <span className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-wide">+{vehicle.optionals.length - 5}</span>
+        )}
+      </div>
+    </div>
+    <div className="flex flex-row md:flex-col justify-between items-end pl-0 md:pl-10 border-t md:border-t-0 md:border-l border-slate-50 pt-6 md:pt-4 md:pb-4 min-w-[200px]">
+      <div className="text-right">
+        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1.5">Preço de Venda</p>
+        <p className={`text-3xl font-black leading-none tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>R$ {vehicle.price.toLocaleString()}</p>
+        {vehicle.status === 'sold' && vehicle.saleDetails && (
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-lg">
+            <DollarSign size={12} className="text-emerald-500" />
+            <p className="text-xs font-black text-emerald-600">R$ {vehicle.saleDetails.salePrice.toLocaleString()}</p>
+          </div>
+        )}
+      </div>
+      <div className="w-14 h-14 rounded-[1.2rem] bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
+        <ChevronRight size={24} strokeWidth={3} />
+      </div>
+    </div>
+    <div className={`h-1.5 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
+  </div>
+));
+
+const VehicleTableRow = memo(({ vehicle, onSelect }: VehicleCardProps) => (
+  <tr onClick={() => onSelect(vehicle)} className="group hover:bg-slate-50 transition-colors cursor-pointer">
+    <td className="p-6">
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-12 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-inner">
+          {vehicle.imageUrl ? (
+            <img src={vehicle.imageUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-slate-200"><Car size={16} /></div>
+          )}
+        </div>
+        <div>
+          <p className="font-black text-slate-900 uppercase text-xs group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{vehicle.plate || 'S/ PLACA'}</p>
+        </div>
+      </div>
+    </td>
+    <td className="p-6">
+      <div className="flex items-center gap-2">
+        <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tighter">{vehicle.transmission}</span>
+        <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tighter">{vehicle.engine}</span>
+      </div>
+    </td>
+    <td className="p-6">
+      <div className="flex flex-col">
+        <p className="font-black text-slate-700 text-xs">{vehicle.year}</p>
+        <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase">{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</p>
+      </div>
+    </td>
+    <td className="p-6 text-right">
+      <p className={`font-black text-sm ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>R$ {vehicle.price.toLocaleString()}</p>
+      {vehicle.status === 'sold' && vehicle.saleDetails && (
+        <p className="text-[9px] text-emerald-600 font-black mt-1 uppercase tracking-tighter">Vendido: R$ {vehicle.saleDetails.salePrice.toLocaleString()}</p>
+      )}
+    </td>
+    <td className="p-6 text-right">
+      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all">
+        <ChevronRight size={14} strokeWidth={3} />
+      </div>
+    </td>
+  </tr>
+));
+// ─────────────────────────────────────────────────────────────────────────────
+
 const Inventory: React.FC<InventoryProps> = ({
   vehicles, onAddVehicle, onUpdateVehicle, onDeleteVehicle, onSellVehicle, leads, onAddLead, onViewLead, userEmail, onDataChange
 }) => {
@@ -65,13 +230,10 @@ const Inventory: React.FC<InventoryProps> = ({
   // View Mode State
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
 
-  // Filter State
+  // Filter State — consolidado para reduzir re-renders
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filterQuery, setFilterQuery] = useState('');
-  const [filterYearMin, setFilterYearMin] = useState<string>('');
-  const [filterYearMax, setFilterYearMax] = useState<string>('');
-  const [filterPriceMin, setFilterPriceMin] = useState<string>('');
-  const [filterPriceMax, setFilterPriceMax] = useState<string>('');
+  const [filters, setFilters] = useState({ query: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '' });
+  const clearFilters = useCallback(() => setFilters({ query: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '' }), []);
 
   // Sell Form State
   const [sellData, setSellData] = useState<SaleDetails>({
@@ -104,7 +266,7 @@ const Inventory: React.FC<InventoryProps> = ({
             }
         }
         if (location.state?.search !== undefined) {
-            setFilterQuery(location.state.search);
+            setFilters(f => ({ ...f, query: location.state.search }));
             window.history.replaceState({}, document.title);
         }
     }, [location.state, vehicles]);
@@ -139,6 +301,8 @@ const Inventory: React.FC<InventoryProps> = ({
       fetchComms();
     }
   }, [selectedVehicle]);
+
+  const handleSelectVehicle = useCallback((v: Vehicle) => setSelectedVehicle(v), []);
 
   const prepareMessageModal = (target: 'single' | 'all' | 'new', lead?: Lead) => {
     setMessageTarget(target);
@@ -240,30 +404,18 @@ const Inventory: React.FC<InventoryProps> = ({
   // Filtra os veículos baseado na aba selecionada e nos filtros ativos
   const displayedVehicles = useMemo(() => {
     return vehicles.filter(v => {
-      // Status Check
       if (v.status !== inventoryView) return false;
-
-      // Text Search
-      if (filterQuery) {
-        const q = filterQuery.toLowerCase();
-        const textMatch =
-          v.brand.toLowerCase().includes(q) ||
-          v.model.toLowerCase().includes(q) ||
-          v.plate?.toLowerCase().includes(q);
-        if (!textMatch) return false;
+      if (filters.query) {
+        const q = filters.query.toLowerCase();
+        if (!v.brand.toLowerCase().includes(q) && !v.model.toLowerCase().includes(q) && !v.plate?.toLowerCase().includes(q)) return false;
       }
-
-      // Year Filter
-      if (filterYearMin && v.year < parseInt(filterYearMin)) return false;
-      if (filterYearMax && v.year > parseInt(filterYearMax)) return false;
-
-      // Price Filter
-      if (filterPriceMin && v.price < parseFloat(filterPriceMin)) return false;
-      if (filterPriceMax && v.price > parseFloat(filterPriceMax)) return false;
-
+      if (filters.yearMin && v.year < parseInt(filters.yearMin)) return false;
+      if (filters.yearMax && v.year > parseInt(filters.yearMax)) return false;
+      if (filters.priceMin && v.price < parseFloat(filters.priceMin)) return false;
+      if (filters.priceMax && v.price > parseFloat(filters.priceMax)) return false;
       return true;
     });
-  }, [vehicles, inventoryView, filterQuery, filterYearMin, filterYearMax, filterPriceMin, filterPriceMax]);
+  }, [vehicles, inventoryView, filters]);
 
   const matchingLeads = useMemo(() => {
     if (!selectedVehicle || selectedVehicle === 'new') return [];
@@ -1000,8 +1152,8 @@ const Inventory: React.FC<InventoryProps> = ({
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                 <input
                   type="text"
-                  value={filterQuery}
-                  onChange={e => setFilterQuery(e.target.value)}
+                  value={filters.query}
+                  onChange={e => setFilters(f => ({ ...f, query: e.target.value }))}
                   placeholder="Marca, modelo ou placa..."
                   className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500/5 transition-all outline-none"
                 />
@@ -1012,15 +1164,15 @@ const Inventory: React.FC<InventoryProps> = ({
               <div className="flex gap-2">
                 <input
                   type="number"
-                  value={filterYearMin}
-                  onChange={e => setFilterYearMin(e.target.value)}
+                  value={filters.yearMin}
+                  onChange={e => setFilters(f => ({ ...f, yearMin: e.target.value }))}
                   placeholder="De"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500/5 transition-all outline-none"
                 />
                 <input
                   type="number"
-                  value={filterYearMax}
-                  onChange={e => setFilterYearMax(e.target.value)}
+                  value={filters.yearMax}
+                  onChange={e => setFilters(f => ({ ...f, yearMax: e.target.value }))}
                   placeholder="Até"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500/5 transition-all outline-none"
                 />
@@ -1028,7 +1180,7 @@ const Inventory: React.FC<InventoryProps> = ({
             </div>
             <div className="flex items-end">
               <button
-                onClick={() => { setFilterQuery(''); setFilterYearMin(''); setFilterYearMax(''); setFilterPriceMax(''); }}
+                onClick={clearFilters}
                 className="w-full py-3.5 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-200 transition-all"
               >
                 Limpar Filtros
@@ -1044,66 +1196,7 @@ const Inventory: React.FC<InventoryProps> = ({
         {viewMode === 'grid' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {displayedVehicles.map(vehicle => (
-              <div
-                key={vehicle.id}
-                onClick={() => setSelectedVehicle(vehicle)}
-                className={`bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : 'hover:border-emerald-200/60'}`}
-              >
-                <div className="relative p-3 pb-0">
-                  {vehicle.imageUrl ? (
-                    <div className="w-full aspect-[4/5] rounded-xl overflow-hidden shadow-inner bg-slate-50">
-                      <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-[4/5] rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50">
-                      <Car size={48} strokeWidth={1} />
-                      <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Sem Imagem</span>
-                    </div>
-                  )}
-
-                  {vehicle.status === 'sold' ? (
-                    <div className="absolute top-6 right-6 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-rose-500/30 animate-pulse">Vendido</div>
-                  ) : (
-                    <div className="absolute top-6 right-6 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-emerald-500/30">Em Estoque</div>
-                  )}
-
-                  <div className="absolute bottom-4 left-7 z-20">
-                    <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{vehicle.type}</span>
-                  </div>
-                </div>
-
-                <div className="p-5 pt-4 flex flex-col flex-1">
-                  <div className="mb-4">
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mb-1.5 group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</h3>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                        <Calendar size={10} className="text-slate-300" />
-                        <span>{vehicle.year}{vehicle.modelYear ? ` / ${String(vehicle.modelYear).slice(-2)}` : ''}</span>
-                      </div>
-                      <div className="w-1 h-1 rounded-full bg-slate-200"></div>
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                        <Gauge size={10} className="text-slate-300" />
-                        <span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço de Venda</span>
-                      <p className={`text-lg font-black tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
-                        R$ {vehicle.price.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
-                      <ChevronRight size={16} strokeWidth={3} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Visual Accent Line */}
-                <div className={`h-1 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
-              </div>
+              <VehicleGridCard key={vehicle.id} vehicle={vehicle} onSelect={handleSelectVehicle} />
             ))}
           </div>
         )}
@@ -1112,86 +1205,7 @@ const Inventory: React.FC<InventoryProps> = ({
         {viewMode === 'list' && (
           <div className="flex flex-col gap-5">
             {displayedVehicles.map(vehicle => (
-              <div
-                key={vehicle.id}
-                onClick={() => setSelectedVehicle(vehicle)}
-                className={`bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-emerald-100 transition-all cursor-pointer group flex flex-col md:flex-row gap-8 relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : ''}`}
-              >
-                {/* Image */}
-                <div className="w-full md:w-72 aspect-video md:aspect-[4/3] rounded-[1.8rem] overflow-hidden shrink-0 bg-slate-50 relative border border-slate-100 shadow-inner">
-                  {vehicle.imageUrl ? (
-                    <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-200">
-                      <Car size={48} strokeWidth={1} />
-                    </div>
-                  )}
-                  {vehicle.status === 'sold' && (
-                    <div className="absolute top-4 right-4 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg z-10 shadow-lg shadow-rose-500/20">Vendido</div>
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 flex flex-col py-4 pr-4">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-md border border-emerald-100/50">{vehicle.type}</span>
-                        {vehicle.plate && <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-2">{vehicle.plate}</span>}
-                      </div>
-                      <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none group-hover:text-emerald-600 transition-colors uppercase">{vehicle.brand} {vehicle.model}</h3>
-                      <div className="flex items-center gap-4 text-[13px] font-bold text-slate-400 mt-2.5">
-                        <div className="flex items-center gap-2">
-                          <Calendar size={14} className="text-slate-200" />
-                          <span>{vehicle.year} {vehicle.modelYear ? `/ ${vehicle.modelYear}` : ''}</span>
-                        </div>
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
-                        <div className="flex items-center gap-2">
-                          <Gauge size={14} className="text-slate-200" />
-                          <span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span>
-                        </div>
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
-                        <div className="flex items-center gap-2">
-                          <Zap size={14} className="text-slate-200" />
-                          <span>{vehicle.transmission}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Optionals */}
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {vehicle.optionals?.slice(0, 5).map((opt, i) => (
-                      <span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-wide group-hover:bg-white transition-colors">
-                        {opt}
-                      </span>
-                    ))}
-                    {vehicle.optionals?.length > 5 && (
-                      <span className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-wide">+{vehicle.optionals.length - 5}</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Price & Action */}
-                <div className="flex flex-row md:flex-col justify-between items-end pl-0 md:pl-10 border-t md:border-t-0 md:border-l border-slate-50 pt-6 md:pt-4 md:pb-4 min-w-[200px]">
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1.5">Preço de Venda</p>
-                    <p className={`text-3xl font-black leading-none tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>R$ {vehicle.price.toLocaleString()}</p>
-                    {vehicle.status === 'sold' && vehicle.saleDetails && (
-                      <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-lg">
-                        <DollarSign size={12} className="text-emerald-500" />
-                        <p className="text-xs font-black text-emerald-600">R$ {vehicle.saleDetails.salePrice.toLocaleString()}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-14 h-14 rounded-[1.2rem] bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
-                    <ChevronRight size={24} strokeWidth={3} />
-                  </div>
-                </div>
-
-                {/* Visual Accent Line */}
-                <div className={`h-1.5 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
-              </div>
+              <VehicleListCard key={vehicle.id} vehicle={vehicle} onSelect={handleSelectVehicle} />
             ))}
           </div>
         )}
@@ -1212,48 +1226,7 @@ const Inventory: React.FC<InventoryProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {displayedVehicles.map(vehicle => (
-                    <tr key={vehicle.id} onClick={() => setSelectedVehicle(vehicle)} className="group hover:bg-slate-50 transition-colors cursor-pointer">
-                      <td className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-12 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-inner">
-                            {vehicle.imageUrl ? (
-                              <img src={vehicle.imageUrl} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-200">
-                                <Car size={16} />
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-black text-slate-900 uppercase text-xs group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</p>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{vehicle.plate || 'S/ PLACA'}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-6">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tighter">{vehicle.transmission}</span>
-                          <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tighter">{vehicle.engine}</span>
-                        </div>
-                      </td>
-                      <td className="p-6">
-                        <div className="flex flex-col">
-                          <p className="font-black text-slate-700 text-xs">{vehicle.year}</p>
-                          <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase">{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</p>
-                        </div>
-                      </td>
-                      <td className="p-6 text-right">
-                        <p className={`font-black text-sm ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>R$ {vehicle.price.toLocaleString()}</p>
-                        {vehicle.status === 'sold' && vehicle.saleDetails && (
-                          <p className="text-[9px] text-emerald-600 font-black mt-1 uppercase tracking-tighter">Vendido: R$ {vehicle.saleDetails.salePrice.toLocaleString()}</p>
-                        )}
-                      </td>
-                      <td className="p-6 text-right">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all">
-                          <ChevronRight size={14} strokeWidth={3} />
-                        </div>
-                      </td>
-                    </tr>
+                    <VehicleTableRow key={vehicle.id} vehicle={vehicle} onSelect={handleSelectVehicle} />
                   ))}
                 </tbody>
               </table>
@@ -1269,13 +1242,13 @@ const Inventory: React.FC<InventoryProps> = ({
             </div>
             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Nenhum veículo encontrado</h3>
             <p className="text-slate-400 text-sm mt-3 max-w-xs mx-auto font-medium">
-              {filterQuery || filterYearMin || filterPriceMax
+              {(filters.query || filters.yearMin || filters.priceMax)
                 ? 'Os critérios de busca não retornaram resultados. Tente ajustar os filtros.'
                 : (inventoryView === 'available' ? 'Seu estoque está vazio. Adicione novos veículos para começar.' : 'Ainda não há veículos registrados como vendidos.')}
             </p>
-            {(filterQuery || filterYearMin || filterPriceMax) && (
+            {(filters.query || filters.yearMin || filters.priceMax) && (
               <button
-                onClick={() => { setFilterQuery(''); setFilterYearMin(''); setFilterYearMax(''); setFilterPriceMin(''); setFilterPriceMax(''); }}
+                onClick={clearFilters}
                 className="mt-8 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg"
               >
                 Limpar Todos os Filtros

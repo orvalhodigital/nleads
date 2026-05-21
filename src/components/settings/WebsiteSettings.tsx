@@ -141,8 +141,12 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             });
 
             if (!response.ok) {
-                const data = await response.json();
-                showToast('error', data.error || 'Erro ao remover domínio.');
+                try {
+                    const data = await response.json();
+                    showToast('error', data.error || `Erro ao remover domínio (${response.status}).`);
+                } catch (e) {
+                    showToast('error', `Erro ao remover domínio: resposta inválida (${response.status})`);
+                }
                 setLoading(false);
                 return;
             }

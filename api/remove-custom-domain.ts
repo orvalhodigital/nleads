@@ -119,15 +119,17 @@ export default async function handler(req: any, res: any) {
             return res.status(403).json({ error: 'This domain does not belong to your account.' });
         }
 
-        // Remove domain from Vercel
+        // Remove domain from Vercel (continue even if fails - domain may not exist there)
+        console.log('[remove-custom-domain] Attempting Vercel removal...');
         const vercelResult = await removeDomainFromVercel(normalizedDomain);
+        console.log('[remove-custom-domain] Vercel result:', vercelResult);
 
         if (!vercelResult.success) {
-            console.warn('Warning: Failed to remove domain from Vercel, but will continue to remove from database:', vercelResult.error);
-            // Continue even if Vercel removal fails, as the domain may already be gone
+            console.warn('Warning: Domain may not exist in Vercel, but will still remove from database:', vercelResult.error);
+            // Continue anyway - the important thing is to clean up the database
         }
 
-        // Remove domain from Supabase
+        // Remove domain from Supabase - THIS IS THE CRITICAL PART
         console.log('[remove-custom-domain] Attempting to update database...');
         const { error: updateError } = await supabase
             .from('profiles')
@@ -142,11 +144,14 @@ export default async function handler(req: any, res: any) {
             return res.status(500).json({ error: 'Failed to remove domain from database' });
         }
 
-        return res.status(200).json({
+        // Return success - domain is removed from database regardless of Vercel status
+        const response = {
             success: true,
             message: 'Domain removed successfully',
-            domain,
-        });
+            domain: normalizedDomain,
+        };
+        console.log('[remove-custom-domain] Sending response:', response);
+        return res.status(200).json(response);
 
     } catch (error: any) {
         console.error('Handler error:', error);

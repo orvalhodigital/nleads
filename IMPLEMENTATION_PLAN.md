@@ -1,8 +1,8 @@
 # IMPLEMENTATION_PLAN.md
 
-🎯 **FEATURE**: Custom Domain Registration & Routing  
+🎯 **FEATURE**: Custom Domain Registration & Routing + Bundle Optimization  
 **Date**: 2026-05-21  
-**Status**: ✅ CONCLUÍDO E FUNCIONANDO EM PRODUÇÃO  
+**Status**: Fases 1–3 ✅ CONCLUÍDO | Fase 4 🔄 PLANEJADO  
 **Last Updated**: 2026-05-21
 
 ---
@@ -31,16 +31,15 @@
 
 ### Fase 2: Frontend Registration UI ✅
 
-#### `src/components/settings/WebsiteSettings.tsx`
+#### `src/components/settings/WebsiteSettings.tsx` — MODIFICADO
 - Input para registrar novo domínio
 - Card exibindo domínio registrado
 - Botão de remoção com confirmação
-- Leitura de resposta como texto + JSON parse com fallback
+- Leitura de resposta como texto + JSON parse com fallback (evita "body stream already read")
 - Loading states e toasts de sucesso/erro
-- Erro parsing com mensagem detalhada
 
-#### `src/pages/SettingsPage.tsx`
-- Aba "Website" com ícone Globe
+#### `src/pages/SettingsPage.tsx` — MODIFICADO
+- Aba "Website" com ícone Globe adicionada
 - Renderização do WebsiteSettings component
 
 ### Fase 3: Roteamento de Domínio Personalizado ✅
@@ -61,6 +60,23 @@
 - Prop opcional `forcedSlug` sobrescreve `useParams`
 - Mantém compatibilidade com `/site/:slug` route
 
+### Fase 4: Bundle Optimization 🔄 PLANEJADO
+
+#### Objetivo
+- Reduzir tamanho inicial do bundle para melhorar performance de carregamento
+- Eliminar dependências não utilizadas
+- Garantir que chunks pesados só carregam quando necessários
+
+#### Tarefas (em ordem de impacto)
+1. **Remover dependências não utilizadas** — verificar `@base-ui/react`, `@google/genai`, `react-colorful`, `react-dropzone`, `react-photo-view` com grep antes de remover
+2. **Lazy load de rotas admin** — `AdminApp` e sub-componentes carregam só quando acessados
+3. **Lazy load de modais pesados** — modais com upload/galeria carregam sob demanda
+4. **Otimizar imports do lucide-react** — imports seletivos em vez de `* from 'lucide-react'`
+5. **Minificação e CSS pruning** — garantir Tailwind purge em produção
+6. **Code splitting por rota** — Vite chunks automáticos por página
+7. **Strip console.logs em produção** — plugin vite para remover logs
+8. **Otimizar recharts** — carregar só componentes usados
+
 ---
 
 ## ⚠️ Riscos
@@ -70,10 +86,15 @@
 - **Sintoma**: Erro 500 ao registrar/remover domínio
 - **Mitigação**: Usar `/api/health` para validar. Usar painel Vercel → Settings → Environment Variables
 
-### ALTO — Conflito de Rota (resolvido)
+### ALTO — Conflito de Rota (resolvido ✅)
 - **Risco**: `path="/"` e `path="/*"` concorrendo, React Router escolhendo errado
 - **Sintoma**: Domínio personalizado mostrando login em vez do site público
 - **Solução**: Detectar domínio fora do componente, condicionar rotas inteiras no router (padrão Imóveis)
+
+### ALTO — RLS no Supabase para `custom_domain`
+- **Risco**: `CustomDomainRedirect` usa client anon (público) para buscar perfil por `custom_domain`. Se RLS bloquear SELECT na tabela `profiles` para usuários não autenticados, o site personalizado retorna "não encontrado" mesmo com domínio correto
+- **Sintoma**: Site público do cliente abre com mensagem de domínio não registrado
+- **Mitigação**: Verificar política RLS na tabela `profiles` — a coluna `custom_domain` precisa ser legível anonimamente, ou usar Supabase service role para esta query específica
 
 ### MÉDIO — DNS Propagação
 - **Risco**: Domínio registrado mas não resolvendo imediatamente
@@ -81,39 +102,45 @@
 
 ### MÉDIO — Domínio Não Encontrado
 - **Risco**: Usuário acessa domínio personalizado antes de registrar
-- **Mitigation**: `CustomDomainRedirect` mostra erro amigável "Domínio não está registrado"
+- **Mitigação**: `CustomDomainRedirect` mostra erro amigável "Domínio não está registrado"
 
 ### BAIXO — Bug de Escopo (resolvido ✅)
 - **Causa anterior**: Haiku dividiu handler em 2 blocos try separados
 - **Status**: Sonnet reescreveu com handler único + logging granular
 
+### BAIXO — Remoção de Dependência Quebra Feature
+- **Risco**: Remover dependência que parece não usada mas está usada indiretamente (ex: importada dinamicamente, usada em tela de admin rara)
+- **Mitigação**: Sempre grep no codebase completo antes de remover. Nunca remover por "parece não usado"
+
 ---
 
 ## ✅ Haiku Check
 
-**Verdict Final**: ❌ Haiku 4.5 **NÃO foi suficiente**
+**Verdict Final**: ❌ Haiku 4.5 **NÃO foi suficiente** para esta feature
 
 **O que funcionou:**
 - Estrutura de API básica
-- Validação de entrada
+- Validação de entrada simples
 
 **O que falhou:**
 1. **Bug de escopo crítico**: Dividiu handler em 2 blocos `try` separados
-   - `verifiedUserId` declarado no 1º bloco, inacessível no 2º
+   - `verifiedUserId` declarado no 1º bloco, inacessível no 2º (escopo de bloco em JS)
    - Causava `ReferenceError` → 500 em produção
 2. **Response body lido duas vezes**: `.json()` + `.text()` → "body stream already read"
-3. **Estrutura complexa**: Funções de init separadas, sem fluxo linear claro
+3. **Arquitetura fragmentada**: Funções de init separadas, sem fluxo linear claro
+4. **Roteamento**: Tendeu a usar componente envolvedor (RootGate) em vez de detectar no topo do App
 
 **Solução com Sonnet:**
 - Handler único com try/catch global envolvendo tudo
 - Fluxo linear sequencial: validação → autenticação → Vercel → banco
 - Logging granular (STEP 1–6) para diagnóstico em produção
-- Response lido uma vez (como texto), depois parseado
+- Response lido uma vez (como texto), depois parseado com fallback
+- Detecção de domínio no topo do `App.tsx` (fora de componente), condiciona rotas inteiras
 
-**Para Roteamento:**
-- Haiku tenderia a usar componente envolvedor (RootGate)
-- Sonnet usou padrão Imóveis: detectar no topo do App, condicionar rotas
-- Mais limpo, evita overhead de contexto/provider, decisão em tempo de carregamento
+**Lição para próximas tasks com Haiku:**
+- Haiku é adequado para tarefas simples e bem delimitadas (CRUD básico, UI com lógica clara)
+- Para fluxos multi-step com estado compartilhado entre etapas → usar Sonnet
+- Para decisões de arquitetura que afetam toda a aplicação (routing, auth) → usar Sonnet
 
 ---
 
@@ -127,6 +154,8 @@
 - [x] Logs granulares para debugging
 - [x] Mensagens de erro amigáveis em português
 - [x] Suporte a `www.` prefix em domínios
+- [ ] Verificar política RLS na tabela `profiles` para `custom_domain`
+- [ ] Executar análise de bundle (Fase 4)
 
 ---
 
@@ -151,18 +180,16 @@
 
 ---
 
-## 📦 Resumo de Mudanças
+## 📦 Resumo de Mudanças (Fases 1–3)
 
-**New Files (1):**
+**New Files (2):**
 - `api/health.ts` — Diagnóstico de env vars
+- `src/pages/CustomDomainRedirect.tsx` — Renderiza site público em domínios personalizados
 
-**Modified Files (4):**
-- `api/register-custom-domain.ts` — Reescrito (Haiku → Sonnet)
-- `api/remove-custom-domain.ts` — Reescrito (Haiku → Sonnet)
-- `src/App.tsx` — Router condicional por domínio
-- `src/pages/CustomDomainRedirect.tsx` — Renderiza site direto (sem navigate)
+**Modified Files (5):**
+- `api/register-custom-domain.ts` — Reescrito com handler único e fluxo linear (Haiku → Sonnet)
+- `api/remove-custom-domain.ts` — Reescrito com handler único e logging granular (Haiku → Sonnet)
+- `src/App.tsx` — Router condicional por domínio (`IS_SYSTEM_DOMAIN`)
 - `src/pages/public/PublicSiteHome.tsx` — Aceita `forcedSlug` prop
-
-**Unchanged:**
-- `src/pages/SettingsPage.tsx` — Já tinha Website tab
-- `src/components/settings/WebsiteSettings.tsx` — Já tinha handlers
+- `src/components/settings/WebsiteSettings.tsx` — Parsing de response como texto + estados de loading
+- `src/pages/SettingsPage.tsx` — Aba "Website" adicionada

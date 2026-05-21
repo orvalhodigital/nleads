@@ -9,6 +9,7 @@ import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig(({ mode }) => {
   loadEnv(mode, '.', '');
+  const isProd = mode === 'production';
   return {
     server: {
       port: 3000,
@@ -37,6 +38,7 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       }
     },
+    esbuild: isProd ? { drop: ['console', 'debugger'] } : {},
     build: {
       reportCompressedSize: true,
       chunkSizeWarningLimit: 1000,
@@ -44,9 +46,11 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-ui': ['framer-motion', 'lucide-react', '@hello-pangea/dnd'],
+            // framer-motion removido: auto-chunk com páginas públicas (lazy)
+            'vendor-ui': ['lucide-react', '@hello-pangea/dnd', '@base-ui/react'],
             'vendor-charts': ['recharts'],
-            'vendor-utils': ['date-fns', 'exceljs', 'zod', '@supabase/supabase-js'],
+            // exceljs removido: auto-chunk com InventoryImportModal/LeadImportModal (lazy)
+            'vendor-utils': ['date-fns', 'zod', '@supabase/supabase-js'],
           }
         }
       }

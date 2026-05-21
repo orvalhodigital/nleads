@@ -6,12 +6,19 @@ import UserLayout from './components/UserLayout';
 import { ToastProvider } from './contexts/ToastContext';
 import { DataProvider } from './contexts/DataContext';
 
+// ─── Detecção de domínio (avaliado uma única vez no carregamento) ─────────────
+const SYSTEM_HOSTS = ['localhost', '127.0.0.1', 'nleads.pro', 'nleads.com.br', 'vercel.app'];
+function isSystemHost(h: string) {
+  return SYSTEM_HOSTS.some(s => h === s || h.endsWith(`.${s}`));
+}
+const IS_SYSTEM_DOMAIN = isSystemHost(window.location.hostname);
+
 // Loading Component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
     <div className="flex flex-col items-center gap-4">
       <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-      <p className="text-slate-400 text-sm font-medium animate-pulse">Carregando plataforma...</p>
+      <p className="text-slate-400 text-sm font-medium animate-pulse">Carregando...</p>
     </div>
   </div>
 );
@@ -43,40 +50,46 @@ const App: React.FC = () => {
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Custom domain redirect — checks hostname and redirects to /site/{slug} */}
-              <Route path="/" element={<CustomDomainRedirect />} />
-
-              {/* Public site routes — outside DataProvider/auth */}
+              {/* Rotas públicas — acessíveis em qualquer domínio */}
               <Route path="/site/:slug" element={<PublicSiteHome />} />
               <Route path="/site/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
-
-              {/* Admin Routes */}
               <Route path="/paineldoadm/*" element={<AdminApp />} />
 
-              {/* User Routes */}
-              <Route path="/*" element={
-                <DataProvider>
-                  <UserLayout />
-                </DataProvider>
-              }>
-                <Route index element={<HomePage />} />
-                <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="inventory" element={<InventoryPage />} />
-                <Route path="inventory/new" element={<VehicleFormPage />} />
-                <Route path="inventory/edit/:id" element={<VehicleFormPage />} />
-                <Route path="leads" element={<LeadsPage />} />
-                <Route path="leads/new" element={<LeadFormPage />} />
-                <Route path="leads/edit/:id" element={<LeadFormPage />} />
-                <Route path="leads/:id" element={<LeadDetailPage />} />
-                <Route path="leads/:id/action/:actionType" element={<LeadActionPage />} />
-                <Route path="agenda" element={<AgendaPage />} />
-                <Route path="sales-closed" element={<SalesClosedPage />} />
-                <Route path="plans" element={<Navigate to="/settings" replace />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="motorcycles" element={<MotorcyclesPage />} />
-                <Route path="support" element={<SupportPage />} />
-                <Route path="website" element={<WebsitePage />} />
-              </Route>
+              {IS_SYSTEM_DOMAIN ? (
+                <>
+                  {/* Domínio do sistema: vai direto pro painel */}
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/*" element={
+                    <DataProvider>
+                      <UserLayout />
+                    </DataProvider>
+                  }>
+                    <Route index element={<HomePage />} />
+                    <Route path="dashboard" element={<DashboardPage />} />
+                    <Route path="inventory" element={<InventoryPage />} />
+                    <Route path="inventory/new" element={<VehicleFormPage />} />
+                    <Route path="inventory/edit/:id" element={<VehicleFormPage />} />
+                    <Route path="leads" element={<LeadsPage />} />
+                    <Route path="leads/new" element={<LeadFormPage />} />
+                    <Route path="leads/edit/:id" element={<LeadFormPage />} />
+                    <Route path="leads/:id" element={<LeadDetailPage />} />
+                    <Route path="leads/:id/action/:actionType" element={<LeadActionPage />} />
+                    <Route path="agenda" element={<AgendaPage />} />
+                    <Route path="sales-closed" element={<SalesClosedPage />} />
+                    <Route path="plans" element={<Navigate to="/settings" replace />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="motorcycles" element={<MotorcyclesPage />} />
+                    <Route path="support" element={<SupportPage />} />
+                    <Route path="website" element={<WebsitePage />} />
+                  </Route>
+                </>
+              ) : (
+                <>
+                  {/* Domínio personalizado do cliente: mostra o site público */}
+                  <Route path="/" element={<CustomDomainRedirect />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </>
+              )}
             </Routes>
           </Suspense>
         </BrowserRouter>

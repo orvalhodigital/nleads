@@ -440,8 +440,9 @@ const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: P
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const PublicSiteHome: React.FC = () => {
-    const { slug } = useParams<{ slug: string }>();
+const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
+    const params = useParams<{ slug: string }>();
+    const slug = forcedSlug ?? params.slug;
     const [profile, setProfile] = useState<PublicProfile | null>(null);
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [loading, setLoading] = useState(true);

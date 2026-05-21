@@ -111,12 +111,13 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             });
 
             console.log('[WebsiteSettings] Register API response status:', response.status);
+            const responseText = await response.text();
             let data: any;
+
             try {
-                data = await response.json();
+                data = responseText ? JSON.parse(responseText) : {};
             } catch (e) {
-                console.error('[WebsiteSettings] Failed to parse register response as JSON');
-                const text = await response.text();
+                console.error('[WebsiteSettings] Failed to parse register response as JSON:', responseText);
                 showToast('error', `Erro ao registrar domínio: resposta inválida (${response.status})`);
                 setDomainStatus('error');
                 return;
@@ -164,13 +165,13 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             });
 
             console.log('[WebsiteSettings] Remove API response status:', response.status);
+            const responseText = await response.text();
             let data: any;
+
             try {
-                data = await response.json();
+                data = responseText ? JSON.parse(responseText) : {};
             } catch (e) {
-                console.error('[WebsiteSettings] Failed to parse remove response as JSON');
-                const text = await response.text();
-                console.error('[WebsiteSettings] Raw response:', text);
+                console.error('[WebsiteSettings] Failed to parse remove response as JSON:', responseText);
                 showToast('error', `Erro ao remover domínio: resposta inválida (${response.status})`);
                 setLoading(false);
                 return;

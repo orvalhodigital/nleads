@@ -1,189 +1,102 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing required env vars: VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
-}
+const supabaseUrl = process.env.VITE_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY!;
+const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN!;
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Vercel Configuration
-const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN;
-const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
-
-if (!VERCEL_API_TOKEN || !VERCEL_PROJECT_ID) {
-    throw new Error('Missing required env vars: VERCEL_API_TOKEN and VERCEL_PROJECT_ID');
-}
-const VERCEL_API_URL = 'https://api.vercel.com';
-
-// Verify JWT and return authenticated user ID
 async function getVerifiedUserId(req: any): Promise<string | null> {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return null;
     const token = authHeader.slice(7);
-    if (!supabaseAnonKey) return null;
-    const authClient = createClient(supabaseUrl!, supabaseAnonKey);
+    const authClient = createClient(supabaseUrl, supabaseAnonKey);
     const { data: { user }, error } = await authClient.auth.getUser(token);
     if (error || !user) return null;
     return user.id;
 }
 
-// Remove domain from Vercel
-async function removeDomainFromVercel(domain: string): Promise<{
-    success: boolean;
-    error?: string;
-}> {
+async function removeDomainFromVercel(domain: string): Promise<void> {
     try {
-        const response = await fetch(`${VERCEL_API_URL}/v10/projects/${VERCEL_PROJECT_ID}/domains/${domain}`, {
+        await fetch(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains/${domain}`, {
             method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${VERCEL_API_TOKEN}`,
-            },
+            headers: { 'Authorization': `Bearer ${VERCEL_API_TOKEN}` },
         });
-
-        if (!response.ok && response.status !== 404) {
-            return {
-                success: false,
-                error: `Vercel API error: ${response.status}`,
-            };
-        }
-
-        return {
-            success: true,
-        };
-    } catch (error: any) {
-        return {
-            success: false,
-            error: error.message || 'Failed to remove domain from Vercel',
-        };
+        // Ignora erro — domínio pode não existir na Vercel e tudo bem
+    } catch (err) {
+        console.warn('[remove-custom-domain] Vercel removal failed (non-critical):', err);
     }
 }
 
 export default async function handler(req: any, res: any) {
-    try {
-        // CORS configuration
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-        res.setHeader(
-            'Access-Control-Allow-Headers',
-            'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-        );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
-        // Handle preflight
-        if (req.method === 'OPTIONS') {
-            return res.status(200).end();
-        }
-
-        // Only allow POST
-        if (req.method !== 'POST') {
-            return res.status(405).json({ error: 'Method not allowed. Use POST.' });
-        }
-
-        const verifiedUserId = await getVerifiedUserId(req);
-        if (!verifiedUserId) {
-            return res.status(401).json({ error: 'Unauthorized. Valid session token required.' });
-        }
-    } catch (err: any) {
-        console.error('[remove-custom-domain] Init error:', err);
-        return res.status(500).json({ error: 'Server initialization error', details: err.message });
-    }
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
-        const { domain } = req.body;
-        console.log('[remove-custom-domain] Request:', { domain, userId: verifiedUserId });
+        // 1. Autenticação
+        const userId = await getVerifiedUserId(req);
+        if (!userId) return res.status(401).json({ error: 'Não autorizado. Token de sessão inválido.' });
 
-        // Validation
-        if (!domain) {
-            return res.status(400).json({ error: 'Missing required field: domain' });
-        }
+        // 2. Validação do body
+        const { domain } = req.body || {};
+        if (!domain) return res.status(400).json({ error: 'Campo obrigatório: domain' });
 
-        // Normalize domain
         const normalizedDomain = domain.toLowerCase().trim();
+        console.log('[remove-custom-domain] Iniciando remoção:', { userId, domain: normalizedDomain });
 
-        // Verify the domain belongs to this user
-        console.log('[remove-custom-domain] Fetching profile for user:', verifiedUserId);
-        const { data: profile, error: checkError } = await supabase
+        // 3. Verificar se o domínio pertence ao usuário
+        const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('custom_domain')
-            .eq('id', verifiedUserId)
+            .eq('id', userId)
             .single();
 
-        console.log('[remove-custom-domain] Profile check:', { profile, checkError: checkError?.message, code: checkError?.code });
-
-        // Handle not found error (PGRST116)
-        if (checkError && checkError.code !== 'PGRST116') {
-            console.error('[remove-custom-domain] Supabase check error:', checkError);
-            return res.status(500).json({
-                error: 'Database error while verifying domain ownership',
-                details: checkError.message
-            });
+        if (profileError) {
+            console.error('[remove-custom-domain] Erro ao buscar perfil:', profileError);
+            return res.status(500).json({ error: 'Erro ao buscar perfil no banco de dados', details: profileError.message });
         }
 
         if (!profile) {
-            console.error('[remove-custom-domain] Profile not found for user:', verifiedUserId);
-            return res.status(404).json({ error: 'User profile not found' });
+            return res.status(404).json({ error: 'Perfil não encontrado' });
         }
 
         const storedDomain = (profile.custom_domain || '').toLowerCase().trim();
-        console.log('[remove-custom-domain] Domain comparison:', {
-            stored: `"${storedDomain}"`,
-            requested: `"${normalizedDomain}"`,
-            match: storedDomain === normalizedDomain
-        });
+        console.log('[remove-custom-domain] Comparando domínios:', { stored: storedDomain, requested: normalizedDomain });
 
         if (!storedDomain) {
-            console.warn('[remove-custom-domain] User has no domain registered');
-            return res.status(404).json({ error: 'No custom domain found for this account' });
+            return res.status(404).json({ error: 'Nenhum domínio customizado cadastrado nesta conta' });
         }
 
         if (storedDomain !== normalizedDomain) {
-            console.warn(`[remove-custom-domain] Domain mismatch: stored="${storedDomain}" vs request="${normalizedDomain}"`);
-            return res.status(403).json({ error: 'This domain does not belong to your account.' });
+            return res.status(403).json({ error: 'Este domínio não pertence à sua conta' });
         }
 
-        // Remove domain from Vercel (continue even if fails - domain may not exist there)
-        console.log('[remove-custom-domain] Attempting Vercel removal...');
-        const vercelResult = await removeDomainFromVercel(normalizedDomain);
-        console.log('[remove-custom-domain] Vercel result:', vercelResult);
+        // 4. Remover da Vercel (não crítico — continua mesmo se falhar)
+        await removeDomainFromVercel(normalizedDomain);
 
-        if (!vercelResult.success) {
-            console.warn('Warning: Domain may not exist in Vercel, but will still remove from database:', vercelResult.error);
-            // Continue anyway - the important thing is to clean up the database
-        }
-
-        // Remove domain from Supabase - THIS IS THE CRITICAL PART
-        console.log('[remove-custom-domain] Attempting to update database...');
+        // 5. Remover do banco de dados (crítico)
         const { error: updateError } = await supabase
             .from('profiles')
-            .update({
-                custom_domain: null,
-            })
-            .eq('id', verifiedUserId);
-        console.log('[remove-custom-domain] Update result:', { error: updateError });
+            .update({ custom_domain: null })
+            .eq('id', userId);
 
         if (updateError) {
-            console.error('Supabase update error:', updateError);
-            return res.status(500).json({ error: 'Failed to remove domain from database', details: updateError.message });
+            console.error('[remove-custom-domain] Erro ao atualizar banco:', updateError);
+            return res.status(500).json({ error: 'Erro ao remover domínio do banco de dados', details: updateError.message });
         }
 
-        // Return success - domain is removed from database regardless of Vercel status
-        const responsePayload = {
-            success: true,
-            message: 'Domain removed successfully',
-            domain: normalizedDomain,
-        };
-        console.log('[remove-custom-domain] Sending response:', responsePayload);
-        return res.status(200).json(responsePayload);
+        console.log('[remove-custom-domain] Domínio removido com sucesso:', normalizedDomain);
+        return res.status(200).json({ success: true, message: 'Domínio removido com sucesso', domain: normalizedDomain });
 
     } catch (error: any) {
-        console.error('[remove-custom-domain] Handler error:', error);
-        return res.status(500).json({
-            error: 'Internal Server Error',
-            details: error.message || 'Unknown error',
-        });
+        console.error('[remove-custom-domain] Erro inesperado:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
     }
 }

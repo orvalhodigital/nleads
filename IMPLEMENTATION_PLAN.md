@@ -60,22 +60,29 @@
 - Prop opcional `forcedSlug` sobrescreve `useParams`
 - Mantém compatibilidade com `/site/:slug` route
 
-### Fase 4: Bundle Optimization 🔄 PLANEJADO
+### Fase 4: Performance & Bundle Optimization ✅ CONCLUÍDO
 
-#### Objetivo
-- Reduzir tamanho inicial do bundle para melhorar performance de carregamento
-- Eliminar dependências não utilizadas
-- Garantir que chunks pesados só carregam quando necessários
+#### Bundle (carregamento inicial)
+- `react-colorful` e `react-dropzone` removidos (não usados em nenhum arquivo)
+- `exceljs` movido para fora do `vendor-utils` → carrega apenas ao abrir modal Importar
+- `framer-motion` e `@hello-pangea/dnd` removidos do `vendor-ui` → lazy com páginas que os usam
+- `@base-ui/react` adicionado ao `vendor-ui` (componentes UI eagerly carregados)
+- Strip automático de `console.log` e `debugger` em produção via `esbuild.drop`
+- `InventoryImportModal` tornado lazy: exceljs (263KB gzip) só carrega ao abrir o modal
+- `WebsiteSettings.old.tsx` (647 linhas) deletado — arquivo morto
 
-#### Tarefas (em ordem de impacto)
-1. **Remover dependências não utilizadas** — verificar `@base-ui/react`, `@google/genai`, `react-colorful`, `react-dropzone`, `react-photo-view` com grep antes de remover
-2. **Lazy load de rotas admin** — `AdminApp` e sub-componentes carregam só quando acessados
-3. **Lazy load de modais pesados** — modais com upload/galeria carregam sob demanda
-4. **Otimizar imports do lucide-react** — imports seletivos em vez de `* from 'lucide-react'`
-5. **Minificação e CSS pruning** — garantir Tailwind purge em produção
-6. **Code splitting por rota** — Vite chunks automáticos por página
-7. **Strip console.logs em produção** — plugin vite para remover logs
-8. **Otimizar recharts** — carregar só componentes usados
+#### Runtime (re-renders)
+- `Inventory.tsx`: extraídos `VehicleGridCard`, `VehicleListCard`, `VehicleTableRow` como `React.memo`; 5 filtros → objeto `filters`; `handleSelectVehicle` com `useCallback`
+- `MotorcycleInventory.tsx`: extraídos `MotoGridCard`, `MotoListCard` como `React.memo`; 4 filtros → objeto `filters`; `handleSelectMoto` com `useCallback`
+- `LeadDetailPage.tsx`: `editingVisitNotesId` + `visitNotesDraft` → `visitNoteEdit: {id, draft}` (sempre eram setados juntos)
+
+#### Resultado
+| Métrica | Antes | Depois |
+|---|---|---|
+| `vendor-ui` gzip | 203KB | 185KB |
+| `exceljs` no bundle inicial | ✅ incluído sempre | ❌ só ao abrir modal |
+| `InventoryPage` brotli | 65KB | 46KB |
+| Filtros re-renderizando cards | ✅ todos os cards | ❌ só os que mudam |
 
 ---
 

@@ -143,15 +143,20 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             if (!response.ok) {
                 const data = await response.json();
                 showToast('error', data.error || 'Erro ao remover domínio.');
+                setLoading(false);
                 return;
             }
 
             setCustomDomain('');
-            onUpdate();
             showToast('success', 'Domínio removido.');
+
+            // Force refresh after 500ms to ensure DB is updated
+            setTimeout(() => {
+                onUpdate();
+                setLoading(false);
+            }, 500);
         } catch (err: any) {
             showToast('error', err.message || 'Erro ao remover.');
-        } finally {
             setLoading(false);
         }
     };

@@ -89,6 +89,7 @@ export default async function handler(req: any, res: any) {
 
     try {
         const { domain } = req.body;
+        console.log('[remove-custom-domain] Request:', { domain, userId: verifiedUserId });
 
         // Validation
         if (!domain) {
@@ -104,6 +105,8 @@ export default async function handler(req: any, res: any) {
             .select('custom_domain')
             .eq('id', verifiedUserId)
             .single();
+
+        console.log('[remove-custom-domain] Profile check:', { profile, error: checkError });
 
         if (checkError || !profile) {
             console.error('Supabase check error:', checkError);
@@ -125,12 +128,14 @@ export default async function handler(req: any, res: any) {
         }
 
         // Remove domain from Supabase
+        console.log('[remove-custom-domain] Attempting to update database...');
         const { error: updateError } = await supabase
             .from('profiles')
             .update({
                 custom_domain: null,
             })
             .eq('id', verifiedUserId);
+        console.log('[remove-custom-domain] Update result:', { error: updateError });
 
         if (updateError) {
             console.error('Supabase update error:', updateError);

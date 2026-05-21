@@ -2,7 +2,7 @@
 
 🎯 **FEATURE**: Custom Domain Registration  
 **Date**: 2026-05-21  
-**Status**: 🔧 EM DEBUGGING — erro 500 na remoção sendo investigado  
+**Status**: ✅ CONCLUÍDO E FUNCIONANDO EM PRODUÇÃO  
 
 ---
 
@@ -36,10 +36,10 @@
   - Aba "Website" com ícone Globe
 
 ### Investigação Ativa
-- [x] ✅ Causa raiz do erro 500 identificada: **env vars ausentes no Vercel**
-  - `SUPABASE_SERVICE_ROLE_KEY` → ❌ ausente → adicionar via Supabase Dashboard → Settings → API → service_role
-  - `VERCEL_API_TOKEN` → ❌ ausente → criar em vercel.com/account/tokens
-  - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VERCEL_PROJECT_ID` → ✅ presentes
+- [x] ✅ Causa raiz do erro 500 resolvida: **env vars ausentes no Vercel**
+  - `SUPABASE_SERVICE_ROLE_KEY` → adicionada ✅
+  - `VERCEL_API_TOKEN` → adicionada ✅
+  - Redeploy feito → domínio removido com sucesso em produção ✅
 
 ---
 

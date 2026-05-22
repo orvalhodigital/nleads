@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { websiteService, PublicProfile } from '../../services/websiteService';
 import { Vehicle } from '../../types';
+import { toVehicleSlug, idFromVehicleSlug } from '../../utils/vehicleSlug';
 import {
     MessageCircle, ArrowLeft, CheckCircle, XCircle,
     ChevronLeft, ChevronRight, Gauge, Fuel, Settings,
@@ -14,6 +15,8 @@ import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 import Lottie from 'lottie-react';
 import whatsappAnimation from '../../assets/whatsapp-lottie.json';
+import { PublicNavbar } from '../../components/PublicNavbar';
+import { PublicFooter } from '../../components/PublicFooter';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,59 +41,6 @@ const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL',
 const formatPrice = (n: number) => fmt.format(n);
 const formatKm = (n: number) => `${new Intl.NumberFormat('pt-BR').format(n)} km`;
 const PLACEHOLDER = 'https://placehold.co/800x600/e2e8f0/94a3b8?text=Sem+foto';
-
-// ─── Mobile Menu ─────────────────────────────────────────────────────────────
-const MobileMenu: React.FC<{ 
-    isOpen: boolean; 
-    onClose: () => void; 
-    profile: PublicProfile | null;
-    primary: string;
-    theme: string;
-    slug: string;
-}> = ({ isOpen, onClose, profile, primary, theme, slug }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: isOpen ? 1 : 0, x: isOpen ? 0 : '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[100] bg-white text-slate-900 flex flex-col md:hidden"
-            style={theme === 'glass' || theme === 'premium' || theme === 'bold' || theme === 'luxury' 
-                ? { backgroundColor: theme === 'luxury' ? '#0f0e0c' : '#050508', color: 'white' } 
-                : {}}
-        >
-            <div className="p-6 flex items-center justify-between border-b border-white/5">
-                <span className="font-black tracking-tight">{profile?.company_name}</span>
-                <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors">
-                    <X size={24} />
-                </button>
-            </div>
-            <div className="flex-1 p-8 flex flex-col gap-6 overflow-y-auto text-left">
-                <Link to={`/site/${slug}`} onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Estoque</Link>
-                {profile?.website_about_text && <Link to={`/site/${slug}#sobre`} onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Sobre Nós</Link>}
-                <Link to={`/site/${slug}#contato`} onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Contato</Link>
-                
-                {profile?.website_whatsapp && (
-                    <button 
-                        onClick={() => {
-                            const mainWaMsg = profile?.preset_messages?.[0] ? profile.preset_messages[0].replace(/\[NOME\]/gi, profile.company_name) : `Olá! Vim pelo site ${profile.company_name}.`;
-                            window.open(`https://wa.me/${profile.website_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mainWaMsg)}`, '_blank');
-                            onClose();
-                        }}
-                        className="mt-4 w-full py-4 rounded-xl font-black text-white text-center shadow-xl"
-                        style={{ backgroundColor: primary }}
-                    >
-                        WhatsApp
-                    </button>
-                )}
-            </div>
-            <div className="p-8 border-t border-white/5 text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">
-                    © {new Date().getFullYear()} {profile?.company_name}
-                </p>
-            </div>
-        </motion.div>
-    );
-};
 
 
 const replaceVariables = (text: string, data: { vehicle?: Vehicle; profile?: PublicProfile }) => {
@@ -509,12 +459,18 @@ const TradeModal: React.FC<ModalProps> = ({ profile, vehicle, tc, onClose }) => 
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const PublicVehicleDetail: React.FC = () => {
-    const { slug, id } = useParams<{ slug: string; id: string }>();
+interface PublicVehicleDetailProps {
+    forcedSlug?: string;
+    forcedVehicleParam?: string;
+}
+
+const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, forcedVehicleParam }) => {
+    const { slug: paramSlug, id: paramVehicleParam } = useParams<{ slug: string; id: string }>();
+    const slug = forcedSlug || paramSlug;
+    const vehicleParam = forcedVehicleParam || paramVehicleParam;
     const [profile, setProfile] = useState<PublicProfile | null>(null);
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
     const [activeImg, setActiveImg] = useState(0);
@@ -533,32 +489,43 @@ const PublicVehicleDetail: React.FC = () => {
     };
 
     useEffect(() => {
-        if (!slug || !id) return;
+        if (!slug || !vehicleParam) return;
         (async () => {
             try {
                 setLoading(true);
                 const pResult = await websiteService.getProfileBySlug(slug);
                 const p = pResult.profile;
-                
+
                 if (!p) {
                     setNotFound(true);
                     setLoading(false);
                     return;
                 }
-                
+
                 setProfile(p);
 
-                // Agora buscamos o veículo garantindo que ele pertence a este lojista
-                const v = await websiteService.getVehicleById(id, p.id);
-                
+                // Resolver o veículo: pode ser um UUID legado ou um slug amigável
+                let v: Vehicle | null = null;
+
+                // Se parece um UUID completo (36 chars com hifens), busca direto por ID
+                if (/^[0-9a-f-]{36}$/.test(vehicleParam)) {
+                    v = await websiteService.getVehicleById(vehicleParam, p.id);
+                } else {
+                    // Caso contrário, é um slug amigável — extrai prefixo de 8 chars
+                    const idPrefix = idFromVehicleSlug(vehicleParam);
+                    if (idPrefix && idPrefix.length >= 8) {
+                        v = await websiteService.getVehicleBySlugPrefix(idPrefix, p.id);
+                    }
+                }
+
                 if (!v) {
                     setNotFound(true);
                     setLoading(false);
                     return;
                 }
-                
+
                 setVehicle(v);
-                
+
                 // Buscar outros veículos do mesmo lojista para o "Veículos Similares"
                 const all = await websiteService.getVehiclesByUserId(p.id);
                 setAllVehicles(all);
@@ -571,7 +538,7 @@ const PublicVehicleDetail: React.FC = () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         })();
-    }, [slug, id]);
+    }, [slug, vehicleParam]);
 
     const tc = useMemo(() => getTC(profile?.website_theme || 'classic'), [profile?.website_theme]);
     const primary = profile?.website_primary_color || '#10b981';
@@ -583,22 +550,39 @@ const PublicVehicleDetail: React.FC = () => {
         return imgs.length > 0 ? imgs : [PLACEHOLDER];
     }, [vehicle]);
 
-    const similar = useMemo(() =>
-        allVehicles.filter(v => v.id !== vehicle?.id && v.type === vehicle?.type).slice(0, 3),
-        [allVehicles, vehicle]
-    );
+    const similar = useMemo(() => {
+        if (!vehicle) return [];
+        const others = allVehicles.filter(v => v.id !== vehicle.id && v.showOnWebsite !== false);
+        const used = new Set<string>();
+        const result: typeof others = [];
+
+        // 1. Mesmo nome (brand + model)
+        const sameName = others.filter(v =>
+            v.brand.toLowerCase() === vehicle.brand.toLowerCase() &&
+            v.model.toLowerCase() === vehicle.model.toLowerCase()
+        );
+        sameName.forEach(v => { used.add(v.id); result.push(v); });
+
+        // 2. Mesma categoria (type), excluindo já adicionados
+        const sameType = others.filter(v => !used.has(v.id) && v.type === vehicle.type);
+        sameType.forEach(v => { used.add(v.id); result.push(v); });
+
+        // 3. Faixa de preço similar (±30%), excluindo já adicionados
+        const priceMin = vehicle.price * 0.7;
+        const priceMax = vehicle.price * 1.3;
+        const samePrice = others
+            .filter(v => !used.has(v.id) && v.price >= priceMin && v.price <= priceMax)
+            .sort((a, b) => Math.abs(a.price - vehicle.price) - Math.abs(b.price - vehicle.price));
+        samePrice.forEach(v => { used.add(v.id); result.push(v); });
+
+        // 4. Qualquer outro (para completar os slots)
+        others.filter(v => !used.has(v.id)).forEach(v => result.push(v));
+
+        return result.slice(0, 4);
+    }, [allVehicles, vehicle]);
 
     // Hooks must be called before any early returns
     const theme = profile?.website_theme || 'classic';
-    const displayLogo = useMemo(() => {
-        if (profile?.website_branding?.enabled) {
-            const isDarkTheme = ['glass', 'premium', 'bold', 'luxury'].includes(theme);
-            return isDarkTheme 
-                ? (profile.website_branding.logo_dark || profile.website_branding.logo_primary || profile.company_logo)
-                : (profile.website_branding.logo_primary || profile.company_logo);
-        }
-        return profile?.company_logo;
-    }, [profile, theme]);
 
     const ctaBtnPrimary = `w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors`;
     const ctaBtnPrimaryStyle = profile?.website_theme === 'premium'
@@ -658,43 +642,14 @@ const PublicVehicleDetail: React.FC = () => {
                 <meta name="robots" content="index, follow" />
             </Helmet>
 
-            <MobileMenu 
-                isOpen={isMenuOpen} 
-                onClose={() => setIsMenuOpen(false)} 
-                profile={profile} 
-                primary={primary}
-                theme={theme}
+            <PublicNavbar
+                profile={profile}
                 slug={slug!}
+                tc={tc}
+                theme={theme}
+                primary={primary}
+                mainWaUrl={mainWaUrl}
             />
-
-            {/* Nav */}
-            <nav className={tc.nav}>
-                <div className="max-w-[1250px] mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        {displayLogo
-                            ? <img src={displayLogo} alt={profile.company_name} className="h-14 w-auto object-contain" />
-                            : <span className="text-2xl font-extrabold">{profile.company_name}</span>
-                        }
-                        {profile.website_city && (
-                            <span className="hidden sm:flex items-center gap-1 text-xs opacity-50">
-                                <MapPin size={12} />{profile.website_city}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {profile.website_whatsapp && (
-                            <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                className="hidden sm:flex items-center gap-2 bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-green-400 transition-colors">
-                                <MessageCircle size={16} />
-                                <span>WhatsApp</span>
-                            </a>
-                        )}
-                        <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2 opacity-60 hover:opacity-100 rounded-lg transition-colors">
-                            <Menu size={24} />
-                        </button>
-                    </div>
-                </div>
-            </nav>
 
             <div className="max-w-[1250px] mx-auto px-4 py-8">
                 <Link to={`/site/${slug}`} className={`${tc.backBtn} mb-6 inline-flex`}>
@@ -866,13 +821,24 @@ const PublicVehicleDetail: React.FC = () => {
                 {similar.length > 0 && (
                     <div className="mt-12">
                         <h2 className={`text-lg font-bold mb-5 ${tc.title}`}>Veículos Similares</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {similar.map(v => (
-                                <div key={v.id} className={tc.similarCard}>
-                                    <div className="aspect-[4/5] overflow-hidden">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {similar.map(v => {
+                                const isSameName = v.brand.toLowerCase() === vehicle!.brand.toLowerCase() && v.model.toLowerCase() === vehicle!.model.toLowerCase();
+                                const isSameType = !isSameName && v.type === vehicle!.type;
+                                const isSamePrice = !isSameName && !isSameType && v.price >= vehicle!.price * 0.7 && v.price <= vehicle!.price * 1.3;
+                                const badgeLabel = isSameName ? 'Mesmo modelo' : isSameType ? vehicle!.type : isSamePrice ? 'Faixa similar' : null;
+
+                                return (
+                                <Link key={v.id} to={`/site/${slug}/veiculo/${toVehicleSlug(v)}`} className={`block ${tc.similarCard} group`}>
+                                    <div className="relative aspect-[4/5] overflow-hidden">
                                         <img src={v.imageUrl || PLACEHOLDER} alt={`${v.brand} ${v.model}`}
-                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />
+                                        {badgeLabel && (
+                                            <span className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full">
+                                                {badgeLabel}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="p-3">
                                         <p className={tc.similarTitle}>{v.brand} {v.model}</p>
@@ -881,12 +847,10 @@ const PublicVehicleDetail: React.FC = () => {
                                             style={{ color: profile.website_theme === 'premium' ? '#eab308' : primary }}>
                                             {formatPrice(v.price)}
                                         </p>
-                                        <Link to={`/site/${slug}/veiculo/${v.id}`} className={`block ${tc.similarBtn}`}>
-                                            Ver Detalhes
-                                        </Link>
                                     </div>
-                                </div>
-                            ))}
+                                </Link>
+                                );
+                            })}
                         </div>
                         <div className="text-center mt-6">
                             <Link to={`/site/${slug}`}
@@ -977,14 +941,7 @@ const PublicVehicleDetail: React.FC = () => {
             </Dialog>
 
             {/* Footer */}
-            <footer className={tc.footer}>
-                <div className="max-w-[1250px] mx-auto px-4 py-8 text-center">
-                    <p className={tc.footerText}>
-                        © {new Date().getFullYear()} {profile.company_name}{profile.website_city ? ` — ${profile.website_city}` : ''}. Todos os direitos reservados.
-                    </p>
-                    <p className="text-xs opacity-25 mt-1">Powered by nLeads</p>
-                </div>
-            </footer>
+            <PublicFooter profile={profile} mainWaUrl={mainWaUrl} />
 
             {/* Floating WA */}
             {profile.website_whatsapp && (

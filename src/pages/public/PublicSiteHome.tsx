@@ -1,13 +1,16 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { websiteService, PublicProfile } from '../../services/websiteService';
 import { Vehicle } from '../../types';
+import { toVehicleSlug } from '../../utils/vehicleSlug';
 import { MessageCircle, Search, ChevronDown, Car, MapPin, Send, Shield, Award, CreditCard, RefreshCw, Filter, SlidersHorizontal, ExternalLink, Menu, X } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { motion } from 'framer-motion';
 import Lottie from 'lottie-react';
 import whatsappAnimation from '../../assets/whatsapp-lottie.json';
+import { PublicNavbar } from '../../components/PublicNavbar';
+import { PublicFooter } from '../../components/PublicFooter';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -53,8 +56,9 @@ function groupVehiclesByType(vehicles: Vehicle[]) {
 }
 
 function groupVehiclesByMainType(vehicles: Vehicle[]) {
-    const carros = vehicles.filter(v => !['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'].includes(v.type));
-    const motos = vehicles.filter(v => ['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'].includes(v.type));
+    const visibleVehicles = vehicles.filter(v => v.showOnWebsite !== false);
+    const carros = visibleVehicles.filter(v => !['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'].includes(v.type));
+    const motos = visibleVehicles.filter(v => ['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'].includes(v.type));
     return { carros, motos };
 }
 
@@ -330,55 +334,210 @@ const ContactForm: React.FC<{ profile: PublicProfile; tc: TC }> = ({ profile, tc
     );
 };
 
-// ─── Mobile Menu ─────────────────────────────────────────────────────────────
-const MobileMenu: React.FC<{ 
-    isOpen: boolean; 
-    onClose: () => void; 
-    profile: PublicProfile | null;
+// ─── Price Slider ─────────────────────────────────────────────────────────────
+
+const HatchSVG = () => (
+    <svg viewBox="0 0 100 44" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+        {/* Main body */}
+        <path d="M8 32 L8 24 Q8 22 10 22 L16 22 L26 10 Q30 6 38 6 L62 6 Q70 6 74 10 L84 22 L90 22 Q92 22 92 24 L92 32 Z" />
+        {/* Windshield inner */}
+        <path d="M28 10 L24 22" strokeOpacity="0.6" />
+        {/* Rear window inner */}
+        <path d="M62 6 L66 22" strokeOpacity="0.6" />
+        {/* Door split */}
+        <line x1="46" y1="6" x2="46" y2="22" strokeOpacity="0.35" />
+        {/* Wheel arches */}
+        <path d="M8 32 Q8 38 14 38" strokeOpacity="0.4" />
+        <path d="M30 38 Q36 38 36 32" strokeOpacity="0.4" />
+        <path d="M64 32 Q64 38 70 38" strokeOpacity="0.4" />
+        <path d="M86 38 Q92 38 92 32" strokeOpacity="0.4" />
+        {/* Wheels */}
+        <circle cx="22" cy="36" r="6" />
+        <circle cx="78" cy="36" r="6" />
+        {/* Headlight */}
+        <line x1="89" y1="24" x2="93" y2="26" strokeWidth="2" />
+        {/* Bumper */}
+        <line x1="8" y1="32" x2="6" y2="32" strokeWidth="2.5" />
+    </svg>
+);
+
+const SedanSVG = () => (
+    <svg viewBox="0 0 110 44" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+        {/* Main body — longer, lower roofline, distinct trunk */}
+        <path d="M6 32 L6 24 Q6 22 8 22 L18 22 L32 10 Q38 6 50 6 L68 6 Q76 6 80 10 L86 16 L90 16 L96 22 L102 22 Q104 22 104 24 L104 32 Z" />
+        {/* Windshield inner */}
+        <path d="M34 10 L30 22" strokeOpacity="0.6" />
+        {/* C-pillar (trunk slope) */}
+        <path d="M68 6 L74 22" strokeOpacity="0.6" />
+        {/* Door split */}
+        <line x1="52" y1="6" x2="52" y2="22" strokeOpacity="0.35" />
+        {/* Trunk lid line */}
+        <line x1="82" y1="16" x2="96" y2="22" strokeOpacity="0.5" />
+        {/* Wheels */}
+        <circle cx="24" cy="36" r="6.5" />
+        <circle cx="86" cy="36" r="6.5" />
+        {/* Headlight */}
+        <line x1="101" y1="24" x2="105" y2="26" strokeWidth="2" />
+    </svg>
+);
+
+const SUVSVG = () => (
+    <svg viewBox="0 0 110 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+        {/* Main body — tall, upright, boxy */}
+        <path d="M6 36 L6 16 Q6 12 10 10 L24 4 Q32 2 50 2 L72 2 Q82 2 88 8 L98 18 L104 20 Q106 21 106 23 L106 36 Z" />
+        {/* Windshield inner — steep */}
+        <path d="M26 4 L22 20" strokeOpacity="0.6" />
+        {/* Rear glass — near vertical */}
+        <path d="M76 2 L80 20" strokeOpacity="0.6" />
+        {/* Door split */}
+        <line x1="52" y1="2" x2="52" y2="36" strokeOpacity="0.35" />
+        {/* Roof rack */}
+        <line x1="28" y1="2" x2="74" y2="2" strokeOpacity="0.45" strokeDasharray="4 3" />
+        {/* Skid plate / underbody */}
+        <line x1="6" y1="36" x2="106" y2="36" strokeOpacity="0.3" />
+        {/* Wheels — larger */}
+        <circle cx="24" cy="40" r="7.5" />
+        <circle cx="88" cy="40" r="7.5" />
+        {/* Headlight */}
+        <line x1="102" y1="22" x2="107" y2="25" strokeWidth="2" />
+    </svg>
+);
+
+const SportSVG = () => (
+    <svg viewBox="0 0 120 40" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+        {/* Ultra-low body — very long hood, tiny cabin pushed back */}
+        <path d="M4 28 L4 22 L20 18 L38 8 Q46 4 58 4 L74 4 Q82 4 88 8 L100 16 L112 22 Q114 22 114 24 L114 28 Z" />
+        {/* Steeply raked windshield */}
+        <path d="M40 8 L34 22" strokeOpacity="0.65" />
+        {/* Fastback rear */}
+        <path d="M74 4 L82 22" strokeOpacity="0.65" />
+        {/* Door sill line */}
+        <line x1="58" y1="4" x2="58" y2="22" strokeOpacity="0.35" />
+        {/* Long hood crease */}
+        <path d="M4 22 Q24 18 36 22" strokeOpacity="0.45" />
+        {/* Front splitter */}
+        <line x1="4" y1="28" x2="1" y2="28" strokeWidth="2.8" />
+        {/* Rear diffuser */}
+        <line x1="114" y1="28" x2="117" y2="28" strokeWidth="2.8" />
+        {/* Side air vent */}
+        <path d="M20 20 Q26 17 32 20" strokeOpacity="0.5" />
+        {/* Wheels — low profile wide */}
+        <circle cx="26" cy="30" r="5.5" />
+        <circle cx="92" cy="30" r="5.5" />
+        {/* Headlight — sharp angular */}
+        <line x1="110" y1="22" x2="116" y2="25" strokeWidth="2" />
+        {/* Spoiler */}
+        <line x1="78" y1="4" x2="86" y2="2" strokeWidth="2.5" />
+    </svg>
+);
+
+const CAR_STAGES = [
+    { pct: 0.25, icon: HatchSVG, color: '#3b82f6' },
+    { pct: 0.50, icon: SedanSVG, color: '#06b6d4' },
+    { pct: 0.75, icon: SUVSVG,   color: '#10b981' },
+    { pct: 1,    icon: SportSVG, color: '#16a34a' },
+];
+
+const PriceSlider: React.FC<{
+    value: number;
+    max: number;
     primary: string;
-    theme: string;
-}> = ({ isOpen, onClose, profile, primary, theme }) => {
+    matchCount: number;
+    onChange: (v: number) => void;
+}> = ({ value, max, primary, matchCount, onChange }) => {
+    const trackRef = useRef<HTMLDivElement>(null);
+    const [dragging, setDragging] = useState(false);
+    const STEP = 5000;
+
+    const pct = value === 0 ? 1 : Math.min(1, value / max);
+    const stage = CAR_STAGES.find(s => pct <= s.pct) || CAR_STAGES[3];
+    const CarIcon = stage.icon;
+
+    const snap = (v: number) => Math.round(v / STEP) * STEP;
+    const getVal = useCallback((clientX: number) => {
+        if (!trackRef.current) return 0;
+        const { left, width } = trackRef.current.getBoundingClientRect();
+        const ratio = Math.max(0.02, Math.min(1, (clientX - left) / width));
+        return snap(ratio * max);
+    }, [max, snap]);
+
+    const onPointerDown = (e: React.PointerEvent) => {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        setDragging(true);
+        onChange(getVal(e.clientX));
+    };
+    const onPointerMove = (e: React.PointerEvent) => {
+        if (!dragging) return;
+        onChange(getVal(e.clientX));
+    };
+    const onPointerUp = () => setDragging(false);
+
+    const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+    const displayValue = value === 0 ? max : value;
+
     return (
-        <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: isOpen ? 1 : 0, x: isOpen ? 0 : '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[100] bg-white text-slate-900 flex flex-col md:hidden"
-            style={theme === 'glass' || theme === 'premium' || theme === 'bold' || theme === 'luxury' 
-                ? { backgroundColor: theme === 'luxury' ? '#0f0e0c' : '#050508', color: 'white' } 
-                : {}}
-        >
-            <div className="p-6 flex items-center justify-between border-b border-white/5">
-                <span className="font-black tracking-tight">{profile?.company_name}</span>
-                <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors">
-                    <X size={24} />
-                </button>
+        <div className="space-y-2 pt-1">
+            {/* Car icon + price label */}
+            <div className="flex items-end justify-between mb-1">
+                <div className="flex flex-col items-start gap-0.5">
+                    <span className="text-xl font-black text-slate-900 tabular-nums leading-none">
+                        {fmt.format(displayValue)}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                        {matchCount} veículo{matchCount !== 1 ? 's' : ''} disponíve{matchCount !== 1 ? 'is' : 'l'}
+                    </span>
+                </div>
+                <motion.div
+                    key={stage.color}
+                    initial={{ opacity: 0, scale: 0.7, y: 6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="w-16 h-10 opacity-80"
+                    style={{ color: stage.color }}
+                >
+                    <CarIcon />
+                </motion.div>
             </div>
-            <div className="flex-1 p-8 flex flex-col gap-6 overflow-y-auto">
-                <a href="#estoque" onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Estoque</a>
-                {profile?.website_about_text && <a href="#sobre" onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Sobre Nós</a>}
-                <a href="#contato" onClick={onClose} className="text-2xl font-black tracking-tighter uppercase italic">Contato</a>
-                
-                {profile?.website_whatsapp && (
-                    <button 
-                        onClick={() => {
-                            const mainWaMsg = profile?.preset_messages?.[0] ? profile.preset_messages[0].replace(/\[NOME\]/gi, profile.company_name) : `Olá! Vim pelo site ${profile.company_name}.`;
-                            window.open(`https://wa.me/${profile.website_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mainWaMsg)}`, '_blank');
-                            onClose();
-                        }}
-                        className="mt-4 w-full py-4 rounded-xl font-black text-white text-center shadow-xl"
-                        style={{ backgroundColor: primary }}
-                    >
-                        WhatsApp
-                    </button>
-                )}
+
+            {/* Track */}
+            <div
+                ref={trackRef}
+                className="relative h-10 flex items-center cursor-pointer select-none touch-none"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+            >
+                {/* Background track */}
+                <div className="absolute inset-x-0 h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                        className="h-full rounded-full"
+                        animate={{ width: `${pct * 100}%` }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        style={{ background: `linear-gradient(90deg, #3b82f6, ${stage.color})` }}
+                    />
+                </div>
+                {/* Handle */}
+                <motion.div
+                    className="absolute w-6 h-6 bg-white rounded-full shadow-lg border-2 pointer-events-none"
+                    animate={{ left: `calc(${pct * 100}% - 12px)` }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    style={{ borderColor: stage.color, top: '50%', marginTop: '-12px' }}
+                />
+                {/* Stage markers */}
+                {CAR_STAGES.slice(0, 2).map((s, i) => (
+                    <div key={i}
+                        className="absolute w-1 h-1 rounded-full bg-slate-300 pointer-events-none"
+                        style={{ left: `${s.pct * 100}%`, top: '50%', marginTop: '-2px' }}
+                    />
+                ))}
             </div>
-            <div className="p-8 border-t border-white/5 text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">
-                    © {new Date().getFullYear()} {profile?.company_name}
-                </p>
+
+            {/* Min / Max labels */}
+            <div className="flex justify-between text-[9px] font-bold text-slate-300 px-0.5">
+                <span>{fmt.format(STEP)}</span>
+                <span>{fmt.format(max)}</span>
             </div>
-        </motion.div>
+        </div>
     );
 };
 
@@ -391,7 +550,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: P
     const waUrl = buildWaUrl(profile.website_whatsapp || '', waMsg);
     
     return (
-        <Link to={`/site/${slug}/veiculo/${vehicle.id}`} className="block h-full">
+        <Link to={`/site/${slug}/veiculo/${toVehicleSlug(vehicle)}`} className="block h-full">
             <div className={tc.card + " flex flex-col h-full group"}>
                 <div className="relative aspect-[4/5] overflow-hidden bg-slate-100">
                     {vehicle.imageUrl ? (
@@ -451,7 +610,10 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
     const [activeType, setActiveType] = useState('Todos');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [showAll, setShowAll] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [vehicleSearch, setVehicleSearch] = useState('');
+    const [maxPriceFilter, setMaxPriceFilter] = useState(0);
+    const [typeFilter, setTypeFilter] = useState('Todos');
 
     useEffect(() => {
         if (!slug) return;
@@ -489,22 +651,21 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
         return ['Todos', ...t];
     }, [vehicles]);
 
+
+    const hasAdvancedFilters = !!(vehicleSearch || maxPriceFilter > 0 || typeFilter !== 'Todos');
+
+    const clearAdvancedFilters = () => {
+        setVehicleSearch('');
+        setMaxPriceFilter(0);
+        setTypeFilter('Todos');
+    };
+
     const heroStyle: React.CSSProperties = {
         background: profile?.website_use_gradient
             ? `linear-gradient(135deg, ${primary}, ${secondary})`
             : primary
     };
 
-    // Dynamic Logo Logic
-    const displayLogo = useMemo(() => {
-        if (profile?.website_branding?.enabled) {
-            const isDarkTheme = ['glass', 'premium', 'bold', 'luxury'].includes(theme);
-            return isDarkTheme 
-                ? (profile.website_branding.logo_dark || profile.website_branding.logo_primary || profile.company_logo)
-                : (profile.website_branding.logo_primary || profile.company_logo);
-        }
-        return profile?.company_logo;
-    }, [profile, theme]);
 
     const seoTitle = profile?.website_optimization?.meta_title || `${profile?.company_name} — Veículos de Procedência`;
     const seoDesc = profile?.website_optimization?.meta_description || `Confira nosso estoque de veículos em ${profile?.website_city || 'sua região'}. Qualidade e transparência.`;
@@ -512,18 +673,33 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
     // Reset showAll when filters change
     useEffect(() => {
         setShowAll(false);
-    }, [activeType, search, sortOrder]);
+    }, [activeType, search, sortOrder, vehicleSearch, maxPriceFilter, typeFilter]);
+
+    const stockMaxPrice = useMemo(() => {
+        if (!vehicles.length) return 200000;
+        const max = Math.max(...vehicles.map(v => v.price));
+        // Round up to nearest 10k
+        return Math.ceil(max / 10000) * 10000;
+    }, [vehicles]);
 
     const filtered = useMemo(() => {
         let list = [...vehicles];
         if (activeType !== 'Todos') list = list.filter(v => v.type === activeType);
+        if (typeFilter !== 'Todos') list = list.filter(v => v.type === typeFilter);
         if (search.trim()) {
             const q = search.toLowerCase();
             list = list.filter(v => v.brand.toLowerCase().includes(q) || v.model.toLowerCase().includes(q));
         }
+        if (vehicleSearch.trim()) {
+            const q = vehicleSearch.toLowerCase();
+            list = list.filter(v => v.brand.toLowerCase().includes(q) || v.model.toLowerCase().includes(q));
+        }
+        if (maxPriceFilter > 0) {
+            list = list.filter(v => v.price <= maxPriceFilter);
+        }
         list.sort((a, b) => sortOrder === 'asc' ? a.price - b.price : b.price - a.price);
         return list;
-    }, [vehicles, activeType, search, sortOrder]);
+    }, [vehicles, activeType, search, sortOrder, vehicleSearch, maxPriceFilter, typeFilter]);
 
     const displayedVehicles = useMemo(() => {
         if (showAll) return filtered;
@@ -584,78 +760,14 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                 <meta name="robots" content="index, follow" />
             </Helmet>
 
-            <MobileMenu 
-                isOpen={isMenuOpen} 
-                onClose={() => setIsMenuOpen(false)} 
-                profile={profile} 
-                primary={primary}
+            <PublicNavbar
+                profile={profile}
+                slug={slug!}
+                tc={tc}
                 theme={theme}
+                primary={primary}
+                mainWaUrl={mainWaUrl}
             />
-
-            {/* Nav */}
-            {profile.website_theme === 'classic' ? (
-                <nav className={tc.nav}>
-                    <div className="max-w-[1250px] mx-auto px-4 h-20 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            {displayLogo
-                                ? <img src={displayLogo} alt={profile.company_name} className="h-16 w-auto object-contain" />
-                                : <span className="text-3xl font-black tracking-tight">{profile.company_name}</span>
-                            }
-                            {profile.website_city && (
-                                <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-bold bg-slate-100/80 px-3 py-1.5 rounded-full border border-slate-200 ml-2">
-                                    <MapPin size={12} className="text-slate-400" /> {profile.website_city}
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="hidden md:flex items-center gap-8">
-                                <a href="#estoque" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Estoque</a>
-                                {profile.website_about_text && <a href="#sobre" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Sobre Nós</a>}
-                                <a href="#contato" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">Contato</a>
-                            </div>
-                            {profile.website_whatsapp && (
-                                <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                    className={`hidden sm:flex items-center gap-2 text-white text-sm font-bold px-6 py-3 transition-all hover:-translate-y-0.5 hover:shadow-lg ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'}`}
-                                    style={{ backgroundColor: primary }}>
-                                    <MessageCircle size={16} />
-                                    <span>WhatsApp</span>
-                                </a>
-                            )}
-                            <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                                <Menu size={24} />
-                            </button>
-                        </div>
-                    </div>
-                </nav>
-            ) : (
-                <nav className={tc.nav}>
-                    <div className="max-w-[1250px] mx-auto px-4 h-16 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            {displayLogo
-                                ? <img src={displayLogo} alt={profile.company_name} className="h-14 w-auto object-contain" />
-                                : <span className="text-2xl font-extrabold">{profile.company_name}</span>
-                            }
-                            {profile.website_city && (
-                                <span className="hidden sm:flex items-center gap-1 text-xs opacity-50">
-                                    <MapPin size={12} />{profile.website_city}
-                                </span>
-                            )}
-                        </div>
-                        {profile.website_whatsapp && (
-                            <div className="flex items-center gap-3">
-                                <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                    className="hidden sm:flex items-center gap-2 bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-green-400 transition-colors">
-                                    <MessageCircle size={16} />
-                                    <span>WhatsApp</span>
-                                </a>
-                                <button onClick={() => setIsMenuOpen(true)} className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                    <Menu size={24} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </nav>
-            )}
 
             {/* Hero */}
             {profile.website_theme === 'glass' ? (
@@ -800,20 +912,88 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                     </div>
 
                     {/* Floating Search Bar */}
-                    <div className="absolute -bottom-8 left-0 right-0 z-20 max-w-[800px] mx-auto px-4 w-full">
-                        <div className={`bg-white ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-2xl'} p-2 md:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col md:flex-row gap-2 border border-slate-100`}>
-                            <div className="flex-1 relative flex items-center">
-                                <Search size={20} className="absolute left-4 text-slate-400" />
-                                <input value={search} onChange={e => setSearch(e.target.value)} 
-                                    onKeyDown={e => e.key === 'Enter' && scrollToStock(e)}
-                                    placeholder="Busque por marca ou modelo..."
-                                    className="w-full pl-12 pr-4 py-4 md:py-3 bg-transparent text-slate-900 font-bold placeholder-slate-400 focus:outline-none" />
+                    <div className={`absolute left-0 right-0 z-20 max-w-[800px] mx-auto px-4 w-full transition-all duration-300 ${showAdvancedFilters ? '-bottom-[210px] md:-bottom-[180px]' : '-bottom-8'}`}>
+                        <div className={`bg-white ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-2xl'} shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden`}>
+                            {/* Main search row */}
+                            <div className="p-2 md:p-3 flex flex-col md:flex-row gap-2">
+                                <div className="flex-1 relative flex items-center">
+                                    <Search size={20} className="absolute left-4 text-slate-400" />
+                                    <input value={search} onChange={e => setSearch(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && scrollToStock(e)}
+                                        placeholder="Busque por marca ou modelo..."
+                                        className="w-full pl-12 pr-4 py-4 md:py-3 bg-transparent text-slate-900 font-bold placeholder-slate-400 focus:outline-none" />
+                                </div>
+                                <div className="w-full md:w-auto flex items-center gap-2">
+                                    <a href="#estoque" onClick={scrollToStock}
+                                        className={`flex-1 md:flex-none px-6 py-4 md:py-3 ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'} text-white font-bold transition-all text-center cursor-pointer`}
+                                        style={{ backgroundColor: primary }}>
+                                        Buscar Ofertas
+                                    </a>
+                                    <button
+                                        onClick={() => setShowAdvancedFilters(p => !p)}
+                                        className={`flex-1 md:flex-none px-6 py-4 md:py-3 ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'} font-bold transition-all text-center flex items-center justify-center gap-2 border-2 ${showAdvancedFilters ? 'bg-red-50 border-red-200' : 'bg-red-50/60 border-red-100 hover:bg-red-50'}`}
+                                        style={{ color: '#dc2626' }}>
+                                        <SlidersHorizontal size={16} />
+                                        <span>Mais Opções</span>
+                                        {hasAdvancedFilters && <span className="w-2 h-2 rounded-full bg-red-500 ml-0.5" />}
+                                    </button>
+                                </div>
                             </div>
-                            <div className="w-full md:w-auto flex items-center gap-2">
-                                <a href="#estoque" onClick={scrollToStock} className={`flex-1 md:flex-none px-8 py-4 md:py-3 ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-xl'} text-white font-bold transition-all text-center cursor-pointer`} style={{ backgroundColor: primary }}>
-                                    Buscar Ofertas
-                                </a>
-                            </div>
+
+                            {/* Advanced filters panel */}
+                            {showAdvancedFilters && (
+                                <div className="px-3 pb-4 border-t border-slate-100">
+                                    <div className="pt-4 grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-4">
+                                        {/* Marca + Modelo unificado */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Marca / Modelo</label>
+                                            <div className="relative">
+                                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                                <input
+                                                    value={vehicleSearch}
+                                                    onChange={e => setVehicleSearch(e.target.value)}
+                                                    placeholder="Ex: Honda, Civic…"
+                                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-9 pr-4 py-2.5 text-sm font-bold text-slate-700 placeholder-slate-300 focus:outline-none focus:border-red-200 transition-all" />
+                                            </div>
+                                        </div>
+
+                                        {/* Tipo */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Tipo</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={typeFilter}
+                                                    onChange={e => setTypeFilter(e.target.value)}
+                                                    className="w-full appearance-none bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:border-red-200 transition-all cursor-pointer">
+                                                    {types.map(t => <option key={t} value={t}>{t}</option>)}
+                                                </select>
+                                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                            </div>
+                                        </div>
+
+                                        {/* Preço — ocupa 2 colunas para o slider ter espaço */}
+                                        <div className="col-span-2 space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Preço Máximo</label>
+                                            <PriceSlider
+                                                value={maxPriceFilter}
+                                                max={stockMaxPrice}
+                                                primary={primary}
+                                                matchCount={filtered.length}
+                                                onChange={setMaxPriceFilter}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {hasAdvancedFilters && (
+                                        <div className="mt-3 flex justify-end">
+                                            <button onClick={clearAdvancedFilters}
+                                                className="text-xs font-bold text-red-400 hover:text-red-600 transition-colors flex items-center gap-1">
+                                                <X size={12} /> Limpar filtros
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -1057,7 +1237,7 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                                                 viewport={{ once: true, margin: "-50px" }}
                                                 transition={{ duration: 0.5, delay: (i % 6) * 0.1 }}
                                             >
-                                                <Link to={`/site/${slug}/veiculo/${vehicle.id}`}>
+                                                <Link to={`/site/${slug}/veiculo/${toVehicleSlug(vehicle)}`}>
                                                     <VehicleCard vehicle={vehicle} slug={slug!} tc={tc} profile={profile} />
                                                 </Link>
                                             </motion.div>
@@ -1211,137 +1391,7 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
             ) : null}
 
             {/* Footer */}
-            {/* Footer */}
-            {profile.website_theme === 'classic' ? (
-                <footer className="bg-slate-950 text-white mt-16 rounded-t-[40px] shadow-2xl">
-                    <div className="max-w-[1250px] mx-auto px-4 py-16">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12">
-                            {/* Col 1: Brand & About */}
-                            <div className="md:col-span-2">
-                                {profile.company_logo
-                                    ? <img src={profile.company_logo} alt={profile.company_name} className="h-16 w-auto object-contain mb-6 brightness-0 invert" />
-                                    : <p className="text-4xl font-black mb-6 tracking-tight">{profile.company_name}</p>
-                                }
-                                {(profile.website_about_text || profile.website_hero_subtitle) && (
-                                    <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-6 whitespace-pre-wrap">
-                                        {profile.website_about_text || profile.website_hero_subtitle}
-                                    </p>
-                                )}
-                                {/* Socials */}
-                                <div className="flex gap-3">
-                                    {profile.website_instagram && (
-                                        <a href={`https://instagram.com/${profile.website_instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold">
-                                            IG
-                                        </a>
-                                    )}
-                                    {profile.website_facebook && (
-                                        <a href={profile.website_facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold">
-                                            FB
-                                        </a>
-                                    )}
-                                    {profile.website_youtube && (
-                                        <a href={profile.website_youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold">
-                                            YT
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                            {/* Col 3: Links */}
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Links Rápidos</p>
-                                <div className="space-y-4">
-                                    <a href="#estoque" className="block text-sm font-medium text-slate-400 hover:text-white hover:translate-x-1 transition-all">Ver Estoque</a>
-                                    {profile.website_sections?.show_vehicle_categories && (
-                                        <a href="#categorias" className="block text-sm font-medium text-slate-400 hover:text-white hover:translate-x-1 transition-all">Categorias</a>
-                                    )}
-                                    {profile.website_about_text && (
-                                        <a href="#sobre" className="block text-sm font-medium text-slate-400 hover:text-white hover:translate-x-1 transition-all">Sobre a Loja</a>
-                                    )}
-                                </div>
-                            </div>
-                            {/* Col 4: Contato */}
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Contato</p>
-                                <div className="space-y-4">
-                                    {profile.website_city && (
-                                        <p className="flex items-start gap-3 text-sm font-medium text-slate-400">
-                                            <MapPin size={18} className="text-slate-600 shrink-0 mt-0.5" /> 
-                                            <span>{profile.website_city}</span>
-                                        </p>
-                                    )}
-                                    {profile.website_whatsapp && (
-                                        <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                            className="flex items-center gap-3 text-sm font-medium text-slate-400 hover:text-white transition-colors">
-                                            <MessageCircle size={18} className="text-slate-600 shrink-0" /> WhatsApp
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="border-t border-slate-800/50 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <p className="text-slate-500 text-sm font-medium">© {new Date().getFullYear()} {profile.company_name}. Todos os direitos reservados.</p>
-                            <p className="text-slate-700 text-xs font-bold tracking-wider">POWERED BY NLEADS</p>
-                        </div>
-                    </div>
-                </footer>
-            ) : (
-                <footer className={tc.footer}>
-                    <div className="max-w-[1250px] mx-auto px-4">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-                            <div className="md:col-span-2">
-                                <h3 className="text-xl font-black text-white mb-4 tracking-tight">{profile.company_name}</h3>
-                                <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-6">
-                                    {profile.website_about_text ? profile.website_about_text.slice(0, 150) + '...' : 'Ajudando você a encontrar o veículo perfeito com total transparência e segurança.'}
-                                </p>
-                                <div className="flex items-center gap-3">
-                                    {profile.website_instagram && (
-                                        <a href={profile.website_instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">IG</a>
-                                    )}
-                                    {profile.website_facebook && (
-                                        <a href={profile.website_facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">FB</a>
-                                    )}
-                                    {profile.website_youtube && (
-                                        <a href={profile.website_youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">YT</a>
-                                    )}
-                                    {profile.website_tiktok && (
-                                        <a href={profile.website_tiktok} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 hover:-translate-y-1 flex items-center justify-center transition-all text-sm font-bold text-white">TK</a>
-                                    )}
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Links Rápidos</p>
-                                <div className="space-y-4">
-                                    <a href="#estoque" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Ver Estoque</a>
-                                    {profile.website_about_text && <a href="#sobre" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Sobre a Loja</a>}
-                                    {profile.website_terms_of_use && <a href="#termos" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Termos de Uso</a>}
-                                    {profile.website_privacy_policy && <a href="#privacidade" className="block text-sm font-medium text-slate-400 hover:text-white transition-all">Política de Privacidade</a>}
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Contato</p>
-                                <div className="space-y-4">
-                                    {profile.website_city && (
-                                        <p className="flex items-start gap-3 text-sm font-medium text-slate-400">
-                                            <MapPin size={18} className="text-slate-600 shrink-0 mt-0.5" /> 
-                                            <span>{profile.website_city}</span>
-                                        </p>
-                                    )}
-                                    {profile.website_whatsapp && (
-                                        <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                            className="flex items-center gap-3 text-sm font-medium text-slate-400 hover:text-white transition-colors">
-                                            <MessageCircle size={18} className="text-slate-600 shrink-0" /> WhatsApp
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <p className="text-slate-500 text-sm font-medium">© {new Date().getFullYear()} {profile.company_name}. Todos os direitos reservados.</p>
-                            <p className="text-slate-700 text-xs font-bold tracking-wider">POWERED BY NLEADS</p>
-                        </div>
-                    </div>
-                </footer>
-            )}
+            <PublicFooter profile={profile} mainWaUrl={mainWaUrl} />
 
             {/* Floating WA */}
             {profile.website_whatsapp && (

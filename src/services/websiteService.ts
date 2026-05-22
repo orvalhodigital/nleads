@@ -132,6 +132,7 @@ const mapRowToVehicle = (row: any): Vehicle => ({
     imageUrl: row.image_url || '',
     galleryImages: row.gallery_images || [],
     status: (row.status as 'available' | 'sold') || 'available',
+    showOnWebsite: row.show_on_website !== false,
 });
 
 export const websiteService = {
@@ -157,15 +158,31 @@ export const websiteService = {
     },
 
     async getVehiclesByUserId(userId: string): Promise<Vehicle[]> {
-        const response = await supabase
-            .from('vehicles')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('status', 'available')
-            .order('created_at', { ascending: false });
+        try {
+            const { data, error } = await supabase
+                .from('vehicles')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('status', 'available')
+                .neq('show_on_website', false)
+                .order('created_at', { ascending: false });
 
-        const data = handleSupabaseResponse(response);
-        return (data || []).map(mapRowToVehicle);
+            if (!error) {
+                return (data || []).map(mapRowToVehicle);
+            }
+
+            // Fallback: coluna ainda não existe no banco — busca tudo e filtra no JS
+            const { data: fallbackData } = await supabase
+                .from('vehicles')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('status', 'available')
+                .order('created_at', { ascending: false });
+
+            return (fallbackData || []).map(mapRowToVehicle).filter(v => v.showOnWebsite !== false);
+        } catch {
+            return [];
+        }
     },
 
     async getVehicleById(id: string, ownerId?: string): Promise<Vehicle | null> {
@@ -179,6 +196,18 @@ export const websiteService = {
         }
 
         const response = await query.single();
+
+        const data = handleSupabaseResponse(response);
+        return data ? mapRowToVehicle(data) : null;
+    },
+
+    async getVehicleBySlugPrefix(idPrefix: string, ownerId: string): Promise<Vehicle | null> {
+        const response = await supabase
+            .from('vehicles')
+            .select('*')
+            .ilike('id', `${idPrefix}%`)
+            .eq('user_id', ownerId)
+            .maybeSingle();
 
         const data = handleSupabaseResponse(response);
         return data ? mapRowToVehicle(data) : null;

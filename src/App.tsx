@@ -42,6 +42,7 @@ const WebsitePage = lazy(() => import('./pages/WebsitePage'));
 const PublicSiteHome = lazy(() => import('./pages/public/PublicSiteHome'));
 const PublicVehicleDetail = lazy(() => import('./pages/public/PublicVehicleDetail'));
 const CustomDomainRedirect = lazy(() => import('./pages/CustomDomainRedirect'));
+const CustomDomainVehicleDetail = lazy(() => import('./pages/CustomDomainVehicleDetail'));
 
 const App: React.FC = () => {
   return (
@@ -87,6 +88,7 @@ const App: React.FC = () => {
                 <>
                   {/* Domínio personalizado do cliente: mostra o site público */}
                   <Route path="/" element={<CustomDomainRedirect />} />
+                  <Route path="/veiculo/:vehicleParam" element={<CustomDomainVehicleDetail />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               )}

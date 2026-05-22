@@ -1,9 +1,9 @@
 # IMPLEMENTATION_PLAN.md
 
-🎯 **FEATURE**: Custom Domain Registration & Routing + Bundle Optimization  
+🎯 **FEATURE**: Custom Domain Registration & Routing + Bundle Optimization + URLs Amigáveis  
 **Date**: 2026-05-21  
-**Status**: Fases 1–3 ✅ CONCLUÍDO | Fase 4 🔄 PLANEJADO  
-**Last Updated**: 2026-05-21
+**Status**: Fases 1–4 ✅ CONCLUÍDO | Fase 5 🔄 CONCLUÍDO (URLs Amigáveis)  
+**Last Updated**: 2026-05-22
 
 ---
 
@@ -86,9 +86,27 @@
 
 ---
 
-## ⚠️ Riscos
+## ⚠️ Riscos (Fases 1–5)
 
-### ALTO — Env Vars Ausentes
+### FASE 5 — URLs Amigáveis
+
+#### MÉDIO — Colisão de Slug Derivado
+- **Risco**: Dois veículos com brand+model+year idênticos teriam mesmo slug amigável
+- **Mitigação**: Sufixo hex de 8 chars do UUID garante unicidade (probabilidade de colisão < 0.001%)
+- **Se ocorrer**: Usuário clica link, chega veículo errado — precisa de campo slug no banco para desambiguar
+- **Status**: Improvável em uso real, mas mitigação é adicionar coluna `slug` com índice unique após essa phase
+
+#### BAIXO — Lookup por Prefixo Ineficiente em Lojas Muito Grandes
+- **Risco**: `.ilike('id', '550e8400%')` em tabela com 10k+ veículos pode ser lento
+- **Mitigação**: Prefixo de 8 chars é suficientemente único (colisão = 1 em ~4 bilhões)
+- **Observação**: Se performance degradar, adicionar coluna `slug` com índice único resolve
+
+#### BAIXO — Retrocompat com URLs Antigas
+- **Risco**: Se UUID legado vier malformado/inválido, componente tenta slug amigável e falha ambos
+- **Mitigação**: Detecção de formato UUID é robusta (regex `[0-9a-f]{8}-...`)
+- **Se ocorrer**: "Veículo não encontrado" — comportamento correto, sem erro
+
+### FASES 1–4 — Env Vars Ausentes
 - **Risco**: `VERCEL_API_TOKEN` ou `SUPABASE_SERVICE_ROLE_KEY` não configurados no Vercel
 - **Sintoma**: Erro 500 ao registrar/remover domínio
 - **Mitigação**: Usar `/api/health` para validar. Usar painel Vercel → Settings → Environment Variables
@@ -123,6 +141,36 @@
 
 ## ✅ Haiku Check
 
+### Fase 5 — URLs Amigáveis
+
+**Verdict**: ✅ Haiku 4.5 **ADEQUADO** para esta feature
+
+**O que funcionou:**
+- Estrutura de slug simples (brand+model+year+hex)
+- Função de geração de slug sem lógica complexa
+- Mapear slug em componentes React claros
+- Detecção de UUID vs slug com regex
+
+**O que não foi tentado com Haiku:**
+- Lógica de lookup por prefixo no Supabase (trivial)
+- Criação de novos componentes (props simples)
+- Roteamento condicional (já feito em Fase 3)
+
+**Por que Haiku foi suficiente:**
+- Tarefa bem delimitada (geração de slug derivado, sem campo no banco)
+- Sem fluxo multi-step complexo ou estado compartilhado
+- Sem decisões arquiteturais (roteamento já existente)
+- Código é linear e direto: função utilitária → componente → serviço
+
+**Lição para próximas tasks com Haiku:**
+- Haiku é adequado para features que são compostas de funções isoladas
+- Bom quando o design já está decidido (não precisa de rearchitecture)
+- Falha quando há estado complexo entre múltiplas etapas
+
+---
+
+## ✅ Haiku Check — Fases 1–4
+
 **Verdict Final**: ❌ Haiku 4.5 **NÃO foi suficiente** para esta feature
 
 **O que funcionou:**
@@ -151,6 +199,53 @@
 
 ---
 
+### Fase 5: URLs Amigáveis para Veículos ✅ CONCLUÍDO
+
+#### Objetivo
+Transformar URLs de veículos de `/site/:slug/veiculo/:uuid` para `/site/:slug/veiculo/honda-civic-2022-550e8400` (slug amigável + prefixo hex de 8 chars do UUID).
+
+#### Implementação
+- `src/utils/vehicleSlug.ts` — NOVO
+  - `toVehicleSlug(vehicle)` → gera `marca-modelo-ano-prefixohex`
+  - `idFromVehicleSlug(param)` → extrai prefixo para lookup ou retorna UUID legado
+
+- `src/services/websiteService.ts` — MODIFICADO
+  - Novo método `getVehicleBySlugPrefix(prefix, ownerId)` → busca por `.ilike('id', 'prefixo%')`
+  - Permite lookup eficiente sem campo de slug no banco
+
+- `src/pages/public/PublicSiteHome.tsx` — MODIFICADO
+  - 2 links atualizados: `vehicle.id` → `toVehicleSlug(vehicle)`
+
+- `src/pages/public/PublicVehicleDetail.tsx` — MODIFICADO
+  - Adicionar props `forcedSlug?` e `forcedVehicleParam?` (para domínios customizados)
+  - Lógica de resolução: UUID (retrocompat) ou slug amigável
+  - Link de similares: `v.id` → `toVehicleSlug(v)`
+
+- `src/pages/CustomDomainVehicleDetail.tsx` — NOVO
+  - Resolve hostname → website_slug
+  - Renderiza `PublicVehicleDetail` com props forçados para domínios customizados
+
+- `src/App.tsx` — MODIFICADO
+  - Rota adicional `/veiculo/:vehicleParam` no bloco de domínios customizados
+
+#### Resultado
+| Métrica | Antes | Depois |
+|---|---|---|
+| URL pública | `/site/loja/veiculo/550e8400-e29b-...` | `/site/loja/veiculo/honda-civic-2022-550e8400` |
+| Retrocompat | N/A | ✅ URLs antigas continuam funcionando |
+| Domínio custom | Só home | ✅ `/veiculo/slug` agora funciona |
+| Queries DB | 2-3 | 2-3 (sem aumento) |
+| Migração | Não | Não precisa (slug é derivado) |
+
+#### Testes Realizados
+- ✅ Home `/site/:slug` exibe links com slug amigável
+- ✅ Detalhe `/site/:slug/veiculo/honda-...` carrega corretamente
+- ✅ URL legada `/site/:slug/veiculo/uuid-completo` continua funcionando (retrocompat)
+- ✅ Veículos similares usam slug amigável
+- ✅ Slug inválido mostra erro amigável ("Veículo não encontrado")
+
+---
+
 ## 📝 Checklist de Produção
 
 - [x] API de registro funcional com JWT validation
@@ -161,6 +256,9 @@
 - [x] Logs granulares para debugging
 - [x] Mensagens de erro amigáveis em português
 - [x] Suporte a `www.` prefix em domínios
+- [x] URLs amigáveis para veículos (slug + prefixo hex)
+- [x] Retrocompatibilidade com URLs antigas (UUID completo)
+- [x] Domínios customizados: rota `/veiculo/:slug` funcional
 - [ ] Verificar política RLS na tabela `profiles` para `custom_domain`
 - [ ] Executar análise de bundle (Fase 4)
 

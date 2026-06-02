@@ -336,100 +336,10 @@ const ContactForm: React.FC<{ profile: PublicProfile; tc: TC }> = ({ profile, tc
 
 // ─── Price Slider ─────────────────────────────────────────────────────────────
 
-const HatchSVG = () => (
-    <svg viewBox="0 0 100 44" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
-        {/* Main body */}
-        <path d="M8 32 L8 24 Q8 22 10 22 L16 22 L26 10 Q30 6 38 6 L62 6 Q70 6 74 10 L84 22 L90 22 Q92 22 92 24 L92 32 Z" />
-        {/* Windshield inner */}
-        <path d="M28 10 L24 22" strokeOpacity="0.6" />
-        {/* Rear window inner */}
-        <path d="M62 6 L66 22" strokeOpacity="0.6" />
-        {/* Door split */}
-        <line x1="46" y1="6" x2="46" y2="22" strokeOpacity="0.35" />
-        {/* Wheel arches */}
-        <path d="M8 32 Q8 38 14 38" strokeOpacity="0.4" />
-        <path d="M30 38 Q36 38 36 32" strokeOpacity="0.4" />
-        <path d="M64 32 Q64 38 70 38" strokeOpacity="0.4" />
-        <path d="M86 38 Q92 38 92 32" strokeOpacity="0.4" />
-        {/* Wheels */}
-        <circle cx="22" cy="36" r="6" />
-        <circle cx="78" cy="36" r="6" />
-        {/* Headlight */}
-        <line x1="89" y1="24" x2="93" y2="26" strokeWidth="2" />
-        {/* Bumper */}
-        <line x1="8" y1="32" x2="6" y2="32" strokeWidth="2.5" />
-    </svg>
-);
-
-const SedanSVG = () => (
-    <svg viewBox="0 0 110 44" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
-        {/* Main body — longer, lower roofline, distinct trunk */}
-        <path d="M6 32 L6 24 Q6 22 8 22 L18 22 L32 10 Q38 6 50 6 L68 6 Q76 6 80 10 L86 16 L90 16 L96 22 L102 22 Q104 22 104 24 L104 32 Z" />
-        {/* Windshield inner */}
-        <path d="M34 10 L30 22" strokeOpacity="0.6" />
-        {/* C-pillar (trunk slope) */}
-        <path d="M68 6 L74 22" strokeOpacity="0.6" />
-        {/* Door split */}
-        <line x1="52" y1="6" x2="52" y2="22" strokeOpacity="0.35" />
-        {/* Trunk lid line */}
-        <line x1="82" y1="16" x2="96" y2="22" strokeOpacity="0.5" />
-        {/* Wheels */}
-        <circle cx="24" cy="36" r="6.5" />
-        <circle cx="86" cy="36" r="6.5" />
-        {/* Headlight */}
-        <line x1="101" y1="24" x2="105" y2="26" strokeWidth="2" />
-    </svg>
-);
-
-const SUVSVG = () => (
-    <svg viewBox="0 0 110 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
-        {/* Main body — tall, upright, boxy */}
-        <path d="M6 36 L6 16 Q6 12 10 10 L24 4 Q32 2 50 2 L72 2 Q82 2 88 8 L98 18 L104 20 Q106 21 106 23 L106 36 Z" />
-        {/* Windshield inner — steep */}
-        <path d="M26 4 L22 20" strokeOpacity="0.6" />
-        {/* Rear glass — near vertical */}
-        <path d="M76 2 L80 20" strokeOpacity="0.6" />
-        {/* Door split */}
-        <line x1="52" y1="2" x2="52" y2="36" strokeOpacity="0.35" />
-        {/* Roof rack */}
-        <line x1="28" y1="2" x2="74" y2="2" strokeOpacity="0.45" strokeDasharray="4 3" />
-        {/* Skid plate / underbody */}
-        <line x1="6" y1="36" x2="106" y2="36" strokeOpacity="0.3" />
-        {/* Wheels — larger */}
-        <circle cx="24" cy="40" r="7.5" />
-        <circle cx="88" cy="40" r="7.5" />
-        {/* Headlight */}
-        <line x1="102" y1="22" x2="107" y2="25" strokeWidth="2" />
-    </svg>
-);
-
-const SportSVG = () => (
-    <svg viewBox="0 0 120 40" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
-        {/* Ultra-low body — very long hood, tiny cabin pushed back */}
-        <path d="M4 28 L4 22 L20 18 L38 8 Q46 4 58 4 L74 4 Q82 4 88 8 L100 16 L112 22 Q114 22 114 24 L114 28 Z" />
-        {/* Steeply raked windshield */}
-        <path d="M40 8 L34 22" strokeOpacity="0.65" />
-        {/* Fastback rear */}
-        <path d="M74 4 L82 22" strokeOpacity="0.65" />
-        {/* Door sill line */}
-        <line x1="58" y1="4" x2="58" y2="22" strokeOpacity="0.35" />
-        {/* Long hood crease */}
-        <path d="M4 22 Q24 18 36 22" strokeOpacity="0.45" />
-        {/* Front splitter */}
-        <line x1="4" y1="28" x2="1" y2="28" strokeWidth="2.8" />
-        {/* Rear diffuser */}
-        <line x1="114" y1="28" x2="117" y2="28" strokeWidth="2.8" />
-        {/* Side air vent */}
-        <path d="M20 20 Q26 17 32 20" strokeOpacity="0.5" />
-        {/* Wheels — low profile wide */}
-        <circle cx="26" cy="30" r="5.5" />
-        <circle cx="92" cy="30" r="5.5" />
-        {/* Headlight — sharp angular */}
-        <line x1="110" y1="22" x2="116" y2="25" strokeWidth="2" />
-        {/* Spoiler */}
-        <line x1="78" y1="4" x2="86" y2="2" strokeWidth="2.5" />
-    </svg>
-);
+const HatchSVG = () => <span className="text-4xl leading-none select-none" role="img" aria-label="Hatch">🚗</span>;
+const SedanSVG = () => <span className="text-4xl leading-none select-none" role="img" aria-label="Sedan">🚕</span>;
+const SUVSVG  = () => <span className="text-4xl leading-none select-none" role="img" aria-label="SUV">🚙</span>;
+const SportSVG = () => <span className="text-4xl leading-none select-none" role="img" aria-label="Esportivo">🏎️</span>;
 
 const CAR_STAGES = [
     { pct: 0.25, icon: HatchSVG, color: '#3b82f6' },
@@ -492,8 +402,7 @@ const PriceSlider: React.FC<{
                     initial={{ opacity: 0, scale: 0.7, y: 6 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className="w-16 h-10 opacity-80"
-                    style={{ color: stage.color }}
+                    className="flex items-center justify-center"
                 >
                     <CarIcon />
                 </motion.div>
@@ -552,7 +461,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: P
     return (
         <Link to={`/site/${slug}/veiculo/${toVehicleSlug(vehicle)}`} className="block h-full">
             <div className={tc.card + " flex flex-col h-full group"}>
-                <div className="relative aspect-[4/5] overflow-hidden bg-slate-100">
+                <div className="relative aspect-square overflow-hidden bg-slate-100">
                     {vehicle.imageUrl ? (
                         <img src={vehicle.imageUrl} alt={`${vehicle.brand} ${vehicle.model}`}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"

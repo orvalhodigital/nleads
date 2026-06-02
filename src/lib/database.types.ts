@@ -234,6 +234,9 @@ export interface Database {
                     company_name: string | null
                     company_logo: string | null
                     monthly_sales_goal: number | null
+                    monthly_leads_goal: number | null
+                    monthly_visits_goal: number | null
+                    monthly_revenue_goal: number | null
                     preset_messages: string[] | null
                     website_active: boolean | null
                     website_theme: string | null
@@ -271,6 +274,9 @@ export interface Database {
                     company_name?: string | null
                     company_logo?: string | null
                     monthly_sales_goal?: number | null
+                    monthly_leads_goal?: number | null
+                    monthly_visits_goal?: number | null
+                    monthly_revenue_goal?: number | null
                     preset_messages?: string[] | null
                     website_active?: boolean | null
                     website_theme?: string | null
@@ -308,6 +314,9 @@ export interface Database {
                     company_name?: string | null
                     company_logo?: string | null
                     monthly_sales_goal?: number | null
+                    monthly_leads_goal?: number | null
+                    monthly_visits_goal?: number | null
+                    monthly_revenue_goal?: number | null
                     preset_messages?: string[] | null
                     website_active?: boolean | null
                     website_theme?: string | null

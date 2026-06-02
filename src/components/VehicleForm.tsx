@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import PageContainer from './ui/PageContainer';
 import { useNavigate } from 'react-router-dom';
 import {
     X, Upload, Loader2, Check, Plus, DollarSign, Calendar, Gauge, Zap,
@@ -133,37 +134,50 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         optionals: [], imageUrl: '', galleryImages: []
     });
 
+    console.log('VehicleForm Render:', { initialData, isEditing, formData });
+
     // ── LocalStorage Draft Management ──────────────────────────────────────────
     useEffect(() => {
-        const draftKey = `vehicle_form_draft_${initialData?.id || 'new'}`;
+        console.log('VehicleForm loader useEffect running:', { id: initialData?.id, isEditing, hasInitialData: !!initialData });
         
-        // On mount: Load draft if it exists
-        const savedDraft = localStorage.getItem(draftKey);
-        if (savedDraft) {
-            try {
-                const parsed = JSON.parse(savedDraft);
-                setFormData(prev => ({ ...prev, ...parsed }));
-            } catch (e) {
-                console.error("Error loading draft:", e);
+        // When editing, always load initialData (don't use drafts for existing vehicles)
+        if (isEditing) {
+            if (initialData) {
+                const { id, status, saleDetails, ...rest } = initialData;
+                console.log('VehicleForm loader setting formData:', rest);
+                setFormData({
+                    ...rest,
+                    galleryImages: rest.galleryImages || []
+                });
             }
-        } else if (initialData) {
-            // If no draft but editing, use initialData
-            const { id, status, saleDetails, ...rest } = initialData;
-            setFormData({
-                ...rest,
-                galleryImages: rest.galleryImages || []
-            });
+        } else {
+            // When creating new, try to load draft
+            const draftKey = 'vehicle_form_draft_new';
+            const savedDraft = localStorage.getItem(draftKey);
+            console.log('VehicleForm loader loading draft:', savedDraft);
+            if (savedDraft) {
+                try {
+                    const parsed = JSON.parse(savedDraft);
+                    setFormData(prev => ({ ...prev, ...parsed }));
+                } catch (e) {
+                    console.error("Error loading draft:", e);
+                }
+            }
         }
-    }, [initialData?.id]);
+    }, [initialData?.id, isEditing]);
 
-    // Save draft on every change
+    // Save draft on every change (only when creating a new vehicle)
     useEffect(() => {
-        const draftKey = `vehicle_form_draft_${initialData?.id || 'new'}`;
+        if (isEditing) return;
+        console.log('VehicleForm saver useEffect running:', { formData });
+        const draftKey = 'vehicle_form_draft_new';
         localStorage.setItem(draftKey, JSON.stringify(formData));
-    }, [formData, initialData?.id]);
+    }, [formData, isEditing]);
 
     const clearDraft = () => {
-        const draftKey = `vehicle_form_draft_${initialData?.id || 'new'}`;
+        if (isEditing) return;
+        console.log('VehicleForm clearDraft running');
+        const draftKey = 'vehicle_form_draft_new';
         localStorage.removeItem(draftKey);
     };
 
@@ -251,7 +265,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             if (!e.target.files || e.target.files.length === 0) return;
             const file = e.target.files[0];
             setUploading(true);
-            const resizedBlob = await resizeImage(file, 1080, 1350); // Standard size for 4:5 aspect ratio
+            const resizedBlob = await resizeImage(file, 1080, 1080); // Square crop (1:1 aspect ratio)
             const resizedFile = new File([resizedBlob], "image.webp", { type: 'image/webp' });
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
 
@@ -284,8 +298,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         try {
             const urls: string[] = [];
             for (const file of files) {
-                // Gallery: 600px wide, proportional height (max 450px)
-                const resizedBlob = await resizeImage(file, 1080, 1350, 0.85);
+                // Gallery: Square crop (1:1 aspect ratio)
+                const resizedBlob = await resizeImage(file, 1080, 1080);
                 const resizedFile = new File([resizedBlob], 'gallery.webp', { type: 'image/webp' });
                 const fileName = `gallery/${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
 
@@ -379,7 +393,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     };
 
     return (
-        <div className="max-w-[1200px] mx-auto w-full pb-32 animate-fadeUp">
+        <PageContainer className="pb-32 animate-fadeUp">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-6">
                     <button
@@ -756,7 +770,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         {/* Foto Principal */}
                         <div className="space-y-4">
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
-                            <div className="aspect-[4/5] max-w-[280px] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                            <div className="aspect-square max-w-[280px] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
                                 {formData.imageUrl ? (
                                     <>
                                         <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -786,7 +800,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 </div>
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
                             </label>
-                            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Padrão: 1080×1350px (4:5) · WebP</p>
+                            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Padrão: 1080×1080px (1:1) · WebP</p>
                         </div>
 
                         {/* Galeria */}
@@ -799,7 +813,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             {(formData.galleryImages?.length ?? 0) > 0 && (
                                 <div className="grid grid-cols-3 gap-2">
                                     {formData.galleryImages!.map((url, i) => (
-                                        <div key={i} className="relative group aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
+                                        <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
                                             <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
@@ -833,7 +847,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     />
                                 </label>
                             )}
-                            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 1080×1350px · WebP</p>
+                            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-tight">Máx. 6 fotos · 1080×1080px · WebP</p>
                         </div>
                     </div>
                 </div>
@@ -866,7 +880,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                     </div>
                 </div>
             </div>
-        </div>
+        </PageContainer>
     );
 };
 

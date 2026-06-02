@@ -26,6 +26,7 @@ import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 
 import { formatCurrency } from '../utils/formatters';
 import { Motorcycle } from '../types';
+import PageContainer from '../components/ui/PageContainer';
 
 type SaleDashboardItem = {
     vehicle: any;
@@ -207,7 +208,7 @@ const SalesClosedPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col space-y-8 animate-fadeIn pb-10">
+        <PageContainer className="flex flex-col space-y-8 animate-fadeIn pb-10">
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div>
@@ -495,7 +496,7 @@ const SalesClosedPage: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </PageContainer>
     );
 };
 

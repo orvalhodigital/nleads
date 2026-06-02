@@ -12,6 +12,7 @@ interface SearchResult {
     tag?: string;
     tagColor?: string;
     href: string;
+    state?: any;
 }
 
 interface GlobalSearchProps {

@@ -18,10 +18,6 @@ interface Props {
 
 const THEMES = [
     { id: 'classic', name: 'Classic', description: 'Limpo, claro e profissional.', preview: 'bg-stone-100' },
-    { id: 'modern', name: 'Modern', description: 'Bordas arredondadas e destaques fortes.', preview: 'bg-blue-50' },
-    { id: 'glass', name: 'Glassmorphism', description: 'Transparências e gradientes.', preview: 'bg-slate-900' },
-    { id: 'bold', name: 'Bold', description: 'Tipografia agressiva e contraste.', preview: 'bg-slate-950' },
-    { id: 'luxury', name: 'Luxury', description: 'Tons escuros para veículos premium.', preview: 'bg-[#0f0e0c]' },
 ];
 
 const PRESET_COLORS = [
@@ -45,8 +41,8 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
     const [website_slug, setWebsiteSlug] = useState(profile.website_slug || '');
     const [custom_domain, setCustomDomain] = useState(profile.custom_domain || '');
 
-    // Visual Settings
-    const [website_theme, setWebsiteTheme] = useState(profile.website_theme || 'classic');
+    // Visual Settings (theme is always 'classic')
+    const website_theme = 'classic';
     const [website_primary_color, setWebsitePrimaryColor] = useState(profile.website_primary_color || '#10b981');
     const [website_background_color, setWebsiteBackgroundColor] = useState(profile.website_background_color || 'light');
     const [website_typography, setWebsiteTypography] = useState(profile.website_typography || 'inter');
@@ -382,21 +378,6 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             <div className="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm min-h-[500px]">
                 {activeTab === 'visual' && (
                     <div className="space-y-10">
-                        {/* Temas */}
-                        <div className="space-y-4">
-                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14} className="text-amber-500" /> Estilo do Site</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                                {THEMES.map(t => (
-                                    <button key={t.id} onClick={() => setWebsiteTheme(t.id)}
-                                        className={`p-4 rounded-2xl border-2 transition-all text-left relative ${website_theme === t.id ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-50 bg-slate-50/50 hover:border-slate-200'}`}>
-                                        <div className={`w-full h-12 rounded-lg mb-3 ${t.preview} border border-black/5`} />
-                                        <p className="text-[10px] font-black text-slate-900 uppercase">{t.name}</p>
-                                        {website_theme === t.id && <Check size={12} className="absolute top-2 right-2 text-emerald-500" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
                         {/* Cores e Fundo */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-8 border-t border-slate-50">
                             <div className="space-y-4">

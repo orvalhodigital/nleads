@@ -26,6 +26,7 @@ import MessageSettings from '../components/settings/MessageSettings';
 import PlanSettings from '../components/settings/PlanSettings';
 import TeamManager from '../components/TeamManager';
 import WebsiteSettings from '../components/settings/WebsiteSettings';
+import PageContainer from '../components/ui/PageContainer';
 
 interface BusinessHourEntry {
     day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -101,7 +102,7 @@ const SettingsPage: React.FC = () => {
     if (!profile) return null;
 
     return (
-        <div className="flex-1 space-y-8">
+        <PageContainer className="space-y-8">
             {/* Page Header */}
             <div>
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
@@ -307,7 +308,7 @@ const SettingsPage: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </PageContainer>
     );
 };
 

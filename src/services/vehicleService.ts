@@ -34,7 +34,8 @@ const mapRowToVehicle = (row: any): Vehicle => ({
     description: row.description || '',
     status: (row.status as 'available' | 'sold') || 'available',
     sale_phase: row.sale_phase,
-    saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined
+    saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined,
+    showOnWebsite: row.show_on_website !== false
 });
 
 // Helper: delete a list of storage URLs from the 'vehicles' bucket
@@ -133,7 +134,8 @@ export const vehicleService = {
                 description: vehicle.description || null,
                 status: vehicle.status,
                 sale_phase: vehicle.sale_phase,
-                sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null
+                sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null,
+                show_on_website: vehicle.showOnWebsite !== false
             })
             .select()
             .single();
@@ -174,7 +176,8 @@ export const vehicleService = {
                 description: vehicle.description || null,
                 status: vehicle.status,
                 sale_phase: vehicle.sale_phase,
-                sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null
+                sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null,
+                show_on_website: vehicle.showOnWebsite !== false
             })
             .eq('id', vehicle.id)
             .select()

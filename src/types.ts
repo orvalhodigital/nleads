@@ -98,6 +98,7 @@ export interface Vehicle {
   status: 'available' | 'sold';
   sale_phase?: VehicleKanbanPhase;
   saleDetails?: SaleDetails;
+  showOnWebsite?: boolean;
 }
 
 export interface LeadPreference {
@@ -124,6 +125,12 @@ export interface LeadPreference {
   valor_entrada?: number;
   possui_troca: boolean;
   veiculo_troca?: string;
+
+  // Legacy/fallback fields
+  valor_minimo?: number;
+  valor_maximo?: number;
+  transmissao?: TransmissionType[];
+  motorizacao?: EngineType[];
 }
 
 export interface Appointment {
@@ -262,6 +269,9 @@ export interface Profile {
   // Vehicle Source Settings
   enable_manual_vehicles?: boolean;
   monthly_sales_goal?: number;
+  monthly_leads_goal?: number;
+  monthly_visits_goal?: number;
+  monthly_revenue_goal?: number;
   enable_cars?: boolean;
   enable_motorcycles?: boolean;
   preset_messages?: string[];
@@ -420,6 +430,7 @@ export interface Motorcycle {
   hasOwnerManual?: boolean;
   status: 'available' | 'sold';
   saleDetails?: SaleDetails;
+  showOnWebsite?: boolean;
 }
 
 export type View = 'dashboard' | 'inventory' | 'leads' | 'agenda' | 'sales-closed' | 'plans' | 'settings' | 'motorcycles' | 'onboarding' | 'support' | 'admin-tickets';

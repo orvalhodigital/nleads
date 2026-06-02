@@ -1,5 +1,57 @@
 # IMPLEMENTATION_PLAN.md
 
+🎯 **FEATURE**: Reorganização de Metas — Funil de Negócio (Estoque · Leads · Visitas · Vendas)
+**Date**: 2026-05-22
+**Status**: ✅ CONCLUÍDO
+**Last Updated**: 2026-05-22
+
+---
+
+## 📋 Plano
+
+Transformar a meta única (`monthly_sales_goal`) em **4 metas que formam o funil da revenda**, lidas como um painel único no Resumo Executivo, com as taxas de conversão entre elas (Estoque → Leads → Visitas → Vendas).
+
+### Meta 1 — Estoque (saúde do ativo, não volume)
+- **Principal:** Giro mensal % (`stockTurnover` já existe)
+- **Guardrail:** Tempo médio de venda em dias — teto (`averageDaysToSell` já existe)
+- **Alerta novo:** nº de veículos parados há +60 dias (calcular a partir de `createdAt`)
+- Informativo: valor imobilizado (já existe)
+
+### Meta 2 — Leads (topo / geração de demanda)
+- **Principal:** nº de leads novos no mês (`leadsThisMonth` já existe) vs. `monthly_leads_goal` (novo)
+- Inteligência: origem dos leads + marcas/modelos buscados vs. estoque (charts já existem)
+
+### Meta 3 — Visitas (meio / a ponte — hoje SEM meta)
+- **Principal:** nº de visitas realizadas no mês (appointments status `show`) vs. `monthly_visits_goal` (novo)
+- Hoje só há contagem do dia (`visToday`/`visitsDoneToday`) — falta agregar no range mensal
+- **Guardrail:** taxa de comparecimento (agendadas vs. realizadas)
+
+### Meta 4 — Vendas (fundo / resultado)
+- **Principal:** unidades/mês (`monthly_sales_goal` — já existe, manter)
+- **Adicionar:** faturamento R$/mês vs. `monthly_revenue_goal` (novo)
+- Informativo: ticket médio, lucro bruto, conversão (já existem)
+
+### Mudanças técnicas
+- `src/types.ts` + `database.types.ts`: adicionar `monthly_leads_goal`, `monthly_visits_goal`, `monthly_revenue_goal` ao Profile
+- Migration Supabase: 3 colunas novas em `profiles` (nullable)
+- `ProfileSettings.tsx` / `UserArea.tsx`: inputs das novas metas
+- `profileService.ts`: persistir novos campos
+- `Dashboard.tsx`: substituir bloco "Sua Meta Mensal" por painel de funil com 4 metas + conversões; agregar visitas no range; calcular estoque envelhecido
+
+## ⚠️ Riscos
+- **Estoque como meta de volume**: tratar estoque igual a leads/vendas ("mais é melhor") inverte o sentido do negócio. A meta é eficiência (giro/tempo), não contagem.
+- **Visitas dependem de dados confiáveis**: agregação mensal de `scheduling_data.appointments` só vale se os vendedores marcarem status. Meta de comparecimento expõe lixo de dados.
+- **Tempo médio de venda precisa de `createdAt`**: motos e veículos sem data de entrada distorcem o cálculo (já há fallback parcial no código).
+- **Excesso de metas**: 4 metas + guardrails podem poluir o Resumo Executivo. Manter principal em destaque e secundários discretos.
+- **Migration**: colunas novas devem ser nullable com default sensato pra não quebrar perfis existentes.
+
+## 🌸 Haiku-check
+Funil em quatro atos —
+estoque vira lead, vira venda;
+o número conta a história.
+
+---
+
 🎯 **FEATURE**: Custom Domain Registration & Routing + Bundle Optimization + URLs Amigáveis  
 **Date**: 2026-05-21  
 **Status**: Fases 1–4 ✅ CONCLUÍDO | Fase 5 🔄 CONCLUÍDO (URLs Amigáveis)  
@@ -298,3 +350,38 @@ Transformar URLs de veículos de `/site/:slug/veiculo/:uuid` para `/site/:slug/v
 - `src/pages/public/PublicSiteHome.tsx` — Aceita `forcedSlug` prop
 - `src/components/settings/WebsiteSettings.tsx` — Parsing de response como texto + estados de loading
 - `src/pages/SettingsPage.tsx` — Aba "Website" adicionada
+
+---
+
+🐛 **HOTFIX**: URLs amigáveis quebrando detalhe do veículo público (`Veículo não encontrado`)
+**Date**: 2026-05-22
+**Status**: ✅ CONCLUÍDO
+
+---
+
+## 📋 Plano
+Sintoma: ao clicar num veículo no site público (ex.: `/site/gelsonveiculos/veiculo/ford-fiesta-1-6-flex-2013-15e7d4e3`), a página exibia "Veículo não encontrado".
+
+Causa-raiz: a função `getVehicleBySlugPrefix` em `src/services/websiteService.ts` tentava buscar o veículo via:
+```ts
+.filter('id::text', 'ilike', `${idPrefix}%`)
+```
+PostgREST/Supabase JS **não aceita cast inline** (`id::text`) dentro de `.filter()` — a expressão é enviada literalmente como nome de coluna e a query falha silenciosamente. Mesmo sem o cast, `ilike` direto numa coluna `uuid` resulta em type mismatch no PostgreSQL.
+
+Correção: trocar o filtro por uma **faixa lexicográfica** do UUID, que o tipo `uuid` compara nativamente:
+- start = `${prefix}-0000-0000-0000-000000000000`
+- end   = `${prefix}-ffff-ffff-ffff-ffffffffffff`
+- query: `.gte('id', start).lte('id', end).eq('user_id', ownerId).limit(1)`
+
+Validação adicional: regex `^[0-9a-f]{8}$` em `prefix.toLowerCase()` antes da consulta — abortando cedo se receber lixo (ex.: slug malformado).
+
+## ⚠️ Riscos
+- **Colisão de prefixo**: dois veículos do mesmo lojista com os primeiros 8 hex iguais retornam aleatório. Probabilidade ~1 em 4 bi por par; aceitável até as primeiras dezenas de milhares de veículos por lojista. Se virar preocupação, alongar o prefixo para 12 chars no `toVehicleSlug` (retrocompatível).
+- **UUIDs em uppercase**: `idFromVehicleSlug` já normaliza minúsculas via regex `/i`, mas reforçamos com `.toLowerCase()` no service para defender contra entrada manipulada.
+- **URLs antigas (UUID completo)**: continuam tratadas no ramo `getVehicleById` — não tocamos esse caminho.
+- **Performance**: range em `id` (pk) usa index nativo do Postgres; equivalente a um `eq` em custo.
+
+## 🌸 Haiku-check
+Slug pede prefixo —
+cast em filter não existe;
+faixa de uuid responde.

@@ -11,6 +11,7 @@ const VehicleFormPage: React.FC = () => {
 
     const isEditing = !!id;
     const vehicleToEdit = isEditing ? vehicles.find(v => v.id === id) : undefined;
+    console.log('VehicleFormPage:', { id, isEditing, vehiclesLength: vehicles.length, vehicleToEdit });
 
     // Redirect to inventory if editing but vehicle not found
     React.useEffect(() => {

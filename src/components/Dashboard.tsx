@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import PageContainer from './ui/PageContainer';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Car, Target, DollarSign, Flame, Clock, AlertTriangle,
-  CheckCircle2, Calendar, TrendingUp,
+  CheckCircle2, Calendar, TrendingUp, LayoutDashboard,
   UserX, ShoppingBag, BarChart3, Percent, ArrowRight, Package,
   Repeat, Handshake, Timer, Award, PhoneCall, Info
 } from 'lucide-react';
 import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, Motorcycle, TransmissionType } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
-import { isToday, isTomorrow, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, differenceInCalendarDays } from 'date-fns';
+import { isToday, isTomorrow, isSameDay, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, differenceInCalendarDays } from 'date-fns';
 import { formatCurrency } from '../utils/formatters';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 
@@ -49,7 +50,6 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     return list;
   }, [vehicles, motorcycles, profile]);
   const [filterTemp, setFilterTemp] = useState<string>('all');
-  const [animatedProgress, setAnimatedProgress] = useState(0);
   const [quote, setQuote] = useState<{ text: string, author: string }>({
     text: 'Aproxime-se de cada cliente com a ideia de ajudá-lo a resolver um problema.',
     author: 'Brian Tracy'
@@ -308,6 +308,34 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     const daysLeftInMonth = Math.max(1, Math.floor((endOfMonthDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
     const salesPerDayNeeded = (salesNeeded / daysLeftInMonth).toFixed(1);
 
+    // Funnel Goals — always calculated against current calendar month
+    const monthStart = startOfMonth(now);
+    const allAppointmentsThisMonth = leads.flatMap(l => l.scheduling_data?.appointments || []).filter(a => {
+      try { const d = parseISO(a.date); return isAfter(d, monthStart) || isSameDay(d, monthStart); } catch { return false; }
+    });
+    const visitsThisMonthTotal = allAppointmentsThisMonth.length;
+    const visitsThisMonthDone = allAppointmentsThisMonth.filter(a => a.status === 'show').length;
+    const visitShowRate = visitsThisMonthTotal > 0 ? Math.round((visitsThisMonthDone / visitsThisMonthTotal) * 100) : 0;
+
+    // Leads novos no mês (sempre mês corrente, independente do filtro de período)
+    const leadsThisCalMonth = leads.filter(l => {
+      try { const d = parseISO(l.createdAt); return isAfter(d, monthStart) || isSameDay(d, monthStart); } catch { return false; }
+    }).length;
+
+    // Vendas no mês corrente (independente do filtro)
+    const salesThisCalMonth = unifiedVehicles.filter(v => {
+      if (v.status !== 'sold' || !v.saleDetails) return false;
+      try { const d = parseISO(v.saleDetails.saleDate); return isAfter(d, monthStart) || isSameDay(d, monthStart); } catch { return false; }
+    });
+    const salesCountThisCalMonth = salesThisCalMonth.length;
+    const revenueThisCalMonth = salesThisCalMonth.reduce((s, v) => s + (v.saleDetails?.salePrice || 0), 0);
+
+    // Veículos parados há +60 dias
+    const staleVehicles = availableVehicles.filter(v => {
+      if (!(v as any).createdAt) return false;
+      try { return differenceInCalendarDays(now, parseISO((v as any).createdAt)) > 60; } catch { return false; }
+    }).length;
+
     return {
       leadsThisMonth, leadsGrowth, salesThisMonth, salesCountGrowth, revenueThisMonth, salesGrowth,
       conversionRate, ticketMedioVendas, monthlyGrossProfit, averageDaysToSell, activeLeads, attentionLeads, hotLeads, availableVehicles,
@@ -315,7 +343,9 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       prontosParaFechar, leadsEsquecidos, leadsComEntrada, leadsComTroca, salesByBrand,
       brandInterest, typeInterest, leadSources, stockByCategory, monthlyGoal, isGoalReached, goalProgress,
       salesNeeded, daysLeftInMonth, salesPerDayNeeded, visToday, visitsDoneToday,
-      followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest
+      followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest,
+      leadsThisCalMonth, visitsThisMonthTotal, visitsThisMonthDone, visitShowRate,
+      salesCountThisCalMonth, revenueThisCalMonth, staleVehicles
     };
   }, [leads, unifiedVehicles, profile, now, timeRange, customStartDate, customEndDate, filterSource, filterTemp]);
 
@@ -326,19 +356,11 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     prontosParaFechar, leadsEsquecidos, leadsComEntrada, leadsComTroca, salesByBrand,
     brandInterest, typeInterest, leadSources, stockByCategory, monthlyGoal, isGoalReached, goalProgress,
     salesNeeded, daysLeftInMonth, salesPerDayNeeded, visToday, visitsDoneToday,
-    followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest
+    followupsToday, appointmentsTomorrow, followupsTomorrow, modelInterest,
+    leadsThisCalMonth, visitsThisMonthTotal, visitsThisMonthDone, visitShowRate,
+    salesCountThisCalMonth, revenueThisCalMonth, staleVehicles
   } = metrics;
 
-  // Animating goal progress
-  useEffect(() => {
-    if (activeTab === 'geral') {
-      setAnimatedProgress(0);
-      const timer = setTimeout(() => {
-        setAnimatedProgress(goalProgress);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [activeTab, goalProgress]);
 
   return (
     <div className="relative animate-fadeUp pb-24 w-full min-h-screen text-slate-800">
@@ -350,7 +372,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
         <div className="absolute bottom-[-20%] left-[20%] w-[800px] h-[800px] bg-indigo-400/10 rounded-full blur-[160px] animate-pulse-slow" style={{ animationDelay: '4s' }} />
       </div>
 
-      <div className="max-w-[1440px] mx-auto space-y-8 px-4 sm:px-6 mt-6 relative z-10">
+      <PageContainer className="space-y-8 mt-6 relative z-10">
 
         {/* ═══════════════════════ HEADER / FILTROS ═══════════════════════ */}
         <div className="flex flex-wrap items-center gap-3 pb-4">
@@ -399,17 +421,20 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
         </div>
 
         {/* ═══════════════════════ TABS NAV ═══════════════════════ */}
-        <div className="flex overflow-x-auto no-scrollbar bg-white/40 backdrop-blur-3xl p-1.5 rounded-[20px] border border-white/60 shadow-[0_8px_32px_rgb(0,0,0,0.04)] w-fit mx-auto lg:mx-0">
-          {(['geral', 'comercial', 'estoque', 'agenda'] as const).map((tab) => (
+        <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm w-fit">
+          {([
+            { key: 'geral',     label: 'Resumo',     icon: LayoutDashboard },
+            { key: 'comercial', label: 'Comercial',  icon: TrendingUp },
+            { key: 'estoque',   label: 'Estoque',    icon: Package },
+            { key: 'agenda',    label: 'Agenda',     icon: Calendar },
+          ] as const).map(({ key, label, icon: Icon }) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-slate-900 text-white shadow-lg scale-[1.02]' : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'}`}
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap ${activeTab === key ? 'bg-white text-slate-900 shadow-md font-black ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
             >
-              {tab === 'geral' && 'Resumo Executivo'}
-              {tab === 'comercial' && 'Performance Comercial'}
-              {tab === 'estoque' && 'Saúde do Estoque'}
-              {tab === 'agenda' && 'Minha Agenda'}
+              <Icon size={14} strokeWidth={activeTab === key ? 2.5 : 2} />
+              <span className="text-[11px] uppercase tracking-wide">{label}</span>
             </button>
           ))}
         </div>
@@ -503,42 +528,139 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
-              {monthlyGoal > 0 && (
-                <div className="lg:col-span-2">
-                  <GlassSection>
-                    <SectionHeader icon={Award} title="Sua Meta Mensal" subtitle="O trajeto para o sucesso" color="text-teal-500 bg-teal-500/10 border-teal-500/20" />
-                    <div className="mt-8 space-y-6">
-                      <div className="flex justify-between items-end">
-                        <p className="text-6xl font-black text-teal-600 tracking-tighter">{salesThisMonth.length}<span className="text-2xl font-bold text-slate-400">/{monthlyGoal}</span></p>
-                        <p className="text-3xl font-black text-slate-800 opacity-90">{goalProgress.toFixed(0)}%</p>
-                      </div>
+              <div className="lg:col-span-2">
+                <GlassSection>
+                  <SectionHeader icon={Award} title="Funil do Mês" subtitle="Estoque → Leads → Visitas → Vendas" color="text-teal-500 bg-teal-500/10 border-teal-500/20" />
+                  <div className="mt-6 grid grid-cols-2 gap-4">
 
-                      <div className="h-4 w-full bg-slate-200/40 rounded-full overflow-hidden shadow-inner p-0.5 relative border border-white/30">
-                        <div
-                          className={`h-full rounded-full transition-all duration-1000 relative ${animatedProgress < 30 ? 'bg-rose-500' :
-                            animatedProgress < 75 ? 'bg-amber-500' :
-                              'bg-emerald-500'
-                            }`}
-                          style={{ width: `${animatedProgress}%` }}
-                        />
-                      </div>
-
-                      {salesNeeded > 0 && (
-                        <div className="grid grid-cols-2 mt-2 pt-6 border-t border-slate-100/50 gap-6">
-                          <div>
-                            <p className="text-lg font-black text-slate-700">{daysLeftInMonth} dias</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">restantes na meta</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-lg font-black text-amber-600">{salesPerDayNeeded}/dia</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">velocidade necessária</p>
-                          </div>
+                    {/* — Estoque — */}
+                    <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100/50 p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                          <Car size={14} className="text-indigo-500" />
                         </div>
-                      )}
+                        <span className="text-[9px] font-black uppercase tracking-widest text-indigo-500">Estoque</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[10px] font-bold text-slate-500">Giro mensal</span>
+                          <span className="text-sm font-black text-indigo-600">{stockTurnover.toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[10px] font-bold text-slate-500">Tempo médio de venda</span>
+                          <span className={`text-sm font-black ${averageDaysToSell > 45 ? 'text-rose-500' : 'text-slate-700'}`}>{averageDaysToSell.toFixed(0)}d</span>
+                        </div>
+                        {staleVehicles > 0 && (
+                          <div className="flex justify-between items-baseline pt-1 border-t border-indigo-100/50">
+                            <span className="text-[10px] font-bold text-rose-400">Parados +60d</span>
+                            <span className="text-sm font-black text-rose-500">{staleVehicles}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </GlassSection>
-                </div>
-              )}
+
+                    {/* — Leads — */}
+                    <div className="rounded-2xl bg-emerald-50/60 border border-emerald-100/50 p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                          <Users size={14} className="text-emerald-500" />
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Leads</span>
+                      </div>
+                      <div>
+                        {profile?.monthly_leads_goal ? (
+                          <>
+                            <div className="flex justify-between items-baseline mb-2">
+                              <span className="text-3xl font-black text-emerald-700">{leadsThisCalMonth}</span>
+                              <span className="text-[10px] font-bold text-slate-400">/{profile.monthly_leads_goal}</span>
+                            </div>
+                            <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full bg-emerald-500 transition-all duration-700" style={{ width: `${Math.min((leadsThisCalMonth / profile.monthly_leads_goal) * 100, 100)}%` }} />
+                            </div>
+                            <p className="text-[9px] font-bold text-slate-400 mt-1">{Math.round((leadsThisCalMonth / profile.monthly_leads_goal) * 100)}% da meta</p>
+                          </>
+                        ) : (
+                          <p className="text-3xl font-black text-slate-800">{leadsThisCalMonth}<span className="text-sm font-bold text-slate-400 ml-1">leads</span></p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* — Visitas — */}
+                    <div className="rounded-2xl bg-blue-50/60 border border-blue-100/50 p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                          <Calendar size={14} className="text-blue-500" />
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-blue-600">Visitas</span>
+                      </div>
+                      <div>
+                        {profile?.monthly_visits_goal ? (
+                          <>
+                            <div className="flex justify-between items-baseline mb-2">
+                              <span className="text-3xl font-black text-blue-700">{visitsThisMonthDone}</span>
+                              <span className="text-[10px] font-bold text-slate-400">/{profile.monthly_visits_goal}</span>
+                            </div>
+                            <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full bg-blue-500 transition-all duration-700" style={{ width: `${Math.min((visitsThisMonthDone / profile.monthly_visits_goal) * 100, 100)}%` }} />
+                            </div>
+                            <p className="text-[9px] font-bold text-slate-400 mt-1">{Math.round((visitsThisMonthDone / profile.monthly_visits_goal) * 100)}% da meta</p>
+                          </>
+                        ) : (
+                          <p className="text-3xl font-black text-slate-800">{visitsThisMonthDone}<span className="text-sm font-bold text-slate-400 ml-1">realizadas</span></p>
+                        )}
+                        {visitsThisMonthTotal > 0 && (
+                          <p className="text-[9px] font-bold text-slate-400 mt-1">{visitShowRate}% de comparecimento ({visitsThisMonthTotal} agendadas)</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* — Vendas — */}
+                    <div className="rounded-2xl bg-teal-50/60 border border-teal-100/50 p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-teal-500/10 flex items-center justify-center">
+                          <ShoppingBag size={14} className="text-teal-500" />
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-teal-600">Vendas</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div>
+                          {monthlyGoal > 0 ? (
+                            <>
+                              <div className="flex justify-between items-baseline mb-1">
+                                <span className="text-2xl font-black text-teal-700">{salesCountThisCalMonth}</span>
+                                <span className="text-[10px] font-bold text-slate-400">/{monthlyGoal} unid.</span>
+                              </div>
+                              <div className="h-2 w-full bg-teal-100 rounded-full overflow-hidden">
+                                {(() => { const pct = Math.min((salesCountThisCalMonth / monthlyGoal) * 100, 100); return <div className={`h-full rounded-full transition-all duration-700 ${pct < 30 ? 'bg-rose-400' : pct < 75 ? 'bg-amber-400' : 'bg-teal-500'}`} style={{ width: `${pct}%` }} />; })()}
+                              </div>
+                            </>
+                          ) : (
+                            <p className="text-2xl font-black text-slate-800">{salesCountThisCalMonth}<span className="text-sm font-bold text-slate-400 ml-1">vendas</span></p>
+                          )}
+                        </div>
+                        {profile?.monthly_revenue_goal ? (
+                          <div className="pt-1 border-t border-teal-100/50">
+                            <div className="flex justify-between items-baseline mb-1">
+                              <span className="text-[10px] font-bold text-slate-500">Faturamento</span>
+                              <span className="text-xs font-black text-teal-700">R$ {formatCurrency(revenueThisCalMonth)}</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-teal-100 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full bg-teal-400 transition-all duration-700" style={{ width: `${Math.min((revenueThisCalMonth / profile.monthly_revenue_goal) * 100, 100)}%` }} />
+                            </div>
+                            <p className="text-[9px] font-bold text-slate-400 mt-0.5">{Math.round((revenueThisCalMonth / profile.monthly_revenue_goal) * 100)}% de R$ {formatCurrency(profile.monthly_revenue_goal)}</p>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] font-bold text-slate-400">R$ {formatCurrency(revenueThisCalMonth)}</p>
+                        )}
+                        {salesNeeded > 0 && monthlyGoal > 0 && (
+                          <p className="text-[9px] font-bold text-amber-500">{salesPerDayNeeded}/dia nos próximos {daysLeftInMonth}d</p>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                </GlassSection>
+              </div>
 
               <GlassSection>
                 <div className="flex items-center justify-between mb-6">
@@ -715,7 +837,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
             </div>
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

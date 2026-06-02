@@ -202,15 +202,32 @@ export const websiteService = {
     },
 
     async getVehicleBySlugPrefix(idPrefix: string, ownerId: string): Promise<Vehicle | null> {
-        const response = await supabase
+        // PostgREST não aceita cast inline em filter, e ilike direto em coluna uuid falha por type mismatch.
+        // UUIDs comparam lexicograficamente, então usamos faixa [prefixo-0000…0000, prefixo-ffff…ffff].
+        const prefix = idPrefix.toLowerCase();
+        if (!/^[0-9a-f]{8}$/.test(prefix)) {
+            return null;
+        }
+        const start = `${prefix}-0000-0000-0000-000000000000`;
+        const end = `${prefix}-ffff-ffff-ffff-ffffffffffff`;
+
+        const { data, error } = await supabase
             .from('vehicles')
             .select('*')
-            .ilike('id', `${idPrefix}%`)
+            .gte('id', start)
+            .lte('id', end)
             .eq('user_id', ownerId)
-            .maybeSingle();
+            .limit(1);
 
-        const data = handleSupabaseResponse(response);
-        return data ? mapRowToVehicle(data) : null;
+        if (error) {
+            console.error('[getVehicleBySlugPrefix] error:', error, { idPrefix, ownerId });
+            return null;
+        }
+        if (!data || data.length === 0) {
+            console.warn('[getVehicleBySlugPrefix] not found:', { idPrefix, ownerId });
+            return null;
+        }
+        return mapRowToVehicle(data[0]);
     },
 
     async createPublicLead(userId: string, leadData: {

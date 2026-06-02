@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Plus, Search, Filter, MoreHorizontal, MapPin, Gauge, Calendar,
   DollarSign, Hash, Edit3, Trash2, ChevronLeft, ChevronRight, Upload, Loader2, X,
-  Check, UserCheck, Users, Tag, Car, Zap, Send, LayoutGrid, List, Table as TableIcon,
+  Check, UserCheck, Users, Tag, Car, Zap, Send, LayoutGrid, List,
   ExternalLink
 } from 'lucide-react';
 import { Vehicle, VehicleType, TransmissionType, EngineType, Lead, LeadPhase, SaleDetails, LeadTemperature, LeadCommunication } from '../types';
@@ -37,168 +37,187 @@ const ENGINE_TYPES: EngineType[] = ['1.0', '1.4', '1.6', '2.0+', 'Elétrico', 'H
 const InventoryImportModal = lazy(() => import('./InventoryImportModal'));
 
 // ─── Memoized card components — não re-renderizam quando filtros mudam ────────
-interface VehicleCardProps { vehicle: Vehicle; onSelect: (v: Vehicle) => void; }
+interface VehicleCardProps { vehicle: Vehicle; onSelect: (v: Vehicle) => void; onToggleWebsite?: (v: Vehicle) => void; }
 
-const VehicleGridCard = memo(({ vehicle, onSelect }: VehicleCardProps) => (
-  <div
-    onClick={() => onSelect(vehicle)}
-    className={`bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : 'hover:border-emerald-200/60'}`}
-  >
-    <div className="relative p-3 pb-0">
-      {vehicle.imageUrl ? (
-        <div className="w-full aspect-[4/5] rounded-xl overflow-hidden shadow-inner bg-slate-50">
-          <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+const VehicleGridCard = memo(({ vehicle, onSelect, onToggleWebsite }: VehicleCardProps) => {
+  const isOnWebsite = vehicle.showOnWebsite !== false;
+
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleWebsite?.({ ...vehicle, showOnWebsite: !isOnWebsite });
+  };
+
+  return (
+    <div
+      className={`bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : 'hover:border-emerald-200/60'}`}
+    >
+      <div className="relative p-3 pb-0">
+        {vehicle.imageUrl ? (
+          <div
+            onClick={() => onSelect(vehicle)}
+            className="w-full aspect-square rounded-xl overflow-hidden shadow-inner bg-slate-50 cursor-pointer"
+          >
+            <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          </div>
+        ) : (
+          <div
+            onClick={() => onSelect(vehicle)}
+            className="w-full aspect-square rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50 cursor-pointer"
+          >
+            <Car size={48} strokeWidth={1} />
+            <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Sem Imagem</span>
+          </div>
+        )}
+        {vehicle.status === 'sold' ? (
+          <div className="absolute top-6 right-6 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-rose-500/30 animate-pulse">Vendido</div>
+        ) : (
+          <div className="absolute top-6 right-6 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-emerald-500/30">Em Estoque</div>
+        )}
+        <div className="absolute bottom-4 left-7 z-20">
+          <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{vehicle.type}</span>
         </div>
-      ) : (
-        <div className="w-full aspect-[4/5] rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50">
-          <Car size={48} strokeWidth={1} />
-          <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Sem Imagem</span>
-        </div>
-      )}
-      {vehicle.status === 'sold' ? (
-        <div className="absolute top-6 right-6 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-rose-500/30 animate-pulse">Vendido</div>
-      ) : (
-        <div className="absolute top-6 right-6 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-emerald-500/30">Em Estoque</div>
-      )}
-      <div className="absolute bottom-4 left-7 z-20">
-        <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{vehicle.type}</span>
+        {onToggleWebsite && (
+          <div className="absolute bottom-3 right-4 z-20 flex items-center gap-2">
+            <span className={`text-[8px] font-black uppercase tracking-wider transition-colors duration-300 drop-shadow-sm ${isOnWebsite ? 'text-emerald-300' : 'text-rose-300'}`}>
+              {isOnWebsite ? 'Site' : 'Oculto'}
+            </span>
+            <button
+              onClick={handleToggleClick}
+              role="switch"
+              aria-checked={isOnWebsite}
+              className={`relative w-9 h-5 rounded-full transition-colors duration-300 shadow-lg focus:outline-none ${
+                isOnWebsite ? 'bg-emerald-500' : 'bg-rose-500'
+              }`}
+            >
+              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${isOnWebsite ? 'left-4' : 'left-0.5'}`} />
+            </button>
+          </div>
+        )}
       </div>
+      <div className="p-5 pt-4 flex flex-col flex-1">
+        <div className="mb-4">
+          <h3
+            onClick={() => onSelect(vehicle)}
+            className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mb-1.5 group-hover:text-emerald-600 transition-colors cursor-pointer"
+          >
+            {vehicle.brand} {vehicle.model}
+          </h3>
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+              <Calendar size={10} className="text-slate-300" />
+              <span>{vehicle.year}{vehicle.modelYear ? ` / ${String(vehicle.modelYear).slice(-2)}` : ''}</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-slate-200" />
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+              <Gauge size={10} className="text-slate-300" />
+              <span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span>
+            </div>
+          </div>
+        </div>
+        <div
+          onClick={() => onSelect(vehicle)}
+          className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50 cursor-pointer"
+        >
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço de Venda</span>
+            <p className={`text-lg font-black tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
+              R$ {vehicle.price.toLocaleString()}
+            </p>
+          </div>
+          <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
+            <ChevronRight size={16} strokeWidth={3} />
+          </div>
+        </div>
+      </div>
+      <div className={`h-1 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
     </div>
-    <div className="p-5 pt-4 flex flex-col flex-1">
-      <div className="mb-4">
-        <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mb-1.5 group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</h3>
-        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-            <Calendar size={10} className="text-slate-300" />
-            <span>{vehicle.year}{vehicle.modelYear ? ` / ${String(vehicle.modelYear).slice(-2)}` : ''}</span>
+  );
+});
+
+const VehicleListCard = memo(({ vehicle, onSelect, onToggleWebsite }: VehicleCardProps) => {
+  const isOnWebsite = vehicle.showOnWebsite !== false;
+
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleWebsite?.({ ...vehicle, showOnWebsite: !isOnWebsite });
+  };
+
+  return (
+    <div
+      className={`bg-white p-3 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-emerald-100 transition-all group flex flex-col sm:flex-row gap-4 relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : ''}`}
+    >
+      {/* Imagem compacta */}
+      <div
+        onClick={() => onSelect(vehicle)}
+        className="w-full sm:w-40 h-28 sm:h-28 rounded-xl overflow-hidden shrink-0 bg-slate-50 relative border border-slate-100 shadow-inner cursor-pointer"
+      >
+        {vehicle.imageUrl ? (
+          <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-slate-200">
+            <Car size={32} strokeWidth={1} />
           </div>
-          <div className="w-1 h-1 rounded-full bg-slate-200" />
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-            <Gauge size={10} className="text-slate-300" />
-            <span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span>
-          </div>
+        )}
+        {vehicle.status === 'sold' && (
+          <div className="absolute top-2 right-2 bg-rose-500 text-white text-[7px] font-black uppercase tracking-wide px-2 py-1 rounded z-10 shadow-lg">Vendido</div>
+        )}
+      </div>
+
+      {/* Conteúdo */}
+      <div
+        onClick={() => onSelect(vehicle)}
+        className="flex-1 flex flex-col py-1 cursor-pointer min-w-0"
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[9px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50">{vehicle.type}</span>
+          {vehicle.plate && <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">{vehicle.plate}</span>}
+        </div>
+        <h3 className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight group-hover:text-emerald-600 transition-colors truncate">
+          {vehicle.brand} {vehicle.model}
+        </h3>
+        <div className="flex items-center gap-3 text-[11px] font-bold text-slate-400 mt-1.5 flex-wrap">
+          <div className="flex items-center gap-1"><Calendar size={12} className="text-slate-300" /><span>{vehicle.year}</span></div>
+          <div className="flex items-center gap-1"><Gauge size={12} className="text-slate-300" /><span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span></div>
+          <div className="flex items-center gap-1"><Zap size={12} className="text-slate-300" /><span>{vehicle.transmission}</span></div>
         </div>
       </div>
-      <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
-        <div className="flex flex-col">
-          <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço de Venda</span>
-          <p className={`text-lg font-black tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
+
+      {/* Preço e Toggle */}
+      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-between gap-4 pl-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-1 sm:pb-1 min-w-max">
+        <div className="text-right">
+          <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Preço</p>
+          <p className={`text-xl font-black leading-none tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
             R$ {vehicle.price.toLocaleString()}
           </p>
         </div>
-        <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
-          <ChevronRight size={16} strokeWidth={3} />
-        </div>
-      </div>
-    </div>
-    <div className={`h-1 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
-  </div>
-));
 
-const VehicleListCard = memo(({ vehicle, onSelect }: VehicleCardProps) => (
-  <div
-    onClick={() => onSelect(vehicle)}
-    className={`bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-emerald-100 transition-all cursor-pointer group flex flex-col md:flex-row gap-8 relative overflow-hidden ${vehicle.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : ''}`}
-  >
-    <div className="w-full md:w-72 aspect-video md:aspect-[4/3] rounded-[1.8rem] overflow-hidden shrink-0 bg-slate-50 relative border border-slate-100 shadow-inner">
-      {vehicle.imageUrl ? (
-        <img src={vehicle.imageUrl} alt={vehicle.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-slate-200">
-          <Car size={48} strokeWidth={1} />
-        </div>
-      )}
-      {vehicle.status === 'sold' && (
-        <div className="absolute top-4 right-4 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg z-10 shadow-lg shadow-rose-500/20">Vendido</div>
-      )}
-    </div>
-    <div className="flex-1 flex flex-col py-4 pr-4">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-md border border-emerald-100/50">{vehicle.type}</span>
-            {vehicle.plate && <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] ml-2">{vehicle.plate}</span>}
-          </div>
-          <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</h3>
-          <div className="flex items-center gap-4 text-[13px] font-bold text-slate-400 mt-2.5">
-            <div className="flex items-center gap-2"><Calendar size={14} className="text-slate-200" /><span>{vehicle.year} {vehicle.modelYear ? `/ ${vehicle.modelYear}` : ''}</span></div>
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
-            <div className="flex items-center gap-2"><Gauge size={14} className="text-slate-200" /><span>{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</span></div>
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-100" />
-            <div className="flex items-center gap-2"><Zap size={14} className="text-slate-200" /><span>{vehicle.transmission}</span></div>
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-2 mt-auto">
-        {vehicle.optionals?.slice(0, 5).map((opt, i) => (
-          <span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-wide group-hover:bg-white transition-colors">{opt}</span>
-        ))}
-        {vehicle.optionals?.length > 5 && (
-          <span className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-wide">+{vehicle.optionals.length - 5}</span>
-        )}
-      </div>
-    </div>
-    <div className="flex flex-row md:flex-col justify-between items-end pl-0 md:pl-10 border-t md:border-t-0 md:border-l border-slate-50 pt-6 md:pt-4 md:pb-4 min-w-[200px]">
-      <div className="text-right">
-        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1.5">Preço de Venda</p>
-        <p className={`text-3xl font-black leading-none tracking-tighter ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>R$ {vehicle.price.toLocaleString()}</p>
-        {vehicle.status === 'sold' && vehicle.saleDetails && (
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-lg">
-            <DollarSign size={12} className="text-emerald-500" />
-            <p className="text-xs font-black text-emerald-600">R$ {vehicle.saleDetails.salePrice.toLocaleString()}</p>
+        {/* Toggle Website — switch deslizante */}
+        {onToggleWebsite && (
+          <div className="flex flex-col items-end gap-1.5">
+            <span className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${isOnWebsite ? 'text-emerald-600' : 'text-rose-500'}`}>
+              {isOnWebsite ? 'No Site' : 'Oculto'}
+            </span>
+            <button
+              onClick={handleToggleClick}
+              role="switch"
+              aria-checked={isOnWebsite}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                isOnWebsite
+                  ? 'bg-emerald-500 focus:ring-emerald-400'
+                  : 'bg-rose-500 focus:ring-rose-400'
+              }`}
+            >
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${isOnWebsite ? 'left-6' : 'left-1'}`} />
+            </button>
           </div>
         )}
       </div>
-      <div className="w-14 h-14 rounded-[1.2rem] bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
-        <ChevronRight size={24} strokeWidth={3} />
-      </div>
-    </div>
-    <div className={`h-1.5 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
-  </div>
-));
 
-const VehicleTableRow = memo(({ vehicle, onSelect }: VehicleCardProps) => (
-  <tr onClick={() => onSelect(vehicle)} className="group hover:bg-slate-50 transition-colors cursor-pointer">
-    <td className="p-6">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-12 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-inner">
-          {vehicle.imageUrl ? (
-            <img src={vehicle.imageUrl} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-200"><Car size={16} /></div>
-          )}
-        </div>
-        <div>
-          <p className="font-black text-slate-900 uppercase text-xs group-hover:text-emerald-600 transition-colors">{vehicle.brand} {vehicle.model}</p>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{vehicle.plate || 'S/ PLACA'}</p>
-        </div>
-      </div>
-    </td>
-    <td className="p-6">
-      <div className="flex items-center gap-2">
-        <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tighter">{vehicle.transmission}</span>
-        <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tighter">{vehicle.engine}</span>
-      </div>
-    </td>
-    <td className="p-6">
-      <div className="flex flex-col">
-        <p className="font-black text-slate-700 text-xs">{vehicle.year}</p>
-        <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase">{vehicle.mileage > 0 ? `${vehicle.mileage.toLocaleString()} km` : '---'}</p>
-      </div>
-    </td>
-    <td className="p-6 text-right">
-      <p className={`font-black text-sm ${vehicle.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>R$ {vehicle.price.toLocaleString()}</p>
-      {vehicle.status === 'sold' && vehicle.saleDetails && (
-        <p className="text-[9px] text-emerald-600 font-black mt-1 uppercase tracking-tighter">Vendido: R$ {vehicle.saleDetails.salePrice.toLocaleString()}</p>
-      )}
-    </td>
-    <td className="p-6 text-right">
-      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all">
-        <ChevronRight size={14} strokeWidth={3} />
-      </div>
-    </td>
-  </tr>
-));
+      <div className={`h-1 w-full ${vehicle.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
+    </div>
+  );
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Inventory: React.FC<InventoryProps> = ({
@@ -228,7 +247,17 @@ const Inventory: React.FC<InventoryProps> = ({
   const [inventoryView, setInventoryView] = useState<'available' | 'sold'>('available');
 
   // View Mode State
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Sort State
+  const [sortBy, setSortBy] = useState<'brand' | 'a-z' | 'z-a'>('brand');
+
+  // Toast Notification State
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Estado local otimista para showOnWebsite — garante resposta imediata na UI
+  // independente do banco de dados ainda ter ou não a coluna
+  const [websiteToggles, setWebsiteToggles] = useState<Record<string, boolean>>({});
 
   // Filter State — consolidado para reduzir re-renders
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -403,7 +432,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
   // Filtra os veículos baseado na aba selecionada e nos filtros ativos
   const displayedVehicles = useMemo(() => {
-    return vehicles.filter(v => {
+    const filtered = vehicles.filter(v => {
       if (v.status !== inventoryView) return false;
       if (filters.query) {
         const q = filters.query.toLowerCase();
@@ -415,7 +444,19 @@ const Inventory: React.FC<InventoryProps> = ({
       if (filters.priceMax && v.price > parseFloat(filters.priceMax)) return false;
       return true;
     });
-  }, [vehicles, inventoryView, filters]);
+
+    // Aplicar ordenação
+    const sorted = [...filtered];
+    if (sortBy === 'brand') {
+      sorted.sort((a, b) => a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model));
+    } else if (sortBy === 'a-z') {
+      sorted.sort((a, b) => a.model.localeCompare(b.model));
+    } else if (sortBy === 'z-a') {
+      sorted.sort((a, b) => b.model.localeCompare(a.model));
+    }
+
+    return sorted;
+  }, [vehicles, inventoryView, filters, sortBy]);
 
   const matchingLeads = useMemo(() => {
     if (!selectedVehicle || selectedVehicle === 'new') return [];
@@ -530,6 +571,24 @@ const Inventory: React.FC<InventoryProps> = ({
     setSelectedVehicle(null);
   };
 
+  const handleToggleWebsite = (v: Vehicle) => {
+    const isNowVisible = v.showOnWebsite !== false;
+
+    // Atualiza estado local imediatamente (otimista)
+    setWebsiteToggles(prev => ({ ...prev, [v.id]: isNowVisible }));
+
+    // Persiste no banco em background
+    onUpdateVehicle(v);
+
+    setNotification({
+      message: isNowVisible
+        ? 'Veículo adicionado ao site público!'
+        : 'Veículo removido do site público!',
+      type: isNowVisible ? 'success' : 'error'
+    });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
   const COMMON_OPTIONS = [
     'Ar Condicionado', 'Direção Hidráulica', 'Vidros Elétricos', 'Travas Elétricas',
     'Alarme', 'Airbag', 'Freios ABS', 'Som Multimídia', 'Rodas de Liga Leve',
@@ -576,7 +635,7 @@ const Inventory: React.FC<InventoryProps> = ({
           <div className="lg:col-span-2 space-y-8">
             <div className={`bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden ${selectedVehicle.status === 'sold' ? 'opacity-90' : ''}`}>
               {selectedVehicle.imageUrl ? (
-                <div className="w-full aspect-[4/5] max-h-[700px] mb-8 rounded-[2rem] overflow-hidden group relative">
+                <div className="w-full aspect-square max-h-[700px] mb-8 rounded-[2rem] overflow-hidden group relative">
                   <img src={selectedVehicle.imageUrl} alt={selectedVehicle.model} className="w-full h-full object-cover" />
                   
                   {/* Gallery Overlays if more than one image */}
@@ -598,11 +657,11 @@ const Inventory: React.FC<InventoryProps> = ({
               {/* Mini Gallery Row */}
               {(selectedVehicle.galleryImages?.length ?? 0) > 0 && (
                 <div className="grid grid-cols-6 gap-3 mb-10">
-                  <div className="aspect-[4/5] rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 cursor-pointer">
+                  <div className="aspect-square rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 cursor-pointer">
                     <img src={selectedVehicle.imageUrl} alt="" className="w-full h-full object-cover" />
                   </div>
                   {selectedVehicle.galleryImages?.map((url, i) => (
-                    <div key={i} className="aspect-[4/5] rounded-xl overflow-hidden border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer opacity-60 hover:opacity-100" 
+                    <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer opacity-60 hover:opacity-100" 
                          onClick={() => {
                            // Swap logic or open lightbox could go here, for now just visual
                          }}>
@@ -1086,7 +1145,18 @@ const Inventory: React.FC<InventoryProps> = ({
 
   // List View
   return (
-    <div className="flex flex-col h-full space-y-6 animate-fadeIn pb-10">
+    <div className="flex flex-col h-full space-y-6 animate-fadeIn pb-10 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-[1920px] mx-auto w-full">
+      {/* Toast Notification */}
+      {notification && (
+        <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[9999] px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-wide shadow-2xl animate-fadeUp ${
+          notification.type === 'success'
+            ? 'bg-emerald-500 text-white shadow-emerald-500/30'
+            : 'bg-rose-500 text-white shadow-rose-500/30'
+        }`}>
+          {notification.type === 'success' ? '✓' : '!'} {notification.message}
+        </div>
+      )}
+
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-6 px-1">
           <div className="flex items-center gap-3">
@@ -1122,15 +1192,22 @@ const Inventory: React.FC<InventoryProps> = ({
               <button onClick={() => setViewMode('list')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}>
                 <List size={16} strokeWidth={2.5} />
               </button>
-              <button onClick={() => setViewMode('table')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'table' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}>
-                <TableIcon size={16} strokeWidth={2.5} />
-              </button>
             </div>
 
             <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all shadow-sm ${isFilterOpen ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/10' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>
               <Filter size={15} strokeWidth={2.5} />
               Filtrar
             </button>
+
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as 'brand' | 'a-z' | 'z-a')}
+              className="px-5 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
+            >
+              <option value="brand">Ordenar: Marca</option>
+              <option value="a-z">Ordenar: A-Z</option>
+              <option value="z-a">Ordenar: Z-A</option>
+            </select>
           </div>
 
           <div className="flex gap-3">
@@ -1194,43 +1271,21 @@ const Inventory: React.FC<InventoryProps> = ({
 
         {/* GRID VIEW */}
         {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {displayedVehicles.map(vehicle => (
-              <VehicleGridCard key={vehicle.id} vehicle={vehicle} onSelect={handleSelectVehicle} />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+            {displayedVehicles.map(vehicle => {
+              const v = vehicle.id in websiteToggles ? { ...vehicle, showOnWebsite: websiteToggles[vehicle.id] } : vehicle;
+              return <VehicleGridCard key={vehicle.id} vehicle={v} onSelect={handleSelectVehicle} onToggleWebsite={handleToggleWebsite} />;
+            })}
           </div>
         )}
 
         {/* LIST VIEW */}
         {viewMode === 'list' && (
-          <div className="flex flex-col gap-5">
-            {displayedVehicles.map(vehicle => (
-              <VehicleListCard key={vehicle.id} vehicle={vehicle} onSelect={handleSelectVehicle} />
-            ))}
-          </div>
-        )}
-
-        {/* TABLE VIEW */}
-        {viewMode === 'table' && (
-          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden animate-fadeIn">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-50 bg-slate-50/50">
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-32">Veículo</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Especificações</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ano / KM</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Preço</th>
-                    <th className="p-6 w-20"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {displayedVehicles.map(vehicle => (
-                    <VehicleTableRow key={vehicle.id} vehicle={vehicle} onSelect={handleSelectVehicle} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="flex flex-col gap-3">
+            {displayedVehicles.map(vehicle => {
+              const v = vehicle.id in websiteToggles ? { ...vehicle, showOnWebsite: websiteToggles[vehicle.id] } : vehicle;
+              return <VehicleListCard key={vehicle.id} vehicle={v} onSelect={handleSelectVehicle} onToggleWebsite={handleToggleWebsite} />;
+            })}
           </div>
         )}
 

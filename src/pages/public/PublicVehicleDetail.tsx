@@ -661,7 +661,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
                     <div className="lg:col-span-2 space-y-6">
                         {/* Gallery */}
                         <div>
-                            <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-gray-200" ref={emblaRef}>
+                            <div className="relative rounded-2xl overflow-hidden aspect-square bg-gray-200" ref={emblaRef}>
                                 <PhotoProvider>
                                     <div className="flex h-full">
                                         {allImages.map((img, i) => (
@@ -830,7 +830,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
 
                                 return (
                                 <Link key={v.id} to={`/site/${slug}/veiculo/${toVehicleSlug(v)}`} className={`block ${tc.similarCard} group`}>
-                                    <div className="relative aspect-[4/5] overflow-hidden">
+                                    <div className="relative aspect-square overflow-hidden">
                                         <img src={v.imageUrl || PLACEHOLDER} alt={`${v.brand} ${v.model}`}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER; }} />

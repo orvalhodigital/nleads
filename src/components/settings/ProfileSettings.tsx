@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Building2, Target, Save, Loader2, Camera, Lock, PhoneIcon } from 'lucide-react';
+import { User, Mail, Building2, Target, Save, Loader2, Camera, Lock, PhoneIcon, TrendingUp, CalendarCheck, DollarSign } from 'lucide-react';
 import { Profile } from '../../types';
 import { profileService } from '../../services/profileService';
 import { useToast } from '../../contexts/ToastContext';
@@ -17,6 +17,9 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
     const [fullName, setFullName] = useState(profile.full_name || '');
     const [companyName, setCompanyName] = useState(profile.company_name || '');
     const [monthlySalesGoal, setMonthlySalesGoal] = useState<number>(profile.monthly_sales_goal || 10);
+    const [monthlyLeadsGoal, setMonthlyLeadsGoal] = useState<number>(profile.monthly_leads_goal || 0);
+    const [monthlyVisitsGoal, setMonthlyVisitsGoal] = useState<number>(profile.monthly_visits_goal || 0);
+    const [monthlyRevenueGoal, setMonthlyRevenueGoal] = useState<number>(profile.monthly_revenue_goal || 0);
     const [phone, setPhone] = useState(profile.phone || '');
     const [newPassword, setNewPassword] = useState('');
 
@@ -28,6 +31,9 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                 full_name: fullName,
                 company_name: companyName,
                 monthly_sales_goal: monthlySalesGoal,
+                monthly_leads_goal: monthlyLeadsGoal || undefined,
+                monthly_visits_goal: monthlyVisitsGoal || undefined,
+                monthly_revenue_goal: monthlyRevenueGoal || undefined,
                 phone: phone
             });
 
@@ -209,14 +215,60 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block">Meta Mensal (Vendas)</label>
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block">Meta Mensal — Vendas (unid.)</label>
                             <div className="relative">
                                 <Target className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                                 <input
                                     type="number"
+                                    min={0}
                                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
                                     value={monthlySalesGoal}
                                     onChange={e => setMonthlySalesGoal(Number(e.target.value))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block">Meta Mensal — Leads (unid.)</label>
+                            <div className="relative">
+                                <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                <input
+                                    type="number"
+                                    min={0}
+                                    placeholder="0 = sem meta"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    value={monthlyLeadsGoal || ''}
+                                    onChange={e => setMonthlyLeadsGoal(Number(e.target.value))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block">Meta Mensal — Visitas (unid.)</label>
+                            <div className="relative">
+                                <CalendarCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                <input
+                                    type="number"
+                                    min={0}
+                                    placeholder="0 = sem meta"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    value={monthlyVisitsGoal || ''}
+                                    onChange={e => setMonthlyVisitsGoal(Number(e.target.value))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block">Meta Mensal — Faturamento (R$)</label>
+                            <div className="relative">
+                                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                <input
+                                    type="number"
+                                    min={0}
+                                    placeholder="0 = sem meta"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    value={monthlyRevenueGoal || ''}
+                                    onChange={e => setMonthlyRevenueGoal(Number(e.target.value))}
                                 />
                             </div>
                         </div>

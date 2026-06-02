@@ -65,7 +65,7 @@ interface MotoCardProps { moto: Motorcycle; onSelect: (m: Motorcycle) => void; }
 
 const MotoGridCard = memo(({ moto: m, onSelect }: MotoCardProps) => (
     <div onClick={() => onSelect(m)} className="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-500 cursor-pointer flex flex-col h-full">
-        <div className="aspect-[4/5] relative overflow-hidden bg-slate-50">
+        <div className="aspect-square relative overflow-hidden bg-slate-50">
             {m.imageUrl ? (
                 <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
             ) : (
@@ -512,7 +512,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                     <div className="lg:col-span-2 space-y-8">
                         <div className={`bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden ${m.status === 'sold' ? 'opacity-90' : ''}`}>
                             {m.imageUrl ? (
-                                <div className="w-full aspect-[4/5] max-h-[600px] mb-8 rounded-[2rem] overflow-hidden relative group">
+                                <div className="w-full aspect-square max-h-[600px] mb-8 rounded-[2rem] overflow-hidden relative group">
                                     <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover" />
                                     
                                     {/* Gallery Dots overlay */}
@@ -532,11 +532,11 @@ const MotorcycleInventory: React.FC<Props> = ({
                             {/* Mini Gallery Row */}
                             {(m.galleryImages?.length ?? 0) > 0 && (
                                 <div className="grid grid-cols-6 gap-3 mb-10">
-                                    <div className="aspect-[4/5] rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 cursor-pointer">
+                                    <div className="aspect-square rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 cursor-pointer">
                                         <img src={m.imageUrl} alt="" className="w-full h-full object-cover" />
                                     </div>
                                     {m.galleryImages?.map((url, i) => (
-                                        <div key={i} className="aspect-[4/5] rounded-xl overflow-hidden border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer opacity-60 hover:opacity-100">
+                                        <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer opacity-60 hover:opacity-100">
                                             <img src={url} alt="" className="w-full h-full object-cover" />
                                         </div>
                                     ))}
@@ -994,7 +994,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-3">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
-                                <div className="aspect-[4/5] max-w-[280px] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                                <div className="aspect-square max-w-[280px] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
                                     {form.imageUrl ? (
                                         <>
                                             <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -1025,7 +1025,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 {(form.galleryImages?.length ?? 0) > 0 && (
                                     <div className="grid grid-cols-3 gap-2">
                                         {form.galleryImages!.map((url, i) => (
-                                            <div key={i} className="relative group aspect-[4/5] rounded-xl overflow-hidden bg-slate-100">
+                                            <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
                                                 <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
                                                 <button type="button" onClick={() => removeGalleryImage(url)} className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <X size={16} className="text-white" />

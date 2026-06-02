@@ -22,6 +22,7 @@ import { ptBR } from 'date-fns/locale';
 import { useToast } from '../contexts/ToastContext';
 import { useData } from '../contexts/DataContext';
 import { motorcycleService } from '../services/motorcycleService';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 
 interface HeaderProps {
     currentView: View;
@@ -33,6 +34,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavigate, companyName }) => {
     const navigate = useNavigate();
     const { profile, isEmpresa } = useData();
+    const { logoUrl } = useSystemSettings();
     const adminId = isEmpresa ? profile?.id : profile?.parent_id;
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -306,19 +308,36 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
     return (
         <>
             <header className="h-16 md:h-20 bg-white/40 backdrop-blur-3xl border-b border-white/50 px-4 lg:px-10 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-sm">
-                <div>
-                    {currentView !== 'home' && (
-                        <>
-                            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
-                                {getTitle()}
-                            </h2>
-                            {companyName && (
-                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest -mt-0.5">
-                                    {companyName}
-                                </p>
-                            )}
-                        </>
-                    )}
+                <div className="flex items-center gap-3">
+                    {/* Logo - Mobile only */}
+                    <div
+                        onClick={() => navigate('/')}
+                        className="flex md:hidden h-[90px] w-[90px] shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        title="Página Inicial"
+                    >
+                        {profile?.company_logo ? (
+                            <img src={profile.company_logo} alt="Company Logo" className="h-full w-full object-contain" />
+                        ) : logoUrl ? (
+                            <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" />
+                        ) : (
+                            <img src="https://docs.nleads.pro/nleads-logo.png" alt="Logo" className="h-full w-auto object-contain" />
+                        )}
+                    </div>
+
+                    <div>
+                        {currentView !== 'home' && (
+                            <>
+                                <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
+                                    {getTitle()}
+                                </h2>
+                                {companyName && (
+                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest -mt-0.5">
+                                        {companyName}
+                                    </p>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-4 lg:gap-8">

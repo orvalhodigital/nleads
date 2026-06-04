@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy, MessageSquare, TrendingUp, Shield } from 'lucide-react';
+import { LogOut, Users, Settings, Bell, Tag, Quote, Rocket, CheckCircle2, LifeBuoy, TrendingUp, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from '../components/OtimizzaLogo';
@@ -42,20 +42,6 @@ export default function AdminLayout() {
                     >
                         <Users size={18} />
                         Usuários
-                    </Link>
-                    <Link
-                        to="/paineldoadm/leads"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('leads') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
-                    >
-                        <MessageSquare size={18} />
-                        Leads
-                    </Link>
-                    <Link
-                        to="/paineldoadm/vehicles"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('vehicles') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
-                    >
-                        <Car size={18} />
-                        Veículos
                     </Link>
                     <Link
                         to="/paineldoadm/sales"

@@ -19,8 +19,6 @@ const AdminQuotes = lazy(() => import('./AdminQuotes'));
 const AdminOnboarding = lazy(() => import('./AdminOnboarding'));
 const AdminTickets = lazy(() => import('./AdminTickets'));
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
-const AdminLeads = lazy(() => import('./AdminLeads'));
-const AdminVehicles = lazy(() => import('./AdminVehicles'));
 const AdminSales = lazy(() => import('./AdminSales'));
 const AdminAuditLog = lazy(() => import('./AdminAuditLog'));
 
@@ -153,8 +151,6 @@ export default function AdminApp() {
                     <Route index element={<AdminDashboard />} />
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="users/:userId" element={<AdminUserDetails />} />
-                    <Route path="leads" element={<AdminLeads />} />
-                    <Route path="vehicles" element={<AdminVehicles />} />
                     <Route path="sales" element={<AdminSales />} />
                     <Route path="audit-log" element={<AdminAuditLog />} />
                     <Route path="settings" element={<AdminSettings />} />

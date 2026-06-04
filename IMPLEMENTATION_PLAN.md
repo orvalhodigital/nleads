@@ -256,14 +256,25 @@ depois a garantia.
   - Menu "Fluxo de Vendas" adicionado ao AppSidebar
   - Stats cards com tempo médio de entrega, garantias ativas, taxa conclusão
   
-- [ ] **Fase 6:** Dashboard updates (remover Documentação/Entrega) — 🔄 TODO
-  - Remover Documentação/Entrega do Radar Quente
-  - Adicionar widget "Vendas em Processamento"
+- [x] **Fase 6:** Dashboard updates (remover Documentação/Entrega) — ✅ CONCLUÍDO
+  - ✅ Removido Documentação/Entrega do Radar Quente (leads pré-venda)
+  - ✅ Adicionado widget "Vendas em Processamento"
+  - ✅ Mostra status em tempo real: Documentação | Entrega | Em Garantia
+  - ✅ Botão "Ver Kanban" para acessar /sales-flow
+  - ✅ Total de vendas em fluxo pós-venda
   
-- [ ] **Fase 7:** Integração LeadManager (sincronizar COMPLETED) — 🔄 TODO
-  - Usar useSalesFlowSync quando lead marca como COMPLETED
+- [x] **Fase 7:** Integração LeadManager (sincronizar COMPLETED) — ✅ CONCLUÍDO
+  - ✅ Importado salesFlowService no LeadSaleModal
+  - ✅ Chamada a initiateSaleFlow() após registro de venda
+  - ✅ Funciona para leads normais e walk-in
+  - ✅ Sincronização não-crítica (graceful fallback se falhar)
+  - ✅ Lead passa automaticamente para sale_status = 'documentacao'
   
 - [ ] **Fase 8:** Testes + validação SaaS — 🔄 TODO
+  - Teste: criar lead → marcar venda → verificar em /sales-flow
+  - Teste: drag-drop kanban → verificar sincronização BD
+  - Teste: countdown de garantia → alertas visuais
+  - Teste: configuração de garantias → aplicação em vendas
 
 ---
 

@@ -30,6 +30,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const LeadsPage = lazy(() => import('./pages/LeadsPage'));
 const SalesClosedPage = lazy(() => import('./pages/SalesClosedPage'));
+const SalesFlowPage = lazy(() => import('./pages/SalesFlowPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const AgendaPage = lazy(() => import('./pages/AgendaPage'));
 const VehicleFormPage = lazy(() => import('./pages/VehicleFormPage'));
@@ -77,6 +78,7 @@ const App: React.FC = () => {
                     <Route path="leads/:id/action/:actionType" element={<LeadActionPage />} />
                     <Route path="agenda" element={<AgendaPage />} />
                     <Route path="sales-closed" element={<SalesClosedPage />} />
+                    <Route path="sales-flow" element={<SalesFlowPage />} />
                     <Route path="plans" element={<Navigate to="/settings" replace />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="motorcycles" element={<MotorcyclesPage />} />

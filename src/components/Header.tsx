@@ -295,6 +295,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
             case 'home': return '';
             case 'dashboard': return 'Métricas';
             case 'inventory': return 'Estoque';
+            case 'sales-flow': return 'Fluxo de Vendas';
             case 'sales-closed': return 'Vendas Fechadas';
             case 'settings': return 'Configurações';
             case 'support': return 'Suporte Técnico';

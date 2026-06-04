@@ -471,7 +471,7 @@ export interface Motorcycle {
   showOnWebsite?: boolean;
 }
 
-export type View = 'dashboard' | 'inventory' | 'leads' | 'agenda' | 'sales-closed' | 'plans' | 'settings' | 'motorcycles' | 'onboarding' | 'support' | 'admin-tickets';
+export type View = 'dashboard' | 'inventory' | 'leads' | 'agenda' | 'sales-flow' | 'sales-closed' | 'plans' | 'settings' | 'motorcycles' | 'onboarding' | 'support' | 'admin-tickets';
 
 export type TicketStatus = 'open' | 'in_progress' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';

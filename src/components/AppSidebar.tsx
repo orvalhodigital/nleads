@@ -15,7 +15,8 @@ import {
     ChevronLeft,
     ChevronRight,
     LifeBuoy,
-    Globe
+    Globe,
+    BarChart3
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
@@ -33,7 +34,8 @@ const AppSidebar: React.FC = () => {
         ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),
         { id: '/leads', icon: Users, label: 'Leads', end: false, always: true },
         { id: '/agenda', icon: Calendar, label: 'Agenda', end: false, always: true },
-        { id: '/sales-closed', icon: CheckCircle2, label: 'Vendas', end: false, always: true },
+        { id: '/sales-flow', icon: BarChart3, label: 'Fluxo de Vendas', end: false, always: true },
+        { id: '/sales-closed', icon: CheckCircle2, label: 'Vendas (Relatório)', end: false, always: true },
         { id: '/support', icon: LifeBuoy, label: 'Suporte', end: false, always: true },
         { id: '/website', icon: Globe, label: 'Website', end: false, always: true }
     ];

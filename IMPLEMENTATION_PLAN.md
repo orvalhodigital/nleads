@@ -917,9 +917,10 @@ export function useAdminTable(
 - [x] **components/admin/AdminPagination.tsx** — NOVO (UI paginação)
 - [x] **tailwind.config.js** — MODIFICADO (animação slideIn)
 
-**Fase 1 - Refactor CRUDs**:
-- [x] **admin/AdminLeads.tsx** — REFATORADO (253→220 linhas; paginação + toasts + debounce)
-- [x] **admin/AdminVehicles.tsx** — REFATORADO (260→227 linhas; paginação + toasts + debounce)
+**Fase 1 - Refactor CRUDs** (⚠️ REMOVIDO):
+- [x] **admin/AdminLeads.tsx** — REFATORADO depois REMOVIDO (user feedback: não é interessante visualizar aqui)
+- [x] **admin/AdminVehicles.tsx** — REFATORADO depois REMOVIDO (user feedback: não é interessante visualizar aqui)
+- 📊 Dados de leads/veículos mantidos apenas no **AdminDashboard** como KPIs
 
 **Fase 2 - AdminUsers com Delete & Edit Senha** (🆕 CONCLUÍDO):
 - [x] **admin/AdminUsers.tsx** — REFATORADO (paginação + toasts + debounce + delete + password edit modal)
@@ -970,17 +971,14 @@ busca sem espera.
 
 | Métrica | Antes | Depois | Melhoria |
 |---|---|---|---|
-| **AdminLeads LOC** | 253 | 220 | -13% (menos boilerplate) |
-| **AdminVehicles LOC** | 260 | 227 | -13% (menos boilerplate) |
-| **AdminUsers LOC** | 255 | 280* | +10% (delete + password modal) |
-| **Duplicação de código** | 100% | 0% (useAdminTable) | Eliminado |
-| **Re-renders ao filtrar** | 5+ por keystroke | 1 (useMemo + debounce) | 80% redução |
-| **Feedback visual de erro** | alert() | Toast | ⭐ melhor UX |
-| **Paginação** | ❌ não | ✅ 50/página | Escalável |
+| **AdminLeads** | 253 LOC (CRUD completo) | ❌ Removido | Simplificado (dados apenas em dashboard) |
+| **AdminVehicles** | 260 LOC (CRUD completo) | ❌ Removido | Simplificado (dados apenas em dashboard) |
+| **AdminUsers LOC** | 255 | 280 | +10% (delete + password modal adicionados) |
+| **Menu items no sidebar** | 7 items (leads, vehicles, etc) | 5 items (users, sales apenas) | -29% (navegação simplificada) |
+| **Duplicação de código eliminada** | ✅ useAdminTable usada para leads/vehicles | ❌ Agora não aplicável (CRUDs removidos) | Código remoção |
+| **Feedback visual** | alert() | ✅ Toast system | ⭐ melhor UX |
 | **Delete user** | ❌ não | ✅ com modal | Nova feature |
 | **Edit password** | prompt() | ✅ modal com validação | ⭐ melhor UX |
-
-*AdminUsers aumentou com a adição de delete e modal para editar senha (funcionalidade novo)
 
 ---
 
@@ -991,6 +989,12 @@ busca sem espera.
 - ✅ Implementar delete com confirmação
 - ✅ Criar modal para editar senha com validação
 - ✅ Manter impersonate + send notification
+
+**Fase 2.5: Remover AdminLeads & AdminVehicles do Painel** ✅ CONCLUÍDO
+- ✅ Remover rotas `/paineldoadm/leads` e `/paineldoadm/vehicles`
+- ✅ Remover do sidebar (menu lateral)
+- ✅ Manter dados apenas no AdminDashboard (KPIs)
+- Razão: User feedback — não é interessante visualizar dados de leads/veículos no painel admin
 
 **Fase 3: Sidebar Responsiva + Menu Groups**
 - Estimar: 45min

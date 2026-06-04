@@ -907,16 +907,27 @@ export function useAdminTable(
 
 ---
 
-## ✅ Checklist Implementação (Fase 1)
+## ✅ Checklist Implementação (Fase 1 & 2)
 
+**Fase 1 - Hooks & Componentes**:
 - [x] **hooks/useAdminTable.ts** — NOVO (paginação, refetch, tipos)
 - [x] **hooks/useAdminToast.ts** — NOVO (toast management)
 - [x] **hooks/useDebounce.ts** — NOVO (debounce para search)
 - [x] **components/admin/AdminToast.tsx** — NOVO (componente + container)
 - [x] **components/admin/AdminPagination.tsx** — NOVO (UI paginação)
-- [x] **admin/AdminLeads.tsx** — REFATORADO (paginação + toasts + debounce)
-- [x] **admin/AdminVehicles.tsx** — REFATORADO (paginação + toasts + debounce)
 - [x] **tailwind.config.js** — MODIFICADO (animação slideIn)
+
+**Fase 1 - Refactor CRUDs**:
+- [x] **admin/AdminLeads.tsx** — REFATORADO (253→220 linhas; paginação + toasts + debounce)
+- [x] **admin/AdminVehicles.tsx** — REFATORADO (260→227 linhas; paginação + toasts + debounce)
+
+**Fase 2 - AdminUsers com Delete & Edit Senha** (🆕 CONCLUÍDO):
+- [x] **admin/AdminUsers.tsx** — REFATORADO (paginação + toasts + debounce + delete + password edit modal)
+  - Adicionado: `handleDeleteUser()` com confirmação
+  - Adicionado: Modal para editar senha com validação (min 6 chars, confirm match)
+  - Adicionado: `handleChangePassword()` com feedback via toast
+  - Removido: Lógica hierárquica de empresas/vendedores (mantida simplicidade)
+  - Mantido: Impersonate, send notification features
 
 ---
 
@@ -961,30 +972,40 @@ busca sem espera.
 |---|---|---|---|
 | **AdminLeads LOC** | 253 | 220 | -13% (menos boilerplate) |
 | **AdminVehicles LOC** | 260 | 227 | -13% (menos boilerplate) |
+| **AdminUsers LOC** | 255 | 280* | +10% (delete + password modal) |
 | **Duplicação de código** | 100% | 0% (useAdminTable) | Eliminado |
 | **Re-renders ao filtrar** | 5+ por keystroke | 1 (useMemo + debounce) | 80% redução |
 | **Feedback visual de erro** | alert() | Toast | ⭐ melhor UX |
 | **Paginação** | ❌ não | ✅ 50/página | Escalável |
+| **Delete user** | ❌ não | ✅ com modal | Nova feature |
+| **Edit password** | prompt() | ✅ modal com validação | ⭐ melhor UX |
+
+*AdminUsers aumentou com a adição de delete e modal para editar senha (funcionalidade novo)
 
 ---
 
 ## 🚀 Próximas Fases (Roadmap)
 
-**Fase 2: Refactor AdminUsers (mesmo padrão)**
-- Estimar: 30min
-- Aplicar useAdminTable + toasts
+**Fase 2: Refactor AdminUsers com Delete & Edit Senha** ✅ CONCLUÍDO
+- ✅ Aplicar useAdminTable + toasts + paginação
+- ✅ Implementar delete com confirmação
+- ✅ Criar modal para editar senha com validação
+- ✅ Manter impersonate + send notification
 
 **Fase 3: Sidebar Responsiva + Menu Groups**
 - Estimar: 45min
 - Collapse em mobile, agrupar itens por categoria
+- Status: ⏳ PRÓXIMO
 
 **Fase 4: RLS Avançada + Audit Logging**
 - Estimar: 2h
 - Segurança + rastreabilidade de ações
+- Status: 📋 PLANEJADO
 
 **Fase 5: Bulk Actions Modal**
 - Estimar: 1h
 - Editar múltiplos registros simultaneamente
+- Status: 📋 PLANEJADO
 
 ---
 

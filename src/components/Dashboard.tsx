@@ -676,9 +676,45 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                   </div>
 
                   <div className="space-y-5">
-                    {funnelData.filter(d => ['Visita', 'Simulação', 'Pagamento', 'Documentação', 'Entrega'].includes(d.name)).map((item) => (
+                    {funnelData.filter(d => ['Visita', 'Simulação', 'Pagamento'].includes(d.name)).map((item) => (
                       <PhaseGlassBar key={item.name} label={item.name} value={item.value} total={activeLeads.length} color={item.color} />
                     ))}
+                  </div>
+                </div>
+              </GlassSection>
+
+              {/* Vendas em Processamento */}
+              <GlassSection>
+                <div className="flex items-center justify-between mb-6">
+                  <SectionHeader icon={ShoppingBag} title="Vendas em Processamento" subtitle="Fluxo pós-venda" color="text-emerald-500 bg-emerald-500/10 border-emerald-500/20" />
+                  <button
+                    onClick={() => navigate('/sales-flow')}
+                    className="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 text-xs font-bold transition-all"
+                  >
+                    Ver Kanban →
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Documentação</p>
+                      <p className="text-2xl font-black text-blue-900 mt-2">{leads.filter(l => l.saleStatus === 'documentacao').length}</p>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-orange-600">Entrega</p>
+                      <p className="text-2xl font-black text-orange-900 mt-2">{leads.filter(l => l.saleStatus === 'entrega').length}</p>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Em Garantia</p>
+                      <p className="text-2xl font-black text-emerald-900 mt-2">{leads.filter(l => l.saleStatus === 'em_garantia').length}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Total de Vendas</p>
+                    <p className="text-3xl font-black text-slate-900 mt-2">{leads.filter(l => l.saleStatus).length}</p>
+                    <p className="text-[10px] font-bold text-slate-500 mt-2">Leads em fluxo de pós-venda</p>
                   </div>
                 </div>
               </GlassSection>

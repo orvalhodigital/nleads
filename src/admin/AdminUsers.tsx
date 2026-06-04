@@ -9,6 +9,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useAdminToast } from '../hooks/useAdminToast';
 import { ToastContainer } from '../components/admin/AdminToast';
 import { AdminPagination } from '../components/admin/AdminPagination';
+import { BulkActionsModal } from '../components/admin/BulkActionsModal';
 import { auditLogService } from '../services/auditLogService';
 
 export default function AdminUsers() {
@@ -29,6 +30,10 @@ export default function AdminUsers() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [changingPassword, setChangingPassword] = useState(false);
+
+    // Bulk Actions State
+    const [showBulkModal, setShowBulkModal] = useState(false);
+    const [bulkDeleting, setBulkDeleting] = useState(false);
 
     const {
         data: rawUsers,
@@ -108,6 +113,36 @@ export default function AdminUsers() {
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (selectedUsers.size === 0) return;
+
+        setBulkDeleting(true);
+        try {
+            const { error: err } = await supabase
+                .from('profiles')
+                .delete()
+                .in('id', Array.from(selectedUsers));
+
+            if (err) throw err;
+
+            // Log audit for each deleted user
+            for (const userId of selectedUsers) {
+                const user = filteredUsers.find(u => u.id === userId);
+                await auditLogService.logAction('delete', 'user', userId, user?.full_name);
+            }
+
+            success(`${selectedUsers.size} usuário(s) deletado(s) com sucesso.`);
+            setSelectedUsers(new Set());
+            setShowBulkModal(false);
+            refetch();
+        } catch (err) {
+            console.error('Error bulk deleting users:', err);
+            showError('Erro ao deletar usuários. Tente novamente.');
+        } finally {
+            setBulkDeleting(false);
+        }
+    };
+
     const handleChangePassword = async () => {
         if (!showPasswordEdit) return;
 
@@ -176,7 +211,7 @@ export default function AdminUsers() {
             )}
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4">
                 <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                     <input
@@ -187,6 +222,16 @@ export default function AdminUsers() {
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
+
+                {selectedUsers.size > 0 && (
+                    <button
+                        onClick={() => setShowBulkModal(true)}
+                        disabled={bulkDeleting}
+                        className="px-4 py-2.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-bold flex items-center gap-2"
+                    >
+                        ⚙️ Ações em Massa ({selectedUsers.size})
+                    </button>
+                )}
             </div>
 
             {loading ? (
@@ -337,6 +382,17 @@ export default function AdminUsers() {
                     </div>
                 </div>
             )}
+
+            {/* Bulk Actions Modal */}
+            <BulkActionsModal
+                selectedCount={selectedUsers.size}
+                selectedIds={Array.from(selectedUsers)}
+                isOpen={showBulkModal}
+                onClose={() => setShowBulkModal(false)}
+                onConfirmDelete={handleBulkDelete}
+                resourceType="user"
+                isLoading={bulkDeleting}
+            />
 
             {/* Notification Modal */}
             {showNotify && (

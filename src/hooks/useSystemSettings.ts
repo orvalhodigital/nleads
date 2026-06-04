@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import otimizzaLogoPNG from '../assets/branding/logos/otimizza-logo-amarelo-h.png';
+
+const DEFAULT_LOGO_URL = '/branding/logos/otimizza-logo-amarelo-h.png';
 
 export interface SystemSettings {
     logoUrl: string | null;
@@ -34,14 +35,14 @@ export const useSystemSettings = () => {
                 if (tempUrl && start && end && now >= start && now <= end) {
                     setLogoUrl(tempUrl);
                 } else {
-                    setLogoUrl(settings['logo_url'] || otimizzaLogoPNG);
+                    setLogoUrl(settings['logo_url'] || DEFAULT_LOGO_URL);
                 }
             } else {
-                setLogoUrl(otimizzaLogoPNG);
+                setLogoUrl(DEFAULT_LOGO_URL);
             }
         } catch (error) {
             console.error('Error loading system settings', error);
-            setLogoUrl(otimizzaLogoPNG);
+            setLogoUrl(DEFAULT_LOGO_URL);
         } finally {
             setLoading(false);
         }

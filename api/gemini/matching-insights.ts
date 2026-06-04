@@ -1,10 +1,31 @@
 import { GoogleGenAI, Type } from '@google/genai';
+import { createClient } from '@supabase/supabase-js';
+
+const ALLOWED_ORIGINS = ['https://nleads.pro', 'https://nleads.com.br', 'https://www.nleads.pro', 'https://www.nleads.com.br'];
+
+async function getVerifiedUserId(req: any): Promise<string | null> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) return null;
+
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+
+  const token = authHeader.slice(7);
+  const authClient = createClient(supabaseUrl, supabaseAnonKey);
+  const { data: { user }, error } = await authClient.auth.getUser(token);
+  if (error || !user) return null;
+  return user.id;
+}
 
 export default async function handler(req: any, res: any) {
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -12,6 +33,11 @@ export default async function handler(req: any, res: any) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+  }
+
+  const userId = await getVerifiedUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized.' });
   }
 
   if (!process.env.GEMINI_API_KEY) {
@@ -58,9 +84,6 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json(JSON.parse(jsonStr));
   } catch (error: any) {
     console.error('Gemini Match API Error:', error);
-    return res.status(500).json({
-      error: 'Failed to generate matching insights.',
-      details: error?.message || 'Unknown error',
-    });
+    return res.status(500).json({ error: 'Failed to generate matching insights.' });
   }
 }

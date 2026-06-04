@@ -210,21 +210,42 @@ export const profileService = {
 
         const idToUpdate = targetUserId || user.id;
 
-        const dbUpdates: any = { ...updates };
+        // Allowlist explícita — impede que campos sensíveis (role, plan, parent_id) sejam
+        // enviados ao banco mesmo que cheguem acidentalmente no objeto de updates.
+        const ALLOWED_FIELDS: (keyof Profile)[] = [
+            'full_name', 'company_name', 'company_logo', 'phone', 'avatar_url',
+            'webhook_url', 'whatsapp_webhook_url' as any, 'use_company_number' as any,
+            'monthly_sales_goal', 'monthly_leads_goal', 'monthly_visits_goal', 'monthly_revenue_goal',
+            'preset_messages',
+            'website_active', 'website_theme', 'website_primary_color', 'website_secondary_color',
+            'website_text_color', 'website_title_color', 'website_use_gradient', 'website_hero_image',
+            'website_hero_text', 'website_hero_subtitle', 'website_whatsapp', 'website_cta_text',
+            'website_slug', 'website_city', 'website_google_maps', 'custom_domain',
+            'website_background_color', 'website_bg_color2', 'website_bg_gradient',
+            'website_hero_button_text', 'website_about_text', 'website_typography', 'website_card_style',
+            'website_hero_images', 'website_video_url', 'website_privacy_policy', 'website_terms_of_use',
+            'website_instagram', 'website_facebook', 'website_youtube', 'website_tiktok',
+            'website_business_hours', 'website_show_sold', 'website_show_filters',
+            'website_sections', 'website_branding', 'website_optimization', 'website_content',
+            'website_contact',
+            'website_diff1_active', 'website_diff1_title', 'website_diff1_sub', 'website_diff1_icon',
+            'website_diff2_active', 'website_diff2_title', 'website_diff2_sub', 'website_diff2_icon',
+            'website_diff3_active', 'website_diff3_title', 'website_diff3_sub', 'website_diff3_icon',
+            'website_diff4_active', 'website_diff4_title', 'website_diff4_sub', 'website_diff4_icon',
+        ];
 
-        // Map camelCase to snake_case for DB
-        if (updates.planStatus !== undefined) {
-            dbUpdates.plan_status = updates.planStatus;
-            delete dbUpdates.planStatus;
-        }
-        if (updates.trialEndsAt !== undefined) {
-            dbUpdates.trial_ends_at = updates.trialEndsAt;
-            delete dbUpdates.trialEndsAt;
+        const dbUpdates: Record<string, any> = {};
+        for (const field of ALLOWED_FIELDS) {
+            if (field in updates) {
+                dbUpdates[field] = (updates as any)[field];
+            }
         }
 
-        // Remove fields that should only live in auth metadata, if they somehow get here.
-        delete dbUpdates.enable_cars;
-        delete dbUpdates.enable_motorcycles;
+        // Map camelCase para snake_case
+        if (updates.planStatus !== undefined) dbUpdates.plan_status = updates.planStatus;
+        if (updates.trialEndsAt !== undefined) dbUpdates.trial_ends_at = updates.trialEndsAt;
+
+        if (Object.keys(dbUpdates).length === 0) return;
 
         const response = await supabase
             .from('profiles')

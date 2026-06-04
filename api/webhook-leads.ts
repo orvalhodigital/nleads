@@ -1,66 +1,67 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase Client
-// Note: In production, configure these as Environment Variables in Vercel
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://cjcfmbgzuxqprzldighp.supabase.co';
-// Use Service Role Key for backend operations if available, otherwise fallback to Anon key (which might need RLS policies adjusted for public inserts)
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqY2ZtYmd6dXhxcHJ6bGRpZ2hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTA5MTYsImV4cCI6MjA5MTIyNjkxNn0.06APE1p3V0bdPRNkwOjku8ETbBSSYbsUI-9Wy3Z4OG4';
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing required env vars: VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default async function handler(req: any, res: any) {
-  // CORS configuration
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+const ALLOWED_ORIGINS = ['https://nleads.pro', 'https://nleads.com.br', 'https://www.nleads.pro', 'https://www.nleads.com.br'];
 
-  // Handle preflight request
+export default async function handler(req: any, res: any) {
+  const origin = req.headers.origin || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Webhook-Token');
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
+  // Verificação do token secreto do webhook
+  const webhookSecret = process.env.WEBHOOK_SECRET;
+  if (webhookSecret) {
+    const tokenHeader = req.headers['x-webhook-token'];
+    if (tokenHeader !== webhookSecret) {
+      return res.status(401).json({ error: 'Unauthorized: invalid or missing webhook token.' });
+    }
+  }
+
   try {
     const body = req.body || {};
-    const { name, phone, email, source, notes, temperature } = body;
+    const { name, phone, email, source, notes, temperature, user_id } = body;
 
-    // Validation
     if (!name || !phone) {
       return res.status(400).json({ error: 'Missing required fields: name, phone' });
     }
 
-    // Construct Lead Object
+    if (!user_id) {
+      return res.status(400).json({ error: 'Missing required field: user_id' });
+    }
+
     const newLead = {
+      user_id,
       name,
       phone,
       email: email || '',
-      phase: 'Novo Lead', // Default starting phase
+      phase: 'Novo Lead',
       temperature: temperature || 'Fria',
       source: source || 'Webhook',
       notes: notes || 'Importado via Webhook',
-      preferences: {
-        types: [],
-        brands: [],
-        models: [],
-        transmission: 'Em aberto',
-        engine: 'Em aberto',
-        additionalNotes: ''
-      },
       presented_vehicles: [],
-      funnel_history: {}
+      funnel_history: {},
     };
 
-    // Insert into Supabase
-    // Note: If you have Row Level Security (RLS) enabled, ensure the Key used has permission to insert,
-    // or use the SERVICE_ROLE_KEY environment variable.
     const { data, error } = await supabase
       .from('leads')
       .insert(newLead)
@@ -68,33 +69,16 @@ export default async function handler(req: any, res: any) {
       .single();
 
     if (error) {
-      console.error('Supabase Insert Error:', error);
-
-      // Check for RLS policy violation
       if (error.code === '42501') {
-        console.error('CRITICAL: Permission denied. This is likely due to Row Level Security (RLS).');
-        console.error('Ensure you are using the SUPABASE_SERVICE_ROLE_KEY in your environment variables to bypass RLS for webhooks.');
-        return res.status(403).json({
-          error: 'Permission Denied',
-          details: 'Database rejected the insertion. Check RLS policies or Service Key configuration.',
-          hint: 'Webhooks require SUPABASE_SERVICE_ROLE_KEY to bypass RLS.'
-        });
+        return res.status(403).json({ error: 'Permission denied. Configure SUPABASE_SERVICE_ROLE_KEY.' });
       }
-
       throw error;
     }
 
-    return res.status(200).json({
-      success: true,
-      message: 'Lead imported successfully',
-      data
-    });
+    return res.status(200).json({ success: true, message: 'Lead imported successfully', data });
 
   } catch (error: any) {
     console.error('Webhook Handler Error:', error);
-    return res.status(500).json({
-      error: 'Internal Server Error',
-      details: error.message
-    });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 }

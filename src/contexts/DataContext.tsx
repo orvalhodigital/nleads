@@ -99,9 +99,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     const { showToast } = useToast();
 
     const impersonatedUserId = useMemo(() => {
+        // impersonatedUserId via prop vem do AdminApp — já protegido por verificação de role admin.
         if (propImpersonatedUserId) return propImpersonatedUserId;
+        // Query param só é aceito se o perfil atual for admin/super_admin — lido da ref para evitar
+        // dependência circular com o estado de profile ainda não carregado.
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('impersonate') || undefined;
+        const paramId = urlParams.get('impersonate');
+        if (!paramId) return undefined;
+        const currentRole = profileRef.current?.role;
+        if (currentRole === 'admin' || currentRole === 'super_admin') return paramId;
+        return undefined;
     }, [propImpersonatedUserId]);
 
     const refreshProfile = useCallback(async (): Promise<Profile | null> => {

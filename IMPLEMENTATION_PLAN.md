@@ -1107,11 +1107,31 @@ o reino consolida.
 
 ## ✅ Checklist Implementação
 
-- [ ] **Fase 1:** Dashboard com KPIs — RPC + Cards
-- [ ] **Fase 2:** AdminLeads CRUD + bulk delete
-- [ ] **Fase 3:** AdminVehicles CRUD + filtros
-- [ ] **Fase 4:** AdminSales pipeline + stats
-- [ ] **Fase 5:** AuditLog + Permissões (roles)
-- [ ] **Fase 6:** BulkActions + Exportação CSV/Excel
+- [x] **Fase 1:** Dashboard com KPIs — 8 cards com métricas agregadas ✅ CONCLUÍDO
+  - Total de usuários, ativos, PRO
+  - Total de leads, qualificados
+  - Veículos em estoque, vendas completadas, tickets abertos
+  - Ações rápidas (links para gerenciar usuários, tickets, planos)
+
+- [x] **Fase 2:** AdminLeads CRUD + bulk delete ✅ CONCLUÍDO
+  - Tabela com busca (nome, email, telefone)
+  - Filtros por status
+  - Bulk select e delete
+  - Exibição de usuário responsável
+
+- [x] **Fase 3:** AdminVehicles CRUD + filtros ✅ CONCLUÍDO
+  - Tabela com busca (marca, modelo, placa)
+  - Filtros por status (disponível/vendido)
+  - Bulk select e delete
+  - Exibição de preço, ano, tipo, usuário
+
+- [x] **Fase 4:** AdminSales pipeline + stats ✅ CONCLUÍDO
+  - 4 KPIs: vendas, receita, ticket médio, dias médios
+  - Pipeline visual (cards por fase)
+  - Tabela de vendas com filtros por fase
+  - Dados do cliente, veículo, usuário, valor e data
+
+- [ ] **Fase 5:** AuditLog + Permissões (roles) — PLANEJADO
+- [ ] **Fase 6:** BulkActions + Exportação CSV/Excel — PLANEJADO
 - [ ] **Testes:** E2E em cada fase
 - [ ] **Produção:** Deploy com migrations SQL

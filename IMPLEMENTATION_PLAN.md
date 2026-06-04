@@ -1005,13 +1005,15 @@ busca sem espera.
 - ✅ Smooth transitions (translate-x)
 - Status: 🟢 DONE
 
-**Fase 4: RLS Avançada + Audit Logging**
-- [ ] Segurança: verificar permissões por role
-- [ ] Criar audit_logs table + admin_audit_logs service
-- [ ] Rastrear quem fez o quê (create/update/delete)
-- [ ] Logging de delete/edit de usuários no AdminUsers
-- Estimar: 2h
-- Status: ⏳ PRÓXIMO
+**Fase 4: RLS Avançada + Audit Logging** 🔄 50% COMPLETO
+- [x] Criar auditLogService.ts (fetch + insert)
+- [x] Integrar logging em AdminUsers (delete + password change)
+- [x] Criar AdminAuditLog.tsx (UI tabela + filtros)
+- [ ] ⚠️ Schema SQL: criar tabela admin_audit_logs no Supabase
+- [ ] RLS: verificar permissões por role
+- [ ] Integrar logging em outros CRUDs (quando existirem)
+- Estimar: 2h (1h done, 1h remaining)
+- Status: 🔄 EM ANDAMENTO (próximo: schema SQL)
 
 **Fase 5: Bulk Actions Modal**
 - [ ] Editar múltiplos usuários ao mesmo tempo
@@ -1127,6 +1129,136 @@ navegação fluida.
 | **Desktop** | ✅ Sidebar fixo | ✅ Sidebar fixo | Sem mudança |
 | **Transição móvel** | ❌ Não tinha | ✅ translate-x smooth | Profissional |
 | **AdminLayout LOC** | 123 | 125 | +2 (layout melhorado) |
+
+---
+
+---
+
+## 🎯 **FEATURE**: Painel Administrativo v2 — Audit Logging
+
+**FASE 4: RLS Avançada + Audit Logging**
+**Date**: 2026-06-04
+**Status**: 🔄 EM ANDAMENTO (50% completo)
+**Time**: 2h (estimado)
+**Lines of Code**: ~400 (auditLogService + AdminAuditLog + integrations)
+
+---
+
+### 📋 Plano
+
+#### Objetivo
+Implementar rastreamento completo de ações administrativas:
+1. **Audit Logging** — registrar quem fez o quê, quando e com que mudanças
+2. **RLS Avançada** — verificar permissões por role antes de ações
+3. **Visualização de logs** — interface para consultar histórico de ações
+
+#### Mudanças Técnicas
+
+**1. Serviço de Auditoria (`auditLogService.ts`)**:
+```ts
+export const auditLogService = {
+  async logAction(action, resourceType, resourceId, resourceName, changes) {
+    // Registra ação com: admin_id, action, resource_type, resource_id, changes
+  },
+  async getAuditLogs(filters) {
+    // Busca logs com filtros: action, resourceType, startDate, endDate
+  },
+  async getUserAuditLogs(userId) {
+    // Busca todos os logs de um usuário específico
+  }
+}
+```
+
+**2. Integração em AdminUsers.tsx**:
+- `handleDeleteUser()` → logs: `logAction('delete', 'user', id, name)`
+- `handleChangePassword()` → logs: `logAction('update', 'user', id, name, {field: 'password'})`
+
+**3. Componente AdminAuditLog.tsx** (~180 linhas):
+- Tabela com colunas: Admin | Ação | Recurso | Alvo | Data/Hora
+- Filtros: Por ação (create/update/delete) e tipo de recurso
+- Colored badges: delete=red, update=blue, create=green
+- Formata datas em pt-BR
+
+**4. Schema Supabase** (ainda não criado, será no próximo commit):
+```sql
+CREATE TABLE admin_audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  admin_id UUID REFERENCES auth.users(id),
+  action TEXT, -- 'create', 'update', 'delete', 'export'
+  resource_type TEXT, -- 'user', 'lead', 'vehicle', 'sale'
+  resource_id TEXT,
+  resource_name TEXT,
+  changes JSONB, -- {field: value_antes -> value_depois}
+  ip_address INET,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Índices para queries rápidas
+CREATE INDEX idx_audit_logs_admin_id ON admin_audit_logs(admin_id);
+CREATE INDEX idx_audit_logs_resource ON admin_audit_logs(resource_type, resource_id);
+CREATE INDEX idx_audit_logs_created ON admin_audit_logs(created_at DESC);
+```
+
+#### Fluxo Completo
+```
+1. Admin deleta usuário em AdminUsers
+   ↓
+2. handleDeleteUser() confirma ação
+   ↓
+3. Supabase.delete() executa
+   ↓
+4. auditLogService.logAction('delete', 'user', ...) registra no audit_logs
+   ↓
+5. AdminAuditLog page mostra novo log na tabela (filtrado/visualizado)
+```
+
+---
+
+### ⚠️ Riscos
+
+| Risco | Severidade | Mitigação |
+|---|---|---|
+| Tabela audit_logs não existe no DB | ALTO | Criar schema antes de usar (SQL script pendente) |
+| Race condition: ação executa mas log falha | MÉDIO | Try/catch garante que falha de log não bloqueia ação |
+| Performance: 1M+ logs deixa queries lentas | MÉDIO | Índices em admin_id, resource_type, created_at |
+| Logs armazenam dados sensíveis | MÉDIO | Não logar senhas/tokens, apenas field names |
+| RLS não implementado ainda | BAIXO | Próxima fase: adicionar verificações por role |
+
+---
+
+### 🌸 Haiku-check
+
+```
+Cada ação registrada,
+rastro claro do passado;
+confiança ganha.
+```
+
+**Verdict**: ✅ Haiku 4.5 **ADEQUADO**
+
+**O que funcionou bem:**
+- Serviço simples (fetch + insert no Supabase)
+- Integração não-invasiva (add 1 linha por ação)
+- UI de auditoria padrão (tabela + filtros)
+- Try/catch garante que logs não quebram fluxos
+
+**Por que Haiku foi suficiente:**
+- Sem lógica complexa (apenas CRUD de logs)
+- Queries diretas ao Supabase
+- Sem estado complexo (logs são imutáveis)
+- Padrão reutilizável (mesmo serviço para todos os CRUDs)
+
+---
+
+### 📊 Impacto Mensurável
+
+| Métrica | Antes | Depois | Melhoria |
+|---|---|---|---|
+| **Rastreabilidade** | ❌ Nenhuma | ✅ Audit logs | Compliance ✅ |
+| **Admin Actions** | 0 logs | 2 (delete + password) | Integrações iniciais |
+| **Visualização logs** | ❌ Nenhuma | ✅ AdminAuditLog page | Visibilidade |
+| **AdminUsers LOC** | 280 | 295 | +5 (2 logAction calls) |
+| **Novo código LOC** | 0 | ~400 | auditLogService + AdminAuditLog |
 
 ---
 

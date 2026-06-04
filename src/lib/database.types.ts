@@ -10,6 +10,44 @@ export type Json =
 export interface Database {
     public: {
         Tables: {
+            guarantee_configs: {
+                Row: {
+                    id: string
+                    user_id: string
+                    type: string
+                    name: string
+                    days_warranty: number
+                    description: string | null
+                    conditions: Json | null
+                    is_active: boolean
+                    created_at: string
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    type: string
+                    name: string
+                    days_warranty: number
+                    description?: string | null
+                    conditions?: Json | null
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    type?: string
+                    name?: string
+                    days_warranty?: number
+                    description?: string | null
+                    conditions?: Json | null
+                    is_active?: boolean
+                    created_at?: string
+                    updated_at?: string | null
+                }
+            },
             vehicles: {
                 Row: {
                     id: string
@@ -146,6 +184,12 @@ export interface Database {
                     scheduling_data: Json | null
                     simulation_data: Json | null
                     follow_up_data: Json | null
+                    sale_status: string | null
+                    sale_date: string | null
+                    delivery_date: string | null
+                    guarantee_id: string | null
+                    guarantee_ends_at: string | null
+                    post_sale_notes: string | null
                 }
                 Insert: {
                     id?: string
@@ -182,6 +226,12 @@ export interface Database {
                     scheduling_data?: Json | null
                     simulation_data?: Json | null
                     follow_up_data?: Json | null
+                    sale_status?: string | null
+                    sale_date?: string | null
+                    delivery_date?: string | null
+                    guarantee_id?: string | null
+                    guarantee_ends_at?: string | null
+                    post_sale_notes?: string | null
                 }
                 Update: {
                     id?: string
@@ -218,6 +268,12 @@ export interface Database {
                     scheduling_data?: Json | null
                     simulation_data?: Json | null
                     follow_up_data?: Json | null
+                    sale_status?: string | null
+                    sale_date?: string | null
+                    delivery_date?: string | null
+                    guarantee_id?: string | null
+                    guarantee_ends_at?: string | null
+                    post_sale_notes?: string | null
                 }
             },
             profiles: {

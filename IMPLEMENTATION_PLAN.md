@@ -1,4 +1,243 @@
-# IMPLEMENTATION_PLAN.md
+🎯 **FEATURE**: Sales Kanban com Fluxo de Pós-Venda e Gestão de Garantia
+**Date**: 2026-06-04
+**Status**: 🔄 IN PROGRESS
+**Last Updated**: 2026-06-04
+
+---
+
+## 📋 Plano
+
+### Objetivo
+Implementar um **segundo funil (inverso)** que inicia logo após a venda ser fechada, permitindo rastrear:
+1. **Documentação** — assinatura de papéis, contratos
+2. **Entrega** — preparação e entrega do veículo
+3. **Garantia Ativa** — período de proteção pós-venda (configurável por loja)
+4. **Pós-Venda** — follow-ups, satisfação, oportunidades de expansão
+
+### Estrutura Multi-Tenant de Garantia
+Cada concessionária (perfil) configura suas políticas de garantia em **Settings → Garantia**:
+- ✅ Tipos de garantia: 7 dias (arrependimento), 90 dias (legal), 180 dias, 1 ano, customizada
+- ✅ Termo de garantia por tipo (descrição, condições)
+- ✅ Política de devolução (reembolso, crédito, prazo)
+- ✅ Automações (alertas quando vencer, follow-ups programados)
+
+### Mudanças Técnicas
+
+#### 1. **Supabase Schema**
+**New Table: `guarantee_configs`** — configuração multi-tenant
+```sql
+CREATE TABLE guarantee_configs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, -- '7dias', '90dias', 'custom'
+  name TEXT NOT NULL, -- "Garantia 90 Dias", "Direito de Arrependimento"
+  days_warranty INT NOT NULL,
+  description TEXT,
+  conditions TEXT, -- JSON serializado: reembolso, crédito, prazo devolução
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, type)
+);
+
+-- Índice para busca rápida por loja
+CREATE INDEX idx_guarantee_configs_user_id ON guarantee_configs(user_id);
+```
+
+**Modify Table: `leads`** — rastrear pós-venda
+```sql
+ALTER TABLE leads
+  ADD COLUMN IF NOT EXISTS sale_status TEXT DEFAULT NULL, -- 'documentacao', 'entrega', 'em_garantia', 'apos_garantia'
+  ADD COLUMN IF NOT EXISTS sale_date TIMESTAMP DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS delivery_date TIMESTAMP DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS guarantee_id UUID DEFAULT NULL REFERENCES guarantee_configs(id),
+  ADD COLUMN IF NOT EXISTS guarantee_ends_at TIMESTAMP DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS post_sale_notes TEXT DEFAULT NULL;
+```
+
+#### 2. **TypeScript Types** (`src/types.ts`)
+```ts
+export interface GuaranteeConfig {
+  id: string;
+  userId: string;
+  type: '7dias' | '90dias' | '180dias' | '1ano' | 'custom';
+  name: string;
+  daysWarranty: number;
+  description?: string;
+  conditions?: { refundPolicy: string; returnDays: number; notes?: string };
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface SaleFlow {
+  leadId: string;
+  saleStatus: 'documentacao' | 'entrega' | 'em_garantia' | 'apos_garantia';
+  saleDate: string;
+  deliveryDate?: string;
+  guaranteeId?: string;
+  guaranteeEndsAt?: string;
+  postSaleNotes?: string;
+}
+
+// Extend Lead interface
+export interface Lead {
+  // ... existing fields
+  saleStatus?: string;
+  saleDate?: string;
+  deliveryDate?: string;
+  guaranteeId?: string;
+  guaranteeEndsAt?: string;
+  postSaleNotes?: string;
+}
+```
+
+#### 3. **Services** (`src/services/`)
+- **`guaranteeService.ts`** — gerenciar configs de garantia
+  - `getGuaranteeConfigs(userId)` → lista configs ativas
+  - `createGuaranteeConfig(userId, config)` → criar nova garantia
+  - `updateGuaranteeConfig(id, config)` → editar
+  - `deleteGuaranteeConfig(id)` → remover
+
+- **`salesFlowService.ts`** — gerenciar fluxo de pós-venda
+  - `moveSaleToNextPhase(leadId, nextPhase)` → documentação → entrega → garantia
+  - `calculateGuaranteeEndDate(saleDate, days)` → calcula data final
+  - `getActiveSales(userId)` → leads em fluxo de venda (não COMPLETED ainda)
+  - `getSalesInWarranty(userId)` → leads em período ativo de garantia
+  - `getSalesExpiringWarranty(userId, daysWarning=7)` → garantias próximas de vencer
+
+#### 4. **Components** (`src/components/`)
+- **`SalesKanban.tsx`** — kanban visual do fluxo de pós-venda
+  - 4 colunas: Documentação | Entrega | Em Garantia | Pós-Venda
+  - Cards com: lead name + veículo + data venda + garantia countdown
+  - Drag-drop para mover entre fases (usando `@hello-pangea/dnd`)
+
+- **`GuaranteeConfigCard.tsx`** — card de config de garantia (em Settings)
+  - Mostra tipo, dias, condições
+  - Edit/Delete buttons
+
+- **`WarrantyAlert.tsx`** — alerta visual quando garantia vai vencer
+  - Aparece no Dashboard se tiver 7 dias ou menos
+
+#### 5. **Pages** (`src/pages/`)
+- **`SalesFlowPage.tsx`** — página principal do kanban de vendas (expand `SalesClosedPage`)
+  - Tabs: Todas | Em Documentação | Em Entrega | Em Garantia | Vencidas
+  - Filtros: período, origem, status
+  - Métricas: % documentação concluída, tempo médio em cada fase, taxa de reclamações
+
+- **`SettingsPage.tsx`** — Adicionar aba "Garantia"
+  - Lista de configs
+  - Form para criar/editar
+  - Termos pré-definidos (lei 7 dias, 90 dias legal, etc)
+
+#### 6. **Dashboard Updates**
+- Remover Documentação/Entrega do **Radar Quente** (funil de leads)
+- Adicionar widget **"Vendas em Processamento"** mostrando:
+  - X em documentação
+  - X em entrega
+  - X em garantia ativa
+  - X garantias prestes a vencer
+
+### Fluxo Completo (Visão do Usuário)
+
+```
+1. Lead clica em lead COMPLETED no LeadsPage
+   ↓
+2. System cria SaleFlow entry (sale_status = 'documentacao')
+   ↓
+3. Comercial arrasta card em SalesFlowPage para "Entrega"
+   sale_status = 'entrega', delivery_date = hoje
+   ↓
+4. Comercial arrasta para "Em Garantia"
+   sale_status = 'em_garantia', guarantee_id = selecionada,
+   guarantee_ends_at = hoje + N dias
+   ↓
+5. Sistema mostra countdown na tela
+   ↓
+6. Quando vencer, automaticamente move para "Pós-Venda"
+   (ou manual if desired)
+   ↓
+7. Vendedor cria follow-ups: feedback, upsell, etc
+```
+
+## ⚠️ Riscos
+
+### ALTO — Transação de Lead COMPLETED → SaleFlow
+- **Risco**: Lead marca COMPLETED no LeadsPage, mas SalesFlowPage não sincroniza imediatamente
+- **Mitigação**: 
+  - Criar SaleFlow entry na mesma transação que marca lead COMPLETED
+  - Se falhar, rollback lead para fase anterior
+  - Usar trigger Supabase: quando lead.phase = 'Compradores', auto-insert em sales com status = 'documentacao'
+
+### MÉDIO — Guarantia Vence Automático
+- **Risco**: Garantia vence, mas comercial não move lead para "Pós-Venda" e card fica travado
+- **Mitigação**:
+  - Exibir visual claro "Garantia Vencida" em cards
+  - Opção de auto-arquivar ou mover automático em SettingsPage ("Auto-move expired warranties")
+  - Endpoint cron (se usar Vercel) para atualizar diariamente
+
+### MÉDIO — Múltiplas Garantias por Lead
+- **Risco**: Lead pode ter garantia renovada (garantia estendida) — qual delas vale?
+- **Mitigação**:
+  - Coluna `guarantee_id` sempre aponta para a mais recente
+  - Histórico em `post_sale_notes` ou nova tabela `guarantee_history`
+  - Por agora: 1 garantia ativa por lead (renovação cria novo entry em pós-venda)
+
+### BAIXO — Performance do Kanban com Muitos Cards
+- **Risco**: SalesFlowPage renderiza 100+ leads → re-renders lentos
+- **Mitigação**:
+  - Usar `React.memo` em SalesCard
+  - Paginação ou virtual scroll (se necessário)
+  - Lazy load no dnd library
+
+### BAIXO — Campos Nullable Quebram Queries
+- **Risco**: `guarantee_ends_at` pode ser NULL (ainda em documentação), queries podem falhar
+- **Mitigação**: 
+  - Sempre checar `IS NOT NULL` em WHERE clauses
+  - Service layer faz fallback (ex: se NULL, calcula na memória)
+
+## 🌸 Haiku-check
+
+**Verdict**: ⚠️ **ADEQUADO com ressalvas para Fase 1 (schema + types)**
+
+**O que funciona bem com Haiku:**
+- Schema SQL simples (3 colunas novas em leads, 1 tabela nova)
+- Types básicos (enums, interfaces flat)
+- Service methods simples (CRUD na guarantee_configs)
+- Cards UI simples (props bem definidas)
+
+**O que NÃO é Haiku:**
+- Kanban drag-drop com sincronização de fase
+- Cálculo de countdown + alertas + automações
+- Transactions (lead COMPLETED → SaleFlow)
+- Roteamento de página nova
+
+**Estratégia recomendada:**
+- **Fase 1** (Schema + Types + Basic Services): Haiku ✅
+- **Fase 2** (Kanban UI + DnD): Sonnet (lógica de estado complexo)
+- **Fase 3** (Automações + Cron): Sonnet (multi-step logic)
+- **Fase 4** (SalesFlowPage): Sonnet (full page with tabs + filters)
+
+```
+Venda fecha hoje,
+papéis amanhã, entrega,
+depois a garantia.
+```
+
+---
+
+## 📝 Checklist Implementação
+
+- [ ] Fase 1: Schema + Types (Haiku)
+- [ ] Fase 2: Services CRUD (Haiku/Sonnet)
+- [ ] Fase 3: GuaranteeConfigCard + SettingsPage (Sonnet)
+- [ ] Fase 4: SalesKanban component (Sonnet)
+- [ ] Fase 5: SalesFlowPage (Sonnet)
+- [ ] Fase 6: Dashboard updates (remover Documentação/Entrega)
+- [ ] Fase 7: Trigger Supabase (auto-create SaleFlow)
+- [ ] Fase 8: Testes + validação SaaS
+
+---
+
+# IMPLEMENTATION_PLAN.md (HISTÓRICO)
 
 🎯 **FEATURE**: Reorganização de Metas — Funil de Negócio (Estoque · Leads · Visitas · Vendas)
 **Date**: 2026-05-22

@@ -247,6 +247,44 @@ export interface LeadCommunication {
   created_at?: string;
 }
 
+/**
+ * Configuração de Garantia — Multi-tenant por concessionária.
+ */
+export interface GuaranteeConfig {
+  id: string;
+  user_id: string;
+  type: '7dias' | '90dias' | '180dias' | '1ano' | 'custom';
+  name: string;
+  days_warranty: number;
+  description?: string;
+  conditions?: {
+    refundPolicy?: string;
+    returnDays?: number;
+    notes?: string;
+  };
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+/**
+ * Status do fluxo de pós-venda.
+ */
+export type SalePhase = 'documentacao' | 'entrega' | 'em_garantia' | 'apos_garantia';
+
+/**
+ * Fluxo de Pós-Venda (Funil Inverso).
+ */
+export interface SaleFlow {
+  leadId: string;
+  saleStatus: SalePhase;
+  saleDate: string;
+  deliveryDate?: string;
+  guaranteeId?: string;
+  guaranteeEndsAt?: string;
+  postSaleNotes?: string;
+}
+
 
 /**
  * Perfil do usuário e Configurações da Loja.

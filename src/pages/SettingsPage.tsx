@@ -15,6 +15,7 @@ import {
     Wrench,
     Users,
     Globe,
+    Award,
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
@@ -26,6 +27,7 @@ import MessageSettings from '../components/settings/MessageSettings';
 import PlanSettings from '../components/settings/PlanSettings';
 import TeamManager from '../components/TeamManager';
 import WebsiteSettings from '../components/settings/WebsiteSettings';
+import GuaranteeSettings from '../components/settings/GuaranteeSettings';
 import PageContainer from '../components/ui/PageContainer';
 
 interface BusinessHourEntry {
@@ -35,9 +37,9 @@ interface BusinessHourEntry {
     end: string;
 }
 
-type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Website' | 'Geral' | 'Equipe';
+type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Website' | 'Garantia' | 'Geral' | 'Equipe';
 
-const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Website', 'Geral'];
+const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Website', 'Garantia', 'Geral'];
 
 const TAB_ICONS: Record<Tab, React.ReactNode> = {
     'Perfil': <User size={15} />,
@@ -45,6 +47,7 @@ const TAB_ICONS: Record<Tab, React.ReactNode> = {
     'Mensagens': <MessageSquare size={15} />,
     'Planos': <CreditCard size={15} />,
     'Website': <Globe size={15} />,
+    'Garantia': <Award size={15} />,
     'Geral': <Wrench size={15} />,
     'Equipe': <Users size={15} />,
 };
@@ -149,6 +152,10 @@ const SettingsPage: React.FC = () => {
 
             {activeTab === 'Website' && (
                 <WebsiteSettings profile={profile} onUpdate={refreshProfile} />
+            )}
+
+            {activeTab === 'Garantia' && (
+                <GuaranteeSettings onSave={refreshProfile} />
             )}
 
             {activeTab === 'Equipe' && isEmpresa && (

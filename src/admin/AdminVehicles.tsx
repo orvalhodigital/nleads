@@ -1,7 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Vehicle } from '../types';
-import { Search, Trash2, DollarSign, Calendar, AlertCircle } from 'lucide-react';
+import { Search, Trash2, AlertCircle } from 'lucide-react';
+import { useAdminTable } from '../hooks/useAdminTable';
+import { useDebounce } from '../hooks/useDebounce';
+import { useAdminToast } from '../hooks/useAdminToast';
+import { ToastContainer } from '../components/admin/AdminToast';
+import { AdminPagination } from '../components/admin/AdminPagination';
 
 interface VehicleWithUser extends Vehicle {
   user_name?: string;
@@ -9,66 +14,68 @@ interface VehicleWithUser extends Vehicle {
 }
 
 export default function AdminVehicles() {
-  const [vehicles, setVehicles] = useState<VehicleWithUser[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedVehicles, setSelectedVehicles] = useState<Set<string>>(new Set());
-  const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const { toasts, removeToast, success, error: showError } = useAdminToast();
 
-  const fetchVehicles = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: err } = await supabase
-        .from('vehicles')
-        .select(`
-          *,
-          profiles:user_id(full_name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (err) throw err;
-
-      const mapped = (data || []).map((v: any) => ({
-        ...v,
-        user_name: v.profiles?.full_name,
-        status: v.sold_date ? 'sold' : 'available'
-      }));
-
-      setVehicles(mapped);
-    } catch (err) {
-      console.error('Error fetching vehicles:', err);
-      setError('Erro ao carregar veículos. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredVehicles = vehicles.filter(v => {
-    const matchesSearch =
-      (v.brand?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (v.model?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (v.plate?.includes(searchTerm));
-    const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const {
+    data: rawVehicles,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    totalCount,
+    pageSize,
+    hasNextPage,
+    hasPreviousPage,
+    setCurrentPage,
+    refetch,
+    goToNextPage,
+    goToPreviousPage,
+  } = useAdminTable('vehicles', '*, profiles:user_id(full_name)', {
+    pageSize: 50,
+    orderBy: 'created_at',
+    orderDirection: 'desc',
   });
 
-  const handleDeleteVehicle = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja deletar este veículo?')) return;
+  // Map vehicles with computed status
+  const vehicles = useMemo(() => {
+    return rawVehicles.map((v: any) => ({
+      ...v,
+      user_name: v.profiles?.full_name,
+      status: v.sold_date ? 'sold' : 'available'
+    }));
+  }, [rawVehicles]);
 
+  const filteredVehicles = useMemo(() => {
+    return vehicles.filter(v => {
+      const matchesSearch =
+        (v.brand?.toLowerCase() || '').includes(debouncedSearch.toLowerCase()) ||
+        (v.model?.toLowerCase() || '').includes(debouncedSearch.toLowerCase()) ||
+        (v.plate?.includes(debouncedSearch));
+      const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [vehicles, debouncedSearch, statusFilter]);
+
+  const handleDeleteVehicle = async (id: string, brand: string, model: string) => {
+    if (!window.confirm(`Deletar "${brand} ${model}"? Esta ação é irreversível.`)) return;
+
+    setDeleting(true);
     try {
       const { error: err } = await supabase.from('vehicles').delete().eq('id', id);
       if (err) throw err;
-      setVehicles(vehicles.filter(v => v.id !== id));
+      success(`Veículo deletado com sucesso.`);
+      refetch();
     } catch (err) {
       console.error('Error deleting vehicle:', err);
-      alert('Erro ao deletar veículo');
+      showError('Erro ao deletar veículo. Tente novamente.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -76,6 +83,7 @@ export default function AdminVehicles() {
     if (selectedVehicles.size === 0) return;
     if (!window.confirm(`Deletar ${selectedVehicles.size} veículo(s)? Esta ação é irreversível.`)) return;
 
+    setDeleting(true);
     try {
       const { error: err } = await supabase
         .from('vehicles')
@@ -83,11 +91,14 @@ export default function AdminVehicles() {
         .in('id', Array.from(selectedVehicles));
 
       if (err) throw err;
-      setVehicles(vehicles.filter(v => !selectedVehicles.has(v.id)));
+      success(`${selectedVehicles.size} veículo(s) deletado(s) com sucesso.`);
       setSelectedVehicles(new Set());
+      refetch();
     } catch (err) {
       console.error('Error bulk deleting:', err);
-      alert('Erro ao deletar veículos');
+      showError('Erro ao deletar veículos. Tente novamente.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -111,13 +122,15 @@ export default function AdminVehicles() {
 
   return (
     <div className="space-y-8 animate-fadeUp">
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gerenciamento de Veículos</h1>
           <p className="text-slate-500 font-bold text-sm mt-1">Visualize, edite e delete veículos de todas as lojas.</p>
         </div>
         <div className="px-4 py-2 bg-white rounded-lg shadow-sm border text-sm font-medium text-slate-600">
-          Total: {filteredVehicles.length}
+          Total: {totalCount}
         </div>
       </header>
 
@@ -135,7 +148,7 @@ export default function AdminVehicles() {
           <input
             type="text"
             placeholder="Buscar por marca, modelo ou placa..."
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
+            className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
@@ -144,7 +157,7 @@ export default function AdminVehicles() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+          className="px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
         >
           <option value="all">Todos os status</option>
           <option value="available">Disponível</option>
@@ -154,7 +167,8 @@ export default function AdminVehicles() {
         {selectedVehicles.size > 0 && (
           <button
             onClick={handleBulkDelete}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-bold flex items-center gap-2"
+            disabled={deleting}
+            className="px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-bold flex items-center gap-2"
           >
             <Trash2 size={16} />
             Deletar {selectedVehicles.size}
@@ -183,13 +197,13 @@ export default function AdminVehicles() {
                       className="w-4 h-4 rounded cursor-pointer"
                     />
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-slate-400 tracking-widest">Veículo</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-slate-400 tracking-widest">Usuário</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-slate-400 tracking-widest">Tipo</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-slate-400 tracking-widest">Ano</th>
-                  <th className="px-6 py-4 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest">Preço</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-slate-400 tracking-widest">Status</th>
-                  <th className="px-6 py-4 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest">Ações</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Veículo</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Usuário</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Tipo</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Ano</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold uppercase text-slate-400 tracking-widest">Preço</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold uppercase text-slate-400 tracking-widest">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -213,13 +227,12 @@ export default function AdminVehicles() {
                     <td className="px-6 py-4 text-sm text-slate-600">{vehicle.type}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{vehicle.year}</td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 font-bold text-slate-900">
-                        <DollarSign size={16} />
-                        {vehicle.price.toLocaleString('pt-BR')}
+                      <div className="flex items-center justify-end gap-1 font-bold text-slate-900 text-sm">
+                        R$ {vehicle.price.toLocaleString('pt-BR')}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                      <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
                         vehicle.status === 'sold' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
                       }`}>
                         {vehicle.status === 'sold' ? 'Vendido' : 'Disponível'}
@@ -228,9 +241,10 @@ export default function AdminVehicles() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={() => handleDeleteVehicle(vehicle.id)}
+                          onClick={() => handleDeleteVehicle(vehicle.id, vehicle.brand, vehicle.model)}
+                          disabled={deleting}
                           title="Deletar veículo"
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -241,6 +255,17 @@ export default function AdminVehicles() {
               </tbody>
             </table>
           </div>
+          <AdminPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            hasPreviousPage={hasPreviousPage}
+            hasNextPage={hasNextPage}
+            onPreviousPage={goToPreviousPage}
+            onNextPage={goToNextPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
     </div>

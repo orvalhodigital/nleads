@@ -388,6 +388,24 @@
             "$ref": "#/parameters/rowFilter.leads.interaction_history"
           },
           {
+            "$ref": "#/parameters/rowFilter.leads.sale_status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.sale_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.delivery_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.guarantee_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.guarantee_ends_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.post_sale_notes"
+          },
+          {
             "$ref": "#/parameters/select"
           },
           {
@@ -607,6 +625,24 @@
             "$ref": "#/parameters/rowFilter.leads.interaction_history"
           },
           {
+            "$ref": "#/parameters/rowFilter.leads.sale_status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.sale_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.delivery_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.guarantee_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.guarantee_ends_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.post_sale_notes"
+          },
+          {
             "$ref": "#/parameters/preferReturn"
           }
         ],
@@ -776,6 +812,24 @@
           },
           {
             "$ref": "#/parameters/rowFilter.leads.interaction_history"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.sale_status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.sale_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.delivery_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.guarantee_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.guarantee_ends_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leads.post_sale_notes"
           },
           {
             "$ref": "#/parameters/body.leads"
@@ -1356,6 +1410,194 @@
         },
         "tags": [
           "broadcast_history"
+        ]
+      }
+    },
+    "/guarantee_configs": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.days_warranty"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.conditions"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/guarantee_configs"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "guarantee_configs"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.guarantee_configs"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "guarantee_configs"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.days_warranty"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.conditions"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "guarantee_configs"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.days_warranty"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.description"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.conditions"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.guarantee_configs.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.guarantee_configs"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "guarantee_configs"
         ]
       }
     },
@@ -5053,6 +5295,36 @@
         ]
       }
     },
+    "/rpc/check_has_admins": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) check_has_admins"
+        ]
+      }
+    },
     "/rpc/get_my_parent_id": {
       "get": {
         "produces": [
@@ -5217,6 +5489,123 @@
         },
         "tags": [
           "(rpc) create_vehicle_v4"
+        ]
+      }
+    },
+    "/rpc/append_lead_interaction": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_interaction": {
+                  "format": "jsonb"
+                },
+                "p_lead_id": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_lead_id",
+                "p_interaction"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) append_lead_interaction"
+        ]
+      }
+    },
+    "/rpc/admin_update_user_password": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "new_password": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "target_user_id": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "target_user_id",
+                "new_password"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) admin_update_user_password"
+        ]
+      }
+    },
+    "/rpc/claim_first_admin": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) claim_first_admin"
         ]
       }
     }
@@ -5558,6 +5947,31 @@
         },
         "interaction_history": {
           "format": "jsonb"
+        },
+        "sale_status": {
+          "format": "text",
+          "type": "string"
+        },
+        "sale_date": {
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "delivery_date": {
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "guarantee_id": {
+          "description": "Note:\nThis is a Foreign Key to `guarantee_configs.id`.<fk table='guarantee_configs' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "guarantee_ends_at": {
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "post_sale_notes": {
+          "format": "text",
+          "type": "string"
         }
       },
       "type": "object"
@@ -5777,6 +6191,62 @@
         "created_at": {
           "default": "now()",
           "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "guarantee_configs": {
+      "required": [
+        "id",
+        "user_id",
+        "type",
+        "name",
+        "days_warranty"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "type": {
+          "format": "text",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "days_warranty": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "description": {
+          "format": "text",
+          "type": "string"
+        },
+        "conditions": {
+          "format": "jsonb"
+        },
+        "is_active": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
           "type": "string"
         }
       },
@@ -7486,6 +7956,42 @@
       "in": "query",
       "type": "string"
     },
+    "rowFilter.leads.sale_status": {
+      "name": "sale_status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leads.sale_date": {
+      "name": "sale_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leads.delivery_date": {
+      "name": "delivery_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leads.guarantee_id": {
+      "name": "guarantee_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leads.guarantee_ends_at": {
+      "name": "guarantee_ends_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leads.post_sale_notes": {
+      "name": "post_sale_notes",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
     "body.vehicles": {
       "name": "vehicles",
       "description": "vehicles",
@@ -7748,6 +8254,75 @@
     },
     "rowFilter.broadcast_history.created_at": {
       "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.guarantee_configs": {
+      "name": "guarantee_configs",
+      "description": "guarantee_configs",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/guarantee_configs"
+      }
+    },
+    "rowFilter.guarantee_configs.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.type": {
+      "name": "type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.days_warranty": {
+      "name": "days_warranty",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.description": {
+      "name": "description",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.conditions": {
+      "name": "conditions",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.is_active": {
+      "name": "is_active",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.guarantee_configs.updated_at": {
+      "name": "updated_at",
       "required": false,
       "in": "query",
       "type": "string"

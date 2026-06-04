@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Mail, Lock, Loader2, ArrowRight, User, Eye, EyeOff, Building } from 'lucide-react';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { LogoRenderer } from './OtimizzaLogo';
 
 export default function Auth() {
     const [loading, setLoading] = useState(false);
@@ -75,11 +76,7 @@ export default function Auth() {
             <div className="min-h-full flex flex-col items-center justify-center p-4 py-12">
                 <div className="w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 animate-fadeUp">
                     <div className="text-center mb-8">
-                        {logoUrl ? (
-                            <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain mx-auto mb-4" />
-                        ) : (
-                            <img src="https://docs.nleads.pro/nleads-logo.png" alt="Logo" className="h-16 w-auto object-contain mx-auto mb-4" />
-                        )}
+                        <LogoRenderer src={logoUrl} variant="horizontal" className="h-16 w-auto mx-auto mb-4" />
                         <p className="text-sm font-bold text-slate-400">
                             {isSignUp ? 'Crie sua conta para começar' : 'Faça login na sua conta'}
                         </p>

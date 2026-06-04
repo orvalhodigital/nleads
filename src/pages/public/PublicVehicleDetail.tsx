@@ -589,7 +589,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
         ? { backgroundColor: '#eab308', color: '#000' }
         : { backgroundColor: primary, color: '#fff' };
 
-    const seoTitle = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${profile?.company_name}` : 'Veículo — nLeads';
+    const seoTitle = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${profile?.company_name}` : 'Veículo — Otimizza CRM';
     const seoDesc = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}, ${formatKm(vehicle.mileage)}, ${vehicle.transmission}. ${formatPrice(vehicle.price)} em ${profile?.company_name}.` : '';
     const fontStyle = { 
         fontFamily: profile?.website_typography === 'serif' ? 'Playfair Display, serif' : 

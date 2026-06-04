@@ -23,6 +23,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useData } from '../contexts/DataContext';
 import { motorcycleService } from '../services/motorcycleService';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { LogoRenderer } from './OtimizzaLogo';
 
 interface HeaderProps {
     currentView: View;
@@ -202,7 +203,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `nleads_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `otimizza_backup_${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -318,10 +319,8 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                     >
                         {profile?.company_logo ? (
                             <img src={profile.company_logo} alt="Company Logo" className="h-full w-full object-contain" />
-                        ) : logoUrl ? (
-                            <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" />
                         ) : (
-                            <img src="https://docs.nleads.pro/nleads-logo.png" alt="Logo" className="h-full w-auto object-contain" />
+                            <LogoRenderer src={logoUrl} variant="horizontal" className="h-full w-auto" />
                         )}
                     </div>
 
@@ -418,7 +417,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <img src="https://docs.nleads.pro/nleads-logo.png" alt="nLeads" className="h-5 w-auto object-contain opacity-50 hover:opacity-100 transition-all mr-2 hidden sm:block" />
+                        <LogoRenderer src={logoUrl} variant="icon" className="h-5 w-auto opacity-50 hover:opacity-100 transition-all mr-2 hidden sm:flex" />
                         <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all relative">
                             <Bell size={18} />
                             {unreadCount > 0 && !showHistory && (

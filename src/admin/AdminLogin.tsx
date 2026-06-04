@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { LogoRenderer } from '../components/OtimizzaLogo';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [secretKey, setSecretKey] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -45,16 +45,6 @@ export default function AdminLogin() {
         setLoading(true);
         setError(null);
 
-        // Secret Key
-        if (secretKey.length !== 24) {
-            // 
-            setTimeout(() => {
-                setError('Chave de acesso inválida. Uma nova chave de acesso alfanumérica de 6 dígitos foi enviada para o seu email.');
-                setLoading(false);
-            }, 1500);
-            return;
-        }
-
         try {
             const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                 email,
@@ -92,11 +82,7 @@ export default function AdminLogin() {
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-neutral-100">
                 <div className="bg-white p-8 text-center flex flex-col items-center border-b border-neutral-100">
                     <div className="flex items-center gap-3 mb-2">
-                        <img
-                            src="https://docs.nleads.pro/nleads-logo.png"
-                            alt="nLeads Logo"
-                            className="h-12 w-auto object-contain"
-                        />
+                        <LogoRenderer src={logoUrl} variant="horizontal" className="h-12 w-auto" />
                     </div>
                     <p className="text-neutral-500 text-sm font-medium">Painel do Administrador</p>
                 </div>
@@ -130,53 +116,14 @@ export default function AdminLogin() {
                             />
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider">Chave Secreta</label>
-                            <input
-                                type="password"
-                                required
-                                placeholder="Chave de segurança"
-                                className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-black focus:border-black outline-none transition-all text-neutral-900 font-medium"
-                                value={secretKey}
-                                onChange={(e) => setSecretKey(e.target.value)}
-                            />
-                        </div>
-
                         <div className="relative pt-2">
                             <button
-                                type="button"
+                                type="submit"
                                 disabled={loading}
-                                onMouseDown={(e) => {
-                                    if (loading) return;
-                                    const btn = e.currentTarget;
-                                    btn.dataset.loginTriggered = "false";
-
-                                    const timer = setTimeout(() => {
-                                        btn.dataset.loginTriggered = "true";
-                                        handleLogin(e as any);
-                                    }, 3000);
-
-                                    btn.dataset.timerId = timer.toString();
-                                }}
-                                onMouseUp={(e) => {
-                                    const btn = e.currentTarget;
-                                    const timerId = btn.dataset.timerId;
-                                    if (timerId) clearTimeout(parseInt(timerId));
-
-
-                                    if (btn.dataset.loginTriggered !== "true" && !loading) {
-                                        setError('Chave Secreta Incorreta');
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    const btn = e.currentTarget;
-                                    const timerId = btn.dataset.timerId;
-                                    if (timerId) clearTimeout(parseInt(timerId));
-                                }}
                                 className="w-full bg-black text-white py-4 rounded-xl hover:bg-neutral-800 transition-colors font-bold tracking-wide disabled:opacity-70 relative overflow-hidden select-none active:scale-[0.99]"
                             >
                                 <span className="relative z-10 pointer-events-none">
-                                    {loading ? 'VERIFICANDO...' : 'CLIQUE PARA ENTRAR'}
+                                    {loading ? 'VERIFICANDO...' : 'ENTRAR'}
                                 </span>
                             </button>
                         </div>
@@ -185,7 +132,7 @@ export default function AdminLogin() {
             </div>
             {/* Footer / Copyright */}
             <div className="absolute bottom-6 text-neutral-600 text-xs text-center w-full">
-                &copy; {new Date().getFullYear()} nLeads Security. Acesso Monitorado.
+                &copy; {new Date().getFullYear()} Otimizza Security. Acesso Monitorado.
             </div>
         </div>
     );

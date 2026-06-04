@@ -233,7 +233,16 @@ export interface Lead {
   user_id?: string;
   admin_id?: string;
   user_name?: string;
+
+  // Pós-venda e Garantia
+  saleStatus?: SalePhase;
+  saleDate?: string;
+  deliveryDate?: string;
+  guaranteeId?: string;
+  guaranteeEndsAt?: string;
+  postSaleNotes?: string;
 }
+
 
 export interface LeadCommunication {
   id: string;

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy, MessageSquare, TrendingUp, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { LogoRenderer } from '../components/OtimizzaLogo';
 
 export default function AdminLayout() {
     const navigate = useNavigate();
@@ -25,16 +26,7 @@ export default function AdminLayout() {
             {/* Sidebar */}
             <aside className="w-64 bg-black text-white flex flex-col fixed h-full z-10 transition-all duration-300 border-r border-zinc-800">
                 <div className="p-6 flex items-center gap-3">
-                    {logoUrl ? (
-                        <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black">
-                                <Car size={16} strokeWidth={3} />
-                            </div>
-                            <h2 className="text-lg font-bold tracking-tight">nLeads <span className="text-zinc-500">Admin</span></h2>
-                        </div>
-                    )}
+                    <LogoRenderer src={logoUrl} variant="horizontal" className="h-8 w-auto" light={true} />
                 </div>
                 <nav className="flex-1 px-4 space-y-2 mt-4">
                     <Link

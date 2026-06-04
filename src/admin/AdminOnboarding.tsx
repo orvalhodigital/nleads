@@ -428,7 +428,7 @@ export default function AdminOnboarding() {
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Ações Rápidas</h4>
                                 {selectedSession.profiles?.phone && (
                                     <a
-                                        href={getWhatsAppLink(selectedSession.profiles.phone, `Olá ${selectedSession.profiles.full_name}, tudo bem? Sou da equipe de Sucesso do Cliente nLeads!`)}
+                                        href={getWhatsAppLink(selectedSession.profiles.phone, `Olá ${selectedSession.profiles.full_name}, tudo bem? Sou da equipe de Sucesso do Cliente Otimizza!`)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-center gap-3 w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100"
@@ -619,7 +619,7 @@ export default function AdminOnboarding() {
                                                     </button>
                                                     {session.profiles?.phone && (
                                                         <a
-                                                            href={getWhatsAppLink(session.profiles.phone, `Olá ${session.profiles.full_name}, tudo bem? Sou da equipe de Onboarding do nLeads!`)}
+                                                            href={getWhatsAppLink(session.profiles.phone, `Olá ${session.profiles.full_name}, tudo bem? Sou da equipe de Onboarding do Otimizza!`)}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="p-2 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 rounded-lg transition-all text-slate-400 hover:text-emerald-600"

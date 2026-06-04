@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { LogoRenderer } from './OtimizzaLogo';
 import { useData } from '../contexts/DataContext';
 
 const AppSidebar: React.FC = () => {
@@ -65,10 +66,8 @@ const AppSidebar: React.FC = () => {
                     >
                         {profile?.company_logo ? (
                             <img src={profile.company_logo} alt="Company Logo" className="w-full h-auto object-contain object-left" />
-                        ) : logoUrl ? (
-                            <img src={logoUrl} alt="Logo" className="w-full h-auto object-contain object-left" />
                         ) : (
-                            <img src="https://docs.nleads.pro/nleads-logo.png" alt="Logo" className="h-[42px] w-auto object-contain" />
+                            <LogoRenderer src={logoUrl} variant="horizontal" className="h-[42px] w-auto" />
                         )}
                     </div>
                 )}

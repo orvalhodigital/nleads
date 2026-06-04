@@ -1,112 +1,167 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, Key, Bell, Search, Users, List, ChevronDown, ChevronRight } from 'lucide-react';
+import { LogIn, Key, Bell, Search, Trash2, AlertCircle } from 'lucide-react';
+import { useAdminTable } from '../hooks/useAdminTable';
+import { useDebounce } from '../hooks/useDebounce';
+import { useAdminToast } from '../hooks/useAdminToast';
+import { ToastContainer } from '../components/admin/AdminToast';
+import { AdminPagination } from '../components/admin/AdminPagination';
 
 export default function AdminUsers() {
-    const [users, setUsers] = useState<Profile[]>([]);
-    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState<'list' | 'hierarchy'>('list');
-    const [expandedEmpresas, setExpandedEmpresas] = useState<Set<string>>(new Set());
+    const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
+
+    const debouncedSearch = useDebounce(searchTerm, 300);
+    const { toasts, removeToast, success, error: showError } = useAdminToast();
 
     // Notification State
     const [showNotify, setShowNotify] = useState<string | null>(null);
     const [notifyTitle, setNotifyTitle] = useState('');
     const [notifyMessage, setNotifyMessage] = useState('');
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+    // Password Edit State
+    const [showPasswordEdit, setShowPasswordEdit] = useState<{ id: string; name: string } | null>(null);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [changingPassword, setChangingPassword] = useState(false);
 
-    const fetchUsers = async () => {
+    const {
+        data: rawUsers,
+        loading,
+        error,
+        currentPage,
+        totalPages,
+        totalCount,
+        pageSize,
+        hasNextPage,
+        hasPreviousPage,
+        setCurrentPage,
+        refetch,
+        goToNextPage,
+        goToPreviousPage,
+    } = useAdminTable('profiles', '*', {
+        pageSize: 50,
+        orderBy: 'created_at',
+        orderDirection: 'desc',
+    });
+
+    // Map snake_case from DB to camelCase
+    const users = useMemo(() => {
+        return rawUsers.map(u => ({
+            ...u,
+            planStatus: u.plan_status || (u.trial_ends_at && new Date() > new Date(u.trial_ends_at) ? 'expired' : 'active'),
+            plan: u.plan || 'trial',
+            trialEndsAt: u.trial_ends_at
+        }));
+    }, [rawUsers]);
+
+    const filteredUsers = useMemo(() => {
+        return users.filter(user =>
+            (user.full_name?.toLowerCase() || '').includes(debouncedSearch.toLowerCase()) ||
+            (user.email?.toLowerCase() || '').includes(debouncedSearch.toLowerCase())
+        );
+    }, [users, debouncedSearch]);
+
+    const handleDeleteUser = async (id: string, name: string) => {
+        if (!window.confirm(`Deletar usuário "${name}"? Esta ação é irreversível e removará todos os dados associados.`)) return;
+
+        setDeleting(true);
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            // Map snake_case from DB to camelCase in Profile interface
-            const mappedUsers = (data || []).map(u => ({
-                ...u,
-                planStatus: u.plan_status || (u.trial_ends_at && new Date() > new Date(u.trial_ends_at) ? 'expired' : 'active'),
-                plan: u.plan || 'trial',
-                trialEndsAt: u.trial_ends_at
-            }));
-
-            setUsers(mappedUsers);
-        } catch (error) {
-            console.error('Error fetching users:', error);
+            const { error: err } = await supabase.from('profiles').delete().eq('id', id);
+            if (err) throw err;
+            success(`Usuário "${name}" deletado com sucesso.`);
+            refetch();
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            showError('Erro ao deletar usuário. Tente novamente.');
         } finally {
-            setLoading(false);
+            setDeleting(false);
         }
-    };
-
-    const triggerPasswordReset = async (email: string) => {
-        if (!window.confirm(`Enviar email de redefinição de senha para ${email}?`)) return;
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + '/reset-password',
-        });
-        if (error) alert('Erro ao enviar email: ' + error.message);
-        else alert('Email de redefinição enviado com sucesso!');
     };
 
     const sendNotification = async () => {
         if (!showNotify) return;
-        const { error } = await supabase.from('notifications').insert({
-            user_id: showNotify,
-            title: notifyTitle,
-            message: notifyMessage
-        });
+        try {
+            const { error } = await supabase.from('notifications').insert({
+                user_id: showNotify,
+                title: notifyTitle,
+                message: notifyMessage
+            });
 
-        if (error) alert('Erro ao enviar notificação');
-        else {
-            alert('Notificação enviada!');
+            if (error) throw error;
+            success('Notificação enviada com sucesso!');
             setShowNotify(null);
             setNotifyTitle('');
             setNotifyMessage('');
+        } catch (err) {
+            console.error('Error sending notification:', err);
+            showError('Erro ao enviar notificação. Tente novamente.');
         }
     };
 
-    const filteredUsers = users.filter(user =>
-        (user.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    );
+    const handleChangePassword = async () => {
+        if (!showPasswordEdit) return;
 
-    const empresas = users.filter(u => (u as any).role === 'empresa' || !(u as any).parent_id);
-    const vendedoresByEmpresa = (empresaId: string) =>
-        users.filter(u => (u as any).parent_id === empresaId);
+        if (!newPassword.trim()) {
+            showError('Digite uma nova senha.');
+            return;
+        }
 
-    const toggleEmpresa = (id: string) => {
-        setExpandedEmpresas(prev => {
-            const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
-            return next;
-        });
+        if (newPassword !== confirmPassword) {
+            showError('As senhas não conferem.');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            showError('A senha deve ter no mínimo 6 caracteres.');
+            return;
+        }
+
+        setChangingPassword(true);
+        try {
+            const { error } = await supabase.rpc('admin_update_user_password', {
+                target_user_id: showPasswordEdit.id,
+                new_password: newPassword
+            });
+
+            if (error) throw error;
+            success('Senha alterada com sucesso!');
+            setShowPasswordEdit(null);
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (err) {
+            console.error('Error changing password:', err);
+            showError('Erro ao alterar senha. Tente novamente.');
+        } finally {
+            setChangingPassword(false);
+        }
     };
 
-    const planBadge = (plan: string) => (
-        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${plan === 'pro' ? 'bg-black text-white' : 'bg-slate-100 text-slate-500'}`}>
-            {plan}
-        </span>
-    );
 
     return (
-        <div className="space-y-6">
-            <header className="flex justify-between items-center">
+        <div className="space-y-8 animate-fadeUp">
+            <ToastContainer toasts={toasts} onClose={removeToast} />
+
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Gerenciamento de Usuários</h1>
-                    <p className="text-slate-500 mt-1">Visualize e gerencie todos os usuários do sistema</p>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gerenciamento de Usuários</h1>
+                    <p className="text-slate-500 font-bold text-sm mt-1">Visualize, edite e delete usuários do sistema.</p>
                 </div>
                 <div className="px-4 py-2 bg-white rounded-lg shadow-sm border text-sm font-medium text-slate-600">
-                    Total: {users.length} usuários
+                    Total: {totalCount}
                 </div>
             </header>
+
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                    <AlertCircle className="text-red-600" size={20} />
+                    <p className="text-red-800 font-medium">{error}</p>
+                </div>
+            )}
 
             {/* Filters */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex gap-4">
@@ -115,91 +170,159 @@ export default function AdminUsers() {
                     <input
                         type="text"
                         placeholder="Buscar por nome ou email..."
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
-                {/* Future Filters could go here */}
             </div>
 
             {loading ? (
-                <div className="text-center py-20 text-slate-400">Carregando...</div>
+                <div className="text-center py-20 text-slate-400">Carregando usuários...</div>
+            ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-20">
+                    <AlertCircle className="mx-auto text-slate-300 mb-4" size={48} />
+                    <p className="text-slate-400 font-bold">Nenhum usuário encontrado com esses filtros.</p>
+                </div>
             ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-white border-b border-slate-200">
-                            <tr>
-                                <th className="px-6 py-4 font-bold text-slate-900 uppercase text-xs tracking-wider">Usuário</th>
-                                <th className="px-6 py-4 font-bold text-slate-900 uppercase text-xs tracking-wider">Plano</th>
-                                <th className="px-6 py-4 font-bold text-slate-900 uppercase text-xs tracking-wider">Status</th>
-                                <th className="px-6 py-4 font-bold text-slate-900 uppercase text-xs tracking-wider">Role</th>
-                                <th className="px-6 py-4 font-bold text-slate-900 uppercase text-xs tracking-wider text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {filteredUsers.map(user => (
-                                <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
-                                    <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/paineldoadm/users/${user.id}`)}>
-                                        <div className="font-bold text-slate-900 group-hover:text-black transition-colors">{user.full_name || 'Sem nome'}</div>
-                                        <div className="text-sm text-slate-500">{user.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Usuário</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Plano</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Status</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Role</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase text-slate-400 tracking-widest">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {filteredUsers.map(user => (
+                                    <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
+                                        <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/paineldoadm/users/${user.id}`)}>
+                                            <div className="font-bold text-slate-900 group-hover:text-black transition-colors">{user.full_name || 'Sem nome'}</div>
+                                            <div className="text-sm text-slate-500">{user.email}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize
                         ${user.plan === 'pro' ? 'bg-black text-white' : 'bg-slate-100 text-slate-600'}
                       `}>
-                                            {user.plan}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`text-sm font-medium ${user.planStatus === 'active' ? 'text-black' : 'text-red-500'}`}>
-                                            {user.planStatus === 'active' ? 'Ativo' : 'Inativo'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm font-mono text-slate-500">
-                                        {(user as any).role || 'user'}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2 text-slate-400">
-                                            <button
-                                                onClick={() => navigate(`/paineldoadm/user/${user.id}`)}
-                                                title="Acessar Painel (Impersonate)"
-                                                className="p-2 hover:bg-slate-100 hover:text-black rounded-lg transition-colors"
-                                            >
-                                                <LogIn size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    const newPass = prompt(`Digite a nova senha para ${user.full_name || user.email}:`);
-                                                    if (newPass) {
-                                                        // Call the admin change password function
-                                                        supabase.rpc('admin_update_user_password', {
-                                                            target_user_id: user.id,
-                                                            new_password: newPass
-                                                        }).then(({ error }) => {
-                                                            if (error) alert('Erro ao alterar senha: ' + error.message);
-                                                            else alert('Senha alterada com sucesso!');
-                                                        });
-                                                    }
-                                                }}
-                                                title="Alterar Senha"
-                                                className="p-2 hover:bg-slate-100 hover:text-black rounded-lg transition-colors"
-                                            >
-                                                <Key size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => setShowNotify(user.id)}
-                                                title="Notificar"
-                                                className="p-2 hover:bg-slate-100 hover:text-black rounded-lg transition-colors"
-                                            >
-                                                <Bell size={18} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                                {user.plan}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`text-sm font-medium ${user.planStatus === 'active' ? 'text-black' : 'text-red-500'}`}>
+                                                {user.planStatus === 'active' ? 'Ativo' : 'Inativo'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-mono text-slate-500">
+                                            {(user as any).role || 'user'}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => navigate(`/paineldoadm/user/${user.id}`)}
+                                                    title="Acessar Painel (Impersonate)"
+                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                >
+                                                    <LogIn size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowPasswordEdit({ id: user.id, name: user.full_name || user.email })}
+                                                    title="Alterar Senha"
+                                                    className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                >
+                                                    <Key size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowNotify(user.id)}
+                                                    title="Notificar"
+                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                >
+                                                    <Bell size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteUser(user.id, user.full_name || user.email)}
+                                                    disabled={deleting}
+                                                    title="Deletar usuário"
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <AdminPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalCount={totalCount}
+                        pageSize={pageSize}
+                        hasPreviousPage={hasPreviousPage}
+                        hasNextPage={hasNextPage}
+                        onPreviousPage={goToPreviousPage}
+                        onNextPage={goToNextPage}
+                        onPageChange={setCurrentPage}
+                    />
+                </div>
+            )}
+
+            {/* Password Edit Modal */}
+            {showPasswordEdit && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 animate-fadeUp">
+                        <div className="mb-6">
+                            <h3 className="text-xl font-bold text-slate-900">Alterar Senha</h3>
+                            <p className="text-slate-500 text-sm">Mudando senha de: <span className="font-bold">{showPasswordEdit.name}</span></p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-900 uppercase mb-2">Nova Senha</label>
+                                <input
+                                    type="password"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    placeholder="Mín. 6 caracteres"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-900 uppercase mb-2">Confirmar Senha</label>
+                                <input
+                                    type="password"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                                    value={confirmPassword}
+                                    onChange={e => setConfirmPassword(e.target.value)}
+                                    placeholder="Confirme a nova senha"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-8 flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowPasswordEdit(null);
+                                    setNewPassword('');
+                                    setConfirmPassword('');
+                                }}
+                                className="px-6 py-3 text-slate-500 hover:text-black hover:bg-slate-100 rounded-xl transition-colors font-bold text-sm"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleChangePassword}
+                                disabled={changingPassword}
+                                className="px-6 py-3 bg-amber-600 text-white rounded-xl flex items-center gap-2 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-amber-600/20 font-bold text-sm"
+                            >
+                                <Key size={18} /> {changingPassword ? 'Alterando...' : 'Alterar Senha'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

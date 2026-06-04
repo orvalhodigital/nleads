@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-// Domains that belong to nLeads itself — everything else is a customer custom domain
-const NLEADS_HOSTS = ['localhost', '127.0.0.1', 'nleads.pro', 'nleads.com.br', 'vercel.app'];
+// Domains that belong to Otimizza / nLeads itself — everything else is a customer custom domain
+const NLEADS_HOSTS = ['localhost', '127.0.0.1', 'nleads.pro', 'nleads.com.br', 'otimizza.pro', 'otimizza.com.br', 'otimizzacrm.pro', 'otimizzacrm.com.br', 'vercel.app'];
 
 function isNleadsHost(hostname: string): boolean {
     return NLEADS_HOSTS.some(h => hostname === h || hostname.endsWith(`.${h}`));
 }
 
 interface Props {
-    children: React.ReactNode; // the normal nLeads app
+    children: React.ReactNode; // the normal Otimizza app
     PublicSite: React.ComponentType<{ slug: string }>; // public site renderer
 }
 

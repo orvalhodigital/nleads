@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
+import OtimizzaLogo from './OtimizzaLogo';
 import Header from './Header';
 import Auth from './Auth';
 import TrialExpired from './TrialExpired';
@@ -47,7 +48,7 @@ const UserLayout: React.FC = () => {
                 
                 <div className="relative flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
                     <div className="relative">
-                        <img src="https://docs.nleads.pro/nleads-logo.png" alt="nLeads Logo" className="h-16 w-auto object-contain" />
+                        <OtimizzaLogo variant="horizontal" className="h-16 w-auto" />
                         <div className="absolute -bottom-1 -right-1">
                             <div className="w-4 h-4 bg-emerald-500 rounded-full border-4 border-white animate-ping" />
                         </div>

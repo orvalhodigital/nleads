@@ -33,14 +33,14 @@ export const useSystemSettings = () => {
                 if (tempUrl && start && end && now >= start && now <= end) {
                     setLogoUrl(tempUrl);
                 } else {
-                    setLogoUrl(settings['logo_url'] || 'https://docs.nleads.pro/nleads-logo.png');
+                    setLogoUrl(settings['logo_url'] || 'https://docs.otimizza.pro/otimizza-logo-amarelo-h.png');
                 }
             } else {
-                setLogoUrl('https://docs.nleads.pro/nleads-logo.png');
+                setLogoUrl('https://docs.otimizza.pro/otimizza-logo-amarelo-h.png');
             }
         } catch (error) {
             console.error('Error loading system settings', error);
-            setLogoUrl('https://docs.nleads.pro/nleads-logo.png');
+            setLogoUrl('https://docs.otimizza.pro/otimizza-logo-amarelo-h.png');
         } finally {
             setLoading(false);
         }

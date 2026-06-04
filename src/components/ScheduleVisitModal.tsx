@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Users, UserPlus, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { Lead, LeadPhase, LeadTemperature, Vehicle } from '../types';
@@ -77,7 +78,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
         `${v.brand} ${v.model}`.toLowerCase().includes(form.vehicleSearch.toLowerCase())
     );
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
             <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl animate-fadeUp overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-slate-50 flex items-center justify-between">
@@ -191,7 +192,8 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                     </button>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

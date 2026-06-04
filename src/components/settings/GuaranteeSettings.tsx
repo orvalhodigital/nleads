@@ -9,7 +9,7 @@ interface GuaranteeSettingsProps {
 }
 
 const GuaranteeSettings: React.FC<GuaranteeSettingsProps> = ({ onSave }) => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const [configs, setConfigs] = useState<GuaranteeConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
@@ -19,13 +19,13 @@ const GuaranteeSettings: React.FC<GuaranteeSettingsProps> = ({ onSave }) => {
 
   useEffect(() => {
     loadConfigs();
-  }, [user?.id]);
+  }, [profile?.id]);
 
   const loadConfigs = async () => {
-    if (!user?.id) return;
+    if (!profile?.id) return;
     try {
       setLoading(true);
-      const data = await guaranteeService.getGuaranteeConfigs(user.id);
+      const data = await guaranteeService.getGuaranteeConfigs(profile.id);
       setConfigs(data);
     } catch (err) {
       setError('Erro ao carregar garantias');
@@ -76,15 +76,16 @@ const GuaranteeSettings: React.FC<GuaranteeSettingsProps> = ({ onSave }) => {
   };
 
   const handleAddPredefined = async (predefined: Partial<GuaranteeConfig>) => {
-    if (!user?.id) return;
+    if (!profile?.id) return;
 
     try {
-      await guaranteeService.createGuaranteeConfig(user.id, {
+      await guaranteeService.createGuaranteeConfig(profile.id, {
         type: predefined.type as any,
         name: predefined.name || '',
         days_warranty: predefined.days_warranty || 0,
         description: predefined.description,
         conditions: predefined.conditions,
+        is_active: true,
       });
       setSuccessMessage('Garantia adicionada com sucesso!');
       loadConfigs();

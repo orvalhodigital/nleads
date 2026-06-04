@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Calendar, Clock, Car, FileText, Check } from 'lucide-react';
 import { Lead, Vehicle } from '../types';
 import { vehicleService } from '../services/vehicleService';
@@ -92,7 +93,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white w-[80vw] max-w-5xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -217,7 +218,8 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

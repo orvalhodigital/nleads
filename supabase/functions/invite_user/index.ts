@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       return json({ error: 'Perfil do chamador não encontrado' }, 403)
     }
 
-    // Apenas empresa (ou admin nLeads) pode gerenciar vendedores
+    // Apenas empresa (ou admin Otimizza) pode gerenciar vendedores
     const allowedRoles = ['empresa', 'super_admin', 'admin']
     if (!allowedRoles.includes(callerProfile.role)) {
       return json({ error: 'Apenas empresas podem gerenciar vendedores' }, 403)

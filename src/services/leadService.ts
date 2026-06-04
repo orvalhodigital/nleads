@@ -56,6 +56,12 @@ const mapRowToLead = (row: any): Lead => ({
     foto_url: row.foto_url || undefined,
     user_id: row.user_id || undefined,
     admin_id: row.admin_id || undefined,
+    saleStatus: row.sale_status || undefined,
+    saleDate: row.sale_date || undefined,
+    deliveryDate: row.delivery_date || undefined,
+    guaranteeId: row.guarantee_id || undefined,
+    guaranteeEndsAt: row.guarantee_ends_at || undefined,
+    postSaleNotes: row.post_sale_notes || undefined,
 });
 
 export const leadService = {
@@ -165,6 +171,12 @@ export const leadService = {
                 interaction_history: lead.interaction_history || [],
                 // is_buyer armazenado dentro do JSONB follow_up_data
                 follow_up_data: { ...(lead.follow_up_data || {}), is_buyer: lead.is_buyer || false },
+                sale_status: lead.saleStatus || null,
+                sale_date: lead.saleDate || null,
+                delivery_date: lead.deliveryDate || null,
+                guarantee_id: lead.guaranteeId || null,
+                guarantee_ends_at: lead.guaranteeEndsAt || null,
+                post_sale_notes: lead.postSaleNotes || null,
             })
             .select()
             .single();
@@ -225,6 +237,12 @@ export const leadService = {
                 interaction_history: lead.interaction_history || [],
                 // is_buyer armazenado dentro do JSONB follow_up_data
                 follow_up_data: { ...(lead.follow_up_data || {}), is_buyer: lead.is_buyer || false },
+                sale_status: lead.saleStatus || null,
+                sale_date: lead.saleDate || null,
+                delivery_date: lead.deliveryDate || null,
+                guarantee_id: lead.guaranteeId || null,
+                guarantee_ends_at: lead.guaranteeEndsAt || null,
+                post_sale_notes: lead.postSaleNotes || null,
             })
             .eq('id', lead.id)
             .select()

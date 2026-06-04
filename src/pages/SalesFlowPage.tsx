@@ -211,7 +211,7 @@ const SalesFlowPage: React.FC = () => {
 interface MetricCardProps {
   label: string;
   value: number | string;
-  icon: React.ReactNode;
+  icon: React.ElementType;
   color: 'emerald' | 'blue' | 'orange' | 'red';
   subtitle?: string;
 }
@@ -228,7 +228,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon: Icon, color
     <div className={`p-6 rounded-2xl border ${colorMap[color]}`}>
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-xs font-black uppercase tracking-widest text-slate-600">{label}</h3>
-        {typeof Icon === 'function' ? <Icon size={20} /> : Icon}
+        {Icon && <Icon size={20} />}
       </div>
       <p className="text-3xl font-black text-slate-900">{value}</p>
       {subtitle && <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{subtitle}</p>}

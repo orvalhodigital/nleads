@@ -87,7 +87,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({ profile, mainWaUrl }
                         © {year} {profile.company_name}. Todos os direitos reservados.
                     </p>
                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                        POWERED BY NLEADS
+                        POWERED BY OTIMIZZA
                     </p>
                 </div>
             </div>

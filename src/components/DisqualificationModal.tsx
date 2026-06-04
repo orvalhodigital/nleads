@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, AlertTriangle } from 'lucide-react';
 
 interface DisqualificationModalProps {
@@ -42,7 +43,7 @@ const DisqualificationModal: React.FC<DisqualificationModalProps> = ({ isOpen, o
         setNotes('');
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-scaleIn">
                 {/* Header */}
@@ -118,7 +119,8 @@ const DisqualificationModal: React.FC<DisqualificationModalProps> = ({ isOpen, o
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Check, Car, Calendar, DollarSign, Search, Loader2 } from 'lucide-react';
 import { Lead, Vehicle, LeadPhase } from '../types';
 import { leadService } from '../services/leadService';
@@ -63,7 +64,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
             if (!vehicle) throw new Error("Veículo não encontrado");
 
             let buyerLeadId = leadId;
-            let buyerName = lead?.name || 'Cliente nLeads';
+            let buyerName = lead?.name || 'Cliente Otimizza';
 
             // 1. Se é walk-in, criar lead on-the-fly
             if (isWalkIn) {
@@ -143,7 +144,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[10000] flex items-center justify-center p-4 animate-fadeIn">
             <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-fadeUp">
                 {/* Header */}
@@ -326,7 +327,8 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

@@ -40,7 +40,8 @@ const LeadActionPage: React.FC = () => {
     if (actionType === 'disqualify') {
         return (
             <DisqualificationModal
-                leadId={lead.id}
+                isOpen={true}
+                leadName={lead.name}
                 onClose={handleClose}
                 onConfirm={async (reasons, notes) => {
                     await updateLead({

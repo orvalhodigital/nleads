@@ -7,20 +7,20 @@
 INSERT INTO notification_rules (category, title, message, trigger_event, delay_minutes, active)
 VALUES 
 -- 1. Boas-vindas (Sistema)
-('system', 'Bem-vindo ao nLeads! 🚀', 'Olá @nome, que bom ter você aqui! Comece agora adicionando seus primeiros leads e explore todas as nossas ferramentas de gestão.', 'signup', 0, true),
+('system', 'Bem-vindo ao Otimizza! 🚀', 'Olá @nome, que bom ter você aqui! Comece agora adicionando seus primeiros leads e explore todas as nossas ferramentas de gestão.', 'signup', 0, true),
 
 -- 2. Teste acabando (Planos)
 -- Nota: Para o trigger trial_ending, o campo delay_minutes é interpretado na UI como "Dias Antes"
 ('plan', 'Seu período de teste está acabando! ⏳', 'Ei @nome, seu período trial expira em 2 dias. Não perca o acesso aos seus dados e ferramentas, faça o upgrade hoje mesmo!', 'trial_ending', 2, true),
 
 -- 3. Plano Expirado (Planos)
-('plan', 'Atenção: Seu plano expirou! 🚨', 'Seu plano nLeads expirou. Sua conta foi limitada. Renove agora para continuar gerindo suas vendas sem interrupções.', 'plan_expired', 0, true),
+('plan', 'Atenção: Seu plano expirou! 🚨', 'Seu plano Otimizza expirou. Sua conta foi limitada. Renove agora para continuar gerindo suas vendas sem interrupções.', 'plan_expired', 0, true),
 
 -- 4. Sem Estoque (Sistema)
 ('system', 'Seu estoque está parado? 📦', 'Você está há mais de 24h sem carros/motos ativos no sistema. Lembre-se: estoque atualizado gera mais leads!', 'no_stock_24h', 1440, true),
 
 -- 5. Inatividade (Sistema)
-('system', 'Sentimos sua falta no nLeads! 👋', 'Faz uma semana que você não acessa o painel. Temos novos leads aguardando seu contato. Vamos bater as metas de hoje?', 'inactivity_7d', 10080, true);
+('system', 'Sentimos sua falta no Otimizza! 👋', 'Faz uma semana que você não acessa o painel. Temos novos leads aguardando seu contato. Vamos bater as metas de hoje?', 'inactivity_7d', 10080, true);
 
 -- Inserção de Modelos de Mensagem (Templates) para Disparo Manual
 -- Estes modelos aparecerão no dropdown da aba "Disparo Manual"

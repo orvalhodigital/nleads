@@ -55,10 +55,10 @@ const CustomDomainRedirect: React.FC = () => {
                     <h2 className="text-lg font-bold text-slate-900">Site não encontrado</h2>
                     <p className="text-slate-600 text-sm leading-relaxed">{error}</p>
                     <a
-                        href="https://www.nleads.pro"
+                        href="https://otimizza.pro"
                         className="inline-block mt-4 px-6 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-900 transition"
                     >
-                        Ir para nLeads
+                        Ir para Otimizza
                     </a>
                 </div>
             </div>

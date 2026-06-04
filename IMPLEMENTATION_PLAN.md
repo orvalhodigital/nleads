@@ -226,14 +226,38 @@ depois a garantia.
 
 ## 📝 Checklist Implementação
 
-- [ ] Fase 1: Schema + Types (Haiku)
-- [ ] Fase 2: Services CRUD (Haiku/Sonnet)
-- [ ] Fase 3: GuaranteeConfigCard + SettingsPage (Sonnet)
-- [ ] Fase 4: SalesKanban component (Sonnet)
-- [ ] Fase 5: SalesFlowPage (Sonnet)
-- [ ] Fase 6: Dashboard updates (remover Documentação/Entrega)
-- [ ] Fase 7: Trigger Supabase (auto-create SaleFlow)
-- [ ] Fase 8: Testes + validação SaaS
+- [x] **Fase 1:** Schema + Types (Haiku) — ✅ CONCLUÍDO
+  - Migration SQL criada (guarantee_configs + campos em leads)
+  - TypeScript types definidos (GuaranteeConfig, SaleFlow, SalePhase)
+  - database.types.ts atualizado com novos schemas
+
+- [x] **Fase 2:** Services CRUD (Haiku/Sonnet) — ✅ CONCLUÍDO
+  - guaranteeService.ts com CRUD completo + opções pré-definidas
+  - salesFlowService.ts com gerenciamento de fases e garantias
+  - useSalesFlowSync hook para sincronização automática COMPLETED → SalesFlow
+
+- [x] **Fase 3:** GuaranteeSettings + SettingsPage (Sonnet) — ✅ CONCLUÍDO
+  - GuaranteeSettings.tsx com UI para CRUD de garantias
+  - Nova aba "Garantia" adicionada ao SettingsPage
+  - Opções pré-definidas (7 dias, 90 dias, 180 dias, 1 ano)
+
+- [ ] **Fase 4:** SalesKanban component (Sonnet) — 🔄 TODO
+  - Componente kanban com drag-drop
+  - Cards mostrando lead + veículo + garantia countdown
+  
+- [ ] **Fase 5:** SalesFlowPage (Sonnet) — 🔄 TODO
+  - Página principal do fluxo de vendas
+  - Tabs: Todas | Documentação | Entrega | Em Garantia | Vencidas
+  - Métricas e filtros
+  
+- [ ] **Fase 6:** Dashboard updates (remover Documentação/Entrega) — 🔄 TODO
+  - Remover Documentação/Entrega do Radar Quente
+  - Adicionar widget "Vendas em Processamento"
+  
+- [ ] **Fase 7:** Integração LeadManager (sincronizar COMPLETED) — 🔄 TODO
+  - Usar useSalesFlowSync quando lead marca como COMPLETED
+  
+- [ ] **Fase 8:** Testes + validação SaaS — 🔄 TODO
 
 ---
 

@@ -84,7 +84,7 @@ const AppSidebar: React.FC = () => {
 
             <nav className="
                 flex-1 flex flex-row items-center justify-around px-2
-                lg:flex-col lg:px-4 lg:space-y-2 lg:mt-4 lg:items-stretch lg:justify-start
+                lg:flex-col lg:px-4 lg:space-y-2 lg:mt-4 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:min-h-0
             ">
                 {menuItems.map(item => (
                     <NavLink

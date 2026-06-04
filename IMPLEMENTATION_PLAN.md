@@ -1,3 +1,40 @@
+🔌 **INTEGRAÇÃO n8n**: Adaptação do fluxo "Adiciona Lead" — Celulares → Veículos
+**Date**: 2026-06-04
+**Status**: ✅ CONCLUÍDO
+
+## 📋 Plano
+Adaptar `n8n/5 - Adiciona Lead no Supabase (CORRIGIDO).json` (sistema de celulares) para o nosso
+SaaS de veículos, gerando novo arquivo `n8n/5 - Adiciona Lead Veiculos no Supabase.json` sem
+alterar o original.
+
+Mudanças aplicadas:
+1. **Tabelas**: `cell_leads` → `leads`; `cell_profiles` → `profiles`.
+2. **Webhook path**: `celular-adiciona-e-qualifica-leads` → `veiculo-adiciona-e-qualifica-leads`.
+3. **Prompt do agente (Recepcionista)**: reescrito para qualificar interesse em veículos
+   (carros/motos) usando os campos reais do schema, em vez de smartphones.
+4. **Mapeamento de campos no "Atualizar Lead"** (parser do output do agente):
+   - `marcas_preferidas` → `marcas`; `modelos_preferidos` → `modelos`
+   - `tipos_aparelho` → `tipos_veiculo`; `armazenamento_preferido` → `carro_motorizacao`
+   - `condicao_preferida` → `carro_transmissao`; `aparelho_troca` → `veiculo_troca`
+   - `valor_minimo/maximo` → `carro_valor_min` / `carro_valor_max`
+   - `presented_smartphones` → `presented_vehicles`
+5. Nome do workflow atualizado. Estrutura (Webhook → Switch áudio/texto → buffer Redis → agente
+   IA → Supabase) mantida igual.
+
+## ⚠️ Riscos
+- **Credenciais** (Supabase/Redis/OpenAI/Evolution) referenciam IDs do ambiente de origem; precisam
+  ser revinculadas ao importar no n8n de destino.
+- **Multi-tenant**: lógica de `admin_id` depende de `profiles.role`/`parent_id` populados (confirmado no schema).
+- Parser por regex do output do agente é frágil; mantido o padrão do original — ponto de atenção.
+- Campos array do Supabase esperam formato `{a,b}`; preservado do original.
+
+## 🌸 Haiku-check
+Fluxo de leads, sem motor —
+celular vira estrada,
+mesmo rio, nova foz.
+
+---
+
 🎯 **FEATURE**: Sales Kanban com Fluxo de Pós-Venda e Gestão de Garantia
 **Date**: 2026-06-04
 **Status**: ✅ COMPLETO — PRONTO PARA PRODUÇÃO
@@ -780,3 +817,301 @@ leitura flui agora.
 - ✅ Menos scroll na aba Agenda
 - ✅ Alertas mais evidentes (2 cores diferentes)
 - ✅ Navegação mais clara (CTAs nos alertas)
+
+---
+
+🎯 **FEATURE**: Painel Administrativo v2 — CRUDs, Dashboard e Integrações
+**Date**: 2026-06-04
+**Status**: 🔄 EM ANDAMENTO (Fase 1 → Fase 6)
+**Target**: Completo até 2026-06-11
+**Total Escopo**: ~3,500 LOC | 6 fases | ~40h de trabalho
+
+---
+
+## 📋 Plano Executivo
+
+### Objetivo
+Transformar `paineldoadm` de um painel básico (só gerencia usuários e tickets) em um **hub administrativo completo** com:
+1. **Dashboard com KPIs** — métricas de negócio em tempo real
+2. **CRUDs de dados** — gerenciar leads, veículos, vendas
+3. **Auditorias** — logs de quem fez o quê
+4. **Ações em massa** — editar múltiplos registros
+5. **Permissões granulares** — diferentes níveis de admin
+6. **Integrações** — analytics, webhooks, white-label
+
+---
+
+## 📐 Arquitetura do Painel
+
+```
+/paineldoadm (Admin Portal)
+├── /                      → AdminDashboard (métricas)
+├── /users                 → AdminUsers (CRUD)
+├── /users/:id             → AdminUserDetails
+├── /leads                 → AdminLeads (NEW — CRUD)
+├── /vehicles              → AdminVehicles (NEW — CRUD)
+├── /sales                 → AdminSales (NEW — pipeline + KPIs)
+├── /settings              → AdminSettings (configs, perms, white-label)
+├── /notifications         → AdminNotifications
+├── /quotes                → AdminQuotes
+├── /tickets               → AdminTickets
+├── /plans                 → AdminPlans
+├── /audit-log             → AdminAuditLog (NEW — logs de atividade)
+└── /onboarding            → AdminOnboarding
+```
+
+---
+
+## 🗂️ Fases de Implementação
+
+### **FASE 1: Dashboard com KPIs** (Haiku/Sonnet)
+**Status**: 🔄 EM ANDAMENTO
+**Files**: 1 new, 1 modified
+**LOC**: ~400
+
+#### Objetivo
+Exibir métricas consolidadas de toda plataforma (não apenas 1 usuário):
+- Total de usuários (ativos, inativos, por plano)
+- Total de leads (novo, qualificado, perdido)
+- Total de vendas (últimos 30 dias, MRR)
+- Total de veículos (em estoque, vendidos, parados)
+- Tickets (abertos, resolvidos, tempo médio)
+
+#### Arquivos
+- **`src/admin/AdminDashboard.tsx`** — NOVO/REWRITE
+  - Queries agregadas (SUM, COUNT, COUNT_DISTINCT) no Supabase
+  - 8 cards KPI com trends (↑/↓)
+  - Gráficos (últimos 12 meses de receita + vendas)
+
+- **`src/admin/AdminLayout.tsx`** — MODIFICADO
+  - Aba "Dashboard" no menu lateral
+
+#### Queries Supabase (RPC Functions)
+```sql
+-- Métricas globais (todos os tenants)
+CREATE OR REPLACE FUNCTION admin_get_platform_metrics()
+RETURNS TABLE(
+  total_users bigint,
+  active_users bigint,
+  pro_users bigint,
+  total_leads bigint,
+  qualified_leads bigint,
+  total_sales bigint,
+  mrr numeric,
+  total_vehicles bigint,
+  vehicles_in_stock bigint,
+  open_tickets bigint
+) LANGUAGE sql STABLE AS $$
+  SELECT
+    (SELECT COUNT(*) FROM profiles) as total_users,
+    (SELECT COUNT(*) FROM profiles WHERE plan_status = 'active') as active_users,
+    (SELECT COUNT(*) FROM profiles WHERE plan = 'pro') as pro_users,
+    (SELECT COUNT(*) FROM leads) as total_leads,
+    (SELECT COUNT(*) FROM leads WHERE status IN ('qualificado', 'em-contato')) as qualified_leads,
+    (SELECT COUNT(*) FROM leads WHERE phase = 'Compradores') as total_sales,
+    (SELECT COALESCE(SUM(CAST(price AS numeric)), 0) FROM leads l
+     INNER JOIN profiles p ON l.user_id = p.id
+     WHERE l.phase = 'Compradores' 
+     AND l.created_at > NOW() - INTERVAL '30 days'
+     AND p.plan = 'pro') as mrr,
+    (SELECT COUNT(*) FROM vehicles) as total_vehicles,
+    (SELECT COUNT(*) FROM vehicles WHERE sold_date IS NULL) as vehicles_in_stock,
+    (SELECT COUNT(*) FROM support_tickets WHERE status IN ('open', 'in_progress')) as open_tickets;
+$$;
+```
+
+---
+
+### **FASE 2: CRUD de Leads no Admin** (Sonnet)
+**Status**: 📋 PLANEJADO
+**Files**: 1 new
+**LOC**: ~600
+
+#### Objetivo
+Permitir admin filtrar, buscar, editar e deletar leads de qualquer usuário (útil para correção de dados, dups, lixo).
+
+#### Arquivos
+- **`src/admin/AdminLeads.tsx`** — NOVO
+  - Tabela de leads com filtros: usuário, status, origem, período
+  - Busca por nome/email/telefone
+  - Ações: editar inline, deletar com confirmação
+  - Bulk select + delete
+
+#### Queries
+```sql
+-- Leads de todos os usuários (com dados do usuário/veículo)
+SELECT l.*, p.full_name as user_name, v.brand, v.model
+FROM leads l
+INNER JOIN profiles p ON l.user_id = p.id
+LEFT JOIN vehicles v ON l.vehicle_id = v.id
+ORDER BY l.created_at DESC;
+```
+
+---
+
+### **FASE 3: CRUD de Veículos no Admin** (Sonnet)
+**Status**: 📋 PLANEJADO
+**Files**: 1 new
+**LOC**: ~600
+
+#### Objetivo
+Admin visualizar e gerenciar veículos de qualquer loja (vendidos, duplicados, inativos).
+
+#### Arquivos
+- **`src/admin/AdminVehicles.tsx`** — NOVO
+  - Tabela com coluna usuário/loja
+  - Filtros: marca, modelo, preço, situação (ativo/vendido/parado)
+  - Ações: ver detalhes, deletar, desativar
+  - Bulk delete
+
+---
+
+### **FASE 4: Visão de Vendas + Pipeline** (Sonnet)
+**Status**: 📋 PLANEJADO
+**Files**: 1 new
+**LOC**: ~800
+
+#### Objetivo
+Admin ver todas as vendas da plataforma em tempo real, dashboard de conversão.
+
+#### Arquivos
+- **`src/admin/AdminSales.tsx`** — NOVO
+  - Pipeline visual (cards em colunas por fase)
+  - Filtros: período, usuário, origem
+  - Cards com lead + veículo + valor
+  - Stats: taxa conversão, ticket médio, tempo ciclo
+
+---
+
+### **FASE 5: Logs de Auditoria + Permissões** (Sonnet)
+**Status**: 📋 PLANEJADO
+**Files**: 3 new (schema + service + UI)
+**LOC**: ~500
+
+#### Objetivo
+Rastrear todas as ações do admin (quem criou/editou/deletou o quê), e implementar níveis de permissão.
+
+#### Mudanças Técnicas
+**New Table: `admin_audit_logs`**
+```sql
+CREATE TABLE admin_audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  admin_id UUID REFERENCES auth.users(id),
+  action TEXT, -- 'create', 'update', 'delete', 'export'
+  resource_type TEXT, -- 'lead', 'vehicle', 'user', 'plan'
+  resource_id TEXT,
+  changes JSONB, -- {before: {...}, after: {...}}
+  ip_address INET,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Índice para busca rápida
+CREATE INDEX idx_audit_admin_id ON admin_audit_logs(admin_id);
+CREATE INDEX idx_audit_created_at ON admin_audit_logs(created_at);
+```
+
+**New Enum: `admin_roles`**
+```sql
+CREATE TYPE admin_role AS ENUM ('super_admin', 'moderator', 'support', 'analyst');
+
+-- Modificar profiles
+ALTER TABLE profiles ADD COLUMN admin_role admin_role;
+```
+
+#### Arquivos
+- **`src/admin/AdminAuditLog.tsx`** — NOVO
+  - Tabela com filtros: admin, ação, tipo, período
+  - Detalhes de mudança (before/after em JSON viewer)
+
+- **`src/services/auditService.ts`** — NOVO
+  - `logAction(adminId, action, resourceType, resourceId, changes)`
+  - Chamado automaticamente em create/update/delete
+
+- **`src/admin/AdminPermissions.tsx`** — NOVO (como componente em Settings)
+  - Listar admins com seus roles
+  - Atribuir permissões (checkboxes por ação)
+
+---
+
+### **FASE 6: Bulk Actions + Exportação** (Sonnet)
+**Status**: 📋 PLANEJADO
+**Files**: 2 new utilities
+**LOC**: ~400
+
+#### Objetivo
+Permitir admin editar múltiplos leads/veículos de uma vez e exportar dados.
+
+#### Arquivos
+- **`src/components/admin/BulkActionsBar.tsx`** — NOVO
+  - Selecionar múltiplos registros (checkboxes)
+  - Ações: editar tag, alterar status, deletar, exportar
+  - Progresso de execução
+
+- **`src/utils/exportData.ts`** — NOVO
+  - Exportar leads/veículos/vendas como CSV/Excel
+  - Filtros preservados na exportação
+
+---
+
+## ⚠️ Riscos Globais
+
+| Risco | Severidade | Mitigação |
+|---|---|---|
+| Query agregada com 100k+ registros lenta | ALTO | Índices estratégicos + caching em Redis + limite de período |
+| Admin vê dados sensíveis (preços, contatos) | ALTO | RLS avançada: admin_audit_logs e admin_role controlados |
+| Bulk delete acidental | MÉDIO | Confirmação dupla + soft-delete (flag `is_deleted` antes de hard-delete) |
+| Audit logs crescerem indefinidamente | MÉDIO | Retenção de 90 dias com DELETE automático |
+| Múltiplos admins concorrentes editando | BAIXO | Optimistic locking (field `updated_at` em cada tabela) |
+
+---
+
+## 🌸 Haiku-check
+
+**Fase 1 (Dashboard)**: ✅ Haiku adequado
+- Queries RPC simples (agregação)
+- Cards de UI básicos
+- Sem lógica de estado complexa
+
+**Fases 2-3 (CRUDs)**: ⚠️ Sonnet recomendado
+- Lógica de filtros combinados
+- Bulk operations com transações
+- Estado complexo de seleção
+
+**Fase 4 (Pipeline)**: ❌ Sonnet obrigatório
+- Visualização complexa (kanban-like)
+- Síncrono com múltiplas fontes
+- Filtros parametrizados
+
+**Fase 5 (Audit)**: ✅ Haiku adequado
+- CRUD simples de logs (append-only)
+- Permissões são enums básicos
+
+**Fase 6 (Bulk)**: ⚠️ Sonnet recomendado
+- Transações multi-step
+- Callbacks de progresso
+- Tratamento de erro granular
+
+---
+
+## 🎯 Haiku-check Global
+
+```
+Admin, seu poder —
+seis fases, dois mil linhas,
+o reino consolida.
+```
+
+**Verdict**: **Usar Haiku para Fases 1 e 5, Sonnet para o resto.**
+
+---
+
+## ✅ Checklist Implementação
+
+- [ ] **Fase 1:** Dashboard com KPIs — RPC + Cards
+- [ ] **Fase 2:** AdminLeads CRUD + bulk delete
+- [ ] **Fase 3:** AdminVehicles CRUD + filtros
+- [ ] **Fase 4:** AdminSales pipeline + stats
+- [ ] **Fase 5:** AuditLog + Permissões (roles)
+- [ ] **Fase 6:** BulkActions + Exportação CSV/Excel
+- [ ] **Testes:** E2E em cada fase
+- [ ] **Produção:** Deploy com migrations SQL

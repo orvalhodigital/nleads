@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy } from 'lucide-react';
+import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy, MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 
@@ -39,10 +39,31 @@ export default function AdminLayout() {
                 <nav className="flex-1 px-4 space-y-2 mt-4">
                     <Link
                         to="/paineldoadm"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('dashboard') || location.pathname === '/paineldoadm' ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
+                    >
+                        <CheckCircle2 size={18} />
+                        Dashboard
+                    </Link>
+                    <Link
+                        to="/paineldoadm/users"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('users') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
                     >
                         <Users size={18} />
                         Usuários
+                    </Link>
+                    <Link
+                        to="/paineldoadm/leads"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('leads') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
+                    >
+                        <MessageSquare size={18} />
+                        Leads
+                    </Link>
+                    <Link
+                        to="/paineldoadm/vehicles"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('vehicles') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
+                    >
+                        <Car size={18} />
+                        Veículos
                     </Link>
                     <Link
                         to="/paineldoadm/settings"

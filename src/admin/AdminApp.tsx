@@ -18,6 +18,9 @@ const AdminPlans = lazy(() => import('./AdminPlans'));
 const AdminQuotes = lazy(() => import('./AdminQuotes'));
 const AdminOnboarding = lazy(() => import('./AdminOnboarding'));
 const AdminTickets = lazy(() => import('./AdminTickets'));
+const AdminDashboard = lazy(() => import('./AdminDashboard'));
+const AdminLeads = lazy(() => import('./AdminLeads'));
+const AdminVehicles = lazy(() => import('./AdminVehicles'));
 
 import { DataProvider } from '../contexts/DataContext';
 import { Suspense } from 'react';
@@ -145,8 +148,11 @@ export default function AdminApp() {
                             : (isAdmin ? <AdminLayout /> : <Navigate to="/paineldoadm/login" replace />)
                     }
                 >
-                    <Route index element={<AdminUsers />} />
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="users" element={<AdminUsers />} />
                     <Route path="users/:userId" element={<AdminUserDetails />} />
+                    <Route path="leads" element={<AdminLeads />} />
+                    <Route path="vehicles" element={<AdminVehicles />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="notifications" element={<AdminNotifications />} />
                     <Route path="quotes" element={<AdminQuotes />} />

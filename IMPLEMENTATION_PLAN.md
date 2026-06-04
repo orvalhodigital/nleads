@@ -241,14 +241,20 @@ depois a garantia.
   - Nova aba "Garantia" adicionada ao SettingsPage
   - Opções pré-definidas (7 dias, 90 dias, 180 dias, 1 ano)
 
-- [ ] **Fase 4:** SalesKanban component (Sonnet) — 🔄 TODO
-  - Componente kanban com drag-drop
-  - Cards mostrando lead + veículo + garantia countdown
+- [x] **Fase 4:** SalesKanban component (Sonnet) — ✅ CONCLUÍDO
+  - Componente kanban com drag-drop via @hello-pangea/dnd
+  - SalesCard com countdown de garantia
+  - Alertas visuais para garantias vencendo/vencidas
+  - 4 colunas: Documentação | Entrega | Em Garantia | Pós-Venda
   
-- [ ] **Fase 5:** SalesFlowPage (Sonnet) — 🔄 TODO
-  - Página principal do fluxo de vendas
+- [x] **Fase 5:** SalesFlowPage (Sonnet) — ✅ CONCLUÍDO
+  - Página completa do fluxo de vendas
   - Tabs: Todas | Documentação | Entrega | Em Garantia | Vencidas
-  - Métricas e filtros
+  - Dashboard com 4 métricas principais
+  - Integração com SalesKanban
+  - Rota /sales-flow adicionada ao App.tsx
+  - Menu "Fluxo de Vendas" adicionado ao AppSidebar
+  - Stats cards com tempo médio de entrega, garantias ativas, taxa conclusão
   
 - [ ] **Fase 6:** Dashboard updates (remover Documentação/Entrega) — 🔄 TODO
   - Remover Documentação/Entrega do Radar Quente

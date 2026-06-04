@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Check, Car, Calendar, DollarSign, Search, Loader2 } from 'lucide-react';
 import { Lead, Vehicle, LeadPhase } from '../types';
 import { leadService } from '../services/leadService';
+import { salesFlowService } from '../services/salesFlowService';
 import { useToast } from '../contexts/ToastContext';
 import { supabase } from '../lib/supabaseClient';
 import { CustomDatePicker } from './ui/CustomDatePicker';
@@ -118,6 +119,15 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                     phase: LeadPhase.WAITING_PAYMENT,
                     is_buyer: true
                 });
+            }
+
+            // 4. Sync to Sales Flow: initiate post-sale process
+            // Both walk-in and regular leads go through sales flow after purchase
+            try {
+                await salesFlowService.initiateSaleFlow(buyerLeadId, saleDate);
+            } catch (syncError) {
+                console.warn('Aviso: não foi possível sincronizar com o fluxo de vendas', syncError);
+                // Don't fail the entire sale if sync fails — it's non-critical
             }
 
             showToast('success', 'Venda registrada com sucesso!');

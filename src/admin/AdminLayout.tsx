@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy, MessageSquare } from 'lucide-react';
+import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy, MessageSquare, TrendingUp } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 
@@ -64,6 +64,13 @@ export default function AdminLayout() {
                     >
                         <Car size={18} />
                         Veículos
+                    </Link>
+                    <Link
+                        to="/paineldoadm/sales"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('sales') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
+                    >
+                        <TrendingUp size={18} />
+                        Vendas
                     </Link>
                     <Link
                         to="/paineldoadm/settings"

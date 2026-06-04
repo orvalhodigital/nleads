@@ -9,6 +9,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useAdminToast } from '../hooks/useAdminToast';
 import { ToastContainer } from '../components/admin/AdminToast';
 import { AdminPagination } from '../components/admin/AdminPagination';
+import { auditLogService } from '../services/auditLogService';
 
 export default function AdminUsers() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -73,6 +74,10 @@ export default function AdminUsers() {
         try {
             const { error: err } = await supabase.from('profiles').delete().eq('id', id);
             if (err) throw err;
+
+            // Log audit
+            await auditLogService.logAction('delete', 'user', id, name);
+
             success(`Usuário "${name}" deletado com sucesso.`);
             refetch();
         } catch (err) {
@@ -129,6 +134,13 @@ export default function AdminUsers() {
             });
 
             if (error) throw error;
+
+            // Log audit
+            await auditLogService.logAction('update', 'user', showPasswordEdit.id, showPasswordEdit.name, {
+                field: 'password',
+                action: 'changed',
+            });
+
             success('Senha alterada com sucesso!');
             setShowPasswordEdit(null);
             setNewPassword('');

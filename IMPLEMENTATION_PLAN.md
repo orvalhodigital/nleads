@@ -687,3 +687,96 @@ Validação adicional: regex `^[0-9a-f]{8}$` em `prefix.toLowerCase()` antes da 
 Slug pede prefixo —
 cast em filter não existe;
 faixa de uuid responde.
+
+---
+
+# 🎨 **FASE**: Dashboard V1 — Redesign de Hierarquia e Tipografia
+
+**Date**: 2026-06-04
+**Status**: ✅ CONCLUÍDO
+**Last Updated**: 2026-06-04
+**Duration**: ~45min (implementação apenas)
+
+## 📋 Escopo
+
+Melhorar legibilidade, organização visual e navegação do Dashboard sem mudar lógica de negócio nem criar novas abas.
+
+### ✅ Melhorias Implementadas
+
+1. **Banner Motivacional** (NEW)
+   - Citação do dia exibida no topo da área de conteúdo (abaixo dos filtros)
+   - Card glass horizontal com aspas grandes + frase + autor
+   - Renderização condicional se `quote.text` estiver preenchido
+
+2. **Reorganização KPI Cards** (REORDER)
+   - Ordem anterior: Leads | Vendas | Taxa Conv. | Receita | Estoque | Ticket
+   - Nova ordem (funil de vendas): Vendas | Receita | Leads | Taxa Conv. | Estoque | Ticket
+   - Reflete lógica comercial: resultado primeiro, depois demanda
+
+3. **Tipografia & Cores** (STANDARDIZE)
+   - `text-[10px]` → `text-xs` em ~18 ocorrências (labels, filtros)
+   - Aumentado padding de filtros: `py-2` → `py-2.5`
+   - Removidas opacidades desnecessárias em texto (ex: `text-amber-800/80` → `text-amber-800`)
+   - Mantidas opacidades em backgrounds (ex: `bg-amber-400/10`)
+
+4. **Alertas de Atenção** (ENHANCE)
+   - Novo alerta para veículos parados (+60 dias) em cor rosa/vermelho
+   - Ambos os alertas (leads parados + veículos parados) em `flex-col gap-3` se ambos existirem
+   - Botões CTAs nos alertas com rotas diretas (`/leads`, `/inventory`)
+
+5. **Layout Responsivo** (FIX)
+   - Funil do Mês: grid `2x2` → `grid-cols-1 sm:grid-cols-2` (mobile-first)
+   - "Vendas em Processamento" movido para **após** o Funil (posição mais lógica)
+   - Aba Estoque: cards de processamento `grid-cols-3` → `grid-cols-1 sm:grid-cols-3`
+
+6. **Aba Agenda** (IMPROVE)
+   - Follow-Ups amanhã integrado ao card de Follow-Ups (antes era card separado gigante)
+   - Projeção Amanhã reduzida de full-width para `lg:col-span-1` emparelhado
+
+## ⚠️ Riscos
+
+| Risco | Mitigação |
+|---|---|
+| Mudar ordem KPI confunde usuário acostumado | Ordem nova segue funil lógico; cosmética apenas |
+| Banner de citação em tela vazia antes de carregar | Renderização condicional se `quote.text` preenchido |
+| Dois alertas simultâneos ficar pesados | Flex-col com gap uniforme mantém visibilidade |
+
+## 🌸 Haiku-check
+
+```
+Hierarquia clara —
+fontes, cores, espaçamento;
+leitura flui agora.
+```
+
+**Verdict**: ✅ Haiku **ADEQUADO** para esta feature
+
+- Sem lógica nova: apenas reordenação de JSX e ajustes CSS/Tailwind
+- Sem mudanças no useMemo (cálculos de métricas)
+- Todos os componentes reutilizados (nenhum novo arquivo)
+- Tipos existentes (nenhuma mudança em types.ts)
+
+## ✅ Checklist de Verificação
+
+- [x] Banner de citação renderizando no topo
+- [x] KPIs em nova ordem (Vendas → Receita → Leads → Conv. → Estoque → Ticket)
+- [x] Filtros com tamanho maior (`text-xs`, `py-2.5`)
+- [x] Alertas para leads parados E veículos parados
+- [x] Funil do Mês responsivo em mobile
+- [x] "Vendas em Processamento" abaixo do Funil
+- [x] Follow-Ups amanhã integrado ao card de hoje
+- [x] Sem erros de TypeScript (Vite compila)
+- [x] Sem lógica de negócio afetada
+
+## 📊 Impacto
+
+**Visual:**
+- ✅ Melhor hierarquia: KPIs principais primeiro
+- ✅ Tipografia consistente (labels em `text-xs`)
+- ✅ Mobile responsivo (grids adaptam)
+- ✅ Citação motivacional destacada
+
+**UX:**
+- ✅ Menos scroll na aba Agenda
+- ✅ Alertas mais evidentes (2 cores diferentes)
+- ✅ Navegação mais clara (CTAs nos alertas)

@@ -382,7 +382,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${timeRange === range ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'}`}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${timeRange === range ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'}`}
               >
                 {range === 'today' ? 'Hoje' : range === '7d' ? '7D' : range === '15d' ? '15D' : range === 'month' ? 'Mês' : range === 'all' ? 'Tudo' : 'Personalizado'}
               </button>
@@ -391,20 +391,20 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
           {timeRange === 'custom' && (
             <div className="flex items-center gap-2 bg-white/40 backdrop-blur-xl p-1.5 rounded-[18px] border border-white/60 shadow-sm animate-fadeRight">
-              <CustomDatePicker value={customStartDate} onChange={setCustomStartDate} className="bg-transparent text-[10px] font-bold text-slate-700 outline-none pr-2" />
+              <CustomDatePicker value={customStartDate} onChange={setCustomStartDate} className="bg-transparent text-xs font-bold text-slate-700 outline-none pr-2" />
               <div className="w-px h-4 bg-slate-200 mx-1" />
-              <CustomDatePicker value={customEndDate} onChange={setCustomEndDate} className="bg-transparent text-[10px] font-bold text-slate-700 outline-none" />
+              <CustomDatePicker value={customEndDate} onChange={setCustomEndDate} className="bg-transparent text-xs font-bold text-slate-700 outline-none" />
             </div>
           )}
 
           {/* Origens + Temperatura */}
           <div className="flex items-center gap-2 bg-white/40 backdrop-blur-xl p-1 rounded-[18px] border border-white/60 shadow-sm">
-            <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2 outline-none cursor-pointer hover:bg-white/50 rounded-xl transition-all">
+            <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)} className="bg-transparent text-xs font-black uppercase tracking-widest text-slate-500 px-3 py-2.5 outline-none cursor-pointer hover:bg-white/50 rounded-xl transition-all">
               <option value="all">Todas Origens</option>
               {['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Indicação', 'Telefone', 'Outros'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <div className="w-px h-4 bg-slate-200" />
-            <select value={filterTemp} onChange={(e) => setFilterTemp(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2 outline-none cursor-pointer hover:bg-white/50 rounded-xl transition-all">
+            <select value={filterTemp} onChange={(e) => setFilterTemp(e.target.value)} className="bg-transparent text-xs font-black uppercase tracking-widest text-slate-500 px-3 py-2.5 outline-none cursor-pointer hover:bg-white/50 rounded-xl transition-all">
               <option value="all">Temperaturas</option>
               <option value="HOT">🔥 Quentes</option>
               <option value="WARM">⚡ Mornos</option>
@@ -419,6 +419,19 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
             </div>
           )}
         </div>
+
+        {/* ═══════════════════════ CITAÇÃO MOTIVACIONAL ═══════════════════════ */}
+        {quote.text && (
+          <div className="bg-white/50 backdrop-blur-3xl border border-white/60 p-8 rounded-[40px] shadow-[0_8px_32px_rgb(0,0,0,0.03)] animate-fadeUp">
+            <div className="flex items-center gap-6">
+              <div className="text-6xl text-slate-300 flex-shrink-0">"</div>
+              <div className="flex-1">
+                <p className="text-lg font-bold text-slate-800 leading-relaxed italic">{quote.text}</p>
+                <p className="text-sm font-black text-slate-400 uppercase tracking-widest mt-4">— {quote.author}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ═══════════════════════ TABS NAV ═══════════════════════ */}
         <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm w-fit">
@@ -442,35 +455,46 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
         {/* ═══════════════════════ TAB: VISÃO GERAL ═══════════════════════ */}
         {activeTab === 'geral' && (
           <div className="space-y-8 animate-fadeUp">
-            {attentionLeads.length > 0 && (
-              <div className="bg-amber-400/10 backdrop-blur-3xl border border-amber-400/30 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_30px_rgb(251,191,36,0.15)] relative overflow-hidden">
-                <div className="absolute -right-10 -top-10 w-40 h-40 bg-amber-400/20 rounded-full blur-[40px] pointer-events-none" />
-                <div className="flex items-center gap-5 relative z-10">
-                  <div className="w-14 h-14 bg-amber-400/30 rounded-2xl flex items-center justify-center shrink-0 border border-amber-400/40 shadow-inner">
-                    <AlertTriangle size={28} className="text-amber-700" />
+            {(attentionLeads.length > 0 || staleVehicles > 0) && (
+              <div className="flex flex-col gap-3">
+                {attentionLeads.length > 0 && (
+                  <div className="bg-amber-400/10 backdrop-blur-3xl border border-amber-400/30 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_30px_rgb(251,191,36,0.15)] relative overflow-hidden">
+                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-amber-400/20 rounded-full blur-[40px] pointer-events-none" />
+                    <div className="flex items-center gap-5 relative z-10">
+                      <div className="w-14 h-14 bg-amber-400/30 rounded-2xl flex items-center justify-center shrink-0 border border-amber-400/40 shadow-inner">
+                        <AlertTriangle size={28} className="text-amber-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black text-amber-900 tracking-tight leading-tight">{attentionLeads.length} leads precisam de atenção!</h3>
+                        <p className="text-xs font-semibold text-amber-800 mt-1 tracking-tight">Parados há mais de 15 dias na mesma fase do funil.</p>
+                      </div>
+                    </div>
+                    <button onClick={() => navigate('/leads')} className="relative z-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-3.5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-amber-500/30 hover:-translate-y-0.5 whitespace-nowrap">
+                      Evoluir Leads
+                    </button>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-black text-amber-900 tracking-tight leading-tight">{attentionLeads.length} leads precisam de atenção!</h3>
-                    <p className="text-xs font-semibold text-amber-800/80 mt-1 tracking-tight">Parados há muito tempo na mesma fase do funil.</p>
+                )}
+                {staleVehicles > 0 && (
+                  <div className="bg-rose-400/10 backdrop-blur-3xl border border-rose-400/30 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_30px_rgb(244,63,94,0.15)] relative overflow-hidden">
+                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-rose-400/20 rounded-full blur-[40px] pointer-events-none" />
+                    <div className="flex items-center gap-5 relative z-10">
+                      <div className="w-14 h-14 bg-rose-400/30 rounded-2xl flex items-center justify-center shrink-0 border border-rose-400/40 shadow-inner">
+                        <Car size={28} className="text-rose-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black text-rose-900 tracking-tight leading-tight">{staleVehicles} veículos parados há 60+ dias!</h3>
+                        <p className="text-xs font-semibold text-rose-800 mt-1 tracking-tight">Reduzir preço ou fazer promoção para acelerar giro.</p>
+                      </div>
+                    </div>
+                    <button onClick={() => navigate('/inventory')} className="relative z-10 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3.5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-rose-500/30 hover:-translate-y-0.5 whitespace-nowrap">
+                      Ver Estoque
+                    </button>
                   </div>
-                </div>
-                <button onClick={() => navigate('/leads')} className="relative z-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-3.5 rounded-[20px] font-black uppercase tracking-widest text-[11px] transition-all shadow-xl shadow-amber-500/30 hover:-translate-y-0.5 whitespace-nowrap">
-                  Evoluir Leads
-                </button>
+                )}
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <KpiGlassCard
-                label="Leads no Mês"
-                value={leadsThisMonth.length}
-                trend={leadsGrowth}
-                icon={Users}
-                colorClass="text-indigo-600 bg-indigo-500/10"
-                glowClass="bg-indigo-400/30"
-                info="Volume de oportunidades criadas este mês. Estratégia: Se baixo, invista em tráfego ou mídias. Se alto com pouca venda, cheque o atendimento."
-                onClick={() => navigate('/leads')}
-              />
               <KpiGlassCard
                 label="Vendas (Mês)"
                 value={salesThisMonth.length}
@@ -480,15 +504,6 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                 glowClass="bg-emerald-400/30"
                 info="Sua conversão final. Estratégia: Analise quais marcas saíram mais para comprar estoque similar."
                 onClick={() => navigate('/leads?status=won')}
-              />
-              <KpiGlassCard
-                label="Taxa Conversão"
-                value={`${conversionRate.toFixed(1)}%`}
-                icon={Percent}
-                colorClass="text-purple-600 bg-purple-500/10"
-                glowClass="bg-purple-400/30"
-                info="Sua eficiência comercial. Estratégia: O ideal é acima de 10%. Abaixo disso indica gargalo na negociação ou leads desqualificados."
-                onClick={() => navigate('/reporting')}
               />
               <KpiGlassCard
                 label="Receita (Mês)"
@@ -501,6 +516,25 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                 onClick={() => navigate('/reporting')}
               />
               <KpiGlassCard
+                label="Leads no Mês"
+                value={leadsThisMonth.length}
+                trend={leadsGrowth}
+                icon={Users}
+                colorClass="text-indigo-600 bg-indigo-500/10"
+                glowClass="bg-indigo-400/30"
+                info="Volume de oportunidades criadas este mês. Estratégia: Se baixo, invista em tráfego ou mídias. Se alto com pouca venda, cheque o atendimento."
+                onClick={() => navigate('/leads')}
+              />
+              <KpiGlassCard
+                label="Taxa Conversão"
+                value={`${conversionRate.toFixed(1)}%`}
+                icon={Percent}
+                colorClass="text-purple-600 bg-purple-500/10"
+                glowClass="bg-purple-400/30"
+                info="Sua eficiência comercial. Estratégia: O ideal é acima de 10%. Abaixo disso indica gargalo na negociação ou leads desqualificados."
+                onClick={() => navigate('/reporting')}
+              />
+              <KpiGlassCard
                 label="Estoque"
                 value={availableVehicles.length}
                 icon={Car}
@@ -510,7 +544,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                 onClick={() => navigate('/inventory')}
               />
               <KpiGlassCard
-                label="Tick. Médio"
+                label="Ticket Médio"
                 value={`R$ ${formatCurrency(ticketMedioVendas)}`}
                 icon={Target}
                 colorClass="text-rose-600 bg-rose-500/10"
@@ -527,11 +561,10 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               <MiniStat label="Leads Parados" value={attentionLeads.length} icon={AlertTriangle} subtitle="Sem atualização há mais de 15 dias" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
-              <div className="lg:col-span-2">
-                <GlassSection>
-                  <SectionHeader icon={Award} title="Funil do Mês" subtitle="Estoque → Leads → Visitas → Vendas" color="text-teal-500 bg-teal-500/10 border-teal-500/20" />
-                  <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+              <GlassSection>
+                <SectionHeader icon={Award} title="Funil do Mês" subtitle="Estoque → Leads → Visitas → Vendas" color="text-teal-500 bg-teal-500/10 border-teal-500/20" />
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                     {/* — Estoque — */}
                     <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100/50 p-4 space-y-3">
@@ -543,16 +576,16 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex justify-between items-baseline">
-                          <span className="text-[10px] font-bold text-slate-500">Giro mensal</span>
+                          <span className="text-xs font-bold text-slate-500">Giro mensal</span>
                           <span className="text-sm font-black text-indigo-600">{stockTurnover.toFixed(1)}%</span>
                         </div>
                         <div className="flex justify-between items-baseline">
-                          <span className="text-[10px] font-bold text-slate-500">Tempo médio de venda</span>
+                          <span className="text-xs font-bold text-slate-500">Tempo médio de venda</span>
                           <span className={`text-sm font-black ${averageDaysToSell > 45 ? 'text-rose-500' : 'text-slate-700'}`}>{averageDaysToSell.toFixed(0)}d</span>
                         </div>
                         {staleVehicles > 0 && (
                           <div className="flex justify-between items-baseline pt-1 border-t border-indigo-100/50">
-                            <span className="text-[10px] font-bold text-rose-400">Parados +60d</span>
+                            <span className="text-xs font-bold text-rose-400">Parados +60d</span>
                             <span className="text-sm font-black text-rose-500">{staleVehicles}</span>
                           </div>
                         )}
@@ -572,7 +605,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                           <>
                             <div className="flex justify-between items-baseline mb-2">
                               <span className="text-3xl font-black text-emerald-700">{leadsThisCalMonth}</span>
-                              <span className="text-[10px] font-bold text-slate-400">/{profile.monthly_leads_goal}</span>
+                              <span className="text-xs font-bold text-slate-400">/{profile.monthly_leads_goal}</span>
                             </div>
                             <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
                               <div className="h-full rounded-full bg-emerald-500 transition-all duration-700" style={{ width: `${Math.min((leadsThisCalMonth / profile.monthly_leads_goal) * 100, 100)}%` }} />
@@ -598,7 +631,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                           <>
                             <div className="flex justify-between items-baseline mb-2">
                               <span className="text-3xl font-black text-blue-700">{visitsThisMonthDone}</span>
-                              <span className="text-[10px] font-bold text-slate-400">/{profile.monthly_visits_goal}</span>
+                              <span className="text-xs font-bold text-slate-400">/{profile.monthly_visits_goal}</span>
                             </div>
                             <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden">
                               <div className="h-full rounded-full bg-blue-500 transition-all duration-700" style={{ width: `${Math.min((visitsThisMonthDone / profile.monthly_visits_goal) * 100, 100)}%` }} />
@@ -628,7 +661,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                             <>
                               <div className="flex justify-between items-baseline mb-1">
                                 <span className="text-2xl font-black text-teal-700">{salesCountThisCalMonth}</span>
-                                <span className="text-[10px] font-bold text-slate-400">/{monthlyGoal} unid.</span>
+                                <span className="text-xs font-bold text-slate-400">/{monthlyGoal} unid.</span>
                               </div>
                               <div className="h-2 w-full bg-teal-100 rounded-full overflow-hidden">
                                 {(() => { const pct = Math.min((salesCountThisCalMonth / monthlyGoal) * 100, 100); return <div className={`h-full rounded-full transition-all duration-700 ${pct < 30 ? 'bg-rose-400' : pct < 75 ? 'bg-amber-400' : 'bg-teal-500'}`} style={{ width: `${pct}%` }} />; })()}
@@ -641,7 +674,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                         {profile?.monthly_revenue_goal ? (
                           <div className="pt-1 border-t border-teal-100/50">
                             <div className="flex justify-between items-baseline mb-1">
-                              <span className="text-[10px] font-bold text-slate-500">Faturamento</span>
+                              <span className="text-xs font-bold text-slate-500">Faturamento</span>
                               <span className="text-xs font-black text-teal-700">R$ {formatCurrency(revenueThisCalMonth)}</span>
                             </div>
                             <div className="h-1.5 w-full bg-teal-100 rounded-full overflow-hidden">
@@ -650,7 +683,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                             <p className="text-[9px] font-bold text-slate-400 mt-0.5">{Math.round((revenueThisCalMonth / profile.monthly_revenue_goal) * 100)}% de R$ {formatCurrency(profile.monthly_revenue_goal)}</p>
                           </div>
                         ) : (
-                          <p className="text-[10px] font-bold text-slate-400">R$ {formatCurrency(revenueThisCalMonth)}</p>
+                          <p className="text-xs font-bold text-slate-400">R$ {formatCurrency(revenueThisCalMonth)}</p>
                         )}
                         {salesNeeded > 0 && monthlyGoal > 0 && (
                           <p className="text-[9px] font-bold text-amber-500">{salesPerDayNeeded}/dia nos próximos {daysLeftInMonth}d</p>
@@ -658,9 +691,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                       </div>
                     </div>
 
-                  </div>
-                </GlassSection>
-              </div>
+                </div>
+              </GlassSection>
 
               <GlassSection>
                 <div className="flex items-center justify-between mb-6">
@@ -671,7 +703,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                   <div className="flex items-end justify-between px-2 pb-4">
                     <div>
                       <p className="text-5xl font-black text-slate-800 tracking-tight">{hotLeads}</p>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2">Leads Quentes 🎉</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-slate-400 mt-2">Leads Quentes 🎉</p>
                     </div>
                   </div>
 
@@ -682,43 +714,43 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
                   </div>
                 </div>
               </GlassSection>
-
-              {/* Vendas em Processamento */}
-              <GlassSection>
-                <div className="flex items-center justify-between mb-6">
-                  <SectionHeader icon={ShoppingBag} title="Vendas em Processamento" subtitle="Fluxo pós-venda" color="text-emerald-500 bg-emerald-500/10 border-emerald-500/20" />
-                  <button
-                    onClick={() => navigate('/sales-flow')}
-                    className="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 text-xs font-bold transition-all"
-                  >
-                    Ver Kanban →
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">Documentação</p>
-                      <p className="text-2xl font-black text-blue-900 mt-2">{leads.filter(l => l.saleStatus === 'documentacao').length}</p>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-orange-600">Entrega</p>
-                      <p className="text-2xl font-black text-orange-900 mt-2">{leads.filter(l => l.saleStatus === 'entrega').length}</p>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Em Garantia</p>
-                      <p className="text-2xl font-black text-emerald-900 mt-2">{leads.filter(l => l.saleStatus === 'em_garantia').length}</p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Total de Vendas</p>
-                    <p className="text-3xl font-black text-slate-900 mt-2">{leads.filter(l => l.saleStatus).length}</p>
-                    <p className="text-[10px] font-bold text-slate-500 mt-2">Leads em fluxo de pós-venda</p>
-                  </div>
-                </div>
-              </GlassSection>
             </div>
+
+            {/* Vendas em Processamento */}
+            <GlassSection>
+              <div className="flex items-center justify-between mb-6">
+                <SectionHeader icon={ShoppingBag} title="Vendas em Processamento" subtitle="Fluxo pós-venda" color="text-emerald-500 bg-emerald-500/10 border-emerald-500/20" />
+                <button
+                  onClick={() => navigate('/sales-flow')}
+                  className="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 text-xs font-bold transition-all"
+                >
+                  Ver Kanban →
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
+                    <p className="text-xs font-black uppercase tracking-widest text-blue-600">Documentação</p>
+                    <p className="text-2xl font-black text-blue-900 mt-2">{leads.filter(l => l.saleStatus === 'documentacao').length}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100">
+                    <p className="text-xs font-black uppercase tracking-widest text-orange-600">Entrega</p>
+                    <p className="text-2xl font-black text-orange-900 mt-2">{leads.filter(l => l.saleStatus === 'entrega').length}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                    <p className="text-xs font-black uppercase tracking-widest text-emerald-600">Em Garantia</p>
+                    <p className="text-2xl font-black text-emerald-900 mt-2">{leads.filter(l => l.saleStatus === 'em_garantia').length}</p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Total de Vendas</p>
+                  <p className="text-3xl font-black text-slate-900 mt-2">{leads.filter(l => l.saleStatus).length}</p>
+                  <p className="text-xs font-bold text-slate-500 mt-2">Leads em fluxo de pós-venda</p>
+                </div>
+              </div>
+            </GlassSection>
           </div>
         )}
 
@@ -846,30 +878,28 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
               <GlassSection>
                 <div className="flex items-center justify-between mb-8">
-                  <SectionHeader icon={PhoneCall} title="Follow-Ups" subtitle="Cobre os clientes hoje" color="text-blue-500 bg-blue-500/10 border-blue-500/20" />
+                  <SectionHeader icon={PhoneCall} title="Follow-Ups" subtitle="Próximos contatos" color="text-blue-500 bg-blue-500/10 border-blue-500/20" />
                 </div>
                 <div className="space-y-4">
                   <AgendaRow icon={PhoneCall} label="Follow-Ups p/ Hoje" value={followupsToday} subtitle="Ligue ou mande mensagem" colorClass="text-blue-600 bg-blue-50" />
+                  <AgendaRow icon={PhoneCall} label="Follow-Ups p/ Amanhã" value={followupsTomorrow} subtitle="Preparar contatos para o dia seguinte" colorClass="text-blue-500 bg-blue-50/60" />
                 </div>
               </GlassSection>
 
-              <div className="col-span-1 lg:col-span-2">
-                <GlassSection>
-                  <div className="flex items-center justify-between mb-8">
-                    <SectionHeader icon={Clock} title="Projeção Amanhã" subtitle="O que está por vir" color="text-slate-500 bg-slate-100 border-slate-200" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-8">
-                    <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center shadow-inner">
-                      <p className="text-5xl font-black text-slate-800">{appointmentsTomorrow}</p>
-                      <p className="text-[11px] uppercase font-bold tracking-widest text-slate-400 mt-3">Novas Visitas</p>
+              <GlassSection>
+                <div className="flex items-center justify-between mb-8">
+                  <SectionHeader icon={Clock} title="Projeção Amanhã" subtitle="O que está por vir" color="text-slate-500 bg-slate-100 border-slate-200" />
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Novas Visitas</p>
+                      <p className="text-3xl font-black text-slate-800 mt-2">{appointmentsTomorrow}</p>
                     </div>
-                    <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center shadow-inner">
-                      <p className="text-5xl font-black text-slate-800">{followupsTomorrow}</p>
-                      <p className="text-[11px] uppercase font-bold tracking-widest text-slate-400 mt-3">Retornos Follow Up</p>
-                    </div>
+                    <div className="text-4xl opacity-20">📅</div>
                   </div>
-                </GlassSection>
-              </div>
+                </div>
+              </GlassSection>
             </div>
           </div>
         )}
@@ -915,7 +945,7 @@ const KpiGlassCard = ({ label, value, trend, icon: Icon, colorClass, glowClass, 
       </div>
       <div className="flex flex-col items-end gap-2">
         {trend !== undefined && trend !== 0 && (
-          <span className={`text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-xl shadow-sm border border-white/40 ${trend >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+          <span className={`text-xs uppercase font-bold tracking-widest px-2.5 py-1 rounded-xl shadow-sm border border-white/40 ${trend >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
             {trend > 0 ? '+' : ''}{trend.toFixed(0)}%
           </span>
         )}
@@ -925,7 +955,7 @@ const KpiGlassCard = ({ label, value, trend, icon: Icon, colorClass, glowClass, 
             <div className="p-2 transition-colors hover:text-slate-800 text-slate-400 cursor-help">
               <Info size={16} />
             </div>
-            <div className="absolute right-0 top-10 w-64 p-4 rounded-2xl bg-slate-900/95 backdrop-blur-xl text-white text-[10px] font-medium leading-relaxed shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[9999] border border-white/10 pointer-events-none translate-y-2 group-hover/info:translate-y-0 text-center">
+            <div className="absolute right-0 top-10 w-64 p-4 rounded-2xl bg-slate-900/95 backdrop-blur-xl text-white text-xs font-medium leading-relaxed shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[9999] border border-white/10 pointer-events-none translate-y-2 group-hover/info:translate-y-0 text-center">
               <div className="absolute -top-1.5 right-2 w-3 h-3 bg-slate-900 transform rotate-45 border-t border-l border-white/10" />
               {info}
             </div>
@@ -935,7 +965,7 @@ const KpiGlassCard = ({ label, value, trend, icon: Icon, colorClass, glowClass, 
     </div>
     <div className="relative z-10 mt-auto pt-6">
       <h3 className="text-3xl lg:text-4xl font-bold text-slate-800 tracking-tight leading-none break-all">{value}</h3>
-      <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mt-2">{label}</p>
+      <p className="text-xs uppercase font-bold text-slate-400 tracking-widest mt-2">{label}</p>
     </div>
   </div>
 );
@@ -950,7 +980,7 @@ const ActionMetricCard = ({ title, value, subtitle, icon: Icon, colorClass, acti
     </div>
     <div className="mt-auto">
       <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">{title}</p>
-      <p className="text-[10px] font-bold text-slate-400 truncate opacity-70">{subtitle}</p>
+      <p className="text-xs font-bold text-slate-400 truncate opacity-70">{subtitle}</p>
     </div>
   </div>
 );
@@ -958,7 +988,7 @@ const ActionMetricCard = ({ title, value, subtitle, icon: Icon, colorClass, acti
 const MiniStat = ({ label, value, subtitle, icon: Icon, trend }: any) => (
   <div className="bg-white/60 border border-white/80 p-6 rounded-[28px] shadow-sm relative overflow-hidden">
     <div className="flex items-center justify-between mb-4 relative z-10">
-      <p className="text-[10px] uppercase tracking-widest font-black text-slate-400 truncate pr-2">{label}</p>
+      <p className="text-xs uppercase tracking-widest font-black text-slate-400 truncate pr-2">{label}</p>
       {Icon && <Icon size={16} className="text-slate-300 shrink-0" />}
     </div>
     <div className="flex items-center gap-3 relative z-10">
@@ -969,7 +999,7 @@ const MiniStat = ({ label, value, subtitle, icon: Icon, trend }: any) => (
         </span>
       )}
     </div>
-    {subtitle && <p className="text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-widest truncate relative z-10">{subtitle}</p>}
+    {subtitle && <p className="text-xs text-slate-400 font-bold mt-2 uppercase tracking-widest truncate relative z-10">{subtitle}</p>}
   </div>
 );
 
@@ -977,7 +1007,7 @@ const PhaseGlassBar = ({ label, value, total, color }: any) => {
   const pct = total > 0 ? (value / total) * 100 : 0;
   return (
     <div className="group">
-      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+      <div className="flex justify-between text-xs font-black uppercase tracking-widest text-slate-500 mb-2">
         <span>{label}</span>
         <span className="text-slate-800">{value} <span className="text-slate-300 opacity-50 ml-1">({pct.toFixed(0)}%)</span></span>
       </div>
@@ -990,7 +1020,7 @@ const PhaseGlassBar = ({ label, value, total, color }: any) => {
 
 const ChartCard = ({ title, data }: { title: string, data: any[] }) => (
   <div>
-    <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">{title}</h3>
+    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">{title}</h3>
     {data.length > 0 ? (
       <div className="space-y-4">
         {data.slice(0, 4).map((item: any, idx: number) => (
@@ -1017,7 +1047,7 @@ const AgendaRow = ({ icon: Icon, label, value, subtitle, colorClass }: any) => (
       </div>
       <div>
         <h4 className="text-sm font-black text-slate-800 tracking-tight">{label}</h4>
-        {subtitle && <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1.5">{subtitle}</p>}
+        {subtitle && <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1.5">{subtitle}</p>}
       </div>
     </div>
     <span className="text-3xl font-black text-slate-800 px-2">{value}</span>

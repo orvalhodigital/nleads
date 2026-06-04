@@ -22,6 +22,7 @@ const AdminDashboard = lazy(() => import('./AdminDashboard'));
 const AdminLeads = lazy(() => import('./AdminLeads'));
 const AdminVehicles = lazy(() => import('./AdminVehicles'));
 const AdminSales = lazy(() => import('./AdminSales'));
+const AdminAuditLog = lazy(() => import('./AdminAuditLog'));
 
 import { DataProvider } from '../contexts/DataContext';
 import { Suspense } from 'react';
@@ -155,6 +156,7 @@ export default function AdminApp() {
                     <Route path="leads" element={<AdminLeads />} />
                     <Route path="vehicles" element={<AdminVehicles />} />
                     <Route path="sales" element={<AdminSales />} />
+                    <Route path="audit-log" element={<AdminAuditLog />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="notifications" element={<AdminNotifications />} />
                     <Route path="quotes" element={<AdminQuotes />} />

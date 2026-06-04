@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy, MessageSquare, TrendingUp } from 'lucide-react';
+import { LogOut, Users, Settings, Bell, Car, Tag, Quote, Rocket, Calendar, CheckCircle2, Clock, LifeBuoy, MessageSquare, TrendingUp, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 
@@ -113,6 +113,13 @@ export default function AdminLayout() {
                     >
                         <LifeBuoy size={18} />
                         Tickets de Suporte
+                    </Link>
+                    <Link
+                        to="/paineldoadm/audit-log"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive('audit-log') ? 'bg-white text-black shadow-lg shadow-white/10' : 'text-zinc-500 hover:text-white hover:bg-zinc-900'}`}
+                    >
+                        <Shield size={18} />
+                        Audit Log
                     </Link>
                 </nav>
                 <div className="p-4 border-t border-zinc-900">

@@ -28,7 +28,7 @@ async function updatePlans() {
         },
         {
             slug: 'crm',
-            name: 'CRM nLeads',
+            name: 'Otimizza CRM',
             price: 497,
             interval: 'month',
             duration_days: 30,

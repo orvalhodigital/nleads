@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 // Domains that belong to Otimizza / nLeads itself — everything else is a customer custom domain
-const NLEADS_HOSTS = ['localhost', '127.0.0.1', 'nleads.pro', 'nleads.com.br', 'otimizza.pro', 'otimizza.com.br', 'otimizzacrm.pro', 'otimizzacrm.com.br', 'vercel.app'];
+const NLEADS_HOSTS = ['localhost', '127.0.0.1', 'veiculos.otimizza.com.br', 'otimizza.com.br', 'nleads.pro', 'nleads.com.br', 'otimizza.pro', 'otimizzacrm.pro', 'otimizzacrm.com.br', 'vercel.app'];
 
 function isNleadsHost(hostname: string): boolean {
     return NLEADS_HOSTS.some(h => hostname === h || hostname.endsWith(`.${h}`));
@@ -73,7 +73,7 @@ const RootGate: React.FC<Props> = ({ children, PublicSite }) => {
                     <h2 className="text-lg font-bold text-slate-900">Site não encontrado</h2>
                     <p className="text-sm text-slate-600 leading-relaxed">{state.message}</p>
                     <a
-                        href="https://otimizzacrm.com.br"
+                        href="https://veiculos.otimizza.com.br"
                         className="inline-block mt-4 px-6 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-900 transition"
                     >
                         Ir para Otimizza CRM

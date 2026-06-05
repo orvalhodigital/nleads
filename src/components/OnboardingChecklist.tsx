@@ -4,7 +4,7 @@ import { CheckCircle2, ChevronUp, ChevronDown, X } from 'lucide-react';
 
 const OnboardingChecklist: React.FC = () => {
   const { profile, vehicles, leads } = useData();
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
 
   const checklist = [
@@ -18,8 +18,8 @@ const OnboardingChecklist: React.FC = () => {
   const allComplete = completedCount === checklist.length;
 
   useEffect(() => {
-    // Show checklist after onboarding is hidden (when not onboarding_completed)
-    const shouldShow = profile && !profile.onboarding_completed && completedCount < checklist.length;
+    // Show checklist if not all complete, regardless of onboarding_completed
+    const shouldShow = profile && completedCount < checklist.length;
     setIsVisible(shouldShow);
   }, [profile, completedCount]);
 
@@ -29,26 +29,35 @@ const OnboardingChecklist: React.FC = () => {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 transition-all duration-300 z-40 ${
-        isMinimized ? 'w-64' : 'w-80'
+      className={`fixed bottom-6 left-4 lg:left-72 bg-white rounded-2xl shadow-2xl border-2 border-slate-200 transition-all duration-300 z-40 ${
+        isMinimized ? 'w-14 h-14 cursor-pointer hover:bg-slate-50 flex items-center justify-center overflow-hidden' : 'w-80'
       }`}
+      onClick={() => isMinimized && setIsMinimized(false)}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-indigo-600 rounded-full" />
-          <h3 className="font-bold text-slate-900">Painel em Desenvolvimento</h3>
+      {/* Icon when minimized */}
+      {isMinimized ? (
+        <div className="relative text-indigo-600">
+            <CheckCircle2 size={24} />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsMinimized(!isMinimized)}
-            className="p-1 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
-            title={isMinimized ? 'Expandir' : 'Minimizar'}
-          >
-            {isMinimized ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
-        </div>
-      </div>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-indigo-600 rounded-full" />
+              <h3 className="font-bold text-slate-900">Configurações Pendentes</h3>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsMinimized(true); }}
+                className="p-1 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+                title="Minimizar"
+              >
+                <ChevronDown size={18} />
+              </button>
+            </div>
+          </div>
 
       {/* Content */}
       {!isMinimized && (
@@ -103,6 +112,7 @@ const OnboardingChecklist: React.FC = () => {
             </p>
           </div>
         </div>
+        </>
       )}
     </div>
   );

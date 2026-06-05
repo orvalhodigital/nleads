@@ -13,6 +13,9 @@ dist-ssr
 *.local
 .claude/
 
+# Build cache
+*.tsbuildinfo
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

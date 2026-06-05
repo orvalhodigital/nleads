@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, Star, Zap } from 'lucide-react';
 import { Profile } from '../types';
+import { planService } from '../services/planService';
 
 interface PlansProps {
     profile: Profile | null;
@@ -18,7 +19,7 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
-                {/* Plano Teste */}
+                {/* Plano Free */}
                 <div className={`relative p-8 rounded-[2.5rem] border-2 transition-all ${!isPro ? 'bg-white border-emerald-500 shadow-xl' : 'bg-slate-50 border-transparent opacity-60'}`}>
                     {!isPro && (
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-emerald-500/30">
@@ -30,27 +31,32 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                             <span className="p-3 bg-slate-100 rounded-2xl inline-flex text-slate-400 mb-4">
                                 <Zap size={24} fill="currentColor" />
                             </span>
-                            <h3 className="text-xl font-black text-slate-900 uppercase">Plano Teste</h3>
+                            <h3 className="text-xl font-black text-slate-900 uppercase">Plano Free</h3>
                             <p className="text-sm font-bold text-slate-400 mt-2">Para quem está começando</p>
                         </div>
 
                         <div className="mb-8">
                             <span className="text-4xl font-black text-slate-900">Grátis</span>
-                            <span className="text-sm font-bold text-slate-400 ml-2">/ 7 dias</span>
                         </div>
 
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
                                 <Check size={18} className="text-emerald-500" />
-                                <span className="line-through text-slate-400">Leads Ilimitados</span> (Limitado)
+                                Até 10 veículos
+                            </li>
+                            <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                                <Check size={18} className="text-emerald-500" />
+                                Até 50 leads
                             </li>
                             <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
                                 <Check size={18} className="text-emerald-500" />
                                 Gestão de Estoque
                             </li>
                             <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                                <Check size={18} className="text-emerald-500" />
-                                CRM Básico
+                                <span className="line-through text-slate-400">Agenda</span>
+                            </li>
+                            <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                                <span className="line-through text-slate-400">Fluxo de Vendas</span>
                             </li>
                         </ul>
 
@@ -77,26 +83,34 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                         </div>
 
                         <div className="mb-8">
-                            <span className={`text-4xl font-black ${isPro ? 'text-slate-900' : 'text-white'}`}>R$ 97</span>
+                            <span className={`text-4xl font-black ${isPro ? 'text-slate-900' : 'text-white'}`}>R$ 197</span>
                             <span className="text-sm font-bold text-slate-500 ml-2">/ mês</span>
                         </div>
 
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
                                 <Check size={18} className="text-emerald-500" />
+                                Veículos Ilimitados
+                            </li>
+                            <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
+                                <Check size={18} className="text-emerald-500" />
                                 Leads Ilimitados
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
                                 <Check size={18} className="text-emerald-500" />
-                                Gestão de Estoque Completa
+                                Gestão Completa de Estoque
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
                                 <Check size={18} className="text-emerald-500" />
-                                Integração Webhook
+                                Agenda de Visitas
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
                                 <Check size={18} className="text-emerald-500" />
-                                Suporte Prioritário
+                                Fluxo de Vendas Completo
+                            </li>
+                            <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
+                                <Check size={18} className="text-emerald-500" />
+                                Website Profissional
                             </li>
                         </ul>
 
@@ -119,19 +133,15 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                     <h4 className="font-extrabold text-slate-900 uppercase tracking-tight mb-2">Detalhes da Assinatura</h4>
                     <div className="flex gap-8 text-sm text-slate-600">
                         <div>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plano</span>
+                            <span className="font-bold text-slate-900">{profile.plan === 'pro' ? 'PRO' : 'FREE'}</span>
+                        </div>
+                        <div>
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
                             <span className={`font-bold uppercase ${profile.planStatus === 'active' ? 'text-emerald-600' : 'text-red-500'}`}>
                                 {profile.planStatus === 'active' ? 'Ativo' : 'Expirado'}
                             </span>
                         </div>
-                        {profile.plan === 'trial' && (
-                            <div>
-                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fim do Teste</span>
-                                <span className="font-bold">
-                                    {new Date(profile.trialEndsAt).toLocaleDateString()}
-                                </span>
-                            </div>
-                        )}
                         <div>
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email</span>
                             <span className="font-bold">

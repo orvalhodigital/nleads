@@ -151,8 +151,8 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
       await profileService.updateProfile({ onboarding_completed: true });
       await refreshProfile();
       onComplete();
-    } catch (err) {
-      setError('Erro ao completar onboarding');
+    } catch (err: any) {
+      setError(err?.message || 'Erro ao completar onboarding');
       console.error(err);
     } finally {
       setLoading(false);
@@ -394,8 +394,11 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
                 🏆 Painel Completo!
               </div>
             )}
-            <button onClick={() => { fireConfetti(); setTimeout(completeOnboarding, 1000); }} className="mt-8 py-4 px-8 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 text-lg">
-              Ir para o Painel
+            
+            {error && <div className="p-3 bg-red-100 text-red-700 rounded-xl font-medium max-w-md mx-auto">{error}</div>}
+
+            <button onClick={() => { fireConfetti(); setTimeout(completeOnboarding, 1000); }} disabled={loading} className="mt-8 py-4 px-8 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 text-lg disabled:opacity-50">
+              {loading ? 'Redirecionando...' : 'Ir para o Painel'}
             </button>
           </div>
         );

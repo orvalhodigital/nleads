@@ -43,12 +43,21 @@ const AppSidebar: React.FC = () => {
 
     const getPlanLabel = (plan: string) => {
         if (plan === 'pro') return 'PRO';
-        return 'TESTE';
+        return 'FREE';
     };
 
     const getPlanStyle = (plan: string) => {
         if (plan === 'pro') return 'bg-slate-900 text-white border-slate-900';
-        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        return 'bg-amber-100 text-amber-700 border-amber-200';
+    };
+
+    const handleUpgrade = () => {
+        const { planService } = require('../services/planService');
+        const paymentLink = planService.getUpgradeStripeUrl();
+        const url = profile?.email
+            ? `${paymentLink}?prefilled_email=${encodeURIComponent(profile.email)}`
+            : paymentLink;
+        window.open(url, '_blank');
     };
 
     return (
@@ -150,9 +159,23 @@ const AppSidebar: React.FC = () => {
                                     <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{profile.company_name}</p>
                                 )}
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${profile?.plan === 'pro' ? 'bg-slate-900 text-white border-slate-900' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
-                                        {profile?.plan === 'pro' ? 'PRO' : 'TESTE'}
-                                    </span>
+                                    {profile?.plan === 'pro' ? (
+                                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border bg-slate-900 text-white border-slate-900">PRO</span>
+                                    ) : (
+                                        <>
+                                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border bg-amber-100 text-amber-700 border-amber-200">FREE</span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleUpgrade();
+                                                }}
+                                                className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+                                                title="Fazer upgrade"
+                                            >
+                                                Upgrade
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         )}

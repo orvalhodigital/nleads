@@ -11,7 +11,7 @@ const AppTour: React.FC = () => {
     if (profile?.onboarding_completed) {
       const hasSeenTour = localStorage.getItem('otimizza_tour_completed');
       if (!hasSeenTour) {
-        // slight delay to let DOM render
+        localStorage.setItem('otimizza_tour_completed', 'true');
         setTimeout(() => setRun(true), 1500);
       }
     }

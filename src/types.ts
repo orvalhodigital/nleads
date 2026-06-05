@@ -302,7 +302,7 @@ export interface Profile {
   id: string;
   email: string;
   full_name?: string;
-  plan: 'trial' | 'pro';
+  plan: 'free' | 'pro';
   planStatus: 'active' | 'expired';
   trialEndsAt: string;
   created_at?: string;

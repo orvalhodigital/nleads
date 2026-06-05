@@ -62,10 +62,7 @@ const UserLayout: React.FC = () => {
                 
                 <div className="relative flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
                     <div className="relative">
-                        <OtimizzaLogo variant="horizontal" className="h-16 w-auto" />
-                        <div className="absolute -bottom-1 -right-1">
-                            <div className="w-4 h-4 bg-emerald-500 rounded-full border-4 border-white animate-ping" />
-                        </div>
+                        <OtimizzaLogo variant="vertical" className="h-16 w-auto" />
                     </div>
                         <div className="flex flex-col items-center gap-2">
                             <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
@@ -95,7 +92,8 @@ const UserLayout: React.FC = () => {
         return (
             <TrialExpired
                 onUpgrade={() => {
-                    const paymentLink = 'https://buy.stripe.com/dRm9AT0wEe5s93G0DY4ZG00';
+                    const { planService } = require('../services/planService');
+                    const paymentLink = planService.getUpgradeStripeUrl();
                     const url = profile?.email
                         ? `${paymentLink}?prefilled_email=${encodeURIComponent(profile.email)}`
                         : paymentLink;

@@ -4,7 +4,7 @@ import { Lead, SalePhase } from '../types';
 import { salesFlowService } from '../services/salesFlowService';
 import { guaranteeService } from '../services/guaranteeService';
 import { GuaranteeConfig } from '../types';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, AlertCircle, Clock } from 'lucide-react';
 
@@ -177,9 +177,17 @@ interface SalesCardProps {
 
 const SalesCard: React.FC<SalesCardProps> = ({ lead, guaranteeConfigs, phase }) => {
   const warranty = guaranteeConfigs.find((g) => g.id === lead.guaranteeId);
-  const daysLeft = lead.guaranteeEndsAt ? differenceInDays(parseISO(lead.guaranteeEndsAt), new Date()) : null;
+  const parsedEndsAt = lead.guaranteeEndsAt ? parseISO(lead.guaranteeEndsAt) : null;
+  const daysLeft = parsedEndsAt && isValid(parsedEndsAt) ? differenceInDays(parsedEndsAt, new Date()) : null;
   const isWarrantyExpiring = daysLeft !== null && daysLeft <= 7 && daysLeft > 0;
   const isWarrantyExpired = daysLeft !== null && daysLeft <= 0;
+
+  const safeFormatDate = (dateString?: string | null, formatStr: string = 'dd MMM') => {
+    if (!dateString) return '';
+    const date = parseISO(dateString);
+    if (!isValid(date)) return 'Data inválida';
+    return format(date, formatStr, { locale: ptBR });
+  };
 
   return (
     <div className="space-y-3">
@@ -193,7 +201,7 @@ const SalesCard: React.FC<SalesCardProps> = ({ lead, guaranteeConfigs, phase }) 
       {lead.saleDate && (
         <div className="flex items-center gap-2 text-xs">
           <Calendar size={12} className="text-slate-400" />
-          <span className="text-slate-600">{format(parseISO(lead.saleDate), 'dd MMM', { locale: ptBR })}</span>
+          <span className="text-slate-600">{safeFormatDate(lead.saleDate)}</span>
         </div>
       )}
 
@@ -201,7 +209,7 @@ const SalesCard: React.FC<SalesCardProps> = ({ lead, guaranteeConfigs, phase }) 
         <div className="flex items-center gap-2 text-xs">
           <Clock size={12} className="text-orange-500" />
           <span className="text-slate-600">
-            Entregue: {format(parseISO(lead.deliveryDate), 'dd MMM', { locale: ptBR })}
+            Entregue: {safeFormatDate(lead.deliveryDate)}
           </span>
         </div>
       )}

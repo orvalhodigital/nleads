@@ -13,7 +13,7 @@ import { formatCurrency } from '../utils/formatters';
 type FilterTab = 'todas' | 'documentacao' | 'entrega' | 'em_garantia' | 'vencidas';
 
 const SalesFlowPage: React.FC = () => {
-  const { leads, profile, refreshData } = useData();
+  const { leads, profile, refreshLeads } = useData();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>('todas');
   const [timeRange, setTimeRange] = useState<'30d' | '60d' | '90d' | 'all'>('30d');
@@ -61,6 +61,7 @@ const SalesFlowPage: React.FC = () => {
         );
         return daysLeft <= 0;
       }).length,
+      apos_garantia: completedLeads.filter((l) => l.saleStatus === 'apos_garantia').length,
     };
   }, [completedLeads]);
 
@@ -177,7 +178,7 @@ const SalesFlowPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <SalesKanban leads={filteredLeads} userId={profile?.id || ''} onUpdate={refreshData} />
+          <SalesKanban leads={filteredLeads} userId={profile?.id || ''} onUpdate={refreshLeads} />
         )}
       </div>
 

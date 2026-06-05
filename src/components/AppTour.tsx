@@ -1,0 +1,101 @@
+import React, { useState, useEffect } from 'react';
+import { Joyride, Step, CallBackProps, STATUS } from 'react-joyride';
+import { useData } from '../contexts/DataContext';
+
+const AppTour: React.FC = () => {
+  const { profile } = useData();
+  const [run, setRun] = useState(false);
+
+  useEffect(() => {
+    // Run the tour if onboarding is completed but the tour hasn't been shown yet.
+    if (profile?.onboarding_completed) {
+      const hasSeenTour = localStorage.getItem('otimizza_tour_completed');
+      if (!hasSeenTour) {
+        // slight delay to let DOM render
+        setTimeout(() => setRun(true), 1500);
+      }
+    }
+  }, [profile?.onboarding_completed]);
+
+  const steps: Step[] = [
+    {
+      target: 'body',
+      placement: 'center',
+      title: 'Bem-vindo ao Otimizza CRM! 🎉',
+      content: 'Agora que seu painel está configurado, preparamos um guia passo a passo para te mostrar onde fica cada coisa. Vamos lá?',
+      disableBeacon: true,
+    },
+    {
+      target: 'a[href="/dashboard"]',
+      title: 'Métricas e Visão Geral',
+      content: 'Aqui você acompanha o desempenho da sua concessionária, leads recebidos e veículos mais visualizados.',
+    },
+    {
+      target: 'a[href="/inventory"]',
+      title: 'Seu Estoque de Veículos',
+      content: 'É aqui que você adiciona o seu "Primeiro Veículo", gerencia preços e fotos do seu estoque ativo.',
+    },
+    {
+      target: 'a[href="/leads"]',
+      title: 'Gestão de Leads',
+      content: 'Todas as suas oportunidades de venda caem aqui. Você pode gerenciar seu "Primeiro Lead", conversar com clientes e agendar visitas.',
+    },
+    {
+      target: 'a[href="/sales-flow"]',
+      title: 'Funil de Vendas',
+      content: 'Acompanhe visualmente cada etapa da negociação até o fechamento da venda.',
+    },
+    {
+      target: 'a[href="/settings"]',
+      title: 'Configurações',
+      content: 'Precisa mudar o nome da loja, conectar novas integrações ou editar o perfil? É só vir nas configurações.',
+    }
+  ];
+
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { status } = data;
+    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+    if (finishedStatuses.includes(status)) {
+      setRun(false);
+      localStorage.setItem('otimizza_tour_completed', 'true');
+    }
+  };
+
+  return (
+    <Joyride
+      steps={steps}
+      run={run}
+      continuous={true}
+      showProgress={true}
+      showSkipButton={true}
+      callback={handleJoyrideCallback}
+      styles={{
+        options: {
+          primaryColor: '#4f46e5', // indigo-600
+          zIndex: 10000,
+        },
+        buttonNext: {
+          backgroundColor: '#4f46e5',
+          borderRadius: '8px',
+          padding: '8px 16px',
+        },
+        buttonBack: {
+          color: '#64748b',
+          marginRight: '8px',
+        },
+        buttonSkip: {
+          color: '#64748b',
+        }
+      }}
+      locale={{
+        back: 'Anterior',
+        close: 'Fechar',
+        last: 'Pronto!',
+        next: 'Próximo',
+        skip: 'Pular',
+      }}
+    />
+  );
+};
+
+export default AppTour;

@@ -34,6 +34,7 @@ export default function AdminUsers() {
     // Bulk Actions State
     const [showBulkModal, setShowBulkModal] = useState(false);
     const [bulkDeleting, setBulkDeleting] = useState(false);
+    const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
 
     const {
         data: rawUsers,
@@ -53,6 +54,8 @@ export default function AdminUsers() {
         pageSize: 50,
         orderBy: 'created_at',
         orderDirection: 'desc',
+        search: debouncedSearch,
+        searchColumns: ['full_name', 'email'],
     });
 
     // Map snake_case from DB to camelCase
@@ -65,12 +68,30 @@ export default function AdminUsers() {
         }));
     }, [rawUsers]);
 
-    const filteredUsers = useMemo(() => {
-        return users.filter(user =>
-            (user.full_name?.toLowerCase() || '').includes(debouncedSearch.toLowerCase()) ||
-            (user.email?.toLowerCase() || '').includes(debouncedSearch.toLowerCase())
-        );
-    }, [users, debouncedSearch]);
+    // A busca agora é server-side (via useAdminTable), então usamos a lista como veio.
+    const filteredUsers = users;
+
+    const toggleSelectUser = (id: string) => {
+        setSelectedUsers(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const allOnPageSelected = filteredUsers.length > 0 && filteredUsers.every(u => selectedUsers.has(u.id));
+
+    const toggleSelectAll = () => {
+        setSelectedUsers(prev => {
+            const next = new Set(prev);
+            if (allOnPageSelected) {
+                filteredUsers.forEach(u => next.delete(u.id));
+            } else {
+                filteredUsers.forEach(u => next.add(u.id));
+            }
+            return next;
+        });
+    };
 
     const handleDeleteUser = async (id: string, name: string) => {
         if (!window.confirm(`Deletar usuário "${name}"? Esta ação é irreversível e removará todos os dados associados.`)) return;
@@ -247,6 +268,15 @@ export default function AdminUsers() {
                         <table className="w-full">
                             <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
+                                    <th className="px-6 py-4 text-left w-10">
+                                        <input
+                                            type="checkbox"
+                                            className="accent-amber-600 w-4 h-4 cursor-pointer"
+                                            checked={allOnPageSelected}
+                                            onChange={toggleSelectAll}
+                                            title="Selecionar todos desta página"
+                                        />
+                                    </th>
                                     <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Usuário</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Plano</th>
                                     <th className="px-6 py-4 text-left text-xs font-bold uppercase text-slate-400 tracking-widest">Status</th>
@@ -256,7 +286,15 @@ export default function AdminUsers() {
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {filteredUsers.map(user => (
-                                    <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
+                                    <tr key={user.id} className={`hover:bg-slate-50 transition-colors group ${selectedUsers.has(user.id) ? 'bg-amber-50/50' : ''}`}>
+                                        <td className="px-6 py-4">
+                                            <input
+                                                type="checkbox"
+                                                className="accent-amber-600 w-4 h-4 cursor-pointer"
+                                                checked={selectedUsers.has(user.id)}
+                                                onChange={() => toggleSelectUser(user.id)}
+                                            />
+                                        </td>
                                         <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/paineldoadm/users/${user.id}`)}>
                                             <div className="font-bold text-slate-900 group-hover:text-black transition-colors">{user.full_name || 'Sem nome'}</div>
                                             <div className="text-sm text-slate-500">{user.email}</div>

@@ -3,13 +3,12 @@ import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp, Users, MessageSquare, Package, DollarSign,
-  AlertCircle, BarChart3, Zap, ArrowUpRight, ArrowDownRight
+  AlertCircle, BarChart3, Zap
 } from 'lucide-react';
 
 interface Metric {
   label: string;
   value: string | number;
-  trend?: number;
   icon: React.ReactNode;
   color: string;
 }
@@ -62,61 +61,53 @@ export default function AdminDashboard() {
       const completedLeads = completedLeadsRes.count || 0;
       const openTickets = ticketsRes.count || 0;
 
-      // Calculate trends (mock data for now - would come from historical data)
+      // Métricas reais (sem variações percentuais simuladas — exibimos apenas o valor atual)
       const newMetrics: Metric[] = [
         {
           label: 'Total de Usuários',
           value: totalUsers,
-          trend: 12,
           icon: <Users size={24} />,
           color: 'bg-blue-500'
         },
         {
           label: 'Usuários Ativos',
           value: activeUsers,
-          trend: 8,
           icon: <Zap size={24} />,
           color: 'bg-green-500'
         },
         {
           label: 'Plano PRO',
           value: proUsers,
-          trend: 15,
           icon: <TrendingUp size={24} />,
           color: 'bg-purple-500'
         },
         {
           label: 'Total de Leads',
           value: totalLeads,
-          trend: 5,
           icon: <MessageSquare size={24} />,
           color: 'bg-indigo-500'
         },
         {
           label: 'Leads Qualificados',
           value: qualifiedLeads,
-          trend: 10,
           icon: <AlertCircle size={24} />,
           color: 'bg-amber-500'
         },
         {
           label: 'Veículos em Estoque',
           value: vehiclesInStock,
-          trend: -3,
           icon: <Package size={24} />,
           color: 'bg-cyan-500'
         },
         {
           label: 'Vendas Completadas',
           value: completedLeads,
-          trend: 18,
           icon: <DollarSign size={24} />,
           color: 'bg-emerald-500'
         },
         {
           label: 'Tickets Abertos',
           value: openTickets,
-          trend: -5,
           icon: <AlertCircle size={24} />,
           color: 'bg-red-500'
         }
@@ -164,14 +155,6 @@ export default function AdminDashboard() {
                   <span className={`p-3 rounded-xl text-white ${metric.color}`}>
                     {metric.icon}
                   </span>
-                  {metric.trend !== undefined && (
-                    <div className={`flex items-center gap-1 text-sm font-bold ${
-                      metric.trend >= 0 ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
-                      {metric.trend >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                      {Math.abs(metric.trend)}%
-                    </div>
-                  )}
                 </div>
                 <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">{metric.label}</p>
                 <p className="text-3xl font-black text-slate-900 mt-2">{metric.value}</p>

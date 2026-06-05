@@ -5,6 +5,13 @@ export interface UseAdminTableOptions {
   pageSize?: number;
   orderBy?: string;
   orderDirection?: 'asc' | 'desc';
+  /**
+   * Termo de busca (server-side). Quando preenchido, filtra usando ILIKE
+   * nas colunas indicadas em `searchColumns`. A busca reseta para a 1ª página.
+   */
+  search?: string;
+  /** Colunas onde a busca ILIKE será aplicada (ex: ['full_name', 'email']). */
+  searchColumns?: string[];
 }
 
 export function useAdminTable(
@@ -12,13 +19,27 @@ export function useAdminTable(
   selectQuery: string,
   options: UseAdminTableOptions = {}
 ) {
-  const { pageSize = 50, orderBy = 'created_at', orderDirection = 'desc' } = options;
+  const {
+    pageSize = 50,
+    orderBy = 'created_at',
+    orderDirection = 'desc',
+    search = '',
+    searchColumns = [],
+  } = options;
 
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+
+  const searchKey = search.trim();
+  const columnsKey = searchColumns.join(',');
+
+  // Sempre que a busca muda, volta para a primeira página
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchKey, columnsKey]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -28,10 +49,19 @@ export function useAdminTable(
       const from = currentPage * pageSize;
       const to = from + pageSize - 1;
 
-      // Fetch data with pagination
-      const { data: result, count, error: err } = await supabase
+      let query = supabase
         .from(table)
-        .select(selectQuery, { count: 'exact' })
+        .select(selectQuery, { count: 'exact' });
+
+      // Busca server-side via ILIKE em uma ou mais colunas
+      if (searchKey && searchColumns.length > 0) {
+        const orFilter = searchColumns
+          .map((col) => `${col}.ilike.%${searchKey}%`)
+          .join(',');
+        query = query.or(orFilter);
+      }
+
+      const { data: result, count, error: err } = await query
         .order(orderBy, { ascending: orderDirection === 'asc' })
         .range(from, to);
 
@@ -45,7 +75,7 @@ export function useAdminTable(
     } finally {
       setLoading(false);
     }
-  }, [table, selectQuery, currentPage, pageSize, orderBy, orderDirection]);
+  }, [table, selectQuery, currentPage, pageSize, orderBy, orderDirection, searchKey, columnsKey]);
 
   useEffect(() => {
     fetchData();

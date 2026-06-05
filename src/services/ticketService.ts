@@ -85,12 +85,14 @@ export const ticketService = {
             .eq('id', user.id)
             .single();
 
+        const senderRole = profile?.role === 'admin' ? 'admin' : 'user';
+
         const { data, error } = await supabase
             .from('ticket_messages')
             .insert({
                 ticket_id: ticketId,
                 sender_id: user.id,
-                sender_role: profile?.role === 'admin' ? 'admin' : 'user',
+                sender_role: senderRole,
                 message,
                 attachments
             })
@@ -98,6 +100,38 @@ export const ticketService = {
             .single();
 
         if (error) throw error;
+
+        // Notificar a outra parte
+        const { data: ticket } = await supabase.from('support_tickets').select('*').eq('id', ticketId).single();
+        if (ticket) {
+            if (senderRole === 'admin') {
+                // Notificar usuário
+                await supabase.from('notifications').insert({
+                    user_id: ticket.user_id,
+                    title: 'Nova Resposta no Suporte',
+                    message: `O suporte respondeu ao seu ticket: "${ticket.subject}"`,
+                    read: false
+                });
+            } else {
+                // Mudar status para 'open' se o usuário respondeu e estava 'in_progress'
+                if (ticket.status === 'in_progress') {
+                    await supabase.from('support_tickets').update({ status: 'open' }).eq('id', ticketId);
+                }
+                
+                // Notificar super admins
+                const { data: admins } = await supabase.from('profiles').select('id').eq('role', 'super_admin');
+                if (admins && admins.length > 0) {
+                    const adminNotifications = admins.map(admin => ({
+                        user_id: admin.id,
+                        title: 'Nova Resposta de Cliente',
+                        message: `O cliente enviou uma nova resposta no ticket: "${ticket.subject}"`,
+                        read: false
+                    }));
+                    await supabase.from('notifications').insert(adminNotifications);
+                }
+            }
+        }
+
         return data as TicketMessage;
     },
 

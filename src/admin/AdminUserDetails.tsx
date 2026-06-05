@@ -93,7 +93,7 @@ export default function AdminUserDetails() {
             )}
             <header className="flex items-center gap-4 mb-8">
                 <button
-                    onClick={() => navigate('/paineldoadm')}
+                    onClick={() => navigate('/paineldoadm/users')}
                     className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
                 >
                     <ArrowLeft size={20} />

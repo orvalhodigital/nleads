@@ -932,14 +932,14 @@ const SectionHeader = ({ icon: Icon, title, subtitle, color }: any) => (
 const KpiGlassCard = ({ label, value, trend, icon: Icon, colorClass, glowClass, info, onClick }: any) => (
   <div
     onClick={onClick}
-    className={`bg-white/60 backdrop-blur-3xl border border-white/80 p-6 rounded-[32px] shadow-[0_8px_24px_rgb(0,0,0,0.03)] transition-all group relative flex flex-col justify-between min-h-[160px] z-10 ${onClick ? 'cursor-pointer hover:bg-white/80 hover:shadow-xl' : ''} hover:z-[100]`}
+    className={`bg-white/60 backdrop-blur-3xl border border-white/80 p-6 rounded-[32px] shadow-[0_8px_24px_rgb(0,0,0,0.03)] transition-all group relative flex flex-col justify-between min-h-[160px] z-10 hover:z-50 ${onClick ? 'cursor-pointer hover:bg-white/80 hover:shadow-xl' : ''}`}
   >
     {/* Glow clipping container */}
     <div className="absolute inset-0 rounded-[32px] overflow-hidden pointer-events-none">
       <div className={`absolute -right-6 -bottom-6 w-32 h-32 rounded-full blur-3xl transition-transform group-hover:scale-[1.5] ${glowClass}`} />
     </div>
 
-    <div className="flex justify-between items-start relative z-10">
+    <div className="flex justify-between items-start relative z-20">
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${colorClass}`}>
         <Icon size={20} strokeWidth={2.5} />
       </div>
@@ -951,11 +951,11 @@ const KpiGlassCard = ({ label, value, trend, icon: Icon, colorClass, glowClass, 
         )}
 
         {info && (
-          <div className="relative group/info z-[100]">
+          <div className="relative group/info z-50">
             <div className="p-2 transition-colors hover:text-slate-800 text-slate-400 cursor-help">
               <Info size={16} />
             </div>
-            <div className="absolute right-0 top-10 w-64 p-4 rounded-2xl bg-slate-900/95 backdrop-blur-xl text-white text-xs font-medium leading-relaxed shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[9999] border border-white/10 pointer-events-none translate-y-2 group-hover/info:translate-y-0 text-center">
+            <div className="absolute right-0 top-10 w-64 p-4 rounded-2xl bg-slate-900/95 backdrop-blur-xl text-white text-xs font-medium leading-relaxed shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[999] border border-white/10 pointer-events-none translate-y-2 group-hover/info:translate-y-0 text-center">
               <div className="absolute -top-1.5 right-2 w-3 h-3 bg-slate-900 transform rotate-45 border-t border-l border-white/10" />
               {info}
             </div>

@@ -1,3 +1,55 @@
+🛠️ **AUDITORIA + CORREÇÕES**: Painel do Administrador (`/paineldoadm`)
+**Date**: 2026-06-05
+**Status**: 🔄 EM EXECUÇÃO
+**Backup**: `_backup_paineldoadm_2026-06-05/`
+
+## 📋 Plano
+
+Auditoria crítica de todos os itens do menu admin e correção dos problemas encontrados.
+
+### Bugs encontrados (por severidade)
+| # | Arquivo | Severidade | Problema |
+|---|---|---|---|
+| 1 | `AdminUsers.tsx` | 🔴 CRÍTICO | `selectedUsers`/`setSelectedUsers` usados mas **nunca declarados** → `ReferenceError`, página de Usuários quebra ao renderizar. Faltam também checkboxes de seleção (Ações em Massa inacessível). |
+| 2 | `AdminLayout.tsx` | 🟠 ALTO | `isActive` usa `location.pathname.includes(path)` → "Dashboard" (`/paineldoadm`) fica destacado em TODAS as telas. |
+| 3 | `AdminSales.tsx` | 🟠 ALTO | Receita/Ticket lidos de `leads.price` — campo inexistente (valor de venda fica em `vehicles.saleDetails.salePrice`). KPIs sempre zerados. "Receita Total" formatada como `/1000 K` sem `R$`. "Dias Médios" rotulado errado (é idade do lead). |
+| 4 | `AdminDashboard.tsx` | 🟡 MÉDIO | Variações percentuais (12%, 8%, 15%…) são **mock hardcoded** → enganam o admin. |
+| 5 | `AdminUsers.tsx` | 🟡 MÉDIO | Busca filtra só a página atual (50 itens) — usuários além da página 1 não aparecem. Corrigir com busca server-side. |
+| 6 | `AdminUserDetails.tsx` | 🟢 BAIXO | Botão "voltar" leva ao Dashboard em vez da lista de Usuários. |
+| 7 | `AdminOnboarding.tsx` | 🟢 BAIXO | Classe Tailwind inválida `border-bottom` (deveria ser `border-b`). |
+
+### Itens auditados e OK (sem ação)
+AdminTickets, AdminPlans, AdminQuotes, AdminNotifications, AdminSettings, AdminAuditLog, AdminLogin, AdminSetup — funcionais.
+
+## ⚠️ Riscos
+- Sem acesso ao `.env.local` (bloqueado por permissão) → análise feita pelo código/esquema, sem query ao vivo. Campos de DB (`vehicles.saleDetails`, `vehicles.sold_date`) confirmados via uso no `Dashboard.tsx` do usuário.
+- Adicionar busca server-side ao `useAdminTable` é mudança compartilhada — manter retrocompatível (parâmetros opcionais) para não quebrar `AdminUsers` (único consumidor restante).
+- AdminSales: trocar fonte de receita para `vehicles` muda a semântica; manter o funil de leads por fase intacto.
+- Backup completo em `_backup_paineldoadm_2026-06-05/` permite reverter qualquer arquivo.
+
+## 🌸 Haiku-check
+Menu se ilumina,
+receita que era fantasma —
+agora há números.
+
+### Adendo — "Tela branca" em Usuários (2026-06-05)
+**Plano**: O crash do `selectedUsers` (item #1) era a causa da tela branca na rota `/paineldoadm/users`.
+Já corrigido. Como o painel **não tinha Error Boundary**, qualquer exceção derrubava a tela inteira
+sem mensagem. Criado `AdminErrorBoundary.tsx` e aplicado ao redor do `<Outlet />` em `AdminLayout`
+(`key={pathname}` reseta ao navegar) — daqui pra frente, erros aparecem com a mensagem real e o menu
+permanece visível.
+
+**Verificação**: `npm run build` ✓; todos os módulos admin transpilam no Vite (HTTP 200).
+
+**Riscos**: nenhum — Error Boundary é puramente defensivo (sem efeito quando não há erro).
+
+**Haiku**:
+Tela em branco cala;
+agora o erro tem voz —
+o menu resiste.
+
+---
+
 🎨 **BRANDING OTIMIZZA**: Logo e Assets do Sistema
 **Date**: 2026-06-04
 **Status**: ✅ IMPLEMENTADO E PRONTO PARA PRODUÇÃO
@@ -2010,4 +2062,160 @@ Confete cai — pronto!
 - [ ] A/B testing: diferentes ordens de telas
 - [ ] Retry automático para falhas de upload
 - [ ] WhatsApp status polling mais robusto
+
+---
+
+🔍 **DIAGNÓSTICO**: Painel Administrativo — Problemas de Roteamento e Carregamento
+**Date**: 2026-06-05
+**Status**: 🔴 EM INVESTIGAÇÃO — Múltiplos Problemas Identificados
+**Sintomas**: 
+- Tela branca em `/paineldoadm/users`
+- Erro "Erro ao carregar dados de vendas" em `/paineldoadm/sales`
+- Dashboard com métricas zeradas em `/paineldoadm/`
+
+## 📋 Plano de Investigação
+
+### Sintoma Observado
+Dashboard (`src/components/Dashboard.tsx`) renderiza corretamente, mas valores aparecem zerados:
+- **Leads Qualificados**: 0 (deveria incluir leads nas fases NEW, FOLLOW_UP, STANDBY)
+- **Veículos em Estoque**: 0 (deveria incluir produtos com `sale_phase = 'disponivel'`)
+- Consequentemente: Taxa Conversão, Ticket Médio, e outras métricas também zeradas
+
+### Causa Raiz — 3 Cenários Prováveis
+
+#### Cenário 1: Dados não carregando do Supabase (PROVÁVEL 60%)
+- **Motivo**: `DataContext.loadData()` falha silenciosamente
+- **Onde ocorre**: `src/contexts/DataContext.tsx` linhas 46-80
+- **Evidência**: Console do navegador pode ter erros de fetch
+- **Teste**: Abrir DevTools → Console → procurar por `"Erro ao carregar dados"`
+
+#### Cenário 2: Dados existem mas estão vazios (PROVÁVEL 25%)
+- **Motivo**: Não há leads qualificados ou produtos com fase correta
+- **Por quê**: Filtros RLS muy restritivos, ou usuário é um colaborador vendo apenas seus dados (zero)
+- **Teste**: Executar queries direto no Supabase Dashboard:
+  ```sql
+  SELECT COUNT(*) FROM cell_leads 
+  WHERE admin_id = '{ADMIN_ID}' 
+  AND phase IN ('New', 'Follow Up', 'Standby');
+  
+  SELECT COUNT(*) FROM cell_smartphones 
+  WHERE admin_id = '{ADMIN_ID}' 
+  AND sale_phase = 'disponivel';
+  ```
+
+#### Cenário 3: Filtros de permissão bloqueando dados (PROVÁVEL 15%)
+- **Motivo**: Usuário logado é colaborador, não admin → vê apenas seus dados
+- **Consequência**: `filterUser = 'all'` no Dashboard, mas `profile?.role !== 'admin'` → retorna 0 todos
+- **Teste**: Verificar `profile.role` e `profile.parent_id` no Redux DevTools ou console
+
+### Plano de Ação
+
+#### Fase 1: Diagnóstico (Imediato — 10min)
+- [ ] Abrir DevTools (F12) → Console
+- [ ] Procurar erros tipo:
+  - `"Erro ao carregar dados"`
+  - `"403 Forbidden"` ou `"404 Not Found"`
+  - `"RLS policy violation"`
+- [ ] Se nenhum erro: dados estão chegando mas vazios
+- [ ] Se erro: notar erro exato e passá-lo adiante
+
+#### Fase 2: Verificar Carregamento (10min)
+- [ ] Adicionar logs em `DataContext.tsx`:
+  ```ts
+  // Após linha 73
+  console.log('Loaded Products:', productsData.length);
+  console.log('Loaded Leads:', leadsData.length);
+  console.log('Profile Role:', profileData.role);
+  console.log('Profile AdminId:', profileData.parent_id || profileData.id);
+  ```
+- [ ] Recarregar página
+- [ ] Conferir números no console
+
+#### Fase 3: Testar Queries no Supabase (5min)
+- [ ] Ir para [Supabase Dashboard](https://app.supabase.com)
+- [ ] Projeto → SQL Editor
+- [ ] Executar:
+  ```sql
+  -- Quantidade de leads com status qualificado
+  SELECT COUNT(*) FROM cell_leads 
+  WHERE phase != 'Completed' AND phase != 'Disqualified';
+  
+  -- Quantidade de veículos disponíveis
+  SELECT COUNT(*) FROM cell_smartphones 
+  WHERE sale_phase = 'disponivel' OR status = 'available';
+  ```
+- [ ] Se retorna 0 para ambos: dados realmente vazios
+- [ ] Se retorna > 0: problema é na conexão/filtro cliente
+
+#### Fase 4: Verificar Contexto de Usuário (5min)
+- [ ] Console → `localStorage.getItem('sb-auth')`
+- [ ] Copiar user ID
+- [ ] Supabase → Table Editor → `cell_profiles`
+- [ ] Procurar pelo user ID
+- [ ] Verificar:
+  - `role`: deve ser `'admin'` ou `'super_admin'`
+  - `parent_id`: se não-null, usuário é colaborador
+  - `admin_id`: deve estar preenchido
+
+## ⚠️ Riscos
+
+| Risco | Impacto | Probabilidade | Mitigação |
+|-------|--------|--------------|-----------|
+| RLS está bloqueando queries | ALTO | 35% | Conferir políticas no Supabase → SQL Editor |
+| Dados realmente não existem | MÉDIO | 25% | Criar dados de teste no Supabase |
+| Erro silencioso em loadData() | ALTO | 30% | Adicionar try/catch com console.error |
+| Usuário é colaborador vendo zero | MÉDIO | 10% | Verificar profile.role !== 'admin' |
+
+## 🌸 Haiku-check
+
+```
+Dados invisíveis —
+console não grita erro;
+silêncio suspeito.
+```
+
+## 📊 Achados da Investigação (Fase 1-3 Completas)
+
+### ✅ O que existe no código:
+- `AdminUsers.tsx` → Renderizado em `/paineldoadm/` (tabela de usuários)
+- `AdminUserDetails.tsx` → Renderizado em `/paineldoadm/users/:userId` (detalhes de 1 usuário)
+- `AdminLayout.tsx` → Sidebar com 7 links de menu
+
+### ❌ O que NÃO existe:
+- Nenhuma rota para `/paineldoadm/sales`
+- Nenhum componente "Visão de Vendas" com Pipeline
+- Nenhuma rota para `/paineldoadm/users` (sem ID)
+- Nenhum Dashboard com KPI cards consolidadas (Total de Usuários, Leads Qualificados, etc.)
+
+### 🚨 Problemas Constatados:
+1. **Rota `/paineldoadm/users` (sem ID) → Tela branca**
+   - Motivo: Não há rota correspondente em AdminApp.tsx
+   - A rota correta é `/paineldoadm/users/:userId`
+   - Usuário digitou manualmente ou clicou em link que não existe
+
+2. **Rota `/paineldoadm/sales` → Erro de carregamento**
+   - Motivo: Arquivo/componente não existe no código
+   - Pode estar em branch diferente ou ainda não foi commitado
+   - Deve conter um "SalesFlowPage" ou componente similar
+
+3. **Métricas zeradas em `/paineldoadm/`**
+   - AdminUsers mostra apenas tabela, sem KPI cards
+   - Se quer dashboard com métricas, precisa criar novo componente
+
+## 🌸 Haiku-check (Investigação)
+
+```
+Rotas que não existem,
+componentes sem código;
+onde está o dashboard?
+```
+
+## ⚠️ Ações Necessárias
+
+- [ ] Verificar se há branch com `/paineldoadm/sales` implementado
+- [ ] Confirmar se dashboard com KPIs deve existir em `/paineldoadm/`
+- [ ] Criar componente AdminDashboard se necessário
+- [ ] Atualizar rotas em AdminApp.tsx
+
+**Próximo Passo**: Você está em qual branch? A página `/paineldoadm/sales` existe localmente ou apenas em produção?
 

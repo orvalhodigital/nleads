@@ -19,7 +19,29 @@ const LeadDetailPage: React.FC = () => {
     const navigate = useNavigate();
     const basePath = useBasePath();
     const { leads, vehicles, motorcycles, updateLead, showToast, profile } = useData();
-    const [lead, setLead] = useState(leads.find(l => l.id === id) || null);
+    const safeLead = (found: any) => {
+        if (!found) return null;
+        return {
+            ...found,
+            preferences: {
+                marcas: [],
+                modelos: [],
+                tipos_veiculo: [],
+                carro_transmissao: [],
+                carro_motorizacao: [],
+                transmissao: [],
+                motorizacao: [],
+                marcas_moto: [],
+                modelos_moto: [],
+                tipos_moto: [],
+                moto_transmissao: [],
+                moto_motorizacao: [],
+                ...(found.preferences || {})
+            }
+        };
+    };
+
+    const [lead, setLead] = useState(safeLead(leads.find(l => l.id === id)));
     const [visitNoteEdit, setVisitNoteEdit] = useState<{ id: string | null; draft: string }>({ id: null, draft: '' });
 
     // Updates/Notes system
@@ -37,7 +59,7 @@ const LeadDetailPage: React.FC = () => {
     const [isSendingSuggestion, setIsSendingSuggestion] = useState(false);
 
     useEffect(() => {
-        setLead(leads.find(l => l.id === id) || null);
+        setLead(safeLead(leads.find(l => l.id === id)));
     }, [id, leads]);
 
     if (!lead) {

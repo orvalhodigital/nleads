@@ -351,12 +351,25 @@ export default function AdminTickets() {
                                         </div>
                                     </td>
                                     <td className="px-8 py-6 text-center">
-                                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tight ${ticket.status === 'closed' ? 'bg-emerald-50 text-emerald-600' :
-                                                ticket.status === 'in_progress' ? 'bg-blue-50 text-blue-600' :
-                                                    'bg-amber-50 text-amber-600'
-                                            }`}>
-                                            {getStatusLabel(ticket.status)}
-                                        </span>
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tight ${ticket.status === 'closed' ? 'bg-emerald-50 text-emerald-600' :
+                                                    ticket.status === 'in_progress' ? 'bg-blue-50 text-blue-600' :
+                                                        'bg-amber-50 text-amber-600'
+                                                }`}>
+                                                {getStatusLabel(ticket.status)}
+                                            </span>
+                                            {ticket.status !== 'closed' && (
+                                                <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                                                    (ticket.messages && ticket.messages.length > 0 && ticket.messages[ticket.messages.length - 1].sender_role === 'admin') 
+                                                    ? 'text-slate-400' 
+                                                    : 'text-indigo-600 animate-pulse'
+                                                }`}>
+                                                    {(ticket.messages && ticket.messages.length > 0 && ticket.messages[ticket.messages.length - 1].sender_role === 'admin') 
+                                                        ? 'Aguardando Cliente' 
+                                                        : 'Nova Resposta!'}
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-8 py-6 text-center">
                                         <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight ${getPriorityColor(ticket.priority)}`}>

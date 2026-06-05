@@ -131,9 +131,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         try {
             const p = profileRef.current;
             const { isEmpresa, adminId } = getAdminContext(p);
-            const data = isEmpresa
+            let data = isEmpresa
                 ? await leadService.list(undefined, adminId, true, PAGE_SIZE, pageNum * PAGE_SIZE)
                 : await leadService.list(p?.id || impersonatedUserId, undefined, false, PAGE_SIZE, pageNum * PAGE_SIZE);
+
+            // Evitar telas brancas garantindo arrays mínimos em preferences
+            data = data.map(lead => ({
+                ...lead,
+                preferences: {
+                    marcas: [],
+                    modelos: [],
+                    tipos_veiculo: [],
+                    carro_transmissao: [],
+                    carro_motorizacao: [],
+                    transmissao: [],
+                    motorizacao: [],
+                    marcas_moto: [],
+                    modelos_moto: [],
+                    tipos_moto: [],
+                    moto_transmissao: [],
+                    moto_motorizacao: [],
+                    ...(lead.preferences || {})
+                }
+            }));
 
             if (append) {
                 setLeads(prev => [...prev, ...data]);
@@ -261,7 +281,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
                 user_id: leadData.user_id || profileRef.current?.id,
                 admin_id: leadData.admin_id || adminId || null,
             };
-            const newLead = await leadService.create(enriched);
+            let newLead = await leadService.create(enriched);
+            
+            // Garantir os defaults antes de ir pro state
+            newLead = {
+                ...newLead,
+                preferences: {
+                    marcas: [], modelos: [], tipos_veiculo: [], carro_transmissao: [], carro_motorizacao: [],
+                    transmissao: [], motorizacao: [], marcas_moto: [], modelos_moto: [], tipos_moto: [],
+                    moto_transmissao: [], moto_motorizacao: [], ...(newLead.preferences || {})
+                }
+            };
+            
             setLeads((prev: Lead[]) => [newLead, ...prev]);
             showToast('success', 'Lead cadastrado com sucesso!');
             return newLead;
@@ -274,7 +305,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const updateLead = useCallback(async (leadData: Lead) => {
         try {
-            const updated = await leadService.update(leadData);
+            let updated = await leadService.update(leadData);
+            
+            updated = {
+                ...updated,
+                preferences: {
+                    marcas: [], modelos: [], tipos_veiculo: [], carro_transmissao: [], carro_motorizacao: [],
+                    transmissao: [], motorizacao: [], marcas_moto: [], modelos_moto: [], tipos_moto: [],
+                    moto_transmissao: [], moto_motorizacao: [], ...(updated.preferences || {})
+                }
+            };
+            
             setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === updated.id ? updated : l));
             showToast('success', 'Lead atualizado com sucesso!');
             return updated;

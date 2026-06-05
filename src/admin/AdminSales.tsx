@@ -49,19 +49,27 @@ export default function AdminSales() {
       setLoading(true);
       setError(null);
 
-      const { data, error: err } = await supabase
-        .from('leads')
-        .select(`
-          *,
-          profiles:user_id(full_name),
-          vehicles:vehicle_id(brand, model)
-        `)
-        .not('phase', 'is', null)
-        .order('created_at', { ascending: false });
+      // Funil de leads por fase (para o pipeline visual e a tabela)
+      // + Veículos efetivamente vendidos (fonte real de receita: sale_details.salePrice)
+      const [leadsRes, soldRes] = await Promise.all([
+        supabase
+          .from('leads')
+          .select(`
+            *,
+            profiles:user_id(full_name),
+            vehicles:vehicle_id(brand, model)
+          `)
+          .not('phase', 'is', null)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('vehicles')
+          .select('sale_details, sold_date, created_at')
+          .not('sold_date', 'is', null)
+      ]);
 
-      if (err) throw err;
+      if (leadsRes.error) throw leadsRes.error;
 
-      const mapped = (data || []).map((lead: any) => ({
+      const mapped = (leadsRes.data || []).map((lead: any) => ({
         ...lead,
         user_name: lead.profiles?.full_name,
         vehicle_brand: lead.vehicles?.brand,
@@ -70,22 +78,21 @@ export default function AdminSales() {
 
       setSales(mapped);
 
-      // Calculate stats
-      const completedSales = mapped.filter((s: any) => s.phase === 'Compradores');
-      const totalRevenue = completedSales.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
-      const avgTicket = completedSales.length > 0 ? totalRevenue / completedSales.length : 0;
+      // Estatísticas de venda baseadas em veículos vendidos
+      const soldList: any[] = soldRes.data || [];
+      const totalRevenue = soldList.reduce((sum, v) => sum + (v.sale_details?.salePrice || 0), 0);
+      const unitsSold = soldList.length;
+      const avgTicket = unitsSold > 0 ? totalRevenue / unitsSold : 0;
 
-      // Calculate average days in phases
-      const daysInPhase = mapped
-        .filter((s: any) => s.created_at)
-        .map((s: any) => {
-          const days = (new Date().getTime() - new Date(s.created_at).getTime()) / (1000 * 60 * 60 * 24);
-          return days;
-        });
-      const avgDays = daysInPhase.length > 0 ? daysInPhase.reduce((a, b) => a + b, 0) / daysInPhase.length : 0;
+      // Tempo médio de venda (dias entre entrada no estoque e a venda)
+      const daysToSell = soldList
+        .filter(v => v.created_at && v.sold_date)
+        .map(v => (new Date(v.sold_date).getTime() - new Date(v.created_at).getTime()) / (1000 * 60 * 60 * 24))
+        .filter(d => d >= 0);
+      const avgDays = daysToSell.length > 0 ? daysToSell.reduce((a, b) => a + b, 0) / daysToSell.length : 0;
 
       setStats({
-        totalSales: completedSales.length,
+        totalSales: unitsSold,
         avgTicket: Math.round(avgTicket),
         totalRevenue: Math.round(totalRevenue),
         avgDaysInPhase: Math.round(avgDays)
@@ -136,7 +143,7 @@ export default function AdminSales() {
                   <TrendingUp size={24} />
                 </span>
               </div>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Vendas Completadas</p>
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Veículos Vendidos</p>
               <p className="text-3xl font-black text-slate-900 mt-2">{stats.totalSales}</p>
             </div>
 
@@ -148,7 +155,7 @@ export default function AdminSales() {
               </div>
               <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Receita Total</p>
               <p className="text-3xl font-black text-slate-900 mt-2">
-                {(stats.totalRevenue / 1000).toFixed(1)}K
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 }).format(stats.totalRevenue)}
               </p>
             </div>
 
@@ -170,7 +177,7 @@ export default function AdminSales() {
                   <Clock size={24} />
                 </span>
               </div>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Dias Médios</p>
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Tempo Médio de Venda</p>
               <p className="text-3xl font-black text-slate-900 mt-2">{stats.avgDaysInPhase}d</p>
             </div>
           </div>
@@ -243,8 +250,8 @@ export default function AdminSales() {
                         <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-slate-400 tracking-widest">
                           Fase Atual
                         </th>
-                        <th className="px-6 py-4 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                          Valor
+                        <th className="px-6 py-4 text-left text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                          Origem
                         </th>
                         <th className="px-6 py-4 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest">
                           Data
@@ -269,8 +276,8 @@ export default function AdminSales() {
                               {sale.phase}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-right font-bold text-slate-900">
-                            {sale.price ? `R$ ${sale.price.toLocaleString('pt-BR')}` : '—'}
+                          <td className="px-6 py-4 text-left text-sm text-slate-600 capitalize">
+                            {sale.source || '—'}
                           </td>
                           <td className="px-6 py-4 text-right text-sm text-slate-400">
                             {sale.created_at ? new Date(sale.created_at).toLocaleDateString('pt-BR') : 'N/A'}

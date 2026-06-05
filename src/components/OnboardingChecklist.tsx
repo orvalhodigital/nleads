@@ -12,8 +12,6 @@ const OnboardingChecklist: React.FC = () => {
     { id: 'avatar', label: 'Foto de perfil', done: !!profile?.avatar_url },
     { id: 'whatsapp', label: 'WhatsApp conectado', done: !!profile?.whatsapp_webhook_url },
     { id: 'vehicle-type', label: 'Tipo de veículo', done: profile?.enable_cars || profile?.enable_motorcycles },
-    { id: 'first-vehicle', label: 'Primeiro veículo', done: vehicles && vehicles.length > 0 },
-    { id: 'first-lead', label: 'Primeiro lead', done: leads && leads.length > 0 },
   ];
 
   const completedCount = checklist.filter((item) => item.done).length;
@@ -59,12 +57,12 @@ const OnboardingChecklist: React.FC = () => {
           <div className="space-y-1">
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-slate-600 uppercase tracking-wider">Progresso</span>
-              <span className="font-bold text-indigo-600">{completedCount}/6</span>
+              <span className="font-bold text-indigo-600">{completedCount}/4</span>
             </div>
             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-indigo-600 to-emerald-500 transition-all"
-                style={{ width: `${(completedCount / 6) * 100}%` }}
+                style={{ width: `${(completedCount / 4) * 100}%` }}
               />
             </div>
           </div>
@@ -99,9 +97,9 @@ const OnboardingChecklist: React.FC = () => {
           {/* Motivational text */}
           <div className="pt-2 border-t border-slate-100">
             <p className="text-xs text-slate-500 text-center">
-              {completedCount === 6
+              {completedCount === 4
                 ? '✨ Tudo pronto!'
-                : `${6 - completedCount} passo${6 - completedCount !== 1 ? 's' : ''} para terminar`}
+                : `${4 - completedCount} passo${4 - completedCount !== 1 ? 's' : ''} para terminar`}
             </p>
           </div>
         </div>

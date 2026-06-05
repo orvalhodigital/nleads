@@ -9,6 +9,7 @@ import TrialExpired from './TrialExpired';
 import GlobalSearch from './GlobalSearch';
 import OnboardingWizard from './OnboardingWizard';
 import OnboardingChecklist from './OnboardingChecklist';
+import AppTour from './AppTour';
 import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
@@ -146,6 +147,7 @@ const UserLayout: React.FC = () => {
             )}
 
             <OnboardingChecklist />
+            <AppTour />
         </div>
     );
 };

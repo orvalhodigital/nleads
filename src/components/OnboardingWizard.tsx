@@ -10,7 +10,7 @@ interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
-type Step = 'welcome' | 'company' | 'vehicles' | 'whatsapp' | 'first-vehicle' | 'first-lead' | 'complete';
+type Step = 'welcome' | 'company' | 'vehicles' | 'whatsapp' | 'complete';
 
 const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
   const { profile, user, refreshProfile } = useData();
@@ -32,20 +32,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
   // WhatsApp step
   const [whatsappStatus, setWhatsappStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('disconnected');
 
-  // Vehicle step
-  const [plate, setPlate] = useState('');
-  const [brand, setBrand] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('');
-  const [price, setPrice] = useState('');
-  const [vehicleImages, setVehicleImages] = useState<File[]>([]);
 
-  // Lead step
-  const [leadName, setLeadName] = useState('');
-  const [leadPhone, setLeadPhone] = useState('');
-  const [leadEmail, setLeadEmail] = useState('');
-  const [leadSource, setLeadSource] = useState('Site');
-  const [leadTemp, setLeadTemp] = useState('Morna');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +41,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const vehicleImagesRef = useRef<HTMLInputElement>(null);
 
-  const stepOrder: Step[] = ['welcome', 'company', 'vehicles', 'whatsapp', 'first-vehicle', 'first-lead', 'complete'];
+  const stepOrder: Step[] = ['welcome', 'company', 'vehicles', 'whatsapp', 'complete'];
   const currentStepIndex = stepOrder.indexOf(step);
 
   useEffect(() => {
@@ -157,103 +144,6 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
     }
   };
 
-  const handleFirstVehicle = async () => {
-    if (!plate || !price) {
-      setError('Preencha placa e preço');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const imageUrls: string[] = [];
-      for (const img of vehicleImages) {
-        const url = await uploadFile(img, 'vehicles');
-        imageUrls.push(url);
-      }
-
-      const vehicleData = {
-        user_id: user?.id,
-        plate,
-        brand: brand || 'N/A',
-        model: model || 'N/A',
-        year: parseInt(year) || new Date().getFullYear(),
-        price: parseFloat(price),
-        type: 'Sedan',
-        transmission: 'Manual',
-        engine: '1.4',
-        mileage: 0,
-        color: 'N/A',
-        isSingleOwner: false,
-        isServiceHistoryComplete: false,
-        isIpvaPaid: false,
-        hasWarranty: false,
-        optionals: [],
-        imageUrl: imageUrls[0] || '',
-        galleryImages: imageUrls,
-        status: 'available',
-      };
-
-      await supabase.from('vehicles').insert([vehicleData]);
-
-      const nextIndex = currentStepIndex + 1;
-      if (nextIndex < stepOrder.length) {
-        setStep(stepOrder[nextIndex]);
-      }
-    } catch (err) {
-      setError('Erro ao criar veículo');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFirstLead = async () => {
-    if (!leadName || !leadPhone) {
-      setError('Preencha nome e telefone');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const leadData: Partial<Lead> = {
-        name: leadName,
-        phone: leadPhone,
-        email: leadEmail,
-        phase: 'Novo Lead',
-        temperature: leadTemp as any,
-        source: leadSource,
-        createdAt: new Date().toISOString(),
-        lastUpdate: new Date().toISOString(),
-        notes: '',
-        preferences: {
-          tipos_veiculo: [],
-          marcas: [],
-          modelos: [],
-          carro_transmissao: [],
-          carro_motorizacao: [],
-          moto_transmissao: [],
-          moto_motorizacao: [],
-          observacoes_adicionais: '',
-          possui_entrada: false,
-          possui_troca: false,
-        },
-        presentedVehicles: [],
-        user_id: user?.id,
-      };
-
-      await supabase.from('leads').insert([leadData]);
-
-      const nextIndex = currentStepIndex + 1;
-      if (nextIndex < stepOrder.length) {
-        setStep(stepOrder[nextIndex]);
-      }
-    } catch (err) {
-      setError('Erro ao criar lead');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const completeOnboarding = async () => {
     setLoading(true);
@@ -491,133 +381,15 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
           </div>
         );
 
-      case 'first-vehicle':
-        return (
-          <div className="space-y-6 animate-slideIn">
-            <h2 className="text-3xl font-black text-slate-900">Primeiro Veículo</h2>
-            <p className="text-slate-600">Digite a placa para carregar dados automaticamente</p>
 
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Placa</label>
-              <input
-                type="text"
-                value={plate}
-                onChange={(e) => setPlate(e.target.value.toUpperCase())}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="ABC-1234"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Marca</label>
-                <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none" disabled />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Modelo</label>
-                <input type="text" value={model} onChange={(e) => setModel(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none" disabled />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Preço de Venda (R$) *</label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="50000"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Fotos (até 3)</label>
-              <input
-                ref={vehicleImagesRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => {
-                  if (e.target.files) {
-                    setVehicleImages(Array.from(e.target.files).slice(0, 3));
-                  }
-                }}
-                className="hidden"
-              />
-              <button
-                onClick={() => vehicleImagesRef.current?.click()}
-                className="w-full py-3 border-2 border-dashed border-indigo-300 rounded-xl text-indigo-600 font-bold hover:bg-indigo-50 flex items-center justify-center gap-2"
-              >
-                <Plus size={20} /> {vehicleImages.length} foto(s) selecionada(s)
-              </button>
-            </div>
-
-            {error && <div className="p-3 bg-red-100 text-red-700 rounded-xl">{error}</div>}
-
-            <div className="flex gap-4 pt-6">
-              <button onClick={() => setStep('whatsapp')} className="flex-1 py-3 border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50">Voltar</button>
-              <button onClick={handleFirstVehicle} disabled={loading} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50">Próximo</button>
-            </div>
-          </div>
-        );
-
-      case 'first-lead':
-        return (
-          <div className="space-y-6 animate-slideIn">
-            <h2 className="text-3xl font-black text-slate-900">Primeiro Lead</h2>
-            <p className="text-slate-600">Crie seu primeiro contato de cliente</p>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Nome Completo *</label>
-              <input type="text" value={leadName} onChange={(e) => setLeadName(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none" placeholder="João Silva" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">WhatsApp / Telefone *</label>
-              <input type="tel" value={leadPhone} onChange={(e) => setLeadPhone(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none" placeholder="(11) 99999-9999" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">E-mail</label>
-              <input type="email" value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Origem</label>
-                <select value={leadSource} onChange={(e) => setLeadSource(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none">
-                  <option>Site</option>
-                  <option>WhatsApp</option>
-                  <option>Facebook</option>
-                  <option>Indicação</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Temperatura</label>
-                <select value={leadTemp} onChange={(e) => setLeadTemp(e.target.value)} className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl outline-none">
-                  <option>Fria</option>
-                  <option>Morna</option>
-                  <option>Quente</option>
-                </select>
-              </div>
-            </div>
-
-            {error && <div className="p-3 bg-red-100 text-red-700 rounded-xl">{error}</div>}
-
-            <div className="flex gap-4 pt-6">
-              <button onClick={() => setStep('first-vehicle')} className="flex-1 py-3 border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50">Voltar</button>
-              <button onClick={handleFirstLead} disabled={loading} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50">Próximo</button>
-            </div>
-          </div>
-        );
 
       case 'complete':
         return (
           <div className="text-center space-y-8 animate-fadeUp">
             <div className="text-7xl">✨</div>
             <h1 className="text-4xl font-black text-slate-900">Painel Configurado!</h1>
-            <p className="text-xl text-slate-600">Você completou {progress}/6 etapas de configuração</p>
-            {progress >= 4 && (
+            <p className="text-xl text-slate-600">Você completou {progress}/4 etapas de configuração</p>
+            {progress >= 3 && (
               <div className="inline-block bg-amber-100 text-amber-900 px-6 py-3 rounded-full font-bold">
                 🏆 Painel Completo!
               </div>
@@ -640,12 +412,12 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
         <div className="mb-12">
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm font-bold text-slate-600 uppercase tracking-wider">Progresso</p>
-            <p className="text-sm font-bold text-indigo-600">{currentStepIndex + 1}/7</p>
+            <p className="text-sm font-bold text-indigo-600">{currentStepIndex + 1}/5</p>
           </div>
           <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-indigo-600 to-emerald-500 transition-all duration-500"
-              style={{ width: `${((currentStepIndex + 1) / 7) * 100}%` }}
+              style={{ width: `${((currentStepIndex + 1) / 5) * 100}%` }}
             />
           </div>
         </div>

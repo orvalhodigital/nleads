@@ -534,7 +534,7 @@ export default function AdminOnboarding() {
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50/50 border-bottom border-slate-200">
+                                    <tr className="bg-slate-50/50 border-b border-slate-200">
                                         <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cliente</th>
                                         <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Progresso</th>
                                         <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Etapas Atuais</th>

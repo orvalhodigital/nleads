@@ -105,19 +105,41 @@ export default function SupportPage() {
         setAttachments([]);
     };
 
+    const [messageAttachments, setMessageAttachments] = useState<File[]>([]);
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || !selectedTicketId || sendingMessage) return;
+        if ((!newMessage.trim() && messageAttachments.length === 0) || !selectedTicketId || sendingMessage) return;
 
         try {
             setSendingMessage(true);
-            await ticketService.addMessage(selectedTicketId, newMessage);
+
+            const attachmentUrls: string[] = [];
+            for (const file of messageAttachments) {
+                const url = await ticketService.uploadAttachment(file);
+                attachmentUrls.push(url);
+            }
+
+            await ticketService.addMessage(selectedTicketId, newMessage, attachmentUrls);
             setNewMessage('');
+            setMessageAttachments([]);
             fetchTicketDetails(selectedTicketId);
         } catch (error) {
             console.error('Error sending message:', error);
         } finally {
             setSendingMessage(false);
+        }
+    };
+
+    const handlePaste = (e: React.ClipboardEvent) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                if (file) {
+                    setMessageAttachments(prev => [...prev, file]);
+                }
+            }
         }
     };
 
@@ -211,28 +233,65 @@ export default function SupportPage() {
                                                 {format(new Date(msg.created_at), 'HH:mm')}
                                             </span>
                                         </div>
-                                        <p className="text-sm font-medium leading-relaxed">{msg.message}</p>
+                                        <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                                        {msg.attachments && msg.attachments.length > 0 && (
+                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                {msg.attachments.map((url, i) => (
+                                                    <a key={i} href={url} target="_blank" rel="noreferrer" className={`inline-flex p-2 rounded-xl items-center gap-2 text-[10px] font-bold transition-all ${msg.sender_role === 'admin' ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-slate-200/50 hover:bg-slate-200 text-indigo-600'}`}>
+                                                        <Paperclip size={12} /> Anexo {i + 1}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
                         </div>
 
                         {selectedTicket.status !== 'closed' && (
-                            <form onSubmit={handleSendMessage} className="p-4 bg-slate-50 border-t border-slate-100">
+                            <form onSubmit={handleSendMessage} className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col gap-2">
+                                {messageAttachments.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-2 px-2">
+                                        {messageAttachments.map((file, i) => (
+                                            <div key={i} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-bold flex items-center gap-2 border border-indigo-100">
+                                                <Paperclip size={12} />
+                                                <span className="max-w-[150px] truncate">{file.name}</span>
+                                                <button type="button" onClick={() => setMessageAttachments(prev => prev.filter((_, idx) => idx !== i))} className="hover:text-red-500">
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <div className="relative">
                                     <textarea
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
-                                        placeholder="Responda ou adicione mais detalhes..."
-                                        className="w-full pl-6 pr-16 py-4 bg-white border border-slate-200 rounded-[1.5rem] font-medium text-sm text-slate-900 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none resize-none h-20 shadow-inner"
+                                        onPaste={handlePaste}
+                                        placeholder="Responda ou adicione mais detalhes (Ctrl+V para colar imagem)..."
+                                        className="w-full pl-6 pr-24 py-4 bg-white border border-slate-200 rounded-[1.5rem] font-medium text-sm text-slate-900 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none resize-none h-20 shadow-inner"
                                     />
-                                    <button
-                                        type="submit"
-                                        disabled={sendingMessage || !newMessage.trim()}
-                                        className="absolute right-3 bottom-3 p-3 bg-indigo-600 text-white rounded-2xl hover:bg-slate-900 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {sendingMessage ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
-                                    </button>
+                                    <div className="absolute right-3 bottom-3 flex items-center gap-1">
+                                        <label className="p-3 text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors rounded-full hover:bg-slate-100" title="Anexar arquivo">
+                                            <Paperclip size={20} />
+                                            <input 
+                                                type="file" 
+                                                className="hidden" 
+                                                multiple 
+                                                onChange={(e) => {
+                                                    const files = Array.from(e.target.files || []);
+                                                    setMessageAttachments(prev => [...prev, ...files]);
+                                                }}
+                                            />
+                                        </label>
+                                        <button
+                                            type="submit"
+                                            disabled={sendingMessage || (!newMessage.trim() && messageAttachments.length === 0)}
+                                            className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-slate-900 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                                        >
+                                            {sendingMessage ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         )}

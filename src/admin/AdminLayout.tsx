@@ -4,6 +4,7 @@ import { LogOut, Users, Settings, Bell, Tag, Quote, Rocket, CheckCircle2, LifeBu
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from '../components/OtimizzaLogo';
+import AdminErrorBoundary from './AdminErrorBoundary';
 
 interface NavItem {
   label: string;
@@ -28,9 +29,12 @@ export default function AdminLayout() {
     };
 
     const isActive = (path: string) => {
-        if (path === '' && location.pathname === '/paineldoadm') return true;
-        if (path !== '' && location.pathname.includes(path)) return true;
-        return false;
+        const current = location.pathname.replace(/\/+$/, '');
+        const target = path.replace(/\/+$/, '');
+        // Dashboard (raiz) só fica ativo na rota exata
+        if (target === '/paineldoadm') return current === '/paineldoadm';
+        // Demais itens ativam na própria rota ou em sub-rotas (ex: /users/:id)
+        return current === target || current.startsWith(target + '/');
     };
 
     const navGroups: NavGroup[] = [
@@ -126,7 +130,9 @@ export default function AdminLayout() {
             {/* Main Content Area */}
             <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen bg-slate-50 pt-16 md:pt-8">
                 <div className="max-w-6xl mx-auto pb-12">
-                    <Outlet />
+                    <AdminErrorBoundary key={location.pathname}>
+                        <Outlet />
+                    </AdminErrorBoundary>
                 </div>
             </main>
         </div>

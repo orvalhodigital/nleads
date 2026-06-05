@@ -127,7 +127,7 @@ const UserLayout: React.FC = () => {
                     </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto p-4 pb-28 lg:p-10 flex flex-col">
+                <div className="flex-1 overflow-y-auto p-4 pb-20 lg:px-10 lg:pt-10 lg:pb-6 flex flex-col">
                     <div className="w-full flex-1 flex flex-col animate-fadeUp">
                         <Outlet />
                     </div>

@@ -1,3 +1,28 @@
+🎨 **BRANDING OTIMIZZA**: Logo e Assets do Sistema
+**Date**: 2026-06-04
+**Status**: ✅ IMPLEMENTADO E PRONTO PARA PRODUÇÃO
+
+## 📋 Plano
+Implementar identidade visual unificada (Logo + Assets de Branding) para o SaaS Otimizza:
+1. **Download de Assets** — 6 logos (horizontais/verticais) em 3 variações (amarelo, escuro, claro)
+2. **Armazenamento Local** — Organização em `/public/branding/` para servir via Vite
+3. **Integração no Sistema** — Hook `useSystemSettings()` fornece logo padrão
+4. **Aplicação Global** — Logo aparece em Header, Sidebar, Admin, todos os 3 sistemas
+5. **Fallback Database** — Suporte para logos customizadas via `system_settings` table
+
+## ⚠️ Riscos
+- **Versionamento de Assets** — imagens em `/public` não são rastreadas com Git; criar workflow de deploy
+- **Navegadores em Cache** — usuários precisam de hard-refresh (Ctrl+Shift+R) para ver logo atualizada
+- **Multi-tenant** — logo padrão é global; empresas com logo próprio usam `profile.company_logo` (já implementado)
+- **Compatibilidade** — PNG 436x109px (20KB); verificar em dispositivos móveis se corta/distorce
+
+## 🌸 Haiku-check
+Marca em amarelo,
+Otimizza vira visível,
+Logo pela tela.
+
+---
+
 🔌 **INTEGRAÇÃO n8n**: Adaptação do fluxo "Adiciona Lead" — Celulares → Veículos
 **Date**: 2026-06-04
 **Status**: ✅ CONCLUÍDO

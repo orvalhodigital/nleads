@@ -20,7 +20,7 @@ const AdminOnboarding = lazy(() => import('./AdminOnboarding'));
 const AdminTickets = lazy(() => import('./AdminTickets'));
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
 const AdminSales = lazy(() => import('./AdminSales'));
-const AdminAuditLog = lazy(() => import('./AdminAuditLog'));
+const AdminAuditLog = lazy(() => import('./AdminAuditLog')); // Fase 4
 
 import { DataProvider } from '../contexts/DataContext';
 import { Suspense } from 'react';

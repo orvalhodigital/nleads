@@ -39,11 +39,6 @@ export default function AdminLayout() {
             items: [
                 { label: 'Dashboard', path: '/paineldoadm', icon: <CheckCircle2 size={18} /> },
                 { label: 'Usuários', path: '/paineldoadm/users', icon: <Users size={18} /> },
-            ]
-        },
-        {
-            title: 'Vendas',
-            items: [
                 { label: 'Vendas', path: '/paineldoadm/sales', icon: <TrendingUp size={18} /> },
             ]
         },
@@ -61,14 +56,9 @@ export default function AdminLayout() {
                 { label: 'Notificações', path: '/paineldoadm/notifications', icon: <Bell size={18} /> },
                 { label: 'Tickets', path: '/paineldoadm/tickets', icon: <LifeBuoy size={18} /> },
                 { label: 'Audit Log', path: '/paineldoadm/audit-log', icon: <Shield size={18} /> },
-            ]
-        },
-        {
-            title: 'Sistema',
-            items: [
                 { label: 'Configurações', path: '/paineldoadm/settings', icon: <Settings size={18} /> },
             ]
-        }
+        },
     ];
 
     return (

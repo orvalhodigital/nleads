@@ -7,14 +7,18 @@ import Header from './Header';
 import Auth from './Auth';
 import TrialExpired from './TrialExpired';
 import GlobalSearch from './GlobalSearch';
+import OnboardingWizard from './OnboardingWizard';
+import OnboardingChecklist from './OnboardingChecklist';
 import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabaseClient';
+import { profileService } from '../services/profileService';
 
 const UserLayout: React.FC = () => {
-    const { session, loading, profile, impersonatedUserId } = useData();
+    const { session, loading, profile, impersonatedUserId, refreshProfile } = useData();
     const location = useLocation();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [showRetry, setShowRetry] = useState(false);
+    const [showOnboarding, setShowOnboarding] = useState(false);
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -38,6 +42,15 @@ const UserLayout: React.FC = () => {
             if (timeout) clearTimeout(timeout);
         };
     }, [loading]);
+
+    useEffect(() => {
+        // Show onboarding if not completed and not impersonating
+        if (profile && !profile.onboarding_completed && !impersonatedUserId) {
+            setShowOnboarding(true);
+        } else {
+            setShowOnboarding(false);
+        }
+    }, [profile?.onboarding_completed, impersonatedUserId]);
 
     if (loading) {
         return (
@@ -122,6 +135,17 @@ const UserLayout: React.FC = () => {
             </main>
 
             <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+            {showOnboarding && (
+                <OnboardingWizard
+                    onComplete={() => {
+                        setShowOnboarding(false);
+                        refreshProfile();
+                    }}
+                />
+            )}
+
+            <OnboardingChecklist />
         </div>
     );
 };

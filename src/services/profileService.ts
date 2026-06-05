@@ -91,6 +91,7 @@ function buildProfile(data: any, user: any): Profile {
         website_optimization: data.website_optimization || {},
         website_content: data.website_content || {},
         website_contact: data.website_contact || {},
+        onboarding_completed: data.onboarding_completed || false,
     };
 }
 
@@ -232,6 +233,7 @@ export const profileService = {
             'website_diff2_active', 'website_diff2_title', 'website_diff2_sub', 'website_diff2_icon',
             'website_diff3_active', 'website_diff3_title', 'website_diff3_sub', 'website_diff3_icon',
             'website_diff4_active', 'website_diff4_title', 'website_diff4_sub', 'website_diff4_icon',
+            'onboarding_completed' as any,
         ];
 
         const dbUpdates: Record<string, any> = {};

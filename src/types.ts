@@ -435,6 +435,8 @@ export interface Profile {
   whatsapp_webhook_url?: string;
   // Business hours
   business_hours?: any[];
+  // Onboarding
+  onboarding_completed?: boolean;
 }
 
 

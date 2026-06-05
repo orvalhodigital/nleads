@@ -10,10 +10,15 @@ export default {
                 slideIn: {
                     from: { transform: 'translateX(100%)', opacity: '0' },
                     to: { transform: 'translateX(0)', opacity: '1' }
+                },
+                fadeUp: {
+                    from: { transform: 'translateY(20px)', opacity: '0' },
+                    to: { transform: 'translateY(0)', opacity: '1' }
                 }
             },
             animation: {
-                slideIn: 'slideIn 0.3s ease-out'
+                slideIn: 'slideIn 0.3s ease-out',
+                fadeUp: 'fadeUp 0.5s ease-out'
             },
             colors: {
                 // User defined brand palette

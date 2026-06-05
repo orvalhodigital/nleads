@@ -6,7 +6,7 @@ import {
     UserCheck, Users, Tag, Send, LayoutGrid, List,
     Bike, Hash, Palette, Zap, AlertCircle, TrendingUp, TrendingDown, Minus, Shield, ImagePlus, FileText
 } from 'lucide-react';
-import { Lead, LeadPhase, SaleDetails, LeadTemperature, Motorcycle, MotorcycleCategory, MotoStartType, MotoFuelSystem, MotoCooling, MotoBrakeType } from '../types';
+import { Lead, LeadPhase, SaleDetails, LeadTemperature, Motorcycle, MotorcycleCategory, MotoStartType, MotoFuelSystem, MotoCooling, MotoBrakeType, LeadCommunication } from '../types';
 import { Switch } from './ui/switch';
 import { motorcycleService } from '../services/motorcycleService';
 import { supabase } from '../lib/supabaseClient';
@@ -61,61 +61,140 @@ interface Props {
 }
 
 // ─── Memoized card components ─────────────────────────────────────────────────
-interface MotoCardProps { moto: Motorcycle; onSelect: (m: Motorcycle) => void; }
+interface MotoCardProps { moto: Motorcycle; onSelect: (m: Motorcycle) => void; onToggleWebsite?: (m: Motorcycle) => void; }
 
-const MotoGridCard = memo(({ moto: m, onSelect }: MotoCardProps) => (
-    <div onClick={() => onSelect(m)} className="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-500 cursor-pointer flex flex-col h-full">
-        <div className="aspect-square relative overflow-hidden bg-slate-50">
-            {m.imageUrl ? (
-                <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-            ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-slate-200">
-                    <Bike size={64} strokeWidth={1} />
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] mt-4 opacity-50">Sem Imagem</span>
+const MotoGridCard = memo(({ moto: m, onSelect, onToggleWebsite }: MotoCardProps) => {
+    const isOnWebsite = m.showOnWebsite !== false;
+
+    const handleToggleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onToggleWebsite?.({ ...m, showOnWebsite: !isOnWebsite });
+    };
+
+    return (
+        <div className={`bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col relative overflow-hidden ${m.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : 'hover:border-emerald-200/60'}`}>
+            <div className="relative p-3 pb-0">
+                {m.imageUrl ? (
+                    <div onClick={() => onSelect(m)} className="w-full aspect-square rounded-xl overflow-hidden shadow-inner bg-slate-50 cursor-pointer">
+                        <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    </div>
+                ) : (
+                    <div onClick={() => onSelect(m)} className="w-full aspect-square rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50 cursor-pointer">
+                        <Bike size={48} strokeWidth={1} />
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Sem Imagem</span>
+                    </div>
+                )}
+                {m.status === 'sold' ? (
+                    <div className="absolute top-6 right-6 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-rose-500/30 animate-pulse">Vendida</div>
+                ) : (
+                    <div className="absolute top-6 right-6 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-emerald-500/30">Em Estoque</div>
+                )}
+                <div className="absolute bottom-4 left-7 z-20">
+                    <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{m.category}</span>
                 </div>
-            )}
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
-                <span className="bg-white/90 backdrop-blur-md text-[9px] font-black text-slate-900 px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-sm">{m.year}</span>
-                {m.isSingleOwner && <span className="bg-emerald-500 text-white text-[8px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg shadow-emerald-500/20">Único Dono</span>}
+                {onToggleWebsite && (
+                    <div className="absolute bottom-3 right-4 z-20 flex items-center gap-2">
+                        <span className={`text-[8px] font-black uppercase tracking-wider transition-colors duration-300 drop-shadow-sm ${isOnWebsite ? 'text-emerald-300' : 'text-rose-300'}`}>
+                            {isOnWebsite ? 'Site' : 'Oculto'}
+                        </span>
+                        <button onClick={handleToggleClick} role="switch" aria-checked={isOnWebsite}
+                            className={`relative w-9 h-5 rounded-full transition-colors duration-300 shadow-lg focus:outline-none ${isOnWebsite ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+                            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${isOnWebsite ? 'left-4' : 'left-0.5'}`} />
+                        </button>
+                    </div>
+                )}
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <p className="text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"><Gauge size={12} /> {m.mileage.toLocaleString()} km</p>
+            <div className="p-5 pt-4 flex flex-col flex-1">
+                <div className="mb-4">
+                    <h3 onClick={() => onSelect(m)} className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mb-1.5 group-hover:text-emerald-600 transition-colors cursor-pointer">
+                        {m.brand} {m.model}
+                    </h3>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Calendar size={10} className="text-slate-300" />
+                            <span>{m.year}{m.modelYear && m.modelYear !== m.year ? ` / ${String(m.modelYear).slice(-2)}` : ''}</span>
+                        </div>
+                        <div className="w-1 h-1 rounded-full bg-slate-200" />
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
+                            <Gauge size={10} className="text-slate-300" />
+                            <span>{m.mileage > 0 ? `${m.mileage.toLocaleString()} km` : '---'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div onClick={() => onSelect(m)} className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50 cursor-pointer">
+                    <div className="flex flex-col">
+                        <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço de Venda</span>
+                        <p className={`text-lg font-black tracking-tighter ${m.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
+                            R$ {m.price.toLocaleString()}
+                        </p>
+                    </div>
+                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
+                        <ChevronLeft className="rotate-180" size={16} strokeWidth={3} />
+                    </div>
+                </div>
             </div>
+            <div className={`h-1 w-full ${m.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
         </div>
-        <div className="p-6 flex flex-col flex-1">
-            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">{m.brand}</p>
-            <h3 className="text-xl font-black text-slate-900 uppercase leading-none tracking-tight mb-4 flex-1">{m.model}</h3>
-            <div className="flex items-center justify-between mt-auto">
-                <p className="text-2xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all"><ChevronLeft className="rotate-180" size={20} /></div>
-            </div>
-        </div>
-    </div>
-));
+    );
+});
 
-const MotoListCard = memo(({ moto: m, onSelect }: MotoCardProps) => (
-    <div onClick={() => onSelect(m)} className="group bg-white p-4 rounded-[1.5rem] border border-slate-100 flex items-center gap-6 hover:shadow-xl transition-all cursor-pointer">
-        <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 shrink-0">
-            {m.imageUrl ? <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-200"><Bike size={24} /></div>}
-        </div>
-        <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{m.brand}</span>
-                <span className="text-[9px] font-bold text-slate-300 uppercase">/</span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{m.year}</span>
+const MotoListCard = memo(({ moto: m, onSelect, onToggleWebsite }: MotoCardProps) => {
+    const isOnWebsite = m.showOnWebsite !== false;
+
+    const handleToggleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onToggleWebsite?.({ ...m, showOnWebsite: !isOnWebsite });
+    };
+
+    return (
+        <div className={`bg-white p-3 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-emerald-100 transition-all group flex flex-col sm:flex-row gap-4 relative overflow-hidden ${m.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : ''}`}>
+            <div onClick={() => onSelect(m)} className="w-full sm:w-40 h-28 sm:h-28 rounded-xl overflow-hidden shrink-0 bg-slate-50 relative border border-slate-100 shadow-inner cursor-pointer">
+                {m.imageUrl ? (
+                    <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-200"><Bike size={32} strokeWidth={1} /></div>
+                )}
+                {m.status === 'sold' && (
+                    <div className="absolute top-2 right-2 bg-rose-500 text-white text-[7px] font-black uppercase tracking-wide px-2 py-1 rounded z-10 shadow-lg">Vendida</div>
+                )}
             </div>
-            <h3 className="text-lg font-black text-slate-900 uppercase truncate leading-tight">{m.model}</h3>
+            <div onClick={() => onSelect(m)} className="flex-1 flex flex-col py-1 cursor-pointer min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50">{m.category}</span>
+                    {m.plate && <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">{m.plate}</span>}
+                </div>
+                <h3 className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight group-hover:text-emerald-600 transition-colors truncate">
+                    {m.brand} {m.model}
+                </h3>
+                <div className="flex items-center gap-3 text-[11px] font-bold text-slate-400 mt-1.5 flex-wrap">
+                    <div className="flex items-center gap-1"><Calendar size={12} className="text-slate-300" /><span>{m.year}</span></div>
+                    <div className="flex items-center gap-1"><Gauge size={12} className="text-slate-300" /><span>{m.mileage > 0 ? `${m.mileage.toLocaleString()} km` : '---'}</span></div>
+                    <div className="flex items-center gap-1"><Zap size={12} className="text-slate-300" /><span>{m.engine}</span></div>
+                </div>
+            </div>
+            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-between gap-4 pl-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-1 sm:pb-1 min-w-max">
+                <div className="text-right">
+                    <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Preço</p>
+                    <p className={`text-xl font-black leading-none tracking-tighter ${m.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
+                        R$ {m.price.toLocaleString()}
+                    </p>
+                </div>
+                {onToggleWebsite && (
+                    <div className="flex flex-col items-end gap-1.5">
+                        <span className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${isOnWebsite ? 'text-emerald-600' : 'text-rose-500'}`}>
+                            {isOnWebsite ? 'No Site' : 'Oculto'}
+                        </span>
+                        <button onClick={handleToggleClick} role="switch" aria-checked={isOnWebsite}
+                            className={`relative w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${isOnWebsite ? 'bg-emerald-500 focus:ring-emerald-400' : 'bg-rose-500 focus:ring-rose-400'}`}>
+                            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${isOnWebsite ? 'left-6' : 'left-1'}`} />
+                        </button>
+                    </div>
+                )}
+            </div>
+            <div className={`h-1 w-full ${m.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
         </div>
-        <div className="hidden md:block px-6 border-x border-slate-50">
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Quilometragem</p>
-            <p className="text-sm font-black text-slate-700">{m.mileage.toLocaleString()} km</p>
-        </div>
-        <div className="text-right shrink-0">
-            <p className="text-xl font-black text-slate-900 tracking-tighter">R$ {m.price.toLocaleString()}</p>
-            <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Disponível</p>
-        </div>
-    </div>
-));
+    );
+});
 // ──────────────────────────────────────────────────────────────────────────────
 
 const MotorcycleInventory: React.FC<Props> = ({
@@ -126,9 +205,10 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [selected, setSelected] = useState<Motorcycle | 'new' | null>(null);
     const [inventoryView, setInventoryView] = useState<'available' | 'sold'>('available');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [sortBy, setSortBy] = useState<'brand' | 'a-z' | 'z-a'>('brand');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [filters, setFilters] = useState({ query: '', priceMin: '', priceMax: '', category: '' });
-    const clearFilters = useCallback(() => setFilters({ query: '', priceMin: '', priceMax: '', category: '' }), []);
+    const [filters, setFilters] = useState({ query: '', priceMin: '', priceMax: '', category: '', yearMin: '', yearMax: '' });
+    const clearFilters = useCallback(() => setFilters({ query: '', priceMin: '', priceMax: '', category: '', yearMin: '', yearMax: '' }), []);
     const [uploading, setUploading] = useState(false);
     const [galleryUploading, setGalleryUploading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -143,6 +223,12 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [msgTemplate, setMsgTemplate] = useState('');
     const [msgTargets, setMsgTargets] = useState<Lead[]>([]);
+    const [communications, setCommunications] = useState<LeadCommunication[]>([]);
+    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+    const [selectorSearch, setSelectorSearch] = useState('');
+    const [selectorSelectedIds, setSelectorSelectedIds] = useState<string[]>([]);
+    const [websiteToggles, setWebsiteToggles] = useState<Record<string, boolean>>({});
+    const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [lookupLoading, setLookupLoading] = useState(false);
     const [plateError, setPlateError] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -151,17 +237,26 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     const handleSelectMoto = useCallback((m: Motorcycle) => setSelected(m), []);
 
-    const displayed = useMemo(() => motorcycles.filter(m => {
-        if (m.status !== inventoryView) return false;
-        if (filters.query) {
-            const q = filters.query.toLowerCase();
-            if (!m.brand.toLowerCase().includes(q) && !m.model.toLowerCase().includes(q) && !m.plate?.toLowerCase().includes(q)) return false;
-        }
-        if (filters.category && m.category !== filters.category) return false;
-        if (filters.priceMin && m.price < parseFloat(filters.priceMin)) return false;
-        if (filters.priceMax && m.price > parseFloat(filters.priceMax)) return false;
-        return true;
-    }), [motorcycles, inventoryView, filters]);
+    const displayed = useMemo(() => {
+        const filtered = motorcycles.filter(m => {
+            if (m.status !== inventoryView) return false;
+            if (filters.query) {
+                const q = filters.query.toLowerCase();
+                if (!m.brand.toLowerCase().includes(q) && !m.model.toLowerCase().includes(q) && !m.plate?.toLowerCase().includes(q)) return false;
+            }
+            if (filters.category && m.category !== filters.category) return false;
+            if (filters.priceMin && m.price < parseFloat(filters.priceMin)) return false;
+            if (filters.priceMax && m.price > parseFloat(filters.priceMax)) return false;
+            if (filters.yearMin && m.year < parseInt(filters.yearMin)) return false;
+            if (filters.yearMax && m.year > parseInt(filters.yearMax)) return false;
+            return true;
+        });
+        const sorted = [...filtered];
+        if (sortBy === 'brand') sorted.sort((a, b) => a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model));
+        else if (sortBy === 'a-z') sorted.sort((a, b) => a.model.localeCompare(b.model));
+        else if (sortBy === 'z-a') sorted.sort((a, b) => b.model.localeCompare(a.model));
+        return sorted;
+    }, [motorcycles, inventoryView, filters, sortBy]);
 
     // ── Handle navigation state ────────────────────────────────────────────────
     const location = useLocation();
@@ -180,13 +275,26 @@ const MotorcycleInventory: React.FC<Props> = ({
     const matchingLeads = useMemo(() => {
         if (!selected || selected === 'new') return [];
         const m = selected as Motorcycle;
-        return leads.filter(l =>
-            l.phase !== LeadPhase.DISQUALIFIED && l.phase !== LeadPhase.COMPLETED &&
-            (l.preferences.marcas.some(b => m.brand.toLowerCase().includes(b.toLowerCase())) ||
-                l.preferences.tipos_veiculo.includes('Naked' as any)) &&
-            (!l.preferences.valor_maximo || m.price <= l.preferences.valor_maximo)
-        );
+        return leads.filter(l => {
+            if (l.phase === LeadPhase.DISQUALIFIED || l.phase === LeadPhase.COMPLETED) return false;
+            const pref = l.preferences;
+            if (!pref.interesse_moto) return false;
+            const matchesCategory = !pref.tipos_moto?.length || pref.tipos_moto.includes(m.category as any);
+            const matchesBrand = !pref.marcas_moto?.length || pref.marcas_moto.some(b => m.brand.toLowerCase().includes(b.toLowerCase()));
+            const matchesPrice = !pref.moto_valor_max || m.price <= pref.moto_valor_max;
+            return matchesCategory && matchesBrand && matchesPrice;
+        });
     }, [selected, leads]);
+
+    // ── Fetch communications ────────────────────────────────────────────────────
+    React.useEffect(() => {
+        if (selected && selected !== 'new') {
+            supabase.from('lead_communications').select('*').eq('vehicle_id', (selected as Motorcycle).id)
+                .then(({ data }) => { if (data) setCommunications(data); });
+        } else {
+            setCommunications([]);
+        }
+    }, [selected]);
 
     // ── LocalStorage Draft Management ──────────────────────────────────────────
     React.useEffect(() => {
@@ -444,24 +552,63 @@ const MotorcycleInventory: React.FC<Props> = ({
         setSelected(null);
     };
 
+    const handleToggleWebsite = (m: Motorcycle) => {
+        const isNowVisible = m.showOnWebsite !== false;
+        setWebsiteToggles(prev => ({ ...prev, [m.id]: isNowVisible }));
+        motorcycleService.update(m).catch(console.error);
+        setNotification({
+            message: isNowVisible ? 'Moto adicionada ao site público!' : 'Moto removida do site público!',
+            type: isNowVisible ? 'success' : 'error'
+        });
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    const prepareMessageModal = (target: 'single' | 'all' | 'new', lead?: Lead) => {
+        let targets: Lead[] = [];
+        if (target === 'single' && lead) targets = [lead];
+        else if (target === 'all') targets = matchingLeads;
+        else if (target === 'new') targets = matchingLeads.filter(l => !communications.some(c => c.lead_id === l.id));
+        if (targets.length === 0) { alert('Nenhum lead encontrado para este envio.'); return; }
+        setMsgTargets(targets);
+        setMsgTemplate('Olá {{nome}}, temos uma moto incrível: {{marca}} {{modelo}} {{ano}} por R$ {{valor}}. Quer saber mais?');
+        setIsMessageModalOpen(true);
+    };
+
     const handleSendMsg = async () => {
         if (!selected || selected === 'new') return;
         const m = selected as Motorcycle;
-        for (const lead of msgTargets) {
-            const msg = msgTemplate
-                .replace(/{{nome}}/g, lead.name)
-                .replace(/{{marca}}/g, m.brand)
-                .replace(/{{modelo}}/g, m.model)
-                .replace(/{{ano}}/g, String(m.year))
-                .replace(/{{valor}}/g, m.price.toLocaleString());
-            await supabase.from('lead_communications').insert({
-                lead_id: lead.id, vehicle_id: m.id,
-                contact_name: lead.name, contact_phone: lead.phone,
-                message_body: msg, is_sent: 'não', email_user: userEmail
-            });
-        }
-        setIsMessageModalOpen(false);
-        alert(`Mensagem registrada para ${msgTargets.length} lead(s)!`);
+        setUploading(true);
+        try {
+            for (const lead of msgTargets) {
+                const msg = msgTemplate
+                    .replace(/{{nome}}/g, lead.name)
+                    .replace(/{{marca}}/g, m.brand)
+                    .replace(/{{modelo}}/g, m.model)
+                    .replace(/{{ano}}/g, String(m.year))
+                    .replace(/{{valor}}/g, m.price.toLocaleString());
+                const { data: inserted } = await supabase.from('lead_communications').insert({
+                    lead_id: lead.id, vehicle_id: m.id,
+                    contact_name: lead.name, contact_phone: lead.phone,
+                    message_body: msg, is_sent: 'não', email_user: userEmail
+                }).select('id').single();
+                try {
+                    await fetch('https://webhook.orvalhodigital.com.br/webhook/puxa-mensagem', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message_id: inserted?.id, lead_id: lead.id,
+                            name: lead.name, phone: lead.phone, message: msg, user_email: userEmail,
+                            vehicle: { id: m.id, brand: m.brand, model: m.model }
+                        })
+                    });
+                } catch { /* webhook não bloqueia */ }
+            }
+            const { data } = await supabase.from('lead_communications').select('*').eq('vehicle_id', m.id);
+            if (data) setCommunications(data);
+            setIsMessageModalOpen(false);
+            alert(`Mensagem registrada para ${msgTargets.length} lead(s)!`);
+        } catch { alert('Erro ao registrar mensagens.'); }
+        finally { setUploading(false); }
     };
 
     const openEdit = (m: Motorcycle) => {
@@ -611,27 +758,42 @@ const MotorcycleInventory: React.FC<Props> = ({
                         <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
                             <div className="flex items-center gap-3 mb-2"><UserCheck size={24} className="text-emerald-500" /><h3 className="text-lg font-extrabold text-slate-900">Leads Compatíveis</h3></div>
                             <p className="text-slate-400 text-sm font-medium mb-4">Encontramos <strong className="text-slate-900">{matchingLeads.length} leads</strong> com perfil de moto.</p>
-                            <div className="flex gap-2">
-                                <button onClick={() => { setMsgTargets(matchingLeads); setMsgTemplate(`Olá {{nome}}, chegou uma moto: {{marca}} {{modelo}} {{ano}} por R$ {{valor}}!`); setIsMessageModalOpen(true); }} className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-800 transition-all">Avisar Todos</button>
+                            <div className="flex gap-2 mb-2">
+                                <button onClick={() => prepareMessageModal('all')} className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-800 transition-all">Enviar p/ Todos</button>
+                                <button onClick={() => prepareMessageModal('new')} className="flex-1 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-emerald-100 transition-all">Enviar p/ Novos</button>
                             </div>
                         </div>
                         <div className="space-y-4">
-                            {matchingLeads.map(lead => (
-                                <div key={lead.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all group cursor-pointer">
+                            {matchingLeads.map(lead => {
+                                const hasReceived = communications.some(c => c.lead_id === lead.id);
+                                return (
+                                <div key={lead.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all group cursor-pointer relative">
+                                    {hasReceived && (
+                                        <div className="absolute top-6 right-6 w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600" title="Mensagem já enviada">
+                                            <Check size={16} strokeWidth={3} />
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-lg text-slate-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors">{lead.name.charAt(0)}</div>
-                                        <div><p className="font-extrabold text-slate-900 uppercase leading-none">{lead.name}</p></div>
+                                        <div>
+                                            <p className="font-extrabold text-slate-900 uppercase leading-none">{lead.name}</p>
+                                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Orçamento: R$ {lead.preferences.moto_valor_max?.toLocaleString() || '—'}</p>
+                                        </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => { setMsgTargets([lead]); setMsgTemplate(`Olá {{nome}}, temos uma moto: {{marca}} {{modelo}} {{ano}} por R$ {{valor}}!`); setIsMessageModalOpen(true); }} className="flex-1 py-3 bg-slate-50 text-slate-500 rounded-xl text-[10px] font-extrabold uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white transition-colors flex items-center justify-center gap-2">
+                                        <button onClick={() => prepareMessageModal('single', lead)} className="flex-1 py-3 bg-slate-50 text-slate-500 rounded-xl text-[10px] font-extrabold uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white transition-colors flex items-center justify-center gap-2">
                                             <Send size={14} /> Mensagem
                                         </button>
                                         <button onClick={() => onViewLead(lead.id)} className="flex-1 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-50 transition-colors">Ver Lead</button>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                             {matchingLeads.length === 0 && <div className="text-center py-10 opacity-50"><Users size={48} className="mx-auto text-slate-300 mb-4" /><p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nenhum lead compatível</p></div>}
                         </div>
+                        <button onClick={() => { setSelectorSelectedIds([]); setSelectorSearch(''); setIsSelectorOpen(true); }} className="w-full py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-extrabold uppercase tracking-widest text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center gap-2">
+                            <Users size={16} /> Enviar p/ Outro Lead
+                        </button>
                     </div>
                 </div>
 
@@ -690,10 +852,63 @@ const MotorcycleInventory: React.FC<Props> = ({
                                         <button key={tag} onClick={() => setMsgTemplate(p => p + ' ' + tag)} className="px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">{tag}</button>
                                     ))}
                                 </div>
+                                <p className="text-[10px] text-slate-400 font-medium italic">* Clique nas tags para adicionar ao texto.</p>
                             </div>
                             <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
                                 <button onClick={() => setIsMessageModalOpen(false)} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Cancelar</button>
-                                <button onClick={handleSendMsg} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20"><Send size={16} /> Registrar Envio</button>
+                                <button onClick={handleSendMsg} disabled={uploading} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 disabled:opacity-60"><Send size={16} /> {uploading ? 'Enviando...' : 'Registrar Envio'}</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {isSelectorOpen && (
+                    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSelectorOpen(false)}>
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-2xl shadow-2xl animate-fadeUp overflow-hidden flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+                            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                                <div><h2 className="text-lg font-extrabold text-slate-900 uppercase tracking-tight">Selecionar Leads</h2><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Selecione os contatos para enviar a mensagem</p></div>
+                                <button onClick={() => setIsSelectorOpen(false)} className="text-slate-300 hover:text-slate-900 transition-colors"><X size={24} /></button>
+                            </div>
+                            <div className="p-6 border-b border-slate-50">
+                                <div className="relative mb-4">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+                                    <input autoFocus type="text" placeholder="Buscar por nome ou telefone..." className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-colors" value={selectorSearch} onChange={e => setSelectorSearch(e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-2">
+                                <div className="space-y-1">
+                                    {leads.filter(l => l.name.toLowerCase().includes(selectorSearch.toLowerCase()) || l.phone.includes(selectorSearch)).map(lead => {
+                                        const isSelected = selectorSelectedIds.includes(lead.id);
+                                        return (
+                                            <div key={lead.id} onClick={() => setSelectorSelectedIds(prev => isSelected ? prev.filter(id => id !== lead.id) : [...prev, lead.id])}
+                                                className={`p-4 rounded-xl flex items-center gap-4 cursor-pointer transition-colors border ${isSelected ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-transparent hover:bg-slate-50'}`}>
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 bg-white'}`}>
+                                                    {isSelected && <Check size={12} strokeWidth={4} />}
+                                                </div>
+                                                <div className="flex-1"><p className="font-extrabold text-slate-900 uppercase text-xs">{lead.name}</p><p className="text-[10px] font-bold text-slate-400">{lead.phone}</p></div>
+                                                <div className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${lead.phase === LeadPhase.DISQUALIFIED ? 'bg-red-50 text-red-500' : 'bg-slate-100 text-slate-500'}`}>{lead.phase}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{selectorSelectedIds.length} selecionados</div>
+                                <div className="flex gap-3">
+                                    {selectorSelectedIds.length > 0 && <button onClick={() => setSelectorSelectedIds([])} className="px-4 py-3 text-slate-400 hover:text-slate-600 font-extrabold text-[10px] uppercase tracking-widest transition-colors">Limpar</button>}
+                                    <button disabled={selectorSelectedIds.length === 0}
+                                        onClick={() => {
+                                            const selected = leads.filter(l => selectorSelectedIds.includes(l.id));
+                                            if (!selected.length) return;
+                                            setMsgTargets(selected);
+                                            setIsSelectorOpen(false);
+                                            setMsgTemplate('Olá {{nome}}, temos uma moto incrível: {{marca}} {{modelo}} {{ano}} por R$ {{valor}}. Quer saber mais?');
+                                            setIsMessageModalOpen(true);
+                                        }}
+                                        className="px-8 py-3 bg-emerald-500 text-white rounded-xl font-extrabold text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Prosseguir
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1060,65 +1275,94 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     // ── LIST VIEW ───────────────────────────────────────────────────────────────
     return (
-        <div className="max-w-[1400px] mx-auto w-full">
-            {/* Header / Filtros */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-                <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none mb-2">Estoque de Motos</h1>
-                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Gerencie seu inventário de motocicletas</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="flex bg-white p-1 rounded-2xl border border-slate-100 shadow-sm">
-                        <button onClick={() => setInventoryView('available')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${inventoryView === 'available' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}>Disponíveis</button>
-                        <button onClick={() => setInventoryView('sold')} className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${inventoryView === 'sold' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}>Vendidas</button>
-                    </div>
-                    <button onClick={() => { setSelected('new'); setForm(EMPTY_MOTO); }} className="px-6 py-3.5 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center gap-2"><Plus size={16} strokeWidth={3} /> Nova Moto</button>
-                </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-4 mb-8">
-                <div className="flex-1 relative group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={20} />
-                    <input type="text" placeholder="Buscar por marca, modelo ou placa..." value={filters.query} onChange={e => setFilters(f => ({ ...f, query: e.target.value }))} className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all" />
-                </div>
-                <div className="flex gap-2">
-                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`px-6 py-4 bg-white border rounded-2xl flex items-center gap-3 transition-all ${isFilterOpen ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-500'}`}><Filter size={18} /><span className="font-black text-[10px] uppercase tracking-widest">Filtros</span></button>
-                    <div className="bg-white p-1 rounded-2xl border border-slate-100 flex shadow-sm">
-                        <button onClick={() => setViewMode('grid')} className={`p-3 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-slate-100 text-slate-900' : 'text-slate-300 hover:text-slate-400'}`}><LayoutGrid size={18} /></button>
-                        <button onClick={() => setViewMode('list')} className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-slate-100 text-slate-900' : 'text-slate-300 hover:text-slate-400'}`}><List size={18} /></button>
-                    </div>
-                </div>
-            </div>
-
-            {isFilterOpen && (
-                <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm mb-8 animate-fadeUp">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Categoria</label><select value={filters.category} onChange={e => setFilters(f => ({ ...f, category: e.target.value }))} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none"><option value="">Todas</option>{MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Mín.</label><input type="number" value={filters.priceMin} onChange={e => setFilters(f => ({ ...f, priceMin: e.target.value }))} placeholder="0" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Máx.</label><input type="number" value={filters.priceMax} onChange={e => setFilters(f => ({ ...f, priceMax: e.target.value }))} placeholder="999.999" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
-                        <div className="flex items-end"><button onClick={clearFilters} className="w-full py-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Limpar Filtros</button></div>
-                    </div>
+        <div className="flex flex-col h-full space-y-6 animate-fadeIn pb-10 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-[1920px] mx-auto w-full">
+            {/* Toast */}
+            {notification && (
+                <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[9999] px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-wide shadow-2xl animate-fadeUp ${notification.type === 'success' ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-rose-500 text-white shadow-rose-500/30'}`}>
+                    {notification.type === 'success' ? '✓' : '!'} {notification.message}
                 </div>
             )}
+
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-wrap items-center justify-between gap-6 px-1">
+                    <div className="flex items-center gap-3">
+                        <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm">
+                            <button onClick={() => setInventoryView('available')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'available' ? 'bg-white text-emerald-600 shadow-md font-black ring-1 ring-emerald-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}>
+                                <div className={`w-2 h-2 rounded-full ${inventoryView === 'available' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                                <span className="text-[11px] uppercase tracking-[0.1em]">Em Estoque</span>
+                                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'available' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-200 text-slate-500'}`}>{motorcycles.filter(m => m.status === 'available').length}</span>
+                            </button>
+                            <button onClick={() => setInventoryView('sold')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'sold' ? 'bg-white text-rose-600 shadow-md font-black ring-1 ring-rose-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}>
+                                <div className={`w-2 h-2 rounded-full ${inventoryView === 'sold' ? 'bg-rose-500 animate-pulse' : 'bg-slate-300'}`} />
+                                <span className="text-[11px] uppercase tracking-[0.1em]">Vendidas</span>
+                                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'sold' ? 'bg-rose-50 text-rose-600' : 'bg-slate-200 text-slate-500'}`}>{motorcycles.filter(m => m.status === 'sold').length}</span>
+                            </button>
+                        </div>
+
+                        <div className="h-10 w-px bg-slate-200 mx-2 hidden md:block" />
+
+                        <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
+                            <button onClick={() => setViewMode('grid')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><LayoutGrid size={16} strokeWidth={2.5} /></button>
+                            <button onClick={() => setViewMode('list')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><List size={16} strokeWidth={2.5} /></button>
+                        </div>
+
+                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all shadow-sm ${isFilterOpen ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/10' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>
+                            <Filter size={15} strokeWidth={2.5} /> Filtrar
+                        </button>
+
+                        <select value={sortBy} onChange={e => setSortBy(e.target.value as 'brand' | 'a-z' | 'z-a')} className="px-5 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] hover:bg-slate-50 transition-all shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                            <option value="brand">Ordenar: Marca</option>
+                            <option value="a-z">Ordenar: A-Z</option>
+                            <option value="z-a">Ordenar: Z-A</option>
+                        </select>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button onClick={() => { setSelected('new'); setForm(EMPTY_MOTO); }} className="flex items-center gap-2 px-7 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.12em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 ring-2 ring-emerald-500/10 ring-offset-2 ring-offset-slate-50">
+                            <Plus size={16} strokeWidth={3} /> Nova Moto
+                        </button>
+                    </div>
+                </div>
+
+                {isFilterOpen && (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm animate-fadeUp">
+                        <div className="space-y-1.5"><label className="text-[10px] font-bold uppercase text-slate-400 px-1 block">Categoria</label><select value={filters.category} onChange={e => setFilters(f => ({ ...f, category: e.target.value }))} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none"><option value="">Todas</option>{MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
+                        <div className="space-y-1.5"><label className="text-[10px] font-bold uppercase text-slate-400 px-1 block">Ano</label><div className="flex gap-2"><input type="number" value={filters.yearMin} onChange={e => setFilters(f => ({ ...f, yearMin: e.target.value }))} placeholder="De" className="w-full px-3 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/5" /><input type="number" value={filters.yearMax} onChange={e => setFilters(f => ({ ...f, yearMax: e.target.value }))} placeholder="Até" className="w-full px-3 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/5" /></div></div>
+                        <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Mín.</label><input type="number" value={filters.priceMin} onChange={e => setFilters(f => ({ ...f, priceMin: e.target.value }))} placeholder="0" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
+                        <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Máx.</label><input type="number" value={filters.priceMax} onChange={e => setFilters(f => ({ ...f, priceMax: e.target.value }))} placeholder="999.999" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
+                        <div className="flex items-end"><button onClick={clearFilters} className="w-full py-3.5 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-200 transition-all">Limpar Filtros</button></div>
+                    </div>
+                )}
+            </div>
 
             {/* Grid/List de Cards */}
-            {viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {displayed.map(m => <MotoGridCard key={m.id} moto={m} onSelect={handleSelectMoto} />)}
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {displayed.map(m => <MotoListCard key={m.id} moto={m} onSelect={handleSelectMoto} />)}
-                </div>
-            )}
+            <div className="flex-1 min-h-0 min-w-0">
+                {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+                        {displayed.map(m => {
+                            const mWithToggle = m.id in websiteToggles ? { ...m, showOnWebsite: websiteToggles[m.id] } : m;
+                            return <MotoGridCard key={m.id} moto={mWithToggle} onSelect={handleSelectMoto} onToggleWebsite={handleToggleWebsite} />;
+                        })}
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-3">
+                        {displayed.map(m => {
+                            const mWithToggle = m.id in websiteToggles ? { ...m, showOnWebsite: websiteToggles[m.id] } : m;
+                            return <MotoListCard key={m.id} moto={mWithToggle} onSelect={handleSelectMoto} onToggleWebsite={handleToggleWebsite} />;
+                        })}
+                    </div>
+                )}
 
-            {displayed.length === 0 && (
-                <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
-                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6"><Bike size={40} className="text-slate-200" /></div>
-                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Nenhuma moto encontrada</h3>
-                    <p className="text-slate-400 font-medium text-sm mt-2">Tente ajustar seus filtros ou busca.</p>
-                </div>
-            )}
+                {displayed.length === 0 && (
+                    <div className="py-24 text-center bg-white rounded-[3rem] border border-slate-100 border-dashed mt-6 animate-fadeUp">
+                        <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-6 border border-slate-50">
+                            <Bike size={48} strokeWidth={1} />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Nenhuma moto encontrada</h3>
+                        <p className="text-slate-400 text-sm mt-3 max-w-xs mx-auto font-medium">Ajuste os filtros ou cadastre uma nova moto.</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

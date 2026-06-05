@@ -33,6 +33,7 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
     hasOwnerManual: row.has_owner_manual ?? undefined,
     status: (row.status as 'available' | 'sold') ?? 'available',
     saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined,
+    showOnWebsite: row.show_on_website !== false,
 });
 
 // ─── Service ─────────────────────────────────────────────────────────────────
@@ -115,6 +116,7 @@ export const motorcycleService = {
                 has_owner_manual: moto.hasOwnerManual ?? null,
                 status: moto.status,
                 sale_details: moto.saleDetails ?? null,
+                show_on_website: moto.showOnWebsite !== false,
             })
             .select()
             .single();
@@ -155,6 +157,7 @@ export const motorcycleService = {
                 has_owner_manual: moto.hasOwnerManual ?? null,
                 status: moto.status,
                 sale_details: moto.saleDetails ?? null,
+                show_on_website: moto.showOnWebsite !== false,
             })
             .eq('id', moto.id)
             .select()

@@ -634,11 +634,17 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
     );
 
     if (notFound || !profile) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-                <div className="text-6xl mb-4">🚗</div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Site não encontrado</h1>
-                <p className="text-gray-500">O endereço que você acessou não existe ou o site está desativado.</p>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="text-center space-y-4 bg-white p-8 rounded-2xl shadow-xl max-w-md mx-4">
+                <div className="text-5xl">⚠️</div>
+                <h2 className="text-lg font-bold text-slate-900">Site não encontrado</h2>
+                <p className="text-slate-600 text-sm leading-relaxed">O endereço que você acessou não existe ou o site está desativado.</p>
+                <a
+                    href="https://otimizzacrm.com.br"
+                    className="inline-block mt-4 px-6 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-900 transition"
+                >
+                    Ir para Otimizza CRM
+                </a>
             </div>
         </div>
     );

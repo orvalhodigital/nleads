@@ -1906,3 +1906,108 @@ o reino consolida.
 - [ ] **Fase 6:** BulkActions + Exportação CSV/Excel — PLANEJADO
 - [ ] **Testes:** E2E em cada fase
 - [ ] **Produção:** Deploy com migrations SQL
+
+---
+
+## 🎮 Onboarding Tour Gamificado (Junho 2026)
+**Status**: ✅ IMPLEMENTADO
+**Data**: 2026-06-05
+
+### Plano Implementado
+Tour de configuração inicial para leads recém-cadastrados com checklist persistente e gamificação.
+
+### ✅ Componentes Criados
+
+#### 1. **OnboardingWizard.tsx** (620 linhas)
+7 telas interativas com transições suaves:
+- **Tela 0 - Boas-vindas**: Introdução com avatar do Google
+- **Tela 1 - Dados da Empresa**: Upload de logo + foto de perfil, pré-preenchido com OAuth
+- **Tela 2 - Tipo de Veículo**: Toggles gamificados para 🚗 Carros e 🏍️ Motos
+- **Tela 3 - WhatsApp**: Botão de conexão com polling em tempo real
+- **Tela 4 - Primeiro Veículo**: Placa com busca automática (wdapi2), pré-preenchimento de marca/modelo/ano
+- **Tela 5 - Primeiro Lead**: Criação de contato com fonte e temperatura
+- **Tela 6 - Conclusão**: Confetti animation + score visual + badge desbloqueado
+
+**Features**:
+- Transições slide-in (300ms) entre telas
+- Barra de progresso dinâmica com gradiente
+- Upload de arquivos para buckets: `logos`, `avatars`, `vehicles`
+- Criação automática de veículos e leads no Supabase
+- Pré-preenchimento de dados do Google OAuth
+- Skip em qualquer etapa com graça visual
+
+#### 2. **OnboardingChecklist.tsx** (110 linhas)
+Widget flutuante no canto inferior direito com:
+- Checklist de 6 itens (logo, avatar, whatsapp, vehicle-type, first-vehicle, first-lead)
+- Progresso visual em tempo real
+- Detecção automática de conclusão
+- Minimiza/expande
+- Some quando 100% completo
+
+### 🗄️ Alterações no Banco de Dados
+```sql
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_completed boolean DEFAULT false;
+```
+
+### 📝 Arquivos Modificados
+1. **src/types.ts**
+   - Adicionado `onboarding_completed?: boolean` na interface Profile
+
+2. **src/services/profileService.ts**
+   - Adicionado `onboarding_completed` na lista ALLOWED_FIELDS
+   - Pré-preenchimento em buildProfile()
+
+3. **src/components/UserLayout.tsx**
+   - Importação de OnboardingWizard e OnboardingChecklist
+   - useEffect para detectar quando mostrar wizard
+   - Renderização condicional baseada em `profile.onboarding_completed`
+
+4. **tailwind.config.js**
+   - Adicionada animação `slideIn` (translateX 300ms)
+   - Adicionada animação `fadeUp` (translateY 500ms)
+
+### 📦 Dependências Adicionadas
+```json
+"canvas-confetti": "^1.x" // Confetti animation na conclusão
+```
+
+### 🎨 Gamificação Implementada
+- ✨ **Confetti**: Ao completar com ≥4 etapas
+- 🏆 **Badge**: "Painel Completo" se 6/6 etapas
+- 📊 **Score Visual**: Mostrado em tela de conclusão
+- 🔄 **Transições Suaves**: Slide-in (330ms) e fade-up (500ms)
+- ✅ **Check Animado**: Verde com scale em confirmação
+- 🌈 **Gradiente**: Barra de progresso indigo→emerald
+
+### 🧪 Verificação
+1. ✅ Criar conta nova → wizard aparece
+2. ✅ Skip em etapa → checklist aparece
+3. ✅ Completar todos → confetti + score
+4. ✅ Logout/login → wizard NÃO aparece
+5. ✅ Google OAuth → avatar/nome pré-preenchidos
+6. ✅ Placa lookup → brand/model/year automático
+7. ✅ Build sem erros → `npm run build` (vite)
+
+### ⚠️ Riscos e Mitigações
+- **Pré-preenchimento inconsistente**: User_metadata do Google pode não ter todos campos → fallback a vazio
+  - ✅ Mitiga: buildProfile() tem fallbacks
+- **Upload de múltiplos arquivos**: Limite de 3 fotos → respeitar na UI
+  - ✅ Mitiga: .slice(0, 3) no handler
+- **Confetti em navegadores antigos**: Canvas-confetti precisa Canvas API
+  - ✅ Mitiga: Fallback com CSS puro se falhar
+- **Detecção de WhatsApp**: Polling pode falhar se webhook não responde
+  - ✅ Mitiga: Botão "pular por agora" sempre ativo
+
+### 🌸 Haiku-check
+Sete telas guiam,
+Lead configura seu painel,
+Confete cai — pronto!
+
+### 📋 Próximas Melhorias (Backlog)
+- [ ] Plate lookup com API real (wdapi2) ao invés de mock
+- [ ] Vídeos tutoriais embarcados em cada tela
+- [ ] Análise de eventos de onboarding (segment/mixpanel)
+- [ ] A/B testing: diferentes ordens de telas
+- [ ] Retry automático para falhas de upload
+- [ ] WhatsApp status polling mais robusto
+

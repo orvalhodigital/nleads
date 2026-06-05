@@ -94,7 +94,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     const [loadingLeads, setLoadingLeads] = useState(false);
     const [hasMoreLeads, setHasMoreLeads] = useState(true);
     const [page, setPage] = useState(0);
-    const PAGE_SIZE = 50;
+    const PAGE_SIZE = 5000;
 
     const { showToast } = useToast();
 

@@ -302,7 +302,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const renderKanban = () => {
     return (
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex-1 min-h-0 flex flex-col h-full overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 280px)' }}>
           <div className="kanban-scrollbar flex gap-5 h-full w-full overflow-x-auto px-1 pb-4 overflow-y-hidden">
             <style>{`
               .lead-column-scroll::-webkit-scrollbar { display: none; }

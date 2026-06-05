@@ -21,6 +21,47 @@ Marca em amarelo,
 Otimizza vira visível,
 Logo pela tela.
 
+## ✨ Extensões Implementadas (Passos Opcionais)
+
+### 1. Favicon com Logo Otimizza ✅
+- **Status**: Implementado em ambos os sistemas
+- **Arquivos**: `/public/favicon-icon.png` (PNG 32x32)
+- **Index HTML**: Atualizado com tags de favicon
+  - `<link rel="icon" href="/favicon-icon.png">`
+  - `<link rel="apple-touch-icon" href="/favicon-icon.png">`
+- **Impacto**: Logo aparece em abas do navegador e bookmarks
+
+### 2. Componente Reutilizável `OtimizzaBrandLogo` ✅
+- **Localização**: `src/components/OtimizzaBrandLogo.tsx`
+- **Propriedades**:
+  - `variant`: 'horizontal' | 'vertical' | 'icon'
+  - `size`: 'sm' | 'md' | 'lg' | 'xl'
+  - `colorScheme`: 'light' | 'dark'
+  - `onClick`, `showText`, etc
+- **Benefícios**: 
+  - Reutilizável em qualquer lugar
+  - Suporta light/dark mode
+  - Responsive e customizável
+
+### 3. Hook de Tema `useBrandTheme` ✅
+- **Localização**: `src/hooks/useBrandTheme.ts`
+- **Exports**:
+  - `OTIMIZZA_COLORS` - Paleta de cores completa
+  - `useBrandTheme()` - Hook para tema dinâmico
+- **Funcionalidades**:
+  - Detecta preferência do sistema (light/dark)
+  - Fornece cores por tema
+  - `getPrimaryColor()`, `getSecondaryColor()`, `getTertiaryColor()`
+
+### 4. Documentação de Uso ✅
+- **Arquivo**: `BRANDING_USAGE_GUIDE.md`
+- **Conteúdo**:
+  - Exemplos de uso de componentes
+  - Exemplos de uso de hooks
+  - Casos de uso comuns
+  - Best practices
+  - Paleta de cores
+
 ---
 
 🔌 **INTEGRAÇÃO n8n**: Adaptação do fluxo "Adiciona Lead" — Celulares → Veículos

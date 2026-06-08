@@ -15,6 +15,8 @@ import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
 import { motoDatabase } from '../data/motoDb';
 import AutocompleteInput from './ui/AutocompleteInput';
+import PlanLimitAlert from './PlanLimitAlert';
+import { useData } from '../contexts/DataContext';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -201,6 +203,7 @@ const MotorcycleInventory: React.FC<Props> = ({
     motorcycles, leads, userEmail, onDataChange, onAddLead, onViewLead
 }) => {
     const navigate = useNavigate();
+    const { profile, vehicles } = useData();
 
     const [selected, setSelected] = useState<Motorcycle | 'new' | null>(null);
     const [inventoryView, setInventoryView] = useState<'available' | 'sold'>('available');
@@ -919,6 +922,28 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     // ── FORM VIEW (new / edit) ───────────────────────────────────────────────────
     if (selected) {
+        if (selected === 'new' && profile?.plan !== 'pro' && (vehicles.length + motorcycles.length) >= 10) {
+            return (
+                <div className="animate-fadeUp max-w-4xl mx-auto w-full pb-20">
+                    <div className="flex items-center justify-between mb-8">
+                        <button onClick={() => { setSelected(null); setForm(EMPTY_MOTO); }} className="flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors group">
+                            <div className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center group-hover:bg-slate-50"><ChevronLeft size={20} /></div>
+                            <span className="font-extrabold text-xs uppercase tracking-widest">Cancelar</span>
+                        </button>
+                    </div>
+                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm">
+                        <PlanLimitAlert
+                            plan={profile?.plan || 'free'}
+                            featureName="Veículos"
+                            currentCount={vehicles.length + motorcycles.length}
+                            limit={10}
+                            email={profile?.email}
+                        />
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="animate-fadeUp max-w-4xl mx-auto w-full pb-20">
                 <div className="flex items-center justify-between mb-8">

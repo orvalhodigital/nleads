@@ -27,6 +27,7 @@ import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 import { formatCurrency } from '../utils/formatters';
 import { Motorcycle } from '../types';
 import PageContainer from '../components/ui/PageContainer';
+import PlanLimitAlert from '../components/PlanLimitAlert';
 
 type SaleDashboardItem = {
     vehicle: any;
@@ -45,8 +46,30 @@ type SaleDashboardItem = {
 type QuickRange = '7d' | '30d' | 'year' | 'custom';
 
 const SalesClosedPage: React.FC = () => {
-    const { leads, vehicles, motorcycles } = useData();
+    const { leads, vehicles, motorcycles, profile, loading } = useData();
     const navigate = useNavigate();
+
+    if (loading) {
+        return (
+            <div className="flex-1 flex items-center justify-center min-h-[400px]">
+                <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    if (profile?.plan !== 'pro') {
+        return (
+            <PageContainer>
+                <div className="max-w-2xl mx-auto mt-8">
+                    <PlanLimitAlert
+                        plan={profile?.plan || 'free'}
+                        featureName="Vendas Realizadas"
+                        email={profile?.email}
+                    />
+                </div>
+            </PageContainer>
+        );
+    }
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');

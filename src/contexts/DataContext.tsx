@@ -274,11 +274,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     // Actions
     const addLead = useCallback(async (leadData: Lead) => {
+        const p = profileRef.current;
+        if (p?.plan !== 'pro' && leads.length >= 50) {
+            showToast('error', 'Limite do plano Free atingido (máximo 50 leads). Faça upgrade para Pro!');
+            throw new Error('PLAN_LIMIT_REACHED');
+        }
         try {
-            const { adminId } = getAdminContext(profileRef.current);
+            const { adminId } = getAdminContext(p);
             const enriched = {
                 ...leadData,
-                user_id: leadData.user_id || profileRef.current?.id,
+                user_id: leadData.user_id || p?.id,
                 admin_id: leadData.admin_id || adminId || null,
             };
             let newLead = await leadService.create(enriched);
@@ -301,7 +306,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             showToast('error', 'Erro ao cadastrar lead. Verifique os dados e tente novamente.');
             throw err;
         }
-    }, [showToast]);
+    }, [showToast, leads]);
 
     const updateLead = useCallback(async (leadData: Lead) => {
         try {
@@ -333,11 +338,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const addVehicle = useCallback(async (vehicleData: Omit<Vehicle, 'id'>) => {
         const p = profileRef.current;
+        if (p?.plan !== 'pro' && (vehicles.length + motorcycles.length) >= 10) {
+            showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
+            throw new Error('PLAN_LIMIT_REACHED');
+        }
         const { adminId } = getAdminContext(p);
         const res = await vehicleService.create(vehicleData, p?.id || impersonatedUserId, adminId);
         setVehicles((prev: Vehicle[]) => [res, ...prev]);
         return res;
-    }, [impersonatedUserId]);
+    }, [impersonatedUserId, vehicles, motorcycles, showToast]);
 
     const updateVehicle = useCallback(async (vehicleData: Vehicle) => {
         const res = await vehicleService.update(vehicleData);
@@ -357,11 +366,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const addMotorcycle = useCallback(async (motoData: Omit<Motorcycle, 'id'>) => {
         const p = profileRef.current;
+        if (p?.plan !== 'pro' && (vehicles.length + motorcycles.length) >= 10) {
+            showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
+            throw new Error('PLAN_LIMIT_REACHED');
+        }
         const { adminId } = getAdminContext(p);
         const res = await motorcycleService.create(motoData, p?.id || impersonatedUserId, adminId);
         setMotorcycles((prev: Motorcycle[]) => [res, ...prev]);
         return res;
-    }, [impersonatedUserId]);
+    }, [impersonatedUserId, vehicles, motorcycles, showToast]);
 
     const updateMotorcycle = useCallback(async (motoData: Motorcycle) => {
         const res = await motorcycleService.update(motoData);

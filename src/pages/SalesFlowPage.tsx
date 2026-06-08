@@ -9,12 +9,36 @@ import { ptBR } from 'date-fns/locale';
 import PageContainer from '../components/ui/PageContainer';
 import SalesKanban from '../components/SalesKanban';
 import { formatCurrency } from '../utils/formatters';
+import PlanLimitAlert from '../components/PlanLimitAlert';
 
 type FilterTab = 'todas' | 'documentacao' | 'entrega' | 'em_garantia' | 'vencidas';
 
 const SalesFlowPage: React.FC = () => {
-  const { leads, profile, refreshLeads } = useData();
+  const { leads, profile, refreshLeads, loading } = useData();
   const navigate = useNavigate();
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (profile?.plan !== 'pro') {
+    return (
+      <PageContainer className="pb-24">
+        <div className="max-w-2xl mx-auto mt-8">
+          <PlanLimitAlert
+            plan={profile?.plan || 'free'}
+            featureName="Fluxo de Vendas"
+            email={profile?.email}
+          />
+        </div>
+      </PageContainer>
+    );
+  }
+
   const [activeTab, setActiveTab] = useState<FilterTab>('todas');
   const [timeRange, setTimeRange] = useState<'30d' | '60d' | '90d' | 'all'>('30d');
 

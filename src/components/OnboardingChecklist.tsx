@@ -112,6 +112,7 @@ const OnboardingChecklist: React.FC = () => {
             </p>
           </div>
         </div>
+      )}
         </>
       )}
     </div>

@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
-import OtimizzaLogo from './OtimizzaLogo';
+import OtimizzaLogo, { LogoRenderer } from './OtimizzaLogo';
+import { useSystemSettings } from '../hooks/useSystemSettings';
+import otimizzaLogoVertical from '../assets/branding/logos/otimizza-logo-amarelo-v.png';
 import Header from './Header';
 import Auth from './Auth';
 import TrialExpired from './TrialExpired';
@@ -16,6 +18,7 @@ import { profileService } from '../services/profileService';
 
 const UserLayout: React.FC = () => {
     const { session, loading, profile, impersonatedUserId, refreshProfile } = useData();
+    const { logoUrl } = useSystemSettings();
     const location = useLocation();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [showRetry, setShowRetry] = useState(false);
@@ -62,7 +65,11 @@ const UserLayout: React.FC = () => {
                 
                 <div className="relative flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
                     <div className="relative">
-                        <OtimizzaLogo variant="vertical" className="h-16 w-auto" />
+                        {profile?.company_logo ? (
+                            <img src={profile.company_logo} alt="Company Logo" className="h-16 w-auto object-contain" />
+                        ) : (
+                            <LogoRenderer src={logoUrl === '/branding/logos/otimizza-logo-amarelo-h.png' ? otimizzaLogoVertical : (logoUrl || otimizzaLogoVertical)} variant="vertical" className="h-16 w-auto" />
+                        )}
                     </div>
                         <div className="flex flex-col items-center gap-2">
                             <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">

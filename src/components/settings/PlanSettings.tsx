@@ -3,6 +3,7 @@ import { CreditCard, Check, Crown, Star, Rocket, Zap, Clock, ShieldCheck, Loader
 import { Profile, Plan, Campaign } from '../../types';
 import { supabase } from '../../lib/supabaseClient';
 import { formatCurrency } from '../../utils/formatters';
+import { planService } from '../../services/planService';
 
 interface Props {
     profile: Profile;
@@ -12,6 +13,16 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const handleUpgradeClick = async () => {
+        if (profile.email) {
+            const url = await planService.getUpgradeLink(profile.email);
+            window.open(url, '_blank');
+        } else {
+            const url = planService.getUpgradeStripeUrl();
+            window.open(url, '_blank');
+        }
+    };
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -65,11 +76,13 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                         <div className="flex items-center gap-3 text-emerald-500 font-black text-sm uppercase tracking-widest">
                             <Star size={20} fill="currentColor" /> Assinatura Ativa
                         </div>
-                        <h2 className="text-4xl font-black">{currentPlan?.name || 'Período de Teste'}</h2>
+                        <h2 className="text-4xl font-black">{currentPlan?.name || (profile.plan === 'free' ? 'Plano Free' : 'Período de Teste')}</h2>
                         <p className="text-slate-400 font-medium max-w-md leading-relaxed">
-                            {profile.planStatus === 'active'
-                                ? 'Sua assinatura está em dia e todas as funcionalidades premium estão liberadas.'
-                                : 'Atenção: sua assinatura expirou. Renove agora para manter o acesso.'}
+                            {profile.plan === 'free'
+                                ? 'Você está no plano gratuito. Faça upgrade para o plano Pro para liberar limites e recursos premium.'
+                                : profile.planStatus === 'active'
+                                    ? 'Sua assinatura está em dia e todas as funcionalidades premium estão liberadas.'
+                                    : 'Atenção: sua assinatura expirou. Renove agora para manter o acesso.'}
                         </p>
                     </div>
 
@@ -80,12 +93,20 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Status da Conta</p>
-                                <p className="text-lg font-black text-white">{profile.planStatus === 'active' ? 'Regularizada' : 'Pendente'}</p>
+                                <p className="text-lg font-black text-white">
+                                    {profile.plan === 'free' ? 'Plano Gratuito' : profile.planStatus === 'active' ? 'Regularizada' : 'Pendente'}
+                                </p>
                             </div>
                         </div>
-                        <button className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-xl">
-                            Gerenciar Faturas
-                        </button>
+                        {profile.plan === 'free' ? (
+                            <button onClick={handleUpgradeClick} className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/10">
+                                Adquirir Plano Pro
+                            </button>
+                        ) : (
+                            <button className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-xl">
+                                Gerenciar Faturas
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -158,6 +179,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
 
                         <button
                             disabled={profile.plan === plan.slug}
+                            onClick={handleUpgradeClick}
                             className={`w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] ${
                                 profile.plan === plan.slug
                                 ? 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100'

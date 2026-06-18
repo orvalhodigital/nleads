@@ -44,9 +44,7 @@ export const planService = {
   },
 
   canAccessFeature(plan: string, feature: 'agenda' | 'sales-flow' | 'sales' | 'website'): boolean {
-    if (plan === 'pro') return true;
-    // Free plan blocks these features
-    return false;
+    return true;
   },
 
   getUpgradeStripeUrl(): string {

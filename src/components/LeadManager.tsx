@@ -7,7 +7,7 @@ import {
   CalendarCheck, Clock, ExternalLink, Search, CheckSquare, Square, Upload,
   Briefcase, Users, User, MapPin, DollarSign, Calendar, Sliders, Settings,
   MessageSquare, MoreVertical, CreditCard, LayoutTemplate, Tag, Trash, FileText,
-  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Smartphone, Target, Info
+  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Smartphone, Target, Info, Flame, Snowflake, Droplet
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DraggableProvided, DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { Lead, LeadPhase, LeadTemperature, Tag as TagType, Vehicle, VehicleType, TransmissionType, EngineType, SaleDetails, Profile } from '../types';
@@ -362,7 +362,15 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                                       <div className="flex items-center gap-2.5 mb-2 relative">
                                         <div className={`relative w-9 h-9 shrink-0 rounded-lg ${colors.btnBg} text-white flex items-center justify-center font-bold text-xs shadow-sm`}>
                                           {lead.name.charAt(0)}
-                                          <div className={`absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white ${lead.temperature === LeadTemperature.HOT ? 'bg-rose-500' : lead.temperature === LeadTemperature.WARM ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                                          <div className={`absolute -right-1 -bottom-1 w-4 h-4 rounded-full border border-white flex items-center justify-center shadow-sm ${
+                                            lead.temperature === LeadTemperature.HOT ? 'bg-rose-500' :
+                                            lead.temperature === LeadTemperature.WARM ? 'bg-amber-400' :
+                                            'bg-blue-400'
+                                          }`}>
+                                            {lead.temperature === LeadTemperature.HOT && <Flame size={9} className="text-white shrink-0" />}
+                                            {lead.temperature === LeadTemperature.WARM && <Droplet size={9} className="text-white shrink-0" />}
+                                            {lead.temperature === LeadTemperature.COLD && <Snowflake size={9} className="text-white shrink-0" />}
+                                          </div>
                                         </div>
                                         <div className="flex-1 min-w-0 pr-6">
                                           <h4 className="text-[13px] font-bold text-slate-900 truncate tracking-tight">{lead.name}</h4>
@@ -470,7 +478,9 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                     </td>
                     <td className="p-5">
                       <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-100">
-                        <div className={`w-2 h-2 rounded-full ${lead.temperature === LeadTemperature.HOT ? 'bg-rose-500' : lead.temperature === LeadTemperature.WARM ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                        {lead.temperature === LeadTemperature.HOT && <Flame size={12} className="text-rose-500 shrink-0" />}
+                        {lead.temperature === LeadTemperature.WARM && <Droplet size={12} className="text-amber-500 shrink-0" />}
+                        {lead.temperature === LeadTemperature.COLD && <Snowflake size={12} className="text-blue-400 shrink-0" />}
                         <span className="text-[10px] font-bold text-slate-500 uppercase">{lead.temperature}</span>
                       </div>
                     </td>

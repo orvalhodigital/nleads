@@ -17,12 +17,13 @@ interface TeamManagerProps {
 const PHASE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
     [LeadPhase.NEW]:          { label: 'Novos Leads',      color: 'text-blue-600',    bg: 'bg-blue-50',    border: 'border-blue-200' },
     [LeadPhase.FOLLOW_UP]:    { label: 'Follow-Up',        color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-200' },
+    [LeadPhase.STAND_BY]:     { label: 'Stand-By',         color: 'text-violet-600',  bg: 'bg-violet-50',  border: 'border-violet-200' },
     [LeadPhase.SIMULATION]:   { label: 'Simulação',        color: 'text-purple-600',  bg: 'bg-purple-50',  border: 'border-purple-200' },
     [LeadPhase.COMPLETED]:    { label: 'Convertidos',      color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
     [LeadPhase.DISQUALIFIED]: { label: 'Desqualificados',  color: 'text-rose-500',    bg: 'bg-rose-50',    border: 'border-rose-200' },
 };
 
-const DISPLAY_PHASES = [LeadPhase.NEW, LeadPhase.FOLLOW_UP, LeadPhase.SIMULATION, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
+const DISPLAY_PHASES = [LeadPhase.NEW, LeadPhase.FOLLOW_UP, LeadPhase.STAND_BY, LeadPhase.SIMULATION, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
 
 const LeadCard: React.FC<{ lead: Lead }> = ({ lead }) => (
     <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm hover:shadow-md transition-shadow">

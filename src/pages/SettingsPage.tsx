@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Save,
     Settings as SettingsIcon,
@@ -55,8 +56,23 @@ const TAB_ICONS: Record<Tab, React.ReactNode> = {
 const SettingsPage: React.FC = () => {
     const { profile, refreshProfile, isEmpresa } = useData();
     const { showToast } = useToast();
-    const [activeTab, setActiveTab] = useState<Tab>('Perfil');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tabParam = searchParams.get('tab') as Tab;
+    const [activeTab, setActiveTab] = useState<Tab>(tabParam || 'Perfil');
     const tabs: Tab[] = isEmpresa ? [...BASE_TABS, 'Equipe'] : BASE_TABS;
+
+    useEffect(() => {
+        const tab = searchParams.get('tab') as Tab;
+        if (tab && tabs.includes(tab)) {
+            setActiveTab(tab);
+        }
+    }, [searchParams, tabs]);
+
+    const handleTabChange = (tab: Tab) => {
+        setActiveTab(tab);
+        setSearchParams({ tab });
+    };
+
     const [loading, setLoading] = useState(false);
     const [enableCars, setEnableCars] = useState(profile?.enable_cars !== false);
     const [enableMotorcycles, setEnableMotorcycles] = useState(profile?.enable_motorcycles || false);
@@ -120,7 +136,7 @@ const SettingsPage: React.FC = () => {
                 {tabs.map(tab => (
                     <button
                         key={tab}
-                        onClick={() => setActiveTab(tab)}
+                        onClick={() => handleTabChange(tab)}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all ${
                             activeTab === tab
                                 ? 'bg-slate-900 text-white shadow-lg'

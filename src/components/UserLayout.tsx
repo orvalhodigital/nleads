@@ -95,22 +95,6 @@ const UserLayout: React.FC = () => {
         return <Auth />
     }
 
-    if (profile?.planStatus === 'expired' && !impersonatedUserId) {
-        return (
-            <TrialExpired
-                onUpgrade={() => {
-                    const { planService } = require('../services/planService');
-                    const paymentLink = planService.getUpgradeStripeUrl();
-                    const url = profile?.email
-                        ? `${paymentLink}?prefilled_email=${encodeURIComponent(profile.email)}`
-                        : paymentLink;
-                    window.open(url, '_blank');
-                }}
-                onLogout={() => supabase.auth.signOut()}
-            />
-        );
-    }
-
     return (
         <div className="flex h-screen bg-slate-50/50 text-slate-800 relative overflow-hidden font-sans">
             {/* Ambient Animated Blobs for Liquid Glass Effect */}

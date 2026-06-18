@@ -6,6 +6,7 @@ export enum LeadPhase {
   VISIT = 'Visita / Test Drive',
   SIMULATION = 'Simulação',
   FOLLOW_UP = 'Follow-up',
+  STAND_BY = 'Stand-By',
   WAITING_PAYMENT = 'Aguardando Pagamento',
   DOCUMENTATION = 'Documentação',
   DELIVERY = 'Entrega',

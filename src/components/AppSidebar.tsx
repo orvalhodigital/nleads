@@ -52,12 +52,7 @@ const AppSidebar: React.FC = () => {
     };
 
     const handleUpgrade = () => {
-        const { planService } = require('../services/planService');
-        const paymentLink = planService.getUpgradeStripeUrl();
-        const url = profile?.email
-            ? `${paymentLink}?prefilled_email=${encodeURIComponent(profile.email)}`
-            : paymentLink;
-        window.open(url, '_blank');
+        navigate('/settings?tab=Planos');
     };
 
     return (

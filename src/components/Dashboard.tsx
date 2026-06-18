@@ -215,6 +215,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       { phase: LeadPhase.VISIT, name: 'Visita', color: '#3b82f6' },
       { phase: LeadPhase.SIMULATION, name: 'Simulação', color: '#f59e0b' },
       { phase: LeadPhase.FOLLOW_UP, name: 'Follow-up', color: '#8b5cf6' },
+      { phase: LeadPhase.STAND_BY, name: 'Stand-By', color: '#a855f7' },
       { phase: LeadPhase.WAITING_PAYMENT, name: 'Pagamento', color: '#ec4899' },
       { phase: LeadPhase.DOCUMENTATION, name: 'Documentação', color: '#06b6d4' },
       { phase: LeadPhase.DELIVERY, name: 'Entrega', color: '#f97316' },

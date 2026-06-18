@@ -79,7 +79,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const phases = useMemo(() => {
     if (propPhases) return propPhases;
     if (type === 'leads') {
-      return [LeadPhase.NEW, LeadPhase.VISIT, LeadPhase.SIMULATION, LeadPhase.FOLLOW_UP, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
+      return [LeadPhase.NEW, LeadPhase.VISIT, LeadPhase.SIMULATION, LeadPhase.FOLLOW_UP, LeadPhase.STAND_BY, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
     }
     return [LeadPhase.WAITING_PAYMENT, LeadPhase.DOCUMENTATION, LeadPhase.DELIVERY, LeadPhase.COMPLETED];
   }, [propPhases, type]);
@@ -90,6 +90,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
       case LeadPhase.VISIT: return 'sky';
       case LeadPhase.SIMULATION: return 'indigo';
       case LeadPhase.FOLLOW_UP: return 'emerald';
+      case LeadPhase.STAND_BY: return 'violet';
       case LeadPhase.COMPLETED: return 'green';
       case LeadPhase.DISQUALIFIED: return 'rose';
       default: return 'slate';
@@ -102,6 +103,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
       case LeadPhase.VISIT: return <Calendar size={14} />;
       case LeadPhase.SIMULATION: return <Zap size={14} />;
       case LeadPhase.FOLLOW_UP: return <History size={14} />;
+      case LeadPhase.STAND_BY: return <Clock size={14} />;
       case LeadPhase.COMPLETED: return <UserCheck size={14} />;
       case LeadPhase.DISQUALIFIED: return <X size={14} />;
       default: return <Target size={14} />;
@@ -294,6 +296,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     sky: { columnBg: 'bg-slate-200/40', headerBg: 'bg-sky-100/50', border: 'border-sky-200', bgIcon: 'bg-sky-100', textStrong: 'text-slate-900', btnBg: 'bg-sky-500', bgSection: 'bg-sky-50/50' },
     indigo: { columnBg: 'bg-slate-200/40', headerBg: 'bg-indigo-100/50', border: 'border-indigo-200', bgIcon: 'bg-indigo-100', textStrong: 'text-slate-900', btnBg: 'bg-indigo-600', bgSection: 'bg-indigo-50/50' },
     emerald: { columnBg: 'bg-emerald-50/40', headerBg: 'bg-emerald-100/50', border: 'border-emerald-200', bgIcon: 'bg-emerald-100', textStrong: 'text-slate-900', btnBg: 'bg-emerald-500', bgSection: 'bg-emerald-50/50' },
+    violet: { columnBg: 'bg-violet-50/50', headerBg: 'bg-violet-100/50', border: 'border-violet-200', bgIcon: 'bg-violet-100', textStrong: 'text-slate-900', btnBg: 'bg-violet-500', bgSection: 'bg-violet-50/50' },
     green: { columnBg: 'bg-emerald-100/30', headerBg: 'bg-emerald-200/50', border: 'border-emerald-300', bgIcon: 'bg-emerald-200', textStrong: 'text-slate-900', btnBg: 'bg-emerald-600', bgSection: 'bg-emerald-100/40' },
     rose: { columnBg: 'bg-rose-50/50', headerBg: 'bg-rose-100/50', border: 'border-rose-200', bgIcon: 'bg-rose-100', textStrong: 'text-slate-900', btnBg: 'bg-rose-500', bgSection: 'bg-rose-50/60' },
     slate: { columnBg: 'bg-slate-100', headerBg: 'bg-slate-200/80', border: 'border-slate-300', bgIcon: 'bg-slate-300', textStrong: 'text-slate-900', btnBg: 'bg-slate-600', bgSection: 'bg-slate-200/50' },

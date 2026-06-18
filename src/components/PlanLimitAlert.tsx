@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { planService } from '../services/planService';
 
 interface PlanLimitAlertProps {
@@ -19,14 +20,15 @@ const PlanLimitAlert: React.FC<PlanLimitAlertProps> = ({
   email,
   onUpgrade,
 }) => {
+  const navigate = useNavigate();
+
   if (plan === 'pro') return null;
 
   const handleUpgrade = async () => {
     if (onUpgrade) {
       onUpgrade();
-    } else if (email) {
-      const url = await planService.getUpgradeLink(email);
-      window.open(url, '_blank');
+    } else {
+      navigate('/settings?tab=Planos');
     }
   };
 

@@ -28,6 +28,7 @@ const LeadsPage: React.FC = () => {
         LeadPhase.VISIT,
         LeadPhase.SIMULATION,
         LeadPhase.FOLLOW_UP,
+        LeadPhase.STAND_BY,
         LeadPhase.COMPLETED,
         LeadPhase.DISQUALIFIED
     ];

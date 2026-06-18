@@ -148,7 +148,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
         onSave(leadForm);
     };
 
-    const phases = [LeadPhase.NEW, LeadPhase.VISIT, LeadPhase.SIMULATION, LeadPhase.FOLLOW_UP, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
+    const phases = [LeadPhase.NEW, LeadPhase.VISIT, LeadPhase.SIMULATION, LeadPhase.FOLLOW_UP, LeadPhase.STAND_BY, LeadPhase.COMPLETED, LeadPhase.DISQUALIFIED];
 
     return (
         <div className="max-w-[1600px] mx-auto w-full pb-32 animate-fadeUp">

@@ -92,7 +92,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
       const updates: Partial<Profile> = { company_name: companyName, phone };
 
       if (logoFile) {
-        const logoUrl = await uploadFile(logoFile, 'logos');
+        const logoUrl = await uploadFile(logoFile, 'avatars');
         updates.company_logo = logoUrl;
       }
 

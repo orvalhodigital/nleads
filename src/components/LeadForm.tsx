@@ -16,7 +16,7 @@ interface LeadFormProps {
     isEditing?: boolean;
 }
 
-const SOURCES = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Indicação', 'Telefone', 'Outros'];
+const SOURCES = ['Site', 'WhatsApp', 'Instagram', 'Facebook', 'Indicação', 'Google', 'PDV', 'Outros'];
 
 const CAR_VEHICLE_TYPES: VehicleType[] = ['SUV', 'Sedan', 'Hatch', 'Picape', 'Esportivo', 'Conversível', 'Van'];
 const MOTO_VEHICLE_TYPES: VehicleType[] = ['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'];

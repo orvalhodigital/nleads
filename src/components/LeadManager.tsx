@@ -51,7 +51,7 @@ interface LeadManagerProps {
   teamMembers?: Profile[];
 }
 
-const SOURCES = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Indicação', 'Telefone', 'Outros'];
+const SOURCES = ['Site', 'WhatsApp', 'Instagram', 'Facebook', 'Indicação', 'Google', 'PDV', 'Outros'];
 
 const LeadManager: React.FC<LeadManagerProps> = ({
   type = 'leads', leads, phases: propPhases, onAddLead, onUpdateLead, onDeleteLead, onViewLead,

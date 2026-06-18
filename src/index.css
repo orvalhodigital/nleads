@@ -1,25 +1,40 @@
 @layer utilities {
-  .custom-scrollbar::-webkit-scrollbar,
-  .kanban-scrollbar::-webkit-scrollbar {
+  .custom-scrollbar::-webkit-scrollbar {
     height: 8px;
     width: 8px;
   }
+  .kanban-scrollbar::-webkit-scrollbar {
+    height: 14px;
+    width: 14px;
+  }
 
-  .custom-scrollbar::-webkit-scrollbar-track,
-  .kanban-scrollbar::-webkit-scrollbar-track {
+  .custom-scrollbar::-webkit-scrollbar-track {
     background: color-mix(in oklab, var(--secondary) 20%, transparent);
     border-radius: 20px;
   }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb,
-  .kanban-scrollbar::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, var(--primary) 30%, transparent);
+  .kanban-scrollbar::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--secondary) 15%, transparent);
     border-radius: 20px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover,
-  .kanban-scrollbar::-webkit-scrollbar-thumb:hover {
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 30%, transparent);
+    border-radius: 20px;
+  }
+  .kanban-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 40%, transparent);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 20px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: color-mix(in oklab, var(--primary) 50%, transparent);
+  }
+  .kanban-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--primary) 70%, transparent);
+    border: 3px solid transparent;
+    background-clip: padding-box;
   }
 
   .hide-scrollbar::-webkit-scrollbar {

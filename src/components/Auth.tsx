@@ -98,17 +98,17 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                             ⚡ Orvalho Digital
                         </div>
                         <h1 className="text-3xl xl:text-4xl font-black text-white leading-tight tracking-tight">
-                            Impulsione suas vendas de veículos.
+                            Estruture suas vendas de veículos.
                         </h1>
                         <p className="text-slate-300 mt-3 text-sm xl:text-base leading-relaxed font-medium">
-                            Gerencie seus leads, controle seu estoque de veículos e motos, e acelere seu funil de vendas em uma plataforma integrada e inteligente.
+                            Gerencie seus leads, controle seu estoque de veículos e motos, e transforme cada oportunidade em venda com toda a estrutura da Orvalho num só lugar.
                         </p>
                     </div>
 
                     <div className="mt-8 xl:mt-12 flex items-center gap-4 text-[10px] xl:text-xs font-bold text-slate-400">
                         <span>© 2026 Orvalho Digital</span>
                         <span className="w-1.5 h-1.5 rounded-full bg-[#57a89a]" />
-                        <span>Sua melhor escolha em CRM</span>
+                        <span>Estrutura completa de vendas</span>
                     </div>
                 </div>
             </div>

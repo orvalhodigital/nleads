@@ -149,7 +149,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
               Olá, {profile?.full_name || 'bem-vindo'}!
             </h1>
             <p className="text-lg sm:text-xl text-slate-600 max-w-md mx-auto">
-              Seu painel está quase pronto. Vamos configurar as informações essenciais em 5 passos.
+              Seu painel está quase pronto. Vamos configurar as informações essenciais em 4 passos.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-8">
               <button

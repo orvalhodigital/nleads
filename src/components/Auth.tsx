@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Mail, Lock, Loader2, ArrowRight, User, Eye, EyeOff, Building } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, User, Eye, EyeOff, Building } from 'lucide-react';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from './OtimizzaLogo';
 
@@ -104,7 +104,9 @@ export default function Auth() {
                         <span>Sua melhor escolha em CRM</span>
                     </div>
                 </div>
-                        {/* Right side: Login form */}
+            </div>
+
+            {/* Right side: Login form */}
             <div className="w-full lg:w-2/5 h-full flex flex-col justify-center items-center p-4 sm:p-10 xl:p-12 bg-white relative z-10 shadow-2xl overflow-y-auto custom-scrollbar">
                 <div className="w-full max-w-md my-auto space-y-3 sm:space-y-5 xl:space-y-6 py-1 sm:py-2">
                     {/* Header with Larger Logo */}
@@ -257,6 +259,16 @@ export default function Auth() {
                             </button>
                         </p>
                     </div>
+
+                    {/* Return to website */}
+                    <div className="text-center pt-2 border-t border-slate-100/60">
+                        <a 
+                            href="https://orvalhodigital.com.br"
+                            className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-extrabold text-slate-400 hover:text-[#57a89a] uppercase tracking-widest transition-colors"
+                        >
+                            <ArrowLeft size={12} />
+                            Voltar para o site
+                        </a>
                     </div>
                 </div>
             </div>

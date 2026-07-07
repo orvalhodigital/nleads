@@ -23,31 +23,37 @@ export default {
             colors: {
                 // User defined brand palette
                 brand: {
-                    green: '#088253', // Primary
-                    lightgreen: '#6EF0BE', // Light Green
-                    blue: '#4165E8', // Blue
+                    green: '#57a89a', // Primary Orvalho Digital
+                    lightgreen: '#73bdaf', // Light Green / Accent
+                    blue: '#45857a', // Active state / Blue substitute
                     highlight: '#DCFC36', // Yellow/Lime
                     grey: '#D1D1D1', // Grey
                 },
                 // Mapping standard utility classes to brand colors for instant uptake
                 emerald: {
-                    50: '#f0fdf7', // Keep standard for very light bg
-                    100: '#dbfceb',
-                    200: '#aff8d8',
-                    300: '#6EF0BE', // User's Light Green
-                    400: '#2dcc8e', // Generated intermediate
-                    500: '#088253', // User's Primary Green
-                    600: '#056b44', // Darker shade
-                    700: '#045536',
-                    800: '#06432c',
-                    900: '#063724',
-                    950: '#021f14',
+                    50: '#f2faf9', // Very light bg
+                    100: '#e6f5f3',
+                    200: '#bfe2dd',
+                    300: '#73bdaf', // Orvalho Light
+                    400: '#62b3a5',
+                    500: '#57a89a', // Orvalho Primary
+                    600: '#45857a', // Active / Hover
+                    700: '#34635b',
+                    800: '#254842',
+                    900: '#182f2b',
+                    950: '#0c1816',
                 },
-                // Map blue utils if used
+                // Map blue/indigo utils if used to Orvalho Digital palette
                 indigo: {
                     ...require('tailwindcss/colors').indigo,
-                    500: '#4165E8', // User's Blue
-                    600: '#3553bf', // Darker User Blue
+                    50: '#f2faf9',
+                    100: '#e6f5f3',
+                    200: '#bfe2dd',
+                    300: '#73bdaf',
+                    400: '#62b3a5',
+                    500: '#57a89a', // Primary
+                    600: '#45857a', // Darker User Blue
+                    700: '#34635b',
                 },
                 // Map yellow/lime utils
                 lime: {

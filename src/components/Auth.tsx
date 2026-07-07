@@ -67,8 +67,22 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
         } catch (err: any) {
             console.error(err);
             let msg = err.message || 'Ocorreu um erro ao tentar autenticar.';
-            if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('network error')) {
+            const lowerMsg = msg.toLowerCase();
+            
+            if (lowerMsg.includes('failed to fetch') || lowerMsg.includes('network error')) {
                 msg = 'Erro de conexão. Verifique sua internet, e se as variáveis de ambiente (URL e Chave do Supabase) estão configuradas corretamente no arquivo .env.local.';
+            } else if (lowerMsg.includes('invalid login credentials')) {
+                msg = 'E-mail ou senha incorretos. Por favor, verifique suas credenciais.';
+            } else if (lowerMsg.includes('user already registered')) {
+                msg = 'Este e-mail já está cadastrado. Tente fazer login ou recuperar sua senha.';
+            } else if (lowerMsg.includes('password should be at least')) {
+                msg = 'A senha precisa ter pelo menos 6 caracteres.';
+            } else if (lowerMsg.includes('email not confirmed')) {
+                msg = 'Seu e-mail ainda não foi verificado. Por favor, cheque sua caixa de entrada para confirmar.';
+            } else if (lowerMsg.includes('too many requests')) {
+                msg = 'Muitas tentativas seguidas. Por favor, aguarde alguns minutos antes de tentar novamente.';
+            } else if (lowerMsg.includes('invalid email') || lowerMsg.includes('email address')) {
+                msg = 'Por favor, insira um e-mail válido.';
             }
             setError(msg);
         } finally {

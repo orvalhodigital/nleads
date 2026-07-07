@@ -159,7 +159,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
                 Começar Configuração
               </button>
               <button
-                onClick={handleSkip}
+                onClick={completeOnboarding}
                 className="flex-1 py-3.5 sm:py-4 border-2 border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-all cursor-pointer"
               >
                 Configurar Depois

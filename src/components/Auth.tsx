@@ -3,18 +3,25 @@ import { supabase } from '../lib/supabaseClient';
 import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, User, Eye, EyeOff, Building } from 'lucide-react';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from './OtimizzaLogo';
+import { Link, Navigate } from 'react-router-dom';
+import { useData } from '../contexts/DataContext';
 
-export default function Auth() {
+export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) {
+    const { session } = useData();
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [companyName, setCompanyName] = useState('');
-    const [isSignUp, setIsSignUp] = useState(false);
+    const isSignUp = mode === 'signup';
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const { logoUrl } = useSystemSettings();
+
+    if (session) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     const handleGoogleAuth = async () => {
         setLoading(true);
@@ -107,8 +114,8 @@ export default function Auth() {
             </div>
 
             {/* Right side: Login form */}
-            <div className="w-full lg:w-2/5 h-full flex flex-col justify-center items-center p-4 sm:p-10 xl:p-12 bg-white relative z-10 shadow-2xl overflow-y-auto custom-scrollbar">
-                <div className="w-full max-w-md my-auto space-y-3 sm:space-y-5 xl:space-y-6 py-1 sm:py-2">
+            <div className="w-full lg:w-2/5 h-full flex flex-col items-center p-6 sm:p-10 bg-white relative z-10 shadow-2xl overflow-y-auto custom-scrollbar">
+                <div className="w-full max-w-md my-auto space-y-3 sm:space-y-5 xl:space-y-6 py-6 sm:py-8">
                     {/* Header with Larger Logo */}
                     <div className="text-center space-y-1 sm:space-y-2 xl:space-y-3">
                         <div className="flex justify-center transform transition-transform hover:scale-102">
@@ -250,13 +257,12 @@ export default function Auth() {
                     <div className="text-center">
                         <p className="text-[10px] sm:text-[11px] font-bold text-slate-400">
                             {isSignUp ? 'Já tem uma conta?' : 'Ainda não tem conta?'}
-                            <button
-                                type="button"
-                                onClick={() => setIsSignUp(!isSignUp)}
+                            <Link
+                                to={isSignUp ? '/login' : '/nova-conta'}
                                 className="ml-2 text-[10px] sm:text-[11px] font-extrabold text-[#57a89a] hover:text-[#45857a] uppercase tracking-widest transition-colors cursor-pointer"
                             >
                                 {isSignUp ? 'Fazer Login' : 'Criar Nova Conta'}
-                            </button>
+                            </Link>
                         </p>
                     </div>
 

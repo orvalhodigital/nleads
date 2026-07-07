@@ -92,7 +92,7 @@ const UserLayout: React.FC = () => {
     }
 
     if (!session) {
-        return <Auth />
+        return <Navigate to="/login" replace />
     }
 
     return (

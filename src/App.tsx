@@ -24,6 +24,7 @@ const PageLoader = () => (
 );
 
 // Lazy Loaded Components
+const Auth = lazy(() => import('./components/Auth'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 const HomePage = lazy(() => import('./pages/HomePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -61,6 +62,16 @@ const App: React.FC = () => {
                 <>
                   {/* Domínio do sistema: vai direto pro painel */}
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/login" element={
+                    <DataProvider>
+                      <Auth mode="login" />
+                    </DataProvider>
+                  } />
+                  <Route path="/nova-conta" element={
+                    <DataProvider>
+                      <Auth mode="signup" />
+                    </DataProvider>
+                  } />
                   <Route path="/*" element={
                     <DataProvider>
                       <UserLayout />

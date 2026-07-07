@@ -4,7 +4,7 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import OtimizzaLogo, { LogoRenderer } from './OtimizzaLogo';
 import { useSystemSettings } from '../hooks/useSystemSettings';
-import otimizzaLogoVertical from '../assets/branding/logos/otimizza-logo-amarelo-v.png';
+import logoOrvalhoVertical from '../assets/branding/logos/logo-orvalho.png';
 import Header from './Header';
 import Auth from './Auth';
 import TrialExpired from './TrialExpired';
@@ -68,7 +68,7 @@ const UserLayout: React.FC = () => {
                         {profile?.company_logo ? (
                             <img src={profile.company_logo} alt="Company Logo" className="h-16 w-auto object-contain" />
                         ) : (
-                            <LogoRenderer src={logoUrl === '/branding/logos/otimizza-logo-amarelo-h.png' ? otimizzaLogoVertical : (logoUrl || otimizzaLogoVertical)} variant="vertical" className="h-16 w-auto" />
+                            <LogoRenderer src={logoUrl === '/branding/logos/logo-orvalho.png' ? logoOrvalhoVertical : (logoUrl || logoOrvalhoVertical)} variant="vertical" className="h-16 w-auto" />
                         )}
                     </div>
                         <div className="flex flex-col items-center gap-2">

@@ -7,7 +7,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { DataProvider } from './contexts/DataContext';
 
 // ─── Detecção de domínio (avaliado uma única vez no carregamento) ─────────────
-const SYSTEM_HOSTS = ['localhost', '127.0.0.1', 'veiculos.otimizza.com.br', 'otimizza.com.br', 'nleads.pro', 'nleads.com.br', 'otimizza.pro', 'otimizzacrm.pro', 'otimizzacrm.com.br', 'vercel.app'];
+const SYSTEM_HOSTS = ['localhost', '127.0.0.1', 'painel.orvalhodigital.com.br', 'orvalhodigital.com.br', 'veiculos.otimizza.com.br', 'otimizza.com.br', 'nleads.pro', 'nleads.com.br', 'otimizza.pro', 'otimizzacrm.pro', 'otimizzacrm.com.br', 'vercel.app'];
 function isSystemHost(h: string) {
   return SYSTEM_HOSTS.some(s => h === s || h.endsWith(`.${s}`));
 }

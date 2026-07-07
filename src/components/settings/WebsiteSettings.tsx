@@ -309,12 +309,12 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                     <div className="space-y-1.5">
                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">URL do Site</label>
                         <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 focus-within:bg-white focus-within:border-emerald-500 transition-all">
-                            <span className="text-slate-400 font-bold text-xs">https://veiculos.otimizza.com.br/</span>
+                            <span className="text-slate-400 font-bold text-xs">https://painel.orvalhodigital.com.br/</span>
                             <input value={website_slug} onChange={e => setWebsiteSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                                 placeholder="sua-loja" className="bg-transparent border-none outline-none font-black text-slate-900 text-xs flex-1 ml-1" />
                         </div>
                         {website_slug && (
-                            <a href={custom_domain ? `https://${custom_domain}` : `https://veiculos.otimizza.com.br/${website_slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 mt-2 w-full py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-100 transition-colors">
+                            <a href={custom_domain ? `https://${custom_domain}` : `https://painel.orvalhodigital.com.br/${website_slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 mt-2 w-full py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-100 transition-colors">
                                 Acessar Site <LinkIcon size={12} />
                             </a>
                         )}

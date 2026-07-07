@@ -1,4 +1,7 @@
 import React from 'react';
+import logoOrvalho from '../assets/branding/logos/logo-orvalho.png';
+import logoOrvalhoBranca from '../assets/branding/logos/logo-orvalho-branca.png';
+import simboloOrvalho from '../assets/branding/logos/simbolo-orvalho.png';
 
 interface OtimizzaBrandLogoProps {
   variant?: 'horizontal' | 'vertical' | 'icon';
@@ -10,10 +13,10 @@ interface OtimizzaBrandLogoProps {
 }
 
 const SIZE_MAP = {
-  sm: { icon: 24, horizontal: 'h-6', vertical: 'h-12' },
-  md: { icon: 32, horizontal: 'h-10', vertical: 'h-16' },
-  lg: { icon: 48, horizontal: 'h-16', vertical: 'h-24' },
-  xl: { icon: 64, horizontal: 'h-20', vertical: 'h-32' }
+  sm: { icon: 'h-6', horizontal: 'h-6', vertical: 'h-12' },
+  md: { icon: 'h-8', horizontal: 'h-10', vertical: 'h-16' },
+  lg: { icon: 'h-12', horizontal: 'h-16', vertical: 'h-24' },
+  xl: { icon: 'h-16', horizontal: 'h-20', vertical: 'h-32' }
 };
 
 export const OtimizzaBrandLogo: React.FC<OtimizzaBrandLogoProps> = ({
@@ -24,109 +27,52 @@ export const OtimizzaBrandLogo: React.FC<OtimizzaBrandLogoProps> = ({
   onClick,
   showText = true
 }) => {
-  const primaryColor = '#F79F1B'; // Amarelo Otimizza
-  const textColor = colorScheme === 'light' ? '#373435' : '#FFFFFF';
   const sizes = SIZE_MAP[size];
+  const isDark = colorScheme === 'dark';
 
-  const renderIcon = () => (
-    <svg
-      width={sizes.icon}
-      height={sizes.icon}
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="shrink-0"
-    >
-      <defs>
-        <linearGradient id="otimizza-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={primaryColor} />
-          <stop offset="100%" stopColor="#F39C12" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16"
-        stroke="url(#otimizza-grad)"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 20L20 12M20 12H15M20 12V17"
-        stroke="url(#otimizza-grad)"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  const handleClickProps = onClick ? {
+    onClick,
+    role: 'button',
+    tabIndex: 0,
+    className: `cursor-pointer ${className}`
+  } : {
+    className
+  };
 
   if (variant === 'icon') {
     return (
-      <div
-        className={`inline-flex items-center justify-center ${className}`}
-        onClick={onClick}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
-      >
-        {renderIcon()}
-      </div>
+      <img
+        src={simboloOrvalho}
+        alt="Orvalho Digital Icon"
+        className={`${sizes.icon} w-auto object-contain shrink-0`}
+        {...handleClickProps}
+      />
     );
   }
 
   if (variant === 'vertical') {
     return (
-      <div
-        className={`inline-flex flex-col items-center text-center gap-3 ${className}`}
-        onClick={onClick}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
+      <div 
+        className="flex flex-col items-center gap-2"
+        {...handleClickProps}
       >
-        {renderIcon()}
-        {showText && (
-          <div className="flex flex-col items-center">
-            <span
-              style={{ color: textColor }}
-              className="font-black tracking-tight select-none"
-            >
-              Otimizza
-            </span>
-            <span
-              style={{ color: primaryColor }}
-              className="text-xs font-extrabold tracking-widest uppercase mt-0.5 select-none"
-            >
-              CRM
-            </span>
-          </div>
-        )}
+        <img
+          src={isDark ? logoOrvalhoBranca : logoOrvalho}
+          alt="Orvalho Digital Vertical"
+          className={`${sizes.vertical} w-auto object-contain shrink-0`}
+        />
       </div>
     );
   }
 
   // Default: horizontal
   return (
-    <div
-      className={`inline-flex items-center gap-2 ${className}`}
-      onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-    >
-      {renderIcon()}
-      {showText && (
-        <div className="flex flex-col items-start leading-none">
-          <span
-            style={{ color: textColor }}
-            className="font-black tracking-tight select-none flex items-center text-sm md:text-base"
-          >
-            Otimizza
-            <span
-              style={{ backgroundColor: primaryColor }}
-              className="ml-1.5 px-1.5 py-0.5 text-[9px] font-black text-white rounded-md tracking-wider uppercase"
-            >
-              CRM
-            </span>
-          </span>
-        </div>
-      )}
-    </div>
+    <img
+      src={isDark ? logoOrvalhoBranca : logoOrvalho}
+      alt="Orvalho Digital Horizontal"
+      className={`${sizes.horizontal} w-auto object-contain shrink-0`}
+      {...handleClickProps}
+    />
   );
 };
 

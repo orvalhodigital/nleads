@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-const DEFAULT_LOGO_URL = '/branding/logos/otimizza-logo-amarelo-h.png';
+const DEFAULT_LOGO_URL = '/branding/logos/logo-orvalho.png';
 
 export interface SystemSettings {
     logoUrl: string | null;

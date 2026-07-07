@@ -99,8 +99,8 @@ export default function AdminSetup() {
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-neutral-100">
                 <div className="bg-white p-8 text-center flex flex-col items-center border-b border-neutral-100">
                     <img
-                        src="https://docs.otimizza.pro/otimizza-logo-amarelo-h.png"
-                        alt="Otimizza Logo"
+                        src="/branding/logos/logo-orvalho.png"
+                        alt="Orvalho Digital Logo"
                         className="h-12 w-auto object-contain cursor-pointer transition-opacity hover:opacity-80"
                         onClick={() => window.location.reload()}
                     />

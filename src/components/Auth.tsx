@@ -101,7 +101,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                             Estruture suas vendas de veículos.
                         </h1>
                         <p className="text-slate-300 mt-3 text-sm xl:text-base leading-relaxed font-medium">
-                            Gerencie seus leads, controle seu estoque de veículos e motos, e transforme cada oportunidade em venda com toda a estrutura da Orvalho num só lugar.
+                            Gerencie seus leads, controle seu estoque, e transforme cada oportunidade em venda com toda a estrutura da Orvalho Digital num só lugar.
                         </p>
                     </div>
 

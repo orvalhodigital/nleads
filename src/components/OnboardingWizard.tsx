@@ -4,13 +4,13 @@ import { useData } from '../contexts/DataContext';
 import { Profile, Lead, Vehicle } from '../types';
 import { profileService } from '../services/profileService';
 import confetti from 'canvas-confetti';
-import { ArrowRight, ArrowLeft, Check, Bike, Car, MessageCircle, Image as ImageIcon, Plus, Phone, Mail } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Bike, Car, MessageCircle, Image as ImageIcon, Plus, Phone, Mail, LogOut } from 'lucide-react';
 
 interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
-type Step = 'welcome' | 'company' | 'vehicles' | 'whatsapp' | 'complete';
+type Step = 'welcome' | 'company' | 'whatsapp' | 'complete';
 
 const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
   const { profile, user, refreshProfile } = useData();
@@ -41,7 +41,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const vehicleImagesRef = useRef<HTMLInputElement>(null);
 
-  const stepOrder: Step[] = ['welcome', 'company', 'vehicles', 'whatsapp', 'complete'];
+  const stepOrder: Step[] = ['welcome', 'company', 'whatsapp', 'complete'];
   const currentStepIndex = stepOrder.indexOf(step);
 
   useEffect(() => {
@@ -110,34 +110,6 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
       }
     } catch (err) {
       setError('Erro ao salvar dados da empresa');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVehiclesStep = async () => {
-    if (!enableCars && !enableMotos) {
-      setError('Selecione pelo menos um tipo de veículo');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await supabase.auth.updateUser({
-        data: {
-          enable_cars: enableCars,
-          enable_motorcycles: enableMotos,
-        },
-      });
-      await refreshProfile();
-
-      const nextIndex = currentStepIndex + 1;
-      if (nextIndex < stepOrder.length) {
-        setStep(stepOrder[nextIndex]);
-      }
-    } catch (err) {
-      setError('Erro ao salvar configuração de veículos');
       console.error(err);
     } finally {
       setLoading(false);
@@ -280,60 +252,6 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
           </div>
         );
 
-      case 'vehicles':
-        return (
-          <div className="space-y-6 animate-slideIn">
-            <h2 className="text-3xl font-black text-slate-900">Tipo de Veículo</h2>
-            <p className="text-slate-600">Qual tipo de veículo você vende?</p>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setEnableCars(!enableCars)}
-                className={`p-6 rounded-2xl border-2 transition-all text-center cursor-pointer ${
-                  enableCars
-                    ? 'border-[#57a89a] bg-[#57a89a]/5'
-                    : 'border-slate-200 bg-white hover:border-[#73bdaf]'
-                }`}
-              >
-                <div className="text-5xl mb-3">🚗</div>
-                <p className="font-bold text-slate-900">Carros</p>
-                {enableCars && <Check className="w-5 h-5 text-[#57a89a] mx-auto mt-2" />}
-              </button>
-
-              <button
-                onClick={() => setEnableMotos(!enableMotos)}
-                className={`p-6 rounded-2xl border-2 transition-all text-center cursor-pointer ${
-                  enableMotos
-                    ? 'border-[#57a89a] bg-[#57a89a]/5'
-                    : 'border-slate-200 bg-white hover:border-[#73bdaf]'
-                }`}
-              >
-                <div className="text-5xl mb-3">🏍️</div>
-                <p className="font-bold text-slate-900">Motos</p>
-                {enableMotos && <Check className="w-5 h-5 text-[#57a89a] mx-auto mt-2" />}
-              </button>
-            </div>
-
-            {error && <div className="p-3 bg-red-100 text-red-700 rounded-xl">{error}</div>}
-
-            <div className="flex gap-4 pt-6">
-              <button
-                onClick={() => setStep('company')}
-                className="flex-1 py-3 border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 cursor-pointer"
-              >
-                Voltar
-              </button>
-              <button
-                onClick={handleVehiclesStep}
-                disabled={loading}
-                className="flex-1 py-3 bg-[#57a89a] text-white rounded-xl font-bold hover:bg-[#45857a] disabled:opacity-50 cursor-pointer"
-              >
-                Próximo
-              </button>
-            </div>
-          </div>
-        );
-
       case 'whatsapp':
         return (
           <div className="space-y-6 animate-slideIn">
@@ -366,7 +284,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
 
             <div className="flex gap-4 pt-6">
               <button
-                onClick={() => setStep('vehicles')}
+                onClick={() => setStep('company')}
                 className="flex-1 py-3 border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 cursor-pointer"
               >
                 Voltar
@@ -388,7 +306,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
           <div className="text-center space-y-8 animate-fadeUp">
             <div className="text-7xl">✨</div>
             <h1 className="text-4xl font-black text-slate-900">Painel Configurado!</h1>
-            <p className="text-xl text-slate-600">Você completou {progress}/4 etapas de configuração</p>
+            <p className="text-xl text-slate-600">Tudo pronto! Seu painel está configurado e pronto para uso.</p>
             {progress >= 3 && (
               <div className="inline-block bg-amber-100 text-amber-900 px-6 py-3 rounded-full font-bold">
                 🏆 Painel Completo!
@@ -409,18 +327,28 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 overflow-auto">
+    <div className="fixed inset-0 bg-white z-[200] overflow-auto">
+      {/* Absolute Logout Button */}
+      <button
+        onClick={() => supabase.auth.signOut()}
+        className="absolute top-6 right-6 flex items-center gap-2 px-3 py-1.5 border border-slate-200 text-slate-500 hover:text-red-500 rounded-xl font-bold hover:bg-slate-50 transition-all cursor-pointer text-xs"
+        title="Sair da Conta"
+      >
+        <LogOut size={14} />
+        <span>Sair</span>
+      </button>
+
       <div className="max-w-2xl mx-auto px-6 py-8 sm:py-20">
         {/* Progress bar */}
         <div className="mb-12">
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm font-bold text-slate-600 uppercase tracking-wider">Progresso</p>
-            <p className="text-sm font-bold text-[#57a89a]">{currentStepIndex + 1}/5</p>
+            <p className="text-sm font-bold text-[#57a89a]">{currentStepIndex + 1}/{stepOrder.length}</p>
           </div>
           <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-[#57a89a] to-[#73bdaf] transition-all duration-500"
-              style={{ width: `${((currentStepIndex + 1) / 5) * 100}%` }}
+              style={{ width: `${((currentStepIndex + 1) / stepOrder.length) * 100}%` }}
             />
           </div>
         </div>

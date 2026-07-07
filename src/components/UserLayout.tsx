@@ -135,8 +135,8 @@ const UserLayout: React.FC = () => {
                 />
             )}
 
-            <OnboardingChecklist />
-            <AppTour />
+            {!showOnboarding && <OnboardingChecklist />}
+            {!showOnboarding && <AppTour />}
         </div>
     );
 };

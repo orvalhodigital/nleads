@@ -1,4 +1,18 @@
 /** @type {import('tailwindcss').Config} */
+const orvalhoPalette = {
+    50: '#f2faf9',
+    100: '#e6f5f3',
+    200: '#bfe2dd',
+    300: '#73bdaf',
+    400: '#62b3a5',
+    500: '#57a89a', // Primary Orvalho Digital
+    600: '#45857a', // Active / Hover
+    700: '#34635b',
+    800: '#254842',
+    900: '#182f2b',
+    950: '#0c1816',
+};
+
 export default {
     content: [
         "./index.html",
@@ -30,30 +44,12 @@ export default {
                     grey: '#D1D1D1', // Grey
                 },
                 // Mapping standard utility classes to brand colors for instant uptake
-                emerald: {
-                    50: '#f2faf9', // Very light bg
-                    100: '#e6f5f3',
-                    200: '#bfe2dd',
-                    300: '#73bdaf', // Orvalho Light
-                    400: '#62b3a5',
-                    500: '#57a89a', // Orvalho Primary
-                    600: '#45857a', // Active / Hover
-                    700: '#34635b',
-                    800: '#254842',
-                    900: '#182f2b',
-                    950: '#0c1816',
-                },
+                emerald: orvalhoPalette,
+                teal: orvalhoPalette,
                 // Map blue/indigo utils if used to Orvalho Digital palette
                 indigo: {
                     ...require('tailwindcss/colors').indigo,
-                    50: '#f2faf9',
-                    100: '#e6f5f3',
-                    200: '#bfe2dd',
-                    300: '#73bdaf',
-                    400: '#62b3a5',
-                    500: '#57a89a', // Primary
-                    600: '#45857a', // Darker User Blue
-                    700: '#34635b',
+                    ...orvalhoPalette,
                 },
                 // Map yellow/lime utils
                 lime: {

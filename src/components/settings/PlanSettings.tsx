@@ -109,7 +109,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10 relative z-10">
                     <div className="space-y-4">
-                        <div className="flex items-center gap-3 text-emerald-500 font-black text-sm uppercase tracking-widest">
+                        <div className="flex items-center gap-3 text-violet-500 font-black text-sm uppercase tracking-widest">
                             <Star size={20} fill="currentColor" /> Assinatura Ativa
                         </div>
                         <h2 className="text-4xl font-black">{isProActive ? 'Plano Ilimitado' : 'Plano Básico'}</h2>
@@ -122,7 +122,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
 
                     <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 min-w-[280px] shadow-2xl">
                         <div className="flex items-center gap-4 mb-6">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                            <div className="w-12 h-12 rounded-2xl bg-violet-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
                                 <ShieldCheck size={28} className="text-white" />
                             </div>
                             <div>
@@ -133,19 +133,19 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                             </div>
                         </div>
                         {!isProActive ? (
-                            <button
+                             <button
                                 onClick={() => {
                                     const proPlan = plans.find(p => p.slug === 'pro');
                                     if (proPlan) handleUpgradeClick(proPlan);
                                 }}
                                 disabled={upgrading}
-                                className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/10 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                                className="w-full py-4 bg-violet-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-violet-700 transition-all shadow-xl shadow-violet-600/10 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 {upgrading && <Loader2 size={16} className="animate-spin" />}
                                 {upgrading ? 'Redirecionando...' : 'Adquirir Plano Ilimitado'}
                             </button>
                         ) : (
-                            <button className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-xl">
+                            <button className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-violet-500 hover:text-white transition-all shadow-xl">
                                 Gerenciar Faturas
                             </button>
                         )}
@@ -176,7 +176,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                                 </div>
                             )}
                             <div>
-                                <div className="flex items-center gap-4 mb-6">
+                                <div className="flex flex-col items-start gap-3 mb-6">
                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
                                         isHighlight ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'
                                     }`}>
@@ -188,7 +188,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                                     </div>
                                     <div>
                                         <h4 className="text-xl font-black text-slate-900">{plan.name}</h4>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
                                             {plan.description}
                                         </p>
                                     </div>
@@ -204,7 +204,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                                 <div className="space-y-4 mb-8">
                                     {plan.features?.map((feat, i) => (
                                         <div key={i} className="flex items-start gap-3 text-xs font-bold text-slate-600">
-                                            <div className="w-5 h-5 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-100 mt-0.5">
+                                            <div className="w-5 h-5 rounded-lg bg-violet-50 text-violet-500 flex items-center justify-center shrink-0 border border-violet-100 mt-0.5">
                                                 <Check size={12} strokeWidth={3} />
                                             </div>
                                             <span>{feat}</span>
@@ -219,7 +219,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                                 className={`w-full py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer ${
                                     isCurrent
                                         ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                                        : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-xl shadow-slate-900/10 border-b-4 border-slate-950 disabled:opacity-50'
+                                        : 'bg-slate-900 text-white hover:bg-violet-600 shadow-xl shadow-slate-900/10 border-b-4 border-slate-950 disabled:opacity-50'
                                 }`}
                             >
                                 {upgrading && <Loader2 size={16} className="animate-spin" />}

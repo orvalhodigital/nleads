@@ -53,7 +53,7 @@ const EstruturaECV: React.FC = () => {
           </div>
 
           <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto space-y-6">
-            <div className="w-20 h-20 rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 shadow-xl shadow-emerald-500/5">
+            <div className="w-20 h-20 rounded-3xl bg-violet-500/10 text-violet-500 flex items-center justify-center border border-violet-500/20 shadow-xl shadow-violet-500/5">
               <Crown size={40} className="animate-pulse" />
             </div>
 
@@ -63,22 +63,22 @@ const EstruturaECV: React.FC = () => {
             </p>
 
             <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 w-full text-left space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400">O que o plano PRO inclui na Estrutura ECV:</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-violet-400">O que o plano PRO inclui na Estrutura ECV:</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-semibold text-slate-300 pt-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <div className="w-2 h-2 rounded-full bg-violet-400" />
                   Conexão de Pixel do Facebook e Google Ads
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <div className="w-2 h-2 rounded-full bg-violet-400" />
                   Métricas Consolidadas (Cliques, Leads, Gastos)
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <div className="w-2 h-2 rounded-full bg-violet-400" />
                   Visão de Campanhas Ativas
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <div className="w-2 h-2 rounded-full bg-violet-400" />
                   Gestão Estruturada de Tráfego
                 </div>
               </div>
@@ -86,7 +86,7 @@ const EstruturaECV: React.FC = () => {
 
             <button 
               onClick={() => navigate('/settings?tab=Planos')}
-              className="mt-4 px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-wider text-sm transition-all shadow-xl shadow-emerald-500/20 active:scale-95 cursor-pointer flex items-center gap-2"
+              className="mt-4 px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold uppercase tracking-wider text-sm transition-all shadow-xl shadow-violet-600/20 active:scale-95 cursor-pointer flex items-center gap-2"
             >
               Fazer Upgrade para Pro <ChevronRight size={16} />
             </button>

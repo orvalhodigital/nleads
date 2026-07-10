@@ -55,4 +55,22 @@ export const planService = {
     const baseUrl = this.getUpgradeStripeUrl();
     return `${baseUrl}?prefilled_email=${encodeURIComponent(email)}`;
   },
+
+  async getAsaasUpgradeLink(userId: string, planId: string): Promise<string> {
+    const response = await fetch('/api/create-asaas-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, planId }),
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || 'Erro ao gerar pagamento no Asaas');
+    }
+
+    const data = await response.json();
+    return data.invoiceUrl;
+  },
 };

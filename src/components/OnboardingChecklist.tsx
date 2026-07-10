@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { CheckCircle2, ChevronUp, ChevronDown, X } from 'lucide-react';
 
-const OnboardingChecklist: React.FC = () => {
+interface OnboardingChecklistProps {
+  onStart?: () => void;
+}
+
+const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onStart }) => {
   const { profile, vehicles, leads } = useData();
   const [isMinimized, setIsMinimized] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
@@ -103,8 +107,14 @@ const OnboardingChecklist: React.FC = () => {
             ))}
           </div>
 
-          {/* Motivational text */}
-          <div className="pt-2 border-t border-slate-100">
+          {/* Motivational text & Action */}
+          <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
+            <button
+              onClick={() => onStart?.()}
+              className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>Continuar Onboarding</span>
+            </button>
             <p className="text-xs text-slate-500 text-center">
               {completedCount === 4
                 ? '✨ Tudo pronto!'

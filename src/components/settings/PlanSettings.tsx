@@ -13,14 +13,27 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
+    const [upgrading, setUpgrading] = useState(false);
 
     const handleUpgradeClick = async () => {
-        if (profile.email) {
-            const url = await planService.getUpgradeLink(profile.email);
+        const proPlan = plans.find(p => p.slug === 'pro');
+        if (!proPlan) return;
+
+        setUpgrading(true);
+        try {
+            const url = await planService.getAsaasUpgradeLink(profile.id, proPlan.id);
             window.open(url, '_blank');
-        } else {
-            const url = planService.getUpgradeStripeUrl();
-            window.open(url, '_blank');
+        } catch (err) {
+            console.error('Error generating Asaas link, falling back to Stripe:', err);
+            if (profile.email) {
+                const url = await planService.getUpgradeLink(profile.email);
+                window.open(url, '_blank');
+            } else {
+                const url = planService.getUpgradeStripeUrl();
+                window.open(url, '_blank');
+            }
+        } finally {
+            setUpgrading(false);
         }
     };
 
@@ -123,8 +136,13 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                             </div>
                         </div>
                         {!isProActive ? (
-                            <button onClick={handleUpgradeClick} className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/10">
-                                Adquirir Plano Pro
+                            <button
+                                onClick={handleUpgradeClick}
+                                disabled={upgrading}
+                                className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/10 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                {upgrading && <Loader2 size={16} className="animate-spin" />}
+                                {upgrading ? 'Redirecionando...' : 'Adquirir Plano Pro'}
                             </button>
                         ) : (
                             <button className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-xl">
@@ -217,14 +235,15 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
 
                     <button
                         onClick={handleUpgradeClick}
-                        disabled={isProActive}
-                        className={`w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] ${
+                        disabled={isProActive || upgrading}
+                        className={`w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer ${
                             isProActive
                                 ? 'bg-slate-150 text-slate-350 cursor-not-allowed border border-slate-100'
-                                : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-xl shadow-slate-900/10 border-b-4 border-slate-950'
+                                : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-xl shadow-slate-900/10 border-b-4 border-slate-950 disabled:opacity-50'
                         }`}
                     >
-                        {isProActive ? 'Plano em Uso' : 'Fazer Upgrade para Pro'}
+                        {upgrading && <Loader2 size={16} className="animate-spin" />}
+                        {isProActive ? 'Plano em Uso' : upgrading ? 'Redirecionando...' : 'Fazer Upgrade para Pro'}
                     </button>
                 </div>
             </div>

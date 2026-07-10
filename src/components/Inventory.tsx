@@ -74,7 +74,7 @@ const VehicleGridCard = memo(({ vehicle, onSelect, onToggleWebsite }: VehicleCar
           <div className="absolute top-6 right-6 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-emerald-500/30">Em Estoque</div>
         )}
         <div className="absolute bottom-4 left-7 z-20">
-          <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{vehicle.type}</span>
+          <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{vehicle.vehicleCategory === 'moto' ? vehicle.motoCategory : vehicle.type}</span>
         </div>
         {onToggleWebsite && (
           <div className="absolute bottom-3 right-4 z-20 flex items-center gap-2">
@@ -169,7 +169,7 @@ const VehicleListCard = memo(({ vehicle, onSelect, onToggleWebsite }: VehicleCar
         className="flex-1 flex flex-col py-1 cursor-pointer min-w-0"
       >
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[9px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50">{vehicle.type}</span>
+          <span className="text-[9px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50">{vehicle.vehicleCategory === 'moto' ? vehicle.motoCategory : vehicle.type}</span>
           {vehicle.plate && <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">{vehicle.plate}</span>}
         </div>
         <h3 className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight group-hover:text-emerald-600 transition-colors truncate">

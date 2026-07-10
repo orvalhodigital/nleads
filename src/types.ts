@@ -66,6 +66,13 @@ export interface SaleDetails {
   refurbishmentCosts: number;
 }
 
+export interface OperationalCostItem {
+  id: string;
+  description: string;
+  amount: number;
+  date?: string;
+}
+
 /**
  * Interface principal de Veículo (Foco em Carros e Veículos Gerais).
  */
@@ -100,6 +107,23 @@ export interface Vehicle {
   sale_phase?: VehicleKanbanPhase;
   saleDetails?: SaleDetails;
   showOnWebsite?: boolean;
+
+  // Unificação de Veículos (Novos campos)
+  vehicleCategory?: 'carro' | 'moto' | 'caminhao' | 'outros';
+  motoCategory?: MotorcycleCategory;
+  startType?: MotoStartType;
+  brakeType?: MotoBrakeType;
+  fuelSystem?: MotoFuelSystem;
+  cooling?: MotoCooling;
+  
+  // SEO
+  seoHeadline?: string;
+  seoDescription?: string;
+
+  // Custos e Financeiro
+  operationalCosts?: OperationalCostItem[];
+  purchasePrice?: number;
+  suggestedSalePrice?: number;
 }
 
 export interface LeadPreference {

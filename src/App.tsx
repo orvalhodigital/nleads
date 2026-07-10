@@ -38,7 +38,6 @@ const VehicleFormPage = lazy(() => import('./pages/VehicleFormPage'));
 const LeadFormPage = lazy(() => import('./pages/LeadFormPage'));
 const LeadDetailPage = lazy(() => import('./pages/LeadDetailPage'));
 const LeadActionPage = lazy(() => import('./pages/LeadActionPage'));
-const MotorcyclesPage = lazy(() => import('./pages/MotorcyclesPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const WebsitePage = lazy(() => import('./pages/WebsitePage'));
 const EstruturaECV = lazy(() => import('./components/EstruturaECV'));
@@ -93,7 +92,6 @@ const App: React.FC = () => {
                     <Route path="sales-flow" element={<SalesFlowPage />} />
                     <Route path="plans" element={<Navigate to="/settings" replace />} />
                     <Route path="settings" element={<SettingsPage />} />
-                    <Route path="motorcycles" element={<MotorcyclesPage />} />
                     <Route path="support" element={<SupportPage />} />
                     <Route path="website" element={<WebsitePage />} />
                     <Route path="estrutura-ecv" element={<EstruturaECV />} />

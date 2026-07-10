@@ -33,8 +33,7 @@ const AppSidebar: React.FC = () => {
     const menuItems = [
         { id: '/estrutura-ecv', icon: Target, label: 'Estrutura ECV', end: false, always: true },
         { id: '/dashboard', icon: LayoutDashboard, label: 'Métricas', end: true, always: true },
-        ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: 'Carros', end: false, always: true }] : []),
-        ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),
+        { id: '/inventory', icon: Car, label: 'Veículos', end: false, always: true },
         { id: '/leads', icon: Users, label: 'Leads', end: false, always: true },
         { id: '/agenda', icon: Calendar, label: 'Agenda', end: false, always: true },
         { id: '/sales-flow', icon: BarChart3, label: 'Fluxo de Vendas', end: false, always: true },

@@ -35,7 +35,20 @@ const mapRowToVehicle = (row: any): Vehicle => ({
     status: (row.status as 'available' | 'sold') || 'available',
     sale_phase: row.sale_phase,
     saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined,
-    showOnWebsite: row.show_on_website !== false
+    showOnWebsite: row.show_on_website !== false,
+
+    // Unified fields
+    vehicleCategory: row.vehicle_category,
+    motoCategory: row.moto_category,
+    startType: row.start_type,
+    brakeType: row.brake_type,
+    fuelSystem: row.fuel_system,
+    cooling: row.cooling,
+    seoHeadline: row.seo_headline,
+    seoDescription: row.seo_description,
+    operationalCosts: row.operational_costs || [],
+    purchasePrice: Number(row.purchase_price) || 0,
+    suggestedSalePrice: Number(row.suggested_sale_price) || 0
 });
 
 // Helper: delete a list of storage URLs from the 'vehicles' bucket
@@ -135,7 +148,20 @@ export const vehicleService = {
                 status: vehicle.status,
                 sale_phase: vehicle.sale_phase,
                 sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null,
-                show_on_website: vehicle.showOnWebsite !== false
+                show_on_website: vehicle.showOnWebsite !== false,
+                
+                // Unified fields
+                vehicle_category: vehicle.vehicleCategory || 'carro',
+                moto_category: vehicle.motoCategory || null,
+                start_type: vehicle.startType || null,
+                brake_type: vehicle.brakeType || null,
+                fuel_system: vehicle.fuelSystem || null,
+                cooling: vehicle.cooling || null,
+                seo_headline: vehicle.seoHeadline || null,
+                seo_description: vehicle.seoDescription || null,
+                operational_costs: vehicle.operationalCosts || [],
+                purchase_price: vehicle.purchasePrice || 0,
+                suggested_sale_price: vehicle.suggestedSalePrice || 0
             })
             .select()
             .single();
@@ -177,7 +203,20 @@ export const vehicleService = {
                 status: vehicle.status,
                 sale_phase: vehicle.sale_phase,
                 sale_details: vehicle.saleDetails ? (vehicle.saleDetails as unknown as any) : null,
-                show_on_website: vehicle.showOnWebsite !== false
+                show_on_website: vehicle.showOnWebsite !== false,
+
+                // Unified fields
+                vehicle_category: vehicle.vehicleCategory || 'carro',
+                moto_category: vehicle.motoCategory || null,
+                start_type: vehicle.startType || null,
+                brake_type: vehicle.brakeType || null,
+                fuel_system: vehicle.fuelSystem || null,
+                cooling: vehicle.cooling || null,
+                seo_headline: vehicle.seoHeadline || null,
+                seo_description: vehicle.seoDescription || null,
+                operational_costs: vehicle.operationalCosts || [],
+                purchase_price: vehicle.purchasePrice || 0,
+                suggested_sale_price: vehicle.suggestedSalePrice || 0
             })
             .eq('id', vehicle.id)
             .select()

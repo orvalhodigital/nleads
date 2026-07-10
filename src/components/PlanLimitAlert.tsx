@@ -39,10 +39,10 @@ const PlanLimitAlert: React.FC<PlanLimitAlertProps> = ({
       </div>
       <div className="flex-1">
         <h3 className="font-bold text-amber-950 mb-1">
-          Limite do Plano Free
+          Limite do Plano Básico
         </h3>
         <p className="text-sm text-amber-900 mb-4">
-          {featureName} está disponível apenas no plano Pro.
+          {featureName} está disponível apenas no Plano Ilimitado.
           {currentCount !== undefined && limit !== undefined && (
             <> Você está usando {currentCount} de {limit} {featureName.toLowerCase()}.</>
           )}
@@ -52,7 +52,7 @@ const PlanLimitAlert: React.FC<PlanLimitAlertProps> = ({
           className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold text-sm hover:bg-amber-700 transition-all"
         >
           <Zap size={16} />
-          Upgrade para Pro - R$ 197/mês
+          Fazer Upgrade
         </button>
       </div>
     </div>

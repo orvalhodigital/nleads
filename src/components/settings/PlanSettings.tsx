@@ -15,24 +15,10 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
     const [loading, setLoading] = useState(true);
     const [upgrading, setUpgrading] = useState(false);
 
-    const handleUpgradeClick = async () => {
-        const proPlan = plans.find(p => p.slug === 'pro');
-        
-        if (!proPlan) {
-            console.warn('Pro plan not found in database, falling back to Stripe...');
-            if (profile.email) {
-                const url = await planService.getUpgradeLink(profile.email);
-                window.open(url, '_blank');
-            } else {
-                const url = planService.getUpgradeStripeUrl();
-                window.open(url, '_blank');
-            }
-            return;
-        }
-
+    const handleUpgradeClick = async (selectedPlan: Plan) => {
         setUpgrading(true);
         try {
-            const url = await planService.getAsaasUpgradeLink(profile.id, proPlan.id);
+            const url = await planService.getAsaasUpgradeLink(profile.id, selectedPlan.id);
             window.open(url, '_blank');
         } catch (err) {
             console.error('Error generating Asaas link, falling back to Stripe:', err);
@@ -126,11 +112,11 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                         <div className="flex items-center gap-3 text-emerald-500 font-black text-sm uppercase tracking-widest">
                             <Star size={20} fill="currentColor" /> Assinatura Ativa
                         </div>
-                        <h2 className="text-4xl font-black">{isProActive ? 'Plano Pro' : 'Plano Free'}</h2>
+                        <h2 className="text-4xl font-black">{isProActive ? 'Plano Ilimitado' : 'Plano Básico'}</h2>
                         <p className="text-slate-400 font-medium max-w-md leading-relaxed">
                             {isProActive
                                 ? 'Sua assinatura está em dia e todas as funcionalidades premium do Otimizza estão liberadas para você e sua equipe.'
-                                : 'Você está no plano gratuito. Faça upgrade para o Otimizza Pro para remover limites de cadastro e liberar todos os recursos avançados de WhatsApp, domínio e equipe.'}
+                                : 'Você está no plano básico. Faça upgrade para o Plano Ilimitado para remover limites de cadastro e liberar todos os recursos avançados de WhatsApp, domínio e equipe.'}
                         </p>
                     </div>
 
@@ -148,12 +134,15 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                         </div>
                         {!isProActive ? (
                             <button
-                                onClick={handleUpgradeClick}
+                                onClick={() => {
+                                    const proPlan = plans.find(p => p.slug === 'pro');
+                                    if (proPlan) handleUpgradeClick(proPlan);
+                                }}
                                 disabled={upgrading}
                                 className="w-full py-4 bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/10 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 {upgrading && <Loader2 size={16} className="animate-spin" />}
-                                {upgrading ? 'Redirecionando...' : 'Adquirir Plano Pro'}
+                                {upgrading ? 'Redirecionando...' : 'Adquirir Plano Ilimitado'}
                             </button>
                         ) : (
                             <button className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-xl">
@@ -165,98 +154,80 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
             </div>
 
             {/* Comparison Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Free Plan Card */}
-                <div className={`p-10 rounded-[3rem] border-4 bg-white shadow-xl relative transition-all ${!isProActive ? 'border-amber-500 ring-8 ring-amber-50' : 'border-slate-100'}`}>
-                    {!isProActive && (
-                        <div className="absolute top-0 right-10 -translate-y-1/2 bg-amber-500 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl">
-                            Seu Plano Atual
-                        </div>
-                    )}
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center shadow-md">
-                            <Clock size={28} />
-                        </div>
-                        <div>
-                            <h4 className="text-2xl font-black text-slate-900">Plano Free</h4>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Para quem está começando</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-baseline gap-2 mb-10">
-                        <span className="text-5xl font-black text-slate-900 tracking-tighter">Grátis</span>
-                        <span className="text-sm font-bold text-slate-400 uppercase">/ sempre</span>
-                    </div>
-
-                    <div className="space-y-4 mb-12">
-                        {freeFeatures.map((feat, i) => (
-                            <div key={i} className={`flex items-center gap-4 text-sm font-bold ${feat.available ? 'text-slate-600' : 'text-slate-300'}`}>
-                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border ${
-                                    feat.available ? 'bg-emerald-50 text-emerald-500 border-emerald-100' : 'bg-rose-50 text-rose-300 border-rose-100'
-                                }`}>
-                                    {feat.available ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                {plans.map((plan) => {
+                    const isCurrent = profile.plan === plan.slug;
+                    const isHighlight = plan.style?.highlight;
+                    
+                    return (
+                        <div 
+                            key={plan.id} 
+                            className={`p-8 rounded-[2.5rem] border-4 bg-white shadow-xl relative transition-all flex flex-col justify-between ${
+                                isCurrent 
+                                    ? 'border-indigo-600 ring-8 ring-indigo-50 shadow-indigo-100' 
+                                    : isHighlight 
+                                        ? 'border-slate-300 ring-4 ring-slate-50' 
+                                        : 'border-slate-100 hover:border-slate-200'
+                            }`}
+                        >
+                            {isCurrent && (
+                                <div className="absolute top-0 right-10 -translate-y-1/2 bg-indigo-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl">
+                                    Seu Plano Atual
                                 </div>
-                                <span className={!feat.available ? 'line-through decoration-slate-200' : ''}>
-                                    {feat.text}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <button
-                        disabled
-                        className="w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 text-center"
-                    >
-                        {!isProActive ? 'Plano em Uso' : 'Plano Free'}
-                    </button>
-                </div>
-
-                {/* Pro Plan Card */}
-                <div className={`p-10 rounded-[3rem] border-4 bg-white shadow-xl relative transition-all ${isProActive ? 'border-emerald-600 ring-8 ring-emerald-50 shadow-emerald-100' : 'border-slate-50 hover:border-slate-200'}`}>
-                    {isProActive && (
-                        <div className="absolute top-0 right-10 -translate-y-1/2 bg-emerald-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl">
-                            Seu Plano Atual
-                        </div>
-                    )}
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
-                            <Zap size={28} />
-                        </div>
-                        <div>
-                            <h4 className="text-2xl font-black text-slate-900">Plano Pro</h4>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Para acelerar suas vendas</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-baseline gap-2 mb-10">
-                        <span className="text-5xl font-black text-slate-900 tracking-tighter">R$ 197</span>
-                        <span className="text-sm font-bold text-slate-400 uppercase">/ mês</span>
-                    </div>
-
-                    <div className="space-y-4 mb-12">
-                        {proFeatures.map((feat, i) => (
-                            <div key={i} className={`flex items-center gap-4 text-sm font-bold ${feat.highlight ? 'text-emerald-700 font-extrabold' : 'text-slate-700'}`}>
-                                <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-100">
-                                    <Check size={14} strokeWidth={3} />
+                            )}
+                            <div>
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
+                                        isHighlight ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'
+                                    }`}>
+                                        {plan.style?.icon === 'Clock' && <Clock size={24} />}
+                                        {plan.style?.icon === 'Zap' && <Zap size={24} />}
+                                        {plan.style?.icon === 'Target' && <Target size={24} />}
+                                        {plan.style?.icon === 'Crown' && <Crown size={24} />}
+                                        {plan.style?.icon === 'Star' && <Star size={24} />}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-black text-slate-900">{plan.name}</h4>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                            {plan.description}
+                                        </p>
+                                    </div>
                                 </div>
-                                <span>{feat.text}</span>
-                            </div>
-                        ))}
-                    </div>
 
-                    <button
-                        onClick={handleUpgradeClick}
-                        disabled={isProActive || upgrading}
-                        className={`w-full py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer ${
-                            isProActive
-                                ? 'bg-slate-150 text-slate-350 cursor-not-allowed border border-slate-100'
-                                : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-xl shadow-slate-900/10 border-b-4 border-slate-950 disabled:opacity-50'
-                        }`}
-                    >
-                        {upgrading && <Loader2 size={16} className="animate-spin" />}
-                        {isProActive ? 'Plano em Uso' : upgrading ? 'Redirecionando...' : 'Fazer Upgrade para Pro'}
-                    </button>
-                </div>
+                                <div className="flex items-baseline gap-2 mb-8">
+                                    <span className="text-4xl font-black text-slate-900 tracking-tighter">
+                                        {plan.price === 0 ? 'Grátis' : `R$ ${plan.price}`}
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-400 uppercase">/ mês</span>
+                                </div>
+
+                                <div className="space-y-4 mb-8">
+                                    {plan.features?.map((feat, i) => (
+                                        <div key={i} className="flex items-start gap-3 text-xs font-bold text-slate-600">
+                                            <div className="w-5 h-5 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-100 mt-0.5">
+                                                <Check size={12} strokeWidth={3} />
+                                            </div>
+                                            <span>{feat}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => handleUpgradeClick(plan)}
+                                disabled={isCurrent || upgrading}
+                                className={`w-full py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer ${
+                                    isCurrent
+                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                                        : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-xl shadow-slate-900/10 border-b-4 border-slate-950 disabled:opacity-50'
+                                }`}
+                            >
+                                {upgrading && <Loader2 size={16} className="animate-spin" />}
+                                {isCurrent ? 'Plano em Uso' : upgrading ? 'Redirecionando...' : `Adquirir ${plan.name}`}
+                            </button>
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Detailed Pro Advantages Grid */}

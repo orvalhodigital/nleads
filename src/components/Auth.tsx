@@ -100,15 +100,15 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                     style={{ backgroundImage: `url('/bg-fundo-login.jpg')` }}
                 />
                 {/* Dark & Brand color gradient overlay to match Orvalho Digital theme */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#3f7c71]/90 via-slate-900/70 to-[#57a89a]/40 mix-blend-multiply" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#6d28d9]/90 via-slate-900/70 to-[#8b5cf6]/40 mix-blend-multiply" />
                 
                 {/* Decorative glowing sphere in the background */}
-                <div className="absolute top-1/4 left-1/4 w-[30rem] h-[30rem] rounded-full bg-[#57a89a]/10 blur-[120px]" />
+                <div className="absolute top-1/4 left-1/4 w-[30rem] h-[30rem] rounded-full bg-[#8b5cf6]/10 blur-[120px]" />
 
                 {/* Floating Content Card (Glassmorphism) */}
                 <div className="relative z-10 max-w-lg bg-white/5 backdrop-blur-xl border border-white/10 p-6 xl:p-8 rounded-3xl shadow-2xl flex flex-col justify-between h-fit">
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[#73bdaf] text-xs font-black tracking-widest uppercase border border-white/5 mb-4 xl:mb-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[#c084fc] text-xs font-black tracking-widest uppercase border border-white/5 mb-4 xl:mb-6">
                             ⚡ Orvalho Digital
                         </div>
                         <h1 className="text-3xl xl:text-4xl font-black text-white leading-tight tracking-tight">
@@ -121,7 +121,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
 
                     <div className="mt-8 xl:mt-12 flex items-center gap-4 text-[10px] xl:text-xs font-bold text-slate-400">
                         <span>© 2026 Orvalho Digital</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#57a89a]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" />
                         <span>Estrutura completa de vendas</span>
                     </div>
                 </div>
@@ -157,7 +157,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                                             required={isSignUp}
                                             value={fullName}
                                             onChange={(e) => setFullName(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#57a89a]/10 focus:border-[#57a89a] transition-all outline-none"
+                                            className="w-full pl-10 pr-4 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#8b5cf6]/10 focus:border-[#8b5cf6] transition-all outline-none"
                                             placeholder="João Silva"
                                         />
                                     </div>
@@ -172,7 +172,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                                             required={isSignUp}
                                             value={companyName}
                                             onChange={(e) => setCompanyName(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#57a89a]/10 focus:border-[#57a89a] transition-all outline-none"
+                                            className="w-full pl-10 pr-4 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#8b5cf6]/10 focus:border-[#8b5cf6] transition-all outline-none"
                                             placeholder="Sua Empresa"
                                         />
                                     </div>
@@ -204,7 +204,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-10 pr-10 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#57a89a]/10 focus:border-[#57a89a] transition-all outline-none"
+                                    className="w-full pl-10 pr-10 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#8b5cf6]/10 focus:border-[#8b5cf6] transition-all outline-none"
                                     placeholder="••••••••"
                                 />
                                 <button
@@ -232,7 +232,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-2.5 sm:py-3 bg-[#57a89a] text-white rounded-xl font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest shadow-lg shadow-[#57a89a]/10 hover:bg-[#45857a] active:scale-[0.99] transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-50"
+                            className="w-full py-2.5 sm:py-3 bg-[#8b5cf6] text-white rounded-xl font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest shadow-lg shadow-[#8b5cf6]/10 hover:bg-[#7c3aed] active:scale-[0.99] transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="animate-spin" size={14} /> : (
                                 <>
@@ -273,7 +273,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                             {isSignUp ? 'Já tem uma conta?' : 'Ainda não tem conta?'}
                             <Link
                                 to={isSignUp ? '/login' : '/nova-conta'}
-                                className="ml-2 text-[10px] sm:text-[11px] font-extrabold text-[#57a89a] hover:text-[#45857a] uppercase tracking-widest transition-colors cursor-pointer"
+                                className="ml-2 text-[10px] sm:text-[11px] font-extrabold text-[#8b5cf6] hover:text-[#7c3aed] uppercase tracking-widest transition-colors cursor-pointer"
                             >
                                 {isSignUp ? 'Fazer Login' : 'Criar Nova Conta'}
                             </Link>
@@ -284,7 +284,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                     <div className="text-center pt-2 border-t border-slate-100/60">
                         <a 
                             href="https://orvalhodigital.com.br"
-                            className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-extrabold text-slate-400 hover:text-[#57a89a] uppercase tracking-widest transition-colors"
+                            className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-extrabold text-slate-400 hover:text-[#8b5cf6] uppercase tracking-widest transition-colors"
                         >
                             <ArrowLeft size={12} />
                             Voltar para o site

@@ -17,7 +17,18 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
 
     const handleUpgradeClick = async () => {
         const proPlan = plans.find(p => p.slug === 'pro');
-        if (!proPlan) return;
+        
+        if (!proPlan) {
+            console.warn('Pro plan not found in database, falling back to Stripe...');
+            if (profile.email) {
+                const url = await planService.getUpgradeLink(profile.email);
+                window.open(url, '_blank');
+            } else {
+                const url = planService.getUpgradeStripeUrl();
+                window.open(url, '_blank');
+            }
+            return;
+        }
 
         setUpgrading(true);
         try {

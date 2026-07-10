@@ -16,7 +16,8 @@ import {
     ChevronRight,
     LifeBuoy,
     Globe,
-    BarChart3
+    BarChart3,
+    Target
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
@@ -30,6 +31,7 @@ const AppSidebar: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = React.useState(false);
 
     const menuItems = [
+        { id: '/estrutura-ecv', icon: Target, label: 'Estrutura ECV', end: false, always: true },
         { id: '/dashboard', icon: LayoutDashboard, label: 'Métricas', end: true, always: true },
         ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: 'Carros', end: false, always: true }] : []),
         ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),
@@ -98,9 +100,13 @@ const AppSidebar: React.FC = () => {
                             flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 group relative
                             lg:flex-row lg:gap-3 lg:px-4 lg:py-3 lg:justify-start
                             ${isCollapsed ? 'lg:justify-center lg:w-auto lg:mx-2' : 'lg:w-full'}
-                            ${isActive
-                                ? 'bg-emerald-500/10 text-emerald-600'
-                                : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-50'
+                            ${item.id === '/estrutura-ecv'
+                                ? isActive
+                                    ? 'bg-indigo-600/10 text-indigo-600'
+                                    : 'bg-indigo-50/30 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50/60 font-black'
+                                : isActive
+                                    ? 'bg-emerald-500/10 text-emerald-600'
+                                    : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-50'
                             }
                         `}
                     >

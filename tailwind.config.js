@@ -1,16 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 const orvalhoPalette = {
-    50: '#f2faf9',
-    100: '#e6f5f3',
-    200: '#bfe2dd',
-    300: '#73bdaf',
-    400: '#62b3a5',
-    500: '#57a89a', // Primary Orvalho Digital
-    600: '#45857a', // Active / Hover
-    700: '#34635b',
-    800: '#254842',
-    900: '#182f2b',
-    950: '#0c1816',
+    50: '#f5f3ff',
+    100: '#ede9fe',
+    200: '#ddd6fe',
+    300: '#c084fc',
+    400: '#a855f7',
+    500: '#8b5cf6', // Primary Orvalho Purple
+    600: '#7c3aed', // Active / Hover
+    700: '#6d28d9',
+    800: '#5b21b6',
+    900: '#4c1d95',
+    950: '#2e1065',
 };
 
 export default {
@@ -37,9 +37,9 @@ export default {
             colors: {
                 // User defined brand palette
                 brand: {
-                    green: '#57a89a', // Primary Orvalho Digital
-                    lightgreen: '#73bdaf', // Light Green / Accent
-                    blue: '#45857a', // Active state / Blue substitute
+                    green: '#8b5cf6', // mapped to purple
+                    lightgreen: '#c084fc', // mapped to light purple
+                    blue: '#7c3aed', // mapped to dark purple
                     highlight: '#DCFC36', // Yellow/Lime
                     grey: '#D1D1D1', // Grey
                 },

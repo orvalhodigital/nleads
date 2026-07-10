@@ -438,6 +438,11 @@ export interface Profile {
   business_hours?: any[];
   // Onboarding
   onboarding_completed?: boolean;
+  // Ads Connections
+  meta_pixel_id?: string;
+  meta_access_token?: string;
+  google_ads_client_id?: string;
+  google_ads_developer_token?: string;
 }
 
 

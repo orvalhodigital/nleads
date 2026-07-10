@@ -3,18 +3,18 @@ import { useState, useEffect } from 'react';
 export type BrandTheme = 'light' | 'dark' | 'auto';
 
 export const OTIMIZZA_COLORS = {
-  primary: '#57a89a', // Verde Orvalho (#57a89a)
+  primary: '#8b5cf6', // Roxo Orvalho (#8b5cf6)
   secondary: '#373435', // Escuro
   tertiary: '#F9FBFC', // Claro
-  accent: '#45857a', // Verde Escuro (gradient/active)
+  accent: '#7c3aed', // Roxo Escuro (gradient/active)
 
   // Para dark mode
-  darkPrimary: '#73bdaf', // Verde Claro
+  darkPrimary: '#c084fc', // Roxo Claro
   darkSecondary: '#FFFFFF',
   darkTertiary: '#1F2937',
 
   // Para light mode
-  lightPrimary: '#57a89a',
+  lightPrimary: '#8b5cf6',
   lightSecondary: '#373435',
   lightTertiary: '#F9FBFC'
 };

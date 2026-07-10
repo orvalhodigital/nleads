@@ -22,6 +22,12 @@ export default function AdminUserDetails() {
     const [trialEndsAt, setTrialEndsAt] = useState('');
     const [fullName, setFullName] = useState('');
 
+    // Ads connections
+    const [metaPixelId, setMetaPixelId] = useState('');
+    const [metaAccessToken, setMetaAccessToken] = useState('');
+    const [googleAdsClientId, setGoogleAdsClientId] = useState('');
+    const [googleAdsDeveloperToken, setGoogleAdsDeveloperToken] = useState('');
+
     useEffect(() => {
         if (userId) {
             loadProfile();
@@ -41,9 +47,12 @@ export default function AdminUserDetails() {
                 if (data.trialEndsAt) {
                     setTrialEndsAt(new Date(data.trialEndsAt).toISOString().split('T')[0]);
                 }
-                // Determine role from other data if available, or just display.
-                // Currently getProfile fetches everything, but type Profile might not have role locally typed fully?
-                // Let's cast generic data if needed or trust the fetch.
+                
+                // Initialize ads connection fields
+                setMetaPixelId((data as any).meta_pixel_id || '');
+                setMetaAccessToken((data as any).meta_access_token || '');
+                setGoogleAdsClientId((data as any).google_ads_client_id || '');
+                setGoogleAdsDeveloperToken((data as any).google_ads_developer_token || '');
             }
         } catch (error) {
             console.error('Error loading profile:', error);
@@ -61,9 +70,12 @@ export default function AdminUserDetails() {
                 plan,
                 planStatus,
                 trialEndsAt: trialEndsAt ? new Date(trialEndsAt).toISOString() : undefined,
-                full_name: fullName
-                // Can add role update here if backend supports it via same update call
-            }, userId);
+                full_name: fullName,
+                meta_pixel_id: metaPixelId,
+                meta_access_token: metaAccessToken,
+                google_ads_client_id: googleAdsClientId,
+                google_ads_developer_token: googleAdsDeveloperToken
+            } as any, userId);
             setToast({ type: 'success', message: 'Perfil atualizado com sucesso!' });
         } catch (error) {
             console.error('Error updating:', error);
@@ -181,6 +193,67 @@ export default function AdminUserDetails() {
                                     >
                                         +30 Dias
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                            Conexões Ads (Meta & Google)
+                        </h3>
+                        <div className="space-y-6">
+                            {/* Meta Ads Group */}
+                            <div className="border-b border-slate-100 pb-4">
+                                <h4 className="text-sm font-bold text-slate-700 mb-4">Meta Ads</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Meta Pixel ID</label>
+                                        <input
+                                            type="text"
+                                            value={metaPixelId}
+                                            onChange={e => setMetaPixelId(e.target.value)}
+                                            placeholder="Ex: 123456789012345"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Meta Access Token</label>
+                                        <input
+                                            type="text"
+                                            value={metaAccessToken}
+                                            onChange={e => setMetaAccessToken(e.target.value)}
+                                            placeholder="Ex: EAAB..."
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Google Ads Group */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-700 mb-4">Google Ads</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Google Ads Client Customer ID</label>
+                                        <input
+                                            type="text"
+                                            value={googleAdsClientId}
+                                            onChange={e => setGoogleAdsClientId(e.target.value)}
+                                            placeholder="Ex: 123-456-7890"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Google Ads Developer Token</label>
+                                        <input
+                                            type="text"
+                                            value={googleAdsDeveloperToken}
+                                            onChange={e => setGoogleAdsDeveloperToken(e.target.value)}
+                                            placeholder="Ex: abc123xyz..."
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

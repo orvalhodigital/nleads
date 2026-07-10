@@ -154,7 +154,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-8">
               <button
                 onClick={() => setStep('company')}
-                className="flex-1 py-3.5 sm:py-4 bg-[#57a89a] text-white rounded-2xl font-bold hover:bg-[#45857a] transition-all shadow-lg cursor-pointer"
+                className="flex-1 py-3.5 sm:py-4 bg-[#8b5cf6] text-white rounded-2xl font-bold hover:bg-[#7c3aed] transition-all shadow-lg cursor-pointer"
               >
                 Começar Configuração
               </button>
@@ -180,7 +180,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#57a89a] focus:border-transparent outline-none"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8b5cf6] focus:border-transparent outline-none"
                 placeholder="Seu concessionário"
               />
             </div>
@@ -191,7 +191,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#57a89a] focus:border-transparent outline-none"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8b5cf6] focus:border-transparent outline-none"
                 placeholder="(11) 99999-9999"
               />
             </div>
@@ -207,7 +207,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
               />
               <button
                 onClick={() => logoInputRef.current?.click()}
-                className="w-full py-3 border-2 border-dashed border-[#73bdaf] rounded-xl text-[#57a89a] font-bold hover:bg-[#57a89a]/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 border-2 border-dashed border-[#c084fc] rounded-xl text-[#8b5cf6] font-bold hover:bg-[#8b5cf6]/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ImageIcon size={20} />
                 {logoFile?.name || 'Selecionar logo'}
@@ -225,7 +225,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
               />
               <button
                 onClick={() => avatarInputRef.current?.click()}
-                className="w-full py-3 border-2 border-dashed border-[#73bdaf] rounded-xl text-[#57a89a] font-bold hover:bg-[#57a89a]/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 border-2 border-dashed border-[#c084fc] rounded-xl text-[#8b5cf6] font-bold hover:bg-[#8b5cf6]/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ImageIcon size={20} />
                 {avatarFile?.name || 'Selecionar foto'}
@@ -244,7 +244,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
               <button
                 onClick={handleCompanyStep}
                 disabled={loading}
-                className="flex-1 py-3 bg-[#57a89a] text-white rounded-xl font-bold hover:bg-[#45857a] disabled:opacity-50 cursor-pointer"
+                className="flex-1 py-3 bg-[#8b5cf6] text-white rounded-xl font-bold hover:bg-[#7c3aed] disabled:opacity-50 cursor-pointer"
               >
                 {loading ? 'Salvando...' : 'Próximo'}
               </button>
@@ -258,8 +258,8 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
             <h2 className="text-3xl font-black text-slate-900">Conectar WhatsApp</h2>
             <p className="text-slate-600">Receba mensagens de leads no seu WhatsApp</p>
 
-            <div className="p-6 bg-[#57a89a]/5 rounded-2xl border-2 border-[#57a89a]/20 text-center space-y-4">
-              <MessageCircle className="w-12 h-12 text-[#57a89a] mx-auto" />
+            <div className="p-6 bg-[#8b5cf6]/5 rounded-2xl border-2 border-[#8b5cf6]/20 text-center space-y-4">
+              <MessageCircle className="w-12 h-12 text-[#8b5cf6] mx-auto" />
               <div>
                 <p className="font-bold text-slate-900">Status: {whatsappStatus}</p>
               </div>
@@ -291,7 +291,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
               </button>
               <button
                 onClick={handleSkip}
-                className="flex-1 py-3 bg-[#57a89a] text-white rounded-xl font-bold hover:bg-[#45857a] cursor-pointer"
+                className="flex-1 py-3 bg-[#8b5cf6] text-white rounded-xl font-bold hover:bg-[#7c3aed] cursor-pointer"
               >
                 Pular
               </button>
@@ -315,7 +315,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
             
             {error && <div className="p-3 bg-red-100 text-red-700 rounded-xl font-medium max-w-md mx-auto">{error}</div>}
 
-            <button onClick={() => { fireConfetti(); setTimeout(completeOnboarding, 1000); }} disabled={loading} className="mt-8 py-4 px-8 bg-[#57a89a] text-white rounded-2xl font-bold hover:bg-[#45857a] text-lg disabled:opacity-50 cursor-pointer">
+            <button onClick={() => { fireConfetti(); setTimeout(completeOnboarding, 1000); }} disabled={loading} className="mt-8 py-4 px-8 bg-[#8b5cf6] text-white rounded-2xl font-bold hover:bg-[#7c3aed] text-lg disabled:opacity-50 cursor-pointer">
               {loading ? 'Redirecionando...' : 'Ir para o Painel'}
             </button>
           </div>
@@ -343,11 +343,11 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
         <div className="mb-12">
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm font-bold text-slate-600 uppercase tracking-wider">Progresso</p>
-            <p className="text-sm font-bold text-[#57a89a]">{currentStepIndex + 1}/{stepOrder.length}</p>
+            <p className="text-sm font-bold text-[#8b5cf6]">{currentStepIndex + 1}/{stepOrder.length}</p>
           </div>
           <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#57a89a] to-[#73bdaf] transition-all duration-500"
+              className="h-full bg-gradient-to-r from-[#8b5cf6] to-[#c084fc] transition-all duration-500"
               style={{ width: `${((currentStepIndex + 1) / stepOrder.length) * 100}%` }}
             />
           </div>

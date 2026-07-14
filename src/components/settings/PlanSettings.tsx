@@ -71,7 +71,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
         );
     }
 
-    const isProActive = profile.plan === 'pro';
+    const isProActive = profile.plan && profile.plan !== 'free' && profile.plan !== 'trial';
 
     const freeFeatures = [
         { text: 'Limite de até 10 Veículos cadastrados', available: true },

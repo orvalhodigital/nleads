@@ -30,7 +30,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
     const [activeCampaigns, setActiveCampaigns] = useState<Campaign[]>([]);
     const [loadingPlans, setLoadingPlans] = useState(true);
 
-    const isPaid = profile?.plan === 'crm' || profile?.plan === 'pro' || profile?.plan === 'traffic_crm';
+    const isPaid = profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial';
 
     useEffect(() => {
         if (profile) {

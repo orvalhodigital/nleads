@@ -789,7 +789,8 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     // ── FORM VIEW (new / edit) ───────────────────────────────────────────────────
     if (selected) {
-        if (selected === 'new' && profile?.plan !== 'pro' && (vehicles.length + motorcycles.length) >= 10) {
+        const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+        if (selected === 'new' && isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
             return (
                 <div className="animate-fadeUp max-w-4xl mx-auto w-full pb-20">
                     <div className="flex items-center justify-between mb-8">

@@ -160,7 +160,7 @@ const AppSidebar: React.FC = () => {
                                     <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{profile.company_name}</p>
                                 )}
                                 <div className="flex items-center gap-2 mt-1">
-                                    {profile?.plan === 'pro' ? (
+                                    {profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial' ? (
                                         <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border bg-slate-900 text-white border-slate-900">PRO</span>
                                     ) : (
                                         <>

@@ -36,7 +36,7 @@ const EstruturaECV: React.FC = () => {
   const { profile } = useData();
   const navigate = useNavigate();
 
-  const isPro = profile?.plan === 'pro';
+  const isPro = profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial';
 
   // Check if at least one connection is configured by the admin
   const isMetaConfigured = !!profile?.meta_pixel_id;

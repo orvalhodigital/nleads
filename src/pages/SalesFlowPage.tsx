@@ -25,7 +25,8 @@ const SalesFlowPage: React.FC = () => {
     );
   }
 
-  if (profile?.plan !== 'pro') {
+  const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+  if (isFreePlan) {
     return (
       <PageContainer className="pb-24">
         <div className="max-w-2xl mx-auto mt-8">

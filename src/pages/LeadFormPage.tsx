@@ -14,7 +14,8 @@ const LeadFormPage: React.FC = () => {
     const isEditing = !!id;
     const leadToEdit = isEditing ? leads.find(l => l.id === id) : undefined;
 
-    if (profile?.plan !== 'pro' && !isEditing && leads.length >= 50) {
+    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+    if (isFreePlan && !isEditing && leads.length >= 50) {
         return (
             <PageContainer className="pb-32 animate-fadeUp">
                 <div className="flex items-center gap-6 mb-10">

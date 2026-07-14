@@ -275,7 +275,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     // Actions
     const addLead = useCallback(async (leadData: Lead) => {
         const p = profileRef.current;
-        if (p?.plan !== 'pro' && leads.length >= 50) {
+        const isFreePlan = !p?.plan || p.plan === 'free' || p.plan === 'trial';
+        if (isFreePlan && leads.length >= 50) {
             showToast('error', 'Limite do plano Free atingido (máximo 50 leads). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
         }
@@ -338,7 +339,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const addVehicle = useCallback(async (vehicleData: Omit<Vehicle, 'id'>) => {
         const p = profileRef.current;
-        if (p?.plan !== 'pro' && (vehicles.length + motorcycles.length) >= 10) {
+        const isFreePlan = !p?.plan || p.plan === 'free' || p.plan === 'trial';
+        if (isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
             showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
         }
@@ -366,7 +368,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const addMotorcycle = useCallback(async (motoData: Omit<Motorcycle, 'id'>) => {
         const p = profileRef.current;
-        if (p?.plan !== 'pro' && (vehicles.length + motorcycles.length) >= 10) {
+        const isFreePlan = !p?.plan || p.plan === 'free' || p.plan === 'trial';
+        if (isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
             showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
         }

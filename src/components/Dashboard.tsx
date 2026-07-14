@@ -71,6 +71,16 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
   // ──────────────── MÉTRICAS CORE ────────────────
 
   const metrics = useMemo(() => {
+    const safeParseISO = (dateStr: any): Date => {
+      if (!dateStr) return new Date(0);
+      try {
+        const d = parseISO(dateStr);
+        return isNaN(d.getTime()) ? new Date(0) : d;
+      } catch {
+        return new Date(0);
+      }
+    };
+
     let rangeStart: Date;
     let compareStart: Date;
     let compareEnd: Date;
@@ -104,8 +114,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
         compareEnd = new Date(0);
         break;
       case 'custom':
-        rangeStart = startOfDay(parseISO(customStartDate));
-        const end = endOfDay(parseISO(customEndDate));
+        rangeStart = startOfDay(safeParseISO(customStartDate));
+        const end = endOfDay(safeParseISO(customEndDate));
         // For custom range, it's harder to define "previous period" logically, 
         // but we'll use the same duration backwards from rangeStart.
         const diffMs = end.getTime() - rangeStart.getTime();
@@ -121,11 +131,11 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     }
 
     // Adjusting for custom end date specifically if needed
-    const effectiveEnd = timeRange === 'custom' ? endOfDay(parseISO(customEndDate)) : now;
+    const effectiveEnd = timeRange === 'custom' ? endOfDay(safeParseISO(customEndDate)) : now;
 
     // Leads filter
     const filteredLeads = leads.filter(l => {
-      const d = parseISO(l.createdAt);
+      const d = safeParseISO(l.createdAt);
       const isDateInRange = timeRange === 'all' || (isAfter(d, rangeStart) && isBefore(d, effectiveEnd));
       const isSourceMatch = filterSource === 'all' || l.source === filterSource;
       const isTempMatch = filterTemp === 'all' || l.temperature === filterTemp;
@@ -133,7 +143,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     });
 
     const previousLeads = leads.filter(l => {
-      const d = parseISO(l.createdAt);
+      const d = safeParseISO(l.createdAt);
       return isAfter(d, compareStart) && isBefore(d, compareEnd);
     });
 
@@ -143,7 +153,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     // Vendas e Receita
     const filteredSales = unifiedVehicles.filter(v => {
       if (v.status !== 'sold' || !v.saleDetails) return false;
-      const d = parseISO(v.saleDetails.saleDate);
+      const d = safeParseISO(v.saleDetails.saleDate);
       const isDateInRange = timeRange === 'all' || (isAfter(d, rangeStart) && isBefore(d, effectiveEnd));
 
       const buyerLead = leads.find(l => l.id === v.saleDetails?.buyerLeadId);
@@ -156,8 +166,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     const previousSales = unifiedVehicles.filter(v =>
       v.status === 'sold' &&
       v.saleDetails &&
-      isAfter(parseISO(v.saleDetails.saleDate), compareStart) &&
-      isBefore(parseISO(v.saleDetails.saleDate), compareEnd)
+      isAfter(safeParseISO(v.saleDetails.saleDate), compareStart) &&
+      isBefore(safeParseISO(v.saleDetails.saleDate), compareEnd)
     );
 
     const salesThisMonth = filteredSales;
@@ -180,16 +190,22 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       ? filteredSales.reduce((acc, v) => {
         const createdReference = (v as any).createdAt || v.saleDetails?.saleDate;
         if (!createdReference || !v.saleDetails?.saleDate) return acc;
-        return acc + Math.max(0, differenceInCalendarDays(parseISO(v.saleDetails.saleDate), parseISO(createdReference)));
+        return acc + Math.max(0, differenceInCalendarDays(safeParseISO(v.saleDetails.saleDate), safeParseISO(createdReference)));
       }, 0) / filteredSales.length
       : 0;
 
     // Funil
     const activeLeads = leads.filter(l => l.phase !== LeadPhase.COMPLETED && l.phase !== LeadPhase.DISQUALIFIED);
     const attentionLeads = activeLeads.filter(l => {
-      const lastUpdate = parseISO(l.lastUpdate);
-      const diff = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24);
-      return diff > 15;
+      const lastUpdateStr = l.lastUpdate || l.updated_at || l.createdAt;
+      if (!lastUpdateStr) return false;
+      try {
+        const lastUpdate = safeParseISO(lastUpdateStr);
+        const diff = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24);
+        return diff > 15;
+      } catch {
+        return false;
+      }
     });
 
     const hotLeads = activeLeads.filter(l => l.temperature === LeadTemperature.HOT).length;
@@ -293,13 +309,13 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       .slice(0, 10);
 
     // Agenda stuff
-    const appointmentsToday = leads.flatMap(l => l.scheduling_data?.appointments || []).filter(a => isToday(parseISO(a.date)));
+    const appointmentsToday = leads.flatMap(l => l.scheduling_data?.appointments || []).filter(a => isToday(safeParseISO(a.date)));
     const visToday = appointmentsToday.length;
     const visitsDoneToday = appointmentsToday.filter(a => a.status === 'show').length;
-    const followupsToday = leads.filter(l => l.follow_up_data?.nextContactDate && isToday(parseISO(l.follow_up_data.nextContactDate))).length;
+    const followupsToday = leads.filter(l => l.follow_up_data?.nextContactDate && isToday(safeParseISO(l.follow_up_data.nextContactDate))).length;
 
-    const appointmentsTomorrow = leads.flatMap(l => l.scheduling_data?.appointments || []).filter(a => isTomorrow(parseISO(a.date))).length;
-    const followupsTomorrow = leads.filter(l => l.follow_up_data?.nextContactDate && isTomorrow(parseISO(l.follow_up_data.nextContactDate))).length;
+    const appointmentsTomorrow = leads.flatMap(l => l.scheduling_data?.appointments || []).filter(a => isTomorrow(safeParseISO(a.date))).length;
+    const followupsTomorrow = leads.filter(l => l.follow_up_data?.nextContactDate && isTomorrow(safeParseISO(l.follow_up_data.nextContactDate))).length;
 
     // Goal Math
     const monthlyGoal = profile?.monthly_sales_goal || 10;

@@ -9,7 +9,7 @@ interface PlansProps {
 }
 
 const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
-    const isPro = profile?.plan === 'pro';
+    const isPro = profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial';
 
     return (
         <div className="flex flex-col space-y-8 animate-fadeUp">
@@ -134,7 +134,7 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                     <div className="flex gap-8 text-sm text-slate-600">
                         <div>
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plano</span>
-                            <span className="font-bold text-slate-900">{profile.plan === 'pro' ? 'PRO' : 'FREE'}</span>
+                            <span className="font-bold text-slate-900">{profile.plan && profile.plan !== 'free' && profile.plan !== 'trial' ? 'PRO' : 'FREE'}</span>
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</span>

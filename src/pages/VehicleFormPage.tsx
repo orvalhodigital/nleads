@@ -21,7 +21,8 @@ const VehicleFormPage: React.FC = () => {
         ? (vehicles.find(v => v.id === id) || motorcycles.find(m => m.id === id)) 
         : undefined;
 
-    if (profile?.plan !== 'pro' && !isEditing && (vehicles.length + motorcycles.length) >= 10) {
+    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+    if (isFreePlan && !isEditing && (vehicles.length + motorcycles.length) >= 10) {
         return (
             <PageContainer className="pb-32 animate-fadeUp">
                 <div className="flex items-center gap-6 mb-10">

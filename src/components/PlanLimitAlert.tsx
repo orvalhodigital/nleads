@@ -22,7 +22,7 @@ const PlanLimitAlert: React.FC<PlanLimitAlertProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  if (plan === 'pro') return null;
+  if (plan && plan !== 'free' && plan !== 'trial') return null;
 
   const handleUpgrade = async () => {
     if (onUpgrade) {

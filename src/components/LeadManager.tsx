@@ -549,8 +549,20 @@ const LeadManager: React.FC<LeadManagerProps> = ({
             )}
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setIsImportModalOpen(true)} className="px-5 py-3 bg-white border border-slate-100 text-slate-900 rounded-xl text-[11px] font-bold uppercase">Importar</button>
-            <button onClick={() => navigate('/leads/new')} className="px-6 py-3 bg-brand-500 text-white rounded-xl text-[11px] font-bold uppercase shadow-md active:scale-95">Novo Lead</button>
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="flex items-center gap-1.5 px-5 py-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+            >
+              <Upload size={14} />
+              Importar
+            </button>
+            <button
+              onClick={() => navigate('/leads/new')}
+              className="flex items-center gap-1.5 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-[11px] font-black uppercase tracking-wider shadow-md hover:shadow-lg shadow-brand-500/20 hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
+            >
+              <Plus size={14} />
+              Novo Lead
+            </button>
           </div>
         </div>
       </div>

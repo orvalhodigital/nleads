@@ -224,7 +224,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                         )}
 
                         {success && (
-                            <div className="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-[10px] sm:text-[11px] font-bold text-emerald-600 text-center">
+                            <div className="p-2.5 bg-brand-50 border border-brand-100 rounded-xl text-[10px] sm:text-[11px] font-bold text-brand-600 text-center">
                                 {success}
                             </div>
                         )}

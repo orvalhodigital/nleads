@@ -115,7 +115,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             <CustomDatePicker
                                 value={date}
                                 onChange={(val) => setDate(val)}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm"
                             />
                         </div>
                         <div className="space-y-2">
@@ -125,7 +125,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             <CustomTimePicker
                                 value={time}
                                 onChange={(val) => setTime(val)}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm"
                             />
                         </div>
                     </div>
@@ -134,11 +134,11 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
                             <Car size={12} /> Veículo de Interesse (Opcional)
                         </label>
-                        <div className="w-full min-h-[56px] p-2 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all flex flex-wrap gap-2 items-center">
+                        <div className="w-full min-h-[56px] p-2 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-4 focus-within:ring-brand-500/10 transition-all flex flex-wrap gap-2 items-center">
                             {selectedVehicles.map(v => (
-                                <span key={v.id} className="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                                <span key={v.id} className="flex items-center gap-1 bg-brand-100 text-brand-800 px-3 py-1.5 rounded-xl text-sm font-semibold">
                                     {v.brand} {v.model} {v.year}
-                                    <button onClick={() => removeVehicle(v.id)} className="ml-1 hover:text-emerald-950 transition-colors">
+                                    <button onClick={() => removeVehicle(v.id)} className="ml-1 hover:text-brand-950 transition-colors">
                                         <X size={14} />
                                     </button>
                                 </span>
@@ -168,7 +168,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                                 <p className="font-semibold text-slate-800">{v.brand} {v.model}</p>
                                                 <p className="text-xs font-medium text-slate-400">{v.year}{v.plate ? ` • ${v.plate}` : ''}</p>
                                             </div>
-                                            <div className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Check size={18} />
                                             </div>
                                         </div>
@@ -190,7 +190,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             placeholder="Detalhes adicionais..."
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
-                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm resize-none custom-scrollbar"
+                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm resize-none custom-scrollbar"
                             rows={3}
                         />
                     </div>
@@ -212,7 +212,7 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                     <button
                         onClick={handleConfirm}
                         disabled={!date}
-                        className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+                        className="flex-1 py-4 bg-brand-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-brand-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-500/20"
                     >
                         Confirmar Agendamento
                     </button>

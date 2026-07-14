@@ -65,7 +65,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center p-20 space-y-4">
-                <Loader2 className="animate-spin text-emerald-500" size={48} />
+                <Loader2 className="animate-spin text-brand-500" size={48} />
                 <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Carregando planos...</p>
             </div>
         );
@@ -280,7 +280,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
             <div className="flex items-center gap-3 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                 <HelpCircle size={18} className="text-slate-400 animate-pulse" />
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Dúvidas sobre os planos? Entre em contato com nosso <span className="text-emerald-600 cursor-pointer hover:underline">suporte especializado</span>.
+                    Dúvidas sobre os planos? Entre em contato com nosso <span className="text-brand-600 cursor-pointer hover:underline">suporte especializado</span>.
                 </p>
             </div>
         </div>

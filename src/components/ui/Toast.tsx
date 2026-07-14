@@ -30,11 +30,11 @@ export default function Toast({ type, message, onClose, duration = 5000 }: Toast
     const config = {
         success: {
             bg: 'bg-[#ECFDF5]',
-            border: 'border-emerald-200/50',
-            text: 'text-emerald-900',
-            icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
-            accent: 'bg-emerald-500',
-            shadow: 'shadow-emerald-100/50',
+            border: 'border-brand-200/50',
+            text: 'text-brand-900',
+            icon: <CheckCircle className="w-5 h-5 text-brand-500" />,
+            accent: 'bg-brand-500',
+            shadow: 'shadow-brand-100/50',
             label: 'Sucesso'
         },
         error: {

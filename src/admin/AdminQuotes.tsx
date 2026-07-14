@@ -153,7 +153,7 @@ export default function AdminQuotes() {
                                     <td className="p-4 text-center">
                                         <button
                                             onClick={() => toggleStatus(q)}
-                                            className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors ${q.is_active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                            className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors ${q.is_active ? 'bg-brand-100 text-brand-700 hover:bg-brand-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                         >
                                             {q.is_active ? 'Sim' : 'Não'}
                                         </button>

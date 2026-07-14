@@ -19,7 +19,7 @@ const PHASE_CONFIG: Record<string, { label: string; color: string; bg: string; b
     [LeadPhase.FOLLOW_UP]:    { label: 'Follow-Up',        color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-200' },
     [LeadPhase.STAND_BY]:     { label: 'Stand-By',         color: 'text-violet-600',  bg: 'bg-violet-50',  border: 'border-violet-200' },
     [LeadPhase.SIMULATION]:   { label: 'Simulação',        color: 'text-purple-600',  bg: 'bg-purple-50',  border: 'border-purple-200' },
-    [LeadPhase.COMPLETED]:    { label: 'Convertidos',      color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+    [LeadPhase.COMPLETED]:    { label: 'Convertidos',      color: 'text-brand-600', bg: 'bg-brand-50', border: 'border-brand-200' },
     [LeadPhase.DISQUALIFIED]: { label: 'Desqualificados',  color: 'text-rose-500',    bg: 'bg-rose-50',    border: 'border-rose-200' },
 };
 
@@ -88,14 +88,14 @@ const MemberKanban: React.FC<{ member: Profile; adminId: string; onBack: () => v
             <div className="flex items-center gap-3">
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-emerald-500 font-semibold transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-brand-500 font-semibold transition-colors"
                 >
                     <ArrowLeft size={14} />
                     Voltar
                 </button>
                 <ChevronRight size={12} className="text-slate-300" />
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center font-bold text-emerald-500 text-sm">
+                    <div className="w-8 h-8 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center font-bold text-brand-500 text-sm">
                         {member.full_name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                     <div>
@@ -103,7 +103,7 @@ const MemberKanban: React.FC<{ member: Profile; adminId: string; onBack: () => v
                         <p className="text-[10px] text-slate-400">{member.email}</p>
                     </div>
                 </div>
-                <span className="ml-auto bg-emerald-50 text-emerald-600 text-xs font-black px-3 py-1 rounded-full">
+                <span className="ml-auto bg-brand-50 text-brand-600 text-xs font-black px-3 py-1 rounded-full">
                     {leads.length} lead{leads.length !== 1 ? 's' : ''}
                 </span>
             </div>
@@ -123,7 +123,7 @@ const MemberKanban: React.FC<{ member: Profile; adminId: string; onBack: () => v
 
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500" />
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-500" />
                 </div>
             ) : leads.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-slate-300 gap-3">
@@ -292,7 +292,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-24">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600" />
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600" />
             </div>
         );
     }
@@ -311,7 +311,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 flex items-center gap-4">
-                    <div className="w-11 h-11 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                    <div className="w-11 h-11 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
                         <Users size={20} />
                     </div>
                     <div>
@@ -321,7 +321,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                 </div>
 
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 flex items-center gap-4">
-                    <div className="w-11 h-11 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                    <div className="w-11 h-11 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
                         <TrendingUp size={20} />
                     </div>
                     <div>
@@ -335,7 +335,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 flex flex-col gap-2 justify-center">
                     <button
                         onClick={() => setIsCreateOpen(true)}
-                        className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all active:scale-95"
+                        className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-600 transition-all active:scale-95"
                     >
                         <UserPlus size={16} /> Adicionar Usuário
                     </button>
@@ -347,7 +347,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
 
             <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
-                    <Shield size={16} className="text-emerald-500" />
+                    <Shield size={16} className="text-brand-500" />
                     <h2 className="text-sm font-black text-slate-800">Gerenciar Equipe</h2>
                 </div>
                 <div className="overflow-x-auto">
@@ -379,7 +379,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                                         <tr key={member.id} className="hover:bg-slate-50/40 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center font-bold text-emerald-500 text-sm overflow-hidden">
+                                                    <div className="w-9 h-9 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center font-bold text-brand-500 text-sm overflow-hidden">
                                                         {member.avatar_url ? (
                                                             <img src={member.avatar_url} alt="" className="w-full h-full object-cover" />
                                                         ) : (
@@ -394,13 +394,13 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-600">{member.phone || '—'}</td>
                                             <td className="px-6 py-4 font-bold text-slate-700 text-sm">{m.leads}</td>
-                                            <td className="px-6 py-4 font-bold text-emerald-600 text-sm">{m.conversions}</td>
+                                            <td className="px-6 py-4 font-bold text-brand-600 text-sm">{m.conversions}</td>
                                             <td className="px-6 py-4 font-bold text-slate-600 text-sm">{m.rate}%</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-1">
                                                     <button
                                                         onClick={() => setViewingMember(member)}
-                                                        className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all"
+                                                        className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"
                                                         title="Ver leads deste colaborador"
                                                     >
                                                         <LayoutDashboard size={14} />
@@ -458,10 +458,10 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                     <Field label="Telefone (Opcional)" icon={<Phone size={15} />}>
                         <input type="tel" value={createPhone} onChange={e => setCreatePhone(e.target.value)} placeholder="(11) 99999-9999" className={inputCls} />
                     </Field>
-                    <p className="text-[11px] text-slate-400 bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                    <p className="text-[11px] text-slate-400 bg-brand-50 rounded-xl p-3 border border-brand-100">
                         ⚡ O vendedor acessa o sistema com o e-mail e senha definidos acima.
                     </p>
-                    <button type="submit" disabled={!createEmail || !createName || !createPassword || createLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <button type="submit" disabled={!createEmail || !createName || !createPassword || createLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
                         {createLoading ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
                         {createLoading ? 'Criando...' : 'Criar Vendedor'}
                     </button>
@@ -491,7 +491,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                     <Field label="Telefone" icon={<Phone size={15} />}>
                         <input type="tel" value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="(11) 99999-9999" className={inputCls} />
                     </Field>
-                    <button type="submit" disabled={editLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <button type="submit" disabled={editLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
                         {editLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                         {editLoading ? 'Salvando...' : 'Salvar Alterações'}
                     </button>
@@ -501,7 +501,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
     );
 };
 
-const inputCls = "w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all";
+const inputCls = "w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all";
 
 function Field({ label, icon, rightAction, children }: { label?: string; icon?: React.ReactNode; rightAction?: React.ReactNode; children: React.ReactNode }) {
     return (

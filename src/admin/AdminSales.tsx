@@ -139,7 +139,7 @@ export default function AdminSales() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="p-3 rounded-xl text-white bg-emerald-500">
+                <span className="p-3 rounded-xl text-white bg-brand-500">
                   <TrendingUp size={24} />
                 </span>
               </div>

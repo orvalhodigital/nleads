@@ -125,12 +125,12 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
 
                         <div className="flex justify-between items-start mb-8">
                             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
-                                <MessageCircle size={32} className="text-emerald-500" />
+                                <MessageCircle size={32} className="text-brand-500" />
                             </div>
                             <div className="flex flex-col items-end gap-2">
                                 <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest px-1">Status Global</span>
                                 <div className={`px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2 ${
-                                    whatsappStatus === 'connected' ? 'bg-emerald-500 text-white' :
+                                    whatsappStatus === 'connected' ? 'bg-brand-500 text-white' :
                                     whatsappStatus === 'checking' ? 'bg-slate-700 text-slate-300 animate-pulse' :
                                     'bg-rose-500 text-white'
                                 }`}>
@@ -149,7 +149,7 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
 
                         {sessionData?.number && (
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-8 flex items-center gap-4 animate-fadeIn">
-                                <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-500">
+                                <div className="w-10 h-10 bg-brand-500/20 rounded-xl flex items-center justify-center text-brand-500">
                                     <Smartphone size={20} />
                                 </div>
                                 <div>
@@ -174,7 +174,7 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <button
                                 onClick={handleConnectWhatsApp}
-                                className="px-6 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm transition-all active:scale-95 shadow-xl shadow-emerald-600/20 flex items-center justify-center gap-2 border-b-4 border-emerald-800"
+                                className="px-6 py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-black text-sm transition-all active:scale-95 shadow-xl shadow-brand-600/20 flex items-center justify-center gap-2 border-b-4 border-brand-800"
                             >
                                 <Zap size={18} /> Conectar WhatsApp
                             </button>
@@ -193,7 +193,7 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                     {(profile?.role !== 'admin' && profile?.role !== 'super_admin') && (
                         <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50 animate-fadeUp">
                             <div className="flex items-center gap-4 mb-8">
-                                <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
+                                <div className="p-3 rounded-2xl bg-brand-50 text-brand-600">
                                     <SmartphoneIcon size={24} />
                                 </div>
                                 <div>

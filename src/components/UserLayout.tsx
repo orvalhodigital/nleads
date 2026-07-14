@@ -60,7 +60,7 @@ const UserLayout: React.FC = () => {
         return (
             <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
                 {/* Background Blobs */}
-                <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] bg-emerald-100/40 rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] bg-brand-100/40 rounded-full blur-[100px] animate-pulse" />
                 <div className="absolute bottom-[-10%] left-[-5%] w-[50vw] h-[50vw] bg-blue-100/40 rounded-full blur-[100px] animate-pulse" />
                 
                 <div className="relative flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
@@ -73,7 +73,7 @@ const UserLayout: React.FC = () => {
                     </div>
                         <div className="flex flex-col items-center gap-2">
                             <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
-                                <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                                <div className="w-4 h-4 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
                                 Sincronizando seus dados...
                             </div>
                             
@@ -98,7 +98,7 @@ const UserLayout: React.FC = () => {
     return (
         <div className="flex h-screen bg-slate-50/50 text-slate-800 relative overflow-hidden font-sans">
             {/* Ambient Animated Blobs for Liquid Glass Effect */}
-            <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-emerald-300/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply animate-pulse pointer-events-none" style={{ animationDuration: '8s' }} />
+            <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-brand-300/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply animate-pulse pointer-events-none" style={{ animationDuration: '8s' }} />
             <div className="absolute bottom-[-10%] left-[-5%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-blue-300/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply animate-pulse pointer-events-none" style={{ animationDuration: '10s', animationDelay: '2s' }} />
             <div className="absolute top-[20%] left-[20%] w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] bg-purple-300/20 rounded-full blur-[80px] md:blur-[100px] mix-blend-multiply animate-pulse pointer-events-none" style={{ animationDuration: '12s', animationDelay: '4s' }} />
 

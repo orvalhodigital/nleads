@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
 
     const getPlanStyle = (plan: string) => {
         if (plan === 'pro') return 'bg-slate-900 text-white border-slate-900';
-        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        return 'bg-brand-100 text-brand-700 border-brand-200';
     };
 
     return (
@@ -51,11 +51,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
                     <img src={logoUrl} alt="Logo" className="h-10 w-auto object-contain" />
                 ) : (
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 shrink-0">
+                        <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-200 shrink-0">
                             <Car size={20} strokeWidth={2.5} />
                         </div>
                         <h1 className="hidden lg:block text-xl font-extrabold tracking-tight text-slate-900">
-                            n<span className="text-emerald-500">Leads</span>
+                            n<span className="text-brand-500">Leads</span>
                         </h1>
                     </div>
                 )}
@@ -74,8 +74,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
                             flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 group
                             lg:w-full lg:flex-row lg:gap-3 lg:px-4 lg:py-3 lg:justify-start
                             ${currentView === item.id
-                                ? 'bg-emerald-500/10 text-emerald-600'
-                                : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-50'
+                                ? 'bg-brand-500/10 text-brand-600'
+                                : 'text-slate-400 hover:text-brand-600 hover:bg-slate-50'
                             }
                         `}
                     >
@@ -101,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
                         onClick={() => onNavigate('settings')}
                         title="Ver meu perfil"
                     >
-                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase transition-transform group-hover/profile:scale-105 overflow-hidden border-2 border-transparent group-hover/profile:border-emerald-500">
+                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase transition-transform group-hover/profile:scale-105 overflow-hidden border-2 border-transparent group-hover/profile:border-brand-500">
                             {profile?.avatar_url ? (
                                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
@@ -109,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
                             )}
                         </div>
                         <div className="hidden lg:block flex-1 min-w-0">
-                            <p className="text-xs font-bold text-slate-900 truncate group-hover/profile:text-emerald-600 transition-colors">{profile?.full_name || 'Usuário'}</p>
+                            <p className="text-xs font-bold text-slate-900 truncate group-hover/profile:text-brand-600 transition-colors">{profile?.full_name || 'Usuário'}</p>
                             {profile?.company_name && (
                                 <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{profile.company_name}</p>
                             )}

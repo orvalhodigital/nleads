@@ -145,7 +145,7 @@ const EstruturaECV: React.FC = () => {
           {/* Metrics Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-3xl border border-slate-200 p-6 flex items-center gap-4 shadow-sm">
-              <div className="p-3 bg-emerald-50 text-emerald-500 rounded-2xl"><TrendingUp size={24} /></div>
+              <div className="p-3 bg-brand-50 text-brand-500 rounded-2xl"><TrendingUp size={24} /></div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Investimento Total</p>
                 <p className="text-xl font-black text-slate-900">R$ 1.580,70</p>
@@ -233,7 +233,7 @@ const EstruturaECV: React.FC = () => {
                       <td className="px-8 py-6 font-black text-slate-900 text-sm">{camp.leads}</td>
                       <td className="px-8 py-6 font-bold text-slate-500 text-sm">{camp.ctr}</td>
                       <td className="px-8 py-6">
-                        <span className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-tight">
+                        <span className="px-3 py-1 bg-brand-100 text-brand-600 rounded-full text-[9px] font-black uppercase tracking-tight">
                           Ativa
                         </span>
                       </td>

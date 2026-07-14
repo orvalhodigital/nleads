@@ -26,7 +26,7 @@ export default function FeedbackModal({ isOpen, type, title, message, onClose, o
 
                 <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                        <div className={`p-3 rounded-full ${type === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                        <div className={`p-3 rounded-full ${type === 'success' ? 'bg-emerald-100 text-brand-600' :
                                 type === 'error' ? 'bg-red-100 text-red-600' :
                                     'bg-slate-100 text-slate-900'
                             }`}>

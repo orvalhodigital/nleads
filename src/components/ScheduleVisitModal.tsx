@@ -95,11 +95,11 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                     <div className="space-y-6">
                         <div className="grid grid-cols-2 gap-2">
                             <button type="button" onClick={() => setForm(prev => ({ ...prev, isNewLead: false }))}
-                                className={`py-3 rounded-xl border transition-all text-[9px] font-black uppercase flex flex-col items-center gap-1 ${!form.isNewLead ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-50 bg-slate-50 text-slate-400'}`}>
+                                className={`py-3 rounded-xl border transition-all text-[9px] font-black uppercase flex flex-col items-center gap-1 ${!form.isNewLead ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-slate-50 bg-slate-50 text-slate-400'}`}>
                                 <Users size={16} /> Existente
                             </button>
                             <button type="button" onClick={() => setForm(prev => ({ ...prev, isNewLead: true }))}
-                                className={`py-3 rounded-xl border transition-all text-[9px] font-black uppercase flex flex-col items-center gap-1 ${form.isNewLead ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-50 bg-slate-50 text-slate-400'}`}>
+                                className={`py-3 rounded-xl border transition-all text-[9px] font-black uppercase flex flex-col items-center gap-1 ${form.isNewLead ? 'border-brand-500 bg-brand-50 text-brand-600' : 'border-slate-50 bg-slate-50 text-slate-400'}`}>
                                 <UserPlus size={16} /> Novo Registro
                             </button>
                         </div>
@@ -123,7 +123,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                                         setIsLeadDropdownOpen(true);
                                     }}
                                     onFocus={() => setIsLeadDropdownOpen(true)}
-                                    className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 transition-all outline-none"
+                                    className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 transition-all outline-none"
                                 />
                                 {isLeadDropdownOpen && leadSearch && filteredLeads.length > 0 && (
                                     <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
@@ -138,7 +138,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                                                 }}
                                             >
                                                 <p className="text-sm font-bold text-slate-700">{l.name}</p>
-                                                <p className="text-[10px] font-bold text-emerald-600 mt-0.5">{l.phone || 'Sem telefone'}</p>
+                                                <p className="text-[10px] font-bold text-brand-600 mt-0.5">{l.phone || 'Sem telefone'}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -158,7 +158,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                                         setIsVehicleDropdownOpen(true);
                                     }}
                                     onFocus={() => setIsVehicleDropdownOpen(true)}
-                                    className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 transition-all outline-none"
+                                    className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 transition-all outline-none"
                                 />
                                 {isVehicleDropdownOpen && form.vehicleSearch && filteredVehicles.length > 0 && (
                                     <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
@@ -172,7 +172,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                                                 }}
                                             >
                                                 <p className="text-sm font-bold text-slate-700">{v.brand} {v.model}</p>
-                                                <p className="text-[10px] font-bold text-emerald-600 mt-0.5">R$ {formatCurrency(v.price)}</p>
+                                                <p className="text-[10px] font-bold text-brand-600 mt-0.5">R$ {formatCurrency(v.price)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -187,7 +187,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 mt-4">
+                    <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-brand-500 transition-all flex items-center justify-center gap-2 mt-4">
                         <Plus size={16} /> Finalizar Agendamento
                     </button>
                 </form>

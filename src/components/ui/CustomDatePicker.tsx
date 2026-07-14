@@ -54,7 +54,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onCha
     return (
         <div className="relative" ref={containerRef}>
             <div
-                className={`flex items-center justify-between cursor-pointer ${className || 'w-full text-sm font-semibold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 transition-all outline-none'}`}
+                className={`flex items-center justify-between cursor-pointer ${className || 'w-full text-sm font-semibold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 transition-all outline-none'}`}
                 onClick={toggleOpen}
             >
                 <span className={formattedValue ? 'text-slate-800' : 'text-slate-400 font-medium'}>
@@ -109,8 +109,8 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onCha
                                     className={`
                                         h-8 w-8 rounded-lg text-[11px] font-bold flex items-center justify-center transition-all
                                         ${disabled ? 'opacity-20 cursor-not-allowed text-slate-400' :
-                                            isSelected ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30' :
-                                                isTodayDay ? 'border border-emerald-500 text-emerald-600 font-black bg-emerald-50' :
+                                            isSelected ? 'bg-brand-500 text-white shadow-sm shadow-brand-500/30' :
+                                                isTodayDay ? 'border border-brand-500 text-brand-600 font-black bg-brand-50' :
                                                     isCurrentMonthDay ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-slate-50'}
                                     `}
                                 >

@@ -128,28 +128,28 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             formTitle: 'text-3xl md:text-6xl font-black text-white mb-4 uppercase tracking-tighter italic',
         };
         case 'bold': return {
-            wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-emerald-500/30',
-            nav: 'bg-slate-950 border-b-4 border-emerald-500 sticky top-0 z-50 shadow-2xl',
+            wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-brand-500/30',
+            nav: 'bg-slate-950 border-b-4 border-brand-500 sticky top-0 z-50 shadow-2xl',
             heroText: 'text-white text-4xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-[1] md:leading-[0.85]',
             heroSubText: 'text-slate-400 text-base md:text-xl font-medium mt-4',
             heroAlign: 'text-left items-start',
             heroBtnOutline: 'border-4 border-white text-white hover:bg-white hover:text-black font-black uppercase transition-all px-8 py-4 md:px-10 md:py-5 text-base md:text-lg',
             sectionTitle: 'text-white font-black text-3xl md:text-6xl italic uppercase tracking-tighter',
-            card: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-emerald-500 transition-all duration-300',
+            card: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-brand-500 transition-all duration-300',
             cardTitle: 'text-white font-black text-2xl uppercase tracking-tight italic',
-            cardSub: 'text-emerald-500 text-xs font-black uppercase tracking-widest',
+            cardSub: 'text-brand-500 text-xs font-black uppercase tracking-widest',
             cardBadge: 'bg-slate-800 text-white text-[10px] font-black px-4 py-1 uppercase tracking-widest',
             cardBtnDetail: 'flex-1 border-4 border-slate-700 text-white text-sm font-black uppercase py-4 hover:border-white transition-all text-center',
-            cardBtnWa: 'flex-1 bg-emerald-500 text-slate-950 text-sm font-black uppercase py-4 hover:bg-emerald-400 transition-all text-center shadow-[0_0_30px_rgba(16,185,129,0.3)]',
+            cardBtnWa: 'flex-1 bg-brand-500 text-slate-950 text-sm font-black uppercase py-4 hover:bg-brand-400 transition-all text-center shadow-[0_0_30px_rgba(16,185,129,0.3)]',
             filterPill: 'px-6 md:px-8 py-3 md:py-4 rounded-none border-4 border-slate-800 bg-transparent text-white text-xs md:text-sm font-black uppercase hover:border-white transition-all',
-            filterPillActive: 'px-6 md:px-8 py-3 md:py-4 rounded-none bg-emerald-500 text-slate-950 text-xs md:text-sm font-black uppercase transition-all',
-            input: 'bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-emerald-500 transition-all',
-            inputField: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-emerald-500 transition-all',
-            textarea: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-emerald-500 transition-all resize-none',
-            footer: 'mt-32 bg-black border-t-8 border-emerald-500 py-16',
+            filterPillActive: 'px-6 md:px-8 py-3 md:py-4 rounded-none bg-brand-500 text-slate-950 text-xs md:text-sm font-black uppercase transition-all',
+            input: 'bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-brand-500 transition-all',
+            inputField: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-brand-500 transition-all',
+            textarea: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-brand-500 transition-all resize-none',
+            footer: 'mt-32 bg-black border-t-8 border-brand-500 py-16',
             footerText: 'text-slate-500 font-black uppercase tracking-[0.4em]',
             formCard: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-8 md:p-24 shadow-2xl',
-            formLabel: 'text-emerald-500 text-sm font-black uppercase tracking-widest',
+            formLabel: 'text-brand-500 text-sm font-black uppercase tracking-widest',
             formTitle: 'text-4xl md:text-7xl font-black text-white mb-6 uppercase italic leading-none',
         };
         case 'luxury': return {
@@ -215,12 +215,12 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             cardSub: 'text-slate-400 font-bold text-[10px] uppercase tracking-widest',
             cardBadge: 'bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider border border-slate-100',
             cardBtnDetail: 'hidden',
-            cardBtnWa: 'flex items-center justify-center gap-1.5 bg-slate-50 border border-slate-100 text-slate-700 text-xs font-bold rounded-xl px-4 py-2 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all text-center',
+            cardBtnWa: 'flex items-center justify-center gap-1.5 bg-slate-50 border border-slate-100 text-slate-700 text-xs font-bold rounded-xl px-4 py-2 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200 transition-all text-center',
             filterPill: 'px-5 py-2.5 rounded-full bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-all shadow-sm',
             filterPillActive: 'px-5 py-2.5 rounded-full bg-slate-900 text-white text-xs font-bold shadow-lg shadow-slate-900/20 transition-all border border-slate-900',
-            input: 'bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all shadow-sm',
-            inputField: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all',
-            textarea: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-emerald-500 transition-all resize-none',
+            input: 'bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-brand-500 transition-all shadow-sm',
+            inputField: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-brand-500 transition-all',
+            textarea: 'w-full bg-white border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-brand-500 transition-all resize-none',
             footer: 'mt-24 bg-slate-900 border-t border-slate-800 pt-16 pb-8',
             footerText: 'text-slate-400 text-[11px] font-bold uppercase tracking-widest',
             formCard: `bg-white ${profile?.website_card_style === 'square' ? 'rounded-none' : 'rounded-3xl md:rounded-[32px]'} border border-slate-100 p-6 md:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.05)]`,
@@ -629,7 +629,7 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-950">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500" />
         </div>
     );
 

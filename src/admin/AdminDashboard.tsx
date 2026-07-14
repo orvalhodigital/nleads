@@ -103,7 +103,7 @@ export default function AdminDashboard() {
           label: 'Vendas Completadas',
           value: completedLeads,
           icon: <DollarSign size={24} />,
-          color: 'bg-emerald-500'
+          color: 'bg-brand-500'
         },
         {
           label: 'Tickets Abertos',

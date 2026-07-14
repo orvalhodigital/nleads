@@ -23,7 +23,7 @@ export function AdminToast({ toast, onClose }: AdminToastProps) {
   }, [toast.id, toast.duration, onClose]);
 
   const bgColor = {
-    success: 'bg-emerald-50 border-emerald-200',
+    success: 'bg-emerald-50 border-brand-200',
     error: 'bg-red-50 border-red-200',
     info: 'bg-blue-50 border-blue-200',
   }[toast.type];

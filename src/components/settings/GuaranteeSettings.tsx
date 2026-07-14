@@ -115,7 +115,7 @@ const GuaranteeSettings: React.FC<GuaranteeSettingsProps> = ({ onSave }) => {
         </div>
       )}
       {successMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
+        <div className="p-4 rounded-xl bg-brand-50 border border-brand-200 text-brand-700 text-sm font-medium">
           {successMessage}
         </div>
       )}
@@ -171,7 +171,7 @@ const GuaranteeSettings: React.FC<GuaranteeSettingsProps> = ({ onSave }) => {
                     </button>
                     <button
                       onClick={handleSave}
-                      className="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 text-xs font-bold transition-colors flex items-center gap-2"
+                      className="px-4 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-600 text-xs font-bold transition-colors flex items-center gap-2"
                     >
                       <Check size={14} /> Salvar
                     </button>

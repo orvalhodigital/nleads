@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PageContainer from './ui/PageContainer';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import {
-  Users, Car, Target, DollarSign, Flame, Clock, AlertTriangle,
-  CheckCircle2, Calendar, TrendingUp, LayoutDashboard,
-  UserX, ShoppingBag, BarChart3, Percent, ArrowRight, Package,
-  Repeat, Handshake, Timer, Award, PhoneCall, Info
+  LayoutDashboard, TrendingUp, Package, Calendar, Award
 } from 'lucide-react';
 import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, Motorcycle, TransmissionType } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
 import { isToday, isTomorrow, isSameDay, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, differenceInCalendarDays } from 'date-fns';
-import { formatCurrency } from '../utils/formatters';
 import { CustomDatePicker } from './ui/CustomDatePicker';
+import { DashboardTabGeral } from './dashboard/DashboardTabGeral';
+import { DashboardTabComercial } from './dashboard/DashboardTabComercial';
+import { DashboardTabEstoque } from './dashboard/DashboardTabEstoque';
+import { DashboardTabAgenda } from './dashboard/DashboardTabAgenda';
 
 interface DashboardProps {
   leads: Lead[];
@@ -21,8 +20,6 @@ interface DashboardProps {
   motorcycles?: Motorcycle[];
   profile?: Profile | null;
 }
-
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#f97316'];
 
 const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = [], profile }) => {
   const navigate = useNavigate();
@@ -368,7 +365,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       {/* ──── LIQUID GLASS BACKGROUND STYLING ──── */}
       <div className="fixed inset-0 pointer-events-none z-[0] bg-[#f8fafc]" />
       <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden mix-blend-multiply opacity-50">
-        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-emerald-400/30 rounded-full blur-[140px] animate-pulse-slow" />
+        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-brand-400/30 rounded-full blur-[140px] animate-pulse-slow" />
         <div className="absolute top-[20%] -right-[15%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[140px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
         <div className="absolute bottom-[-20%] left-[20%] w-[800px] h-[800px] bg-indigo-400/10 rounded-full blur-[160px] animate-pulse-slow" style={{ animationDelay: '4s' }} />
       </div>
@@ -414,8 +411,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
           </div>
 
           {monthlyGoal > 0 && isGoalReached && (
-            <div className="flex items-center gap-3 bg-gradient-to-br from-emerald-500 to-teal-400 text-white px-5 py-2.5 rounded-[18px] shadow-xl shadow-emerald-500/20 border border-emerald-400/50">
-              <Award size={18} className="text-emerald-50" />
+            <div className="flex items-center gap-3 bg-gradient-to-br from-brand-500 to-brand-400 text-white px-5 py-2.5 rounded-[18px] shadow-xl shadow-brand-500/20 border border-brand-400/50">
+              <Award size={18} className="text-brand-50" />
               <span className="text-xs font-extrabold">Meta Atingida! 🎉</span>
             </div>
           )}
@@ -453,606 +450,84 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
           ))}
         </div>
 
-        {/* ═══════════════════════ TAB: VISÃO GERAL ═══════════════════════ */}
+        {/* ═══════════════════════ TAB CONTENTS ═══════════════════════ */}
         {activeTab === 'geral' && (
-          <div className="space-y-8 animate-fadeUp">
-            {(attentionLeads.length > 0 || staleVehicles > 0) && (
-              <div className="flex flex-col gap-3">
-                {attentionLeads.length > 0 && (
-                  <div className="bg-amber-400/10 backdrop-blur-3xl border border-amber-400/30 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_30px_rgb(251,191,36,0.15)] relative overflow-hidden">
-                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-amber-400/20 rounded-full blur-[40px] pointer-events-none" />
-                    <div className="flex items-center gap-5 relative z-10">
-                      <div className="w-14 h-14 bg-amber-400/30 rounded-2xl flex items-center justify-center shrink-0 border border-amber-400/40 shadow-inner">
-                        <AlertTriangle size={28} className="text-amber-700" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-black text-amber-900 tracking-tight leading-tight">{attentionLeads.length} leads precisam de atenção!</h3>
-                        <p className="text-xs font-semibold text-amber-800 mt-1 tracking-tight">Parados há mais de 15 dias na mesma fase do funil.</p>
-                      </div>
-                    </div>
-                    <button onClick={() => navigate('/leads')} className="relative z-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-3.5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-amber-500/30 hover:-translate-y-0.5 whitespace-nowrap">
-                      Evoluir Leads
-                    </button>
-                  </div>
-                )}
-                {staleVehicles > 0 && (
-                  <div className="bg-rose-400/10 backdrop-blur-3xl border border-rose-400/30 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_30px_rgb(244,63,94,0.15)] relative overflow-hidden">
-                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-rose-400/20 rounded-full blur-[40px] pointer-events-none" />
-                    <div className="flex items-center gap-5 relative z-10">
-                      <div className="w-14 h-14 bg-rose-400/30 rounded-2xl flex items-center justify-center shrink-0 border border-rose-400/40 shadow-inner">
-                        <Car size={28} className="text-rose-700" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-black text-rose-900 tracking-tight leading-tight">{staleVehicles} veículos parados há 60+ dias!</h3>
-                        <p className="text-xs font-semibold text-rose-800 mt-1 tracking-tight">Reduzir preço ou fazer promoção para acelerar giro.</p>
-                      </div>
-                    </div>
-                    <button onClick={() => navigate('/inventory')} className="relative z-10 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3.5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-rose-500/30 hover:-translate-y-0.5 whitespace-nowrap">
-                      Ver Estoque
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <KpiGlassCard
-                label="Vendas (Mês)"
-                value={salesThisMonth.length}
-                trend={salesCountGrowth}
-                icon={ShoppingBag}
-                colorClass="text-emerald-600 bg-emerald-500/10"
-                glowClass="bg-emerald-400/30"
-                info="Sua conversão final. Estratégia: Analise quais marcas saíram mais para comprar estoque similar."
-                onClick={() => navigate('/leads?status=won')}
-              />
-              <KpiGlassCard
-                label="Receita (Mês)"
-                value={`R$ ${formatCurrency(revenueThisMonth)}`}
-                trend={salesGrowth}
-                icon={DollarSign}
-                colorClass="text-teal-600 bg-teal-500/10"
-                glowClass="bg-teal-400/30"
-                info="Dinheiro entrando no caixa. Estratégia: Compare com o custo do estoque para entender sua margem real bruta."
-                onClick={() => navigate('/reporting')}
-              />
-              <KpiGlassCard
-                label="Leads no Mês"
-                value={leadsThisMonth.length}
-                trend={leadsGrowth}
-                icon={Users}
-                colorClass="text-indigo-600 bg-indigo-500/10"
-                glowClass="bg-indigo-400/30"
-                info="Volume de oportunidades criadas este mês. Estratégia: Se baixo, invista em tráfego ou mídias. Se alto com pouca venda, cheque o atendimento."
-                onClick={() => navigate('/leads')}
-              />
-              <KpiGlassCard
-                label="Taxa Conversão"
-                value={`${conversionRate.toFixed(1)}%`}
-                icon={Percent}
-                colorClass="text-purple-600 bg-purple-500/10"
-                glowClass="bg-purple-400/30"
-                info="Sua eficiência comercial. Estratégia: O ideal é acima de 10%. Abaixo disso indica gargalo na negociação ou leads desqualificados."
-                onClick={() => navigate('/reporting')}
-              />
-              <KpiGlassCard
-                label="Estoque"
-                value={availableVehicles.length}
-                icon={Car}
-                colorClass="text-blue-600 bg-blue-500/10"
-                glowClass="bg-blue-400/30"
-                info="Quantidade de veículos disponíveis. Estratégia: Estoque parado é dinheiro morrendo. Foque nos carros que estão há mais de 30 dias na loja."
-                onClick={() => navigate('/inventory')}
-              />
-              <KpiGlassCard
-                label="Ticket Médio"
-                value={`R$ ${formatCurrency(ticketMedioVendas)}`}
-                icon={Target}
-                colorClass="text-rose-600 bg-rose-500/10"
-                glowClass="bg-rose-400/30"
-                info="Valor médio das suas vendas. Estratégia: Se quiser aumentar o faturamento sem aumentar o número de vendas, foque em produtos de maior valor."
-                onClick={() => navigate('/reporting')}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <MiniStat label="Volume de Vendas Mensal" value={`R$ ${formatCurrency(revenueThisMonth)}`} icon={DollarSign} />
-              <MiniStat label="Lucro Bruto Estimado" value={`R$ ${formatCurrency(monthlyGrossProfit)}`} icon={TrendingUp} />
-              <MiniStat label="Tempo Méd. Venda" value={`${averageDaysToSell.toFixed(1)} dias`} icon={Timer} />
-              <MiniStat label="Leads Parados" value={attentionLeads.length} icon={AlertTriangle} subtitle="Sem atualização há mais de 15 dias" />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
-              <GlassSection>
-                <SectionHeader icon={Award} title="Funil do Mês" subtitle="Estoque → Leads → Visitas → Vendas" color="text-teal-500 bg-teal-500/10 border-teal-500/20" />
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                    {/* — Estoque — */}
-                    <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100/50 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                          <Car size={14} className="text-indigo-500" />
-                        </div>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-indigo-500">Estoque</span>
-                      </div>
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-baseline">
-                          <span className="text-xs font-bold text-slate-500">Giro mensal</span>
-                          <span className="text-sm font-black text-indigo-600">{stockTurnover.toFixed(1)}%</span>
-                        </div>
-                        <div className="flex justify-between items-baseline">
-                          <span className="text-xs font-bold text-slate-500">Tempo médio de venda</span>
-                          <span className={`text-sm font-black ${averageDaysToSell > 45 ? 'text-rose-500' : 'text-slate-700'}`}>{averageDaysToSell.toFixed(0)}d</span>
-                        </div>
-                        {staleVehicles > 0 && (
-                          <div className="flex justify-between items-baseline pt-1 border-t border-indigo-100/50">
-                            <span className="text-xs font-bold text-rose-400">Parados +60d</span>
-                            <span className="text-sm font-black text-rose-500">{staleVehicles}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* — Leads — */}
-                    <div className="rounded-2xl bg-emerald-50/60 border border-emerald-100/50 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                          <Users size={14} className="text-emerald-500" />
-                        </div>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Leads</span>
-                      </div>
-                      <div>
-                        {profile?.monthly_leads_goal ? (
-                          <>
-                            <div className="flex justify-between items-baseline mb-2">
-                              <span className="text-3xl font-black text-emerald-700">{leadsThisCalMonth}</span>
-                              <span className="text-xs font-bold text-slate-400">/{profile.monthly_leads_goal}</span>
-                            </div>
-                            <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
-                              <div className="h-full rounded-full bg-emerald-500 transition-all duration-700" style={{ width: `${Math.min((leadsThisCalMonth / profile.monthly_leads_goal) * 100, 100)}%` }} />
-                            </div>
-                            <p className="text-[9px] font-bold text-slate-400 mt-1">{Math.round((leadsThisCalMonth / profile.monthly_leads_goal) * 100)}% da meta</p>
-                          </>
-                        ) : (
-                          <p className="text-3xl font-black text-slate-800">{leadsThisCalMonth}<span className="text-sm font-bold text-slate-400 ml-1">leads</span></p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* — Visitas — */}
-                    <div className="rounded-2xl bg-blue-50/60 border border-blue-100/50 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                          <Calendar size={14} className="text-blue-500" />
-                        </div>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-blue-600">Visitas</span>
-                      </div>
-                      <div>
-                        {profile?.monthly_visits_goal ? (
-                          <>
-                            <div className="flex justify-between items-baseline mb-2">
-                              <span className="text-3xl font-black text-blue-700">{visitsThisMonthDone}</span>
-                              <span className="text-xs font-bold text-slate-400">/{profile.monthly_visits_goal}</span>
-                            </div>
-                            <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden">
-                              <div className="h-full rounded-full bg-blue-500 transition-all duration-700" style={{ width: `${Math.min((visitsThisMonthDone / profile.monthly_visits_goal) * 100, 100)}%` }} />
-                            </div>
-                            <p className="text-[9px] font-bold text-slate-400 mt-1">{Math.round((visitsThisMonthDone / profile.monthly_visits_goal) * 100)}% da meta</p>
-                          </>
-                        ) : (
-                          <p className="text-3xl font-black text-slate-800">{visitsThisMonthDone}<span className="text-sm font-bold text-slate-400 ml-1">realizadas</span></p>
-                        )}
-                        {visitsThisMonthTotal > 0 && (
-                          <p className="text-[9px] font-bold text-slate-400 mt-1">{visitShowRate}% de comparecimento ({visitsThisMonthTotal} agendadas)</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* — Vendas — */}
-                    <div className="rounded-2xl bg-teal-50/60 border border-teal-100/50 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-teal-500/10 flex items-center justify-center">
-                          <ShoppingBag size={14} className="text-teal-500" />
-                        </div>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-teal-600">Vendas</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div>
-                          {monthlyGoal > 0 ? (
-                            <>
-                              <div className="flex justify-between items-baseline mb-1">
-                                <span className="text-2xl font-black text-teal-700">{salesCountThisCalMonth}</span>
-                                <span className="text-xs font-bold text-slate-400">/{monthlyGoal} unid.</span>
-                              </div>
-                              <div className="h-2 w-full bg-teal-100 rounded-full overflow-hidden">
-                                {(() => { const pct = Math.min((salesCountThisCalMonth / monthlyGoal) * 100, 100); return <div className={`h-full rounded-full transition-all duration-700 ${pct < 30 ? 'bg-rose-400' : pct < 75 ? 'bg-amber-400' : 'bg-teal-500'}`} style={{ width: `${pct}%` }} />; })()}
-                              </div>
-                            </>
-                          ) : (
-                            <p className="text-2xl font-black text-slate-800">{salesCountThisCalMonth}<span className="text-sm font-bold text-slate-400 ml-1">vendas</span></p>
-                          )}
-                        </div>
-                        {profile?.monthly_revenue_goal ? (
-                          <div className="pt-1 border-t border-teal-100/50">
-                            <div className="flex justify-between items-baseline mb-1">
-                              <span className="text-xs font-bold text-slate-500">Faturamento</span>
-                              <span className="text-xs font-black text-teal-700">R$ {formatCurrency(revenueThisCalMonth)}</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-teal-100 rounded-full overflow-hidden">
-                              <div className="h-full rounded-full bg-teal-400 transition-all duration-700" style={{ width: `${Math.min((revenueThisCalMonth / profile.monthly_revenue_goal) * 100, 100)}%` }} />
-                            </div>
-                            <p className="text-[9px] font-bold text-slate-400 mt-0.5">{Math.round((revenueThisCalMonth / profile.monthly_revenue_goal) * 100)}% de R$ {formatCurrency(profile.monthly_revenue_goal)}</p>
-                          </div>
-                        ) : (
-                          <p className="text-xs font-bold text-slate-400">R$ {formatCurrency(revenueThisCalMonth)}</p>
-                        )}
-                        {salesNeeded > 0 && monthlyGoal > 0 && (
-                          <p className="text-[9px] font-bold text-amber-500">{salesPerDayNeeded}/dia nos próximos {daysLeftInMonth}d</p>
-                        )}
-                      </div>
-                    </div>
-
-                </div>
-              </GlassSection>
-
-              <GlassSection>
-                <div className="flex items-center justify-between mb-6">
-                  <SectionHeader icon={FireIcon} title="Radar Quente" subtitle="Leads com alta intenção" color="text-red-500 bg-red-500/10 border-red-500/20" />
-                </div>
-
-                <div className="flex flex-col gap-6">
-                  <div className="flex items-end justify-between px-2 pb-4">
-                    <div>
-                      <p className="text-5xl font-black text-slate-800 tracking-tight">{hotLeads}</p>
-                      <p className="text-xs font-black uppercase tracking-widest text-slate-400 mt-2">Leads Quentes 🎉</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-5">
-                    {funnelData.filter(d => ['Visita', 'Simulação', 'Pagamento'].includes(d.name)).map((item) => (
-                      <PhaseGlassBar key={item.name} label={item.name} value={item.value} total={activeLeads.length} color={item.color} />
-                    ))}
-                  </div>
-                </div>
-              </GlassSection>
-            </div>
-
-            {/* Vendas em Processamento */}
-            <GlassSection>
-              <div className="flex items-center justify-between mb-6">
-                <SectionHeader icon={ShoppingBag} title="Vendas em Processamento" subtitle="Fluxo pós-venda" color="text-emerald-500 bg-emerald-500/10 border-emerald-500/20" />
-                <button
-                  onClick={() => navigate('/sales-flow')}
-                  className="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 text-xs font-bold transition-all"
-                >
-                  Ver Kanban →
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
-                    <p className="text-xs font-black uppercase tracking-widest text-blue-600">Documentação</p>
-                    <p className="text-2xl font-black text-blue-900 mt-2">{leads.filter(l => l.saleStatus === 'documentacao').length}</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100">
-                    <p className="text-xs font-black uppercase tracking-widest text-orange-600">Entrega</p>
-                    <p className="text-2xl font-black text-orange-900 mt-2">{leads.filter(l => l.saleStatus === 'entrega').length}</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-                    <p className="text-xs font-black uppercase tracking-widest text-emerald-600">Em Garantia</p>
-                    <p className="text-2xl font-black text-emerald-900 mt-2">{leads.filter(l => l.saleStatus === 'em_garantia').length}</p>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Total de Vendas</p>
-                  <p className="text-3xl font-black text-slate-900 mt-2">{leads.filter(l => l.saleStatus).length}</p>
-                  <p className="text-xs font-bold text-slate-500 mt-2">Leads em fluxo de pós-venda</p>
-                </div>
-              </div>
-            </GlassSection>
-          </div>
+          <DashboardTabGeral
+            leads={leads}
+            profile={profile}
+            attentionLeads={attentionLeads}
+            staleVehicles={staleVehicles}
+            salesThisMonth={salesThisMonth}
+            salesCountGrowth={salesCountGrowth}
+            revenueThisMonth={revenueThisMonth}
+            salesGrowth={salesGrowth}
+            leadsThisMonth={leadsThisMonth}
+            leadsGrowth={leadsGrowth}
+            conversionRate={conversionRate}
+            availableVehicles={availableVehicles}
+            ticketMedioVendas={ticketMedioVendas}
+            monthlyGrossProfit={monthlyGrossProfit}
+            averageDaysToSell={averageDaysToSell}
+            stockTurnover={stockTurnover}
+            leadsThisCalMonth={leadsThisCalMonth}
+            visitsThisMonthDone={visitsThisMonthDone}
+            visitsThisMonthTotal={visitsThisMonthTotal}
+            visitShowRate={visitShowRate}
+            salesCountThisCalMonth={salesCountThisCalMonth}
+            revenueThisCalMonth={revenueThisCalMonth}
+            salesPerDayNeeded={salesPerDayNeeded}
+            daysLeftInMonth={daysLeftInMonth}
+            salesNeeded={salesNeeded}
+            hotLeads={hotLeads}
+            activeLeads={activeLeads}
+            funnelData={funnelData}
+            monthlyGoal={monthlyGoal}
+          />
         )}
 
-        {/* ═══════════════════════ TAB: COMERCIAL ═══════════════════════ */}
         {activeTab === 'comercial' && (
-          <div className="space-y-8 animate-fadeUp">
-            <GlassSection>
-              <SectionHeader icon={Flame} title="Ações de Alto Impacto" subtitle="Você pode vender hoje" color="text-orange-500 bg-orange-500/10 border-orange-500/20" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-                <ActionMetricCard title="Matches de Carros" value={matchesProntos} subtitle="Buscam carro no estoque" icon={Car} colorClass="text-emerald-600 bg-emerald-500/10" />
-                <ActionMetricCard title="A Ponto de Fechar" value={prontosParaFechar} subtitle="Simulando ou Avaliando" icon={Target} colorClass="text-sky-600 bg-sky-500/10" />
-                <ActionMetricCard title="Leads Esquecidos" value={leadsEsquecidos} subtitle="Sem contato recente" icon={Clock} colorClass="text-amber-600 bg-amber-500/10" />
-              </div>
-            </GlassSection>
-
-            <GlassSection>
-              <SectionHeader icon={DollarSign} title="Performance Financeira" subtitle="Destaques de vendas do mês" color="text-emerald-500 bg-emerald-500/10 border-emerald-500/20" />
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pb-8 border-b border-slate-100/50">
-                <div className="md:col-span-2">
-                  <MiniStat label="Faturamento Total (Mês)" value={`R$ ${formatCurrency(revenueThisMonth)}`} trend={salesGrowth} />
-                </div>
-                <div>
-                  <MiniStat label="Ticket Médio" value={`R$ ${formatCurrency(ticketMedioVendas)}`} icon={Target} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-                <MiniStat label="Com Entrada" value={leadsComEntrada} icon={Handshake} />
-                <MiniStat label="Com Troca" value={leadsComTroca} icon={Repeat} />
-                <MiniStat label="Tempo Méd. Venda" value={`${averageDaysToSell.toFixed(1)} dias`} icon={Timer} />
-                <MiniStat label="Desqualificados" value={leads.filter(l => l.phase === LeadPhase.DISQUALIFIED).length} icon={UserX} />
-              </div>
-
-              {salesByBrand.length > 0 && (
-                <div className="mt-10">
-                  <p className="text-xs uppercase tracking-widest font-black text-slate-400 mb-6 flex items-center gap-2"><Award size={14} /> Vendas por Marca (Mês)</p>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={salesByBrand} layout="vertical">
-                        <XAxis type="number" hide />
-                        <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12, fontWeight: 800, fill: '#64748b' }} />
-                        <Tooltip contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }} />
-                        <Bar dataKey="value" fill="#10b981" radius={[0, 12, 12, 0]} barSize={40} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              )}
-            </GlassSection>
-          </div>
+          <DashboardTabComercial
+            leads={leads}
+            matchesProntos={matchesProntos}
+            prontosParaFechar={prontosParaFechar}
+            leadsEsquecidos={leadsEsquecidos}
+            revenueThisMonth={revenueThisMonth}
+            salesGrowth={salesGrowth}
+            ticketMedioVendas={ticketMedioVendas}
+            leadsComEntrada={leadsComEntrada}
+            leadsComTroca={leadsComTroca}
+            averageDaysToSell={averageDaysToSell}
+            salesByBrand={salesByBrand}
+          />
         )}
 
-        {/* ═══════════════════════ TAB: ESTOQUE ═══════════════════════ */}
         {activeTab === 'estoque' && (
-          <div className="space-y-8 animate-fadeUp">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <GlassSection>
-                <SectionHeader icon={Car} title="Inventário Atual" subtitle="Giro e Valor" color="text-indigo-500 bg-indigo-500/10 border-indigo-500/20" />
-                <div className="grid grid-cols-2 gap-6 mt-8">
-                  <MiniStat label="Veículos Disp." value={availableVehicles.length} icon={Car} />
-                  <MiniStat label="Giro Mensal" value={`${stockTurnover.toFixed(1)}%`} icon={TrendingUp} />
-                </div>
-                <div className="mt-6 mb-6">
-                  <MiniStat label="Valor Imobilizado Completo" value={`R$ ${formatCurrency(totalStockValue)}`} icon={DollarSign} />
-                </div>
-
-                <div className="mt-8 p-6 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col gap-4">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="font-bold text-slate-500">Mais Caro</span>
-                    <span className="font-black text-slate-900">{mostExpensive ? `R$ ${formatCurrency(mostExpensive.price)}` : 'R$ 0'}</span>
-                  </div>
-                  <div className="h-px bg-slate-200" />
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="font-bold text-slate-500">Mais Barato</span>
-                    <span className="font-black text-slate-900">{cheapest ? `R$ ${formatCurrency(cheapest.price)}` : 'R$ 0'}</span>
-                  </div>
-                </div>
-              </GlassSection>
-
-              <GlassSection>
-                <SectionHeader icon={Package} title="Distribuição do Stock" subtitle="Categorias disponíveis" color="text-rose-500 bg-rose-500/10 border-rose-500/20" />
-                <div className="mt-8 space-y-5">
-                  {stockByCategory.length > 0 ? stockByCategory.slice(0, 6).map((item) => (
-                    <PhaseGlassBar key={item.name} label={item.name} value={item.value} total={availableVehicles.length} color="#3b82f6" />
-                  )) : (
-                    <div className="flex flex-col items-center justify-center text-center py-16 border border-dashed border-rose-300 bg-rose-50/50 rounded-[32px]">
-                      <p className="text-6xl font-black text-rose-600 mb-4">0</p>
-                      <p className="text-sm font-bold uppercase tracking-widest text-rose-500/80">veículos disponíveis para venda</p>
-                    </div>
-                  )}
-                </div>
-              </GlassSection>
-            </div>
-
-            <GlassSection>
-              <SectionHeader icon={BarChart3} title="Inteligência de Mercado" subtitle="O que pesquisam na loja" color="text-purple-500 bg-purple-500/10 border-purple-500/20" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mt-10">
-                <ChartCard title="Interesse por Marca" data={brandInterest} />
-                <ChartCard title="Tipo de Veículo" data={typeInterest} />
-                <ChartCard title="Modelo Busca" data={modelInterest} />
-                <ChartCard title="Origem / Canal" data={leadSources} />
-              </div>
-            </GlassSection>
-
-          </div>
+          <DashboardTabEstoque
+            availableVehicles={availableVehicles}
+            stockTurnover={stockTurnover}
+            totalStockValue={totalStockValue}
+            mostExpensive={mostExpensive}
+            cheapest={cheapest}
+            stockByCategory={stockByCategory}
+            brandInterest={brandInterest}
+            typeInterest={typeInterest}
+            modelInterest={modelInterest}
+            leadSources={leadSources}
+          />
         )}
 
-        {/* ═══════════════════════ TAB: AGENDA ═══════════════════════ */}
         {activeTab === 'agenda' && (
-          <div className="space-y-8 animate-fadeUp">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <GlassSection>
-                <div className="flex items-center justify-between mb-8">
-                  <SectionHeader icon={Calendar} title="Agenda Visitas" subtitle="Resumo do dia" color="text-rose-500 bg-rose-500/10 border-rose-500/20" />
-                  <button onClick={() => navigate('/agenda')} className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 transition-all shadow-xl hover:-translate-y-1">
-                    <ArrowRight size={20} />
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  <AgendaRow icon={Users} label="Visitas Agendadas" value={visToday} subtitle="Total para o dia de hoje" colorClass="text-amber-600 bg-amber-50" />
-                  <AgendaRow icon={CheckCircle2} label="Visitas Realizadas" value={visitsDoneToday} subtitle="Concluídas com sucesso" colorClass="text-emerald-600 bg-emerald-50 border border-emerald-100" />
-                </div>
-              </GlassSection>
-
-              <GlassSection>
-                <div className="flex items-center justify-between mb-8">
-                  <SectionHeader icon={PhoneCall} title="Follow-Ups" subtitle="Próximos contatos" color="text-blue-500 bg-blue-500/10 border-blue-500/20" />
-                </div>
-                <div className="space-y-4">
-                  <AgendaRow icon={PhoneCall} label="Follow-Ups p/ Hoje" value={followupsToday} subtitle="Ligue ou mande mensagem" colorClass="text-blue-600 bg-blue-50" />
-                  <AgendaRow icon={PhoneCall} label="Follow-Ups p/ Amanhã" value={followupsTomorrow} subtitle="Preparar contatos para o dia seguinte" colorClass="text-blue-500 bg-blue-50/60" />
-                </div>
-              </GlassSection>
-
-              <GlassSection>
-                <div className="flex items-center justify-between mb-8">
-                  <SectionHeader icon={Clock} title="Projeção Amanhã" subtitle="O que está por vir" color="text-slate-500 bg-slate-100 border-slate-200" />
-                </div>
-                <div className="flex flex-col gap-4">
-                  <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Novas Visitas</p>
-                      <p className="text-3xl font-black text-slate-800 mt-2">{appointmentsTomorrow}</p>
-                    </div>
-                    <div className="text-4xl opacity-20">📅</div>
-                  </div>
-                </div>
-              </GlassSection>
-            </div>
-          </div>
+          <DashboardTabAgenda
+            visToday={visToday}
+            visitsDoneToday={visitsDoneToday}
+            followupsToday={followupsToday}
+            followupsTomorrow={followupsTomorrow}
+            appointmentsTomorrow={appointmentsTomorrow}
+          />
         )}
       </PageContainer>
     </div>
   );
 };
-
-// ═══════════════════════ LIGUID GLASS SUBCOMPONENTS ═══════════════════════
-const FireIcon = Flame;
-
-const GlassSection = ({ children }: any) => (
-  <div className="bg-white/50 backdrop-blur-3xl border border-white/60 p-8 md:p-10 rounded-[40px] shadow-[0_8px_32px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.06)] transition-all">
-    {children}
-  </div>
-);
-
-const SectionHeader = ({ icon: Icon, title, subtitle, color }: any) => (
-  <div className="flex items-center gap-5">
-    <div className={`w-14 h-14 rounded-[20px] flex items-center justify-center shadow-inner border ${color}`}>
-      <Icon size={24} className="opacity-90" strokeWidth={2.5} />
-    </div>
-    <div>
-      <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">{title}</h2>
-      <p className="text-[11px] uppercase tracking-widest font-black text-slate-400 mt-2 opacity-80">{subtitle}</p>
-    </div>
-  </div>
-);
-
-const KpiGlassCard = ({ label, value, trend, icon: Icon, colorClass, glowClass, info, onClick }: any) => (
-  <div
-    onClick={onClick}
-    className={`bg-white/60 backdrop-blur-3xl border border-white/80 p-6 rounded-[32px] shadow-[0_8px_24px_rgb(0,0,0,0.03)] transition-all group relative flex flex-col justify-between min-h-[160px] z-10 hover:z-50 ${onClick ? 'cursor-pointer hover:bg-white/80 hover:shadow-xl' : ''}`}
-  >
-    {/* Glow clipping container */}
-    <div className="absolute inset-0 rounded-[32px] overflow-hidden pointer-events-none">
-      <div className={`absolute -right-6 -bottom-6 w-32 h-32 rounded-full blur-3xl transition-transform group-hover:scale-[1.5] ${glowClass}`} />
-    </div>
-
-    <div className="flex justify-between items-start relative z-20">
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${colorClass}`}>
-        <Icon size={20} strokeWidth={2.5} />
-      </div>
-      <div className="flex flex-col items-end gap-2">
-        {trend !== undefined && trend !== 0 && (
-          <span className={`text-xs uppercase font-bold tracking-widest px-2.5 py-1 rounded-xl shadow-sm border border-white/40 ${trend >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-            {trend > 0 ? '+' : ''}{trend.toFixed(0)}%
-          </span>
-        )}
-
-        {info && (
-          <div className="relative group/info z-50">
-            <div className="p-2 transition-colors hover:text-slate-800 text-slate-400 cursor-help">
-              <Info size={16} />
-            </div>
-            <div className="absolute right-0 top-10 w-64 p-4 rounded-2xl bg-slate-900/95 backdrop-blur-xl text-white text-xs font-medium leading-relaxed shadow-2xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[999] border border-white/10 pointer-events-none translate-y-2 group-hover/info:translate-y-0 text-center">
-              <div className="absolute -top-1.5 right-2 w-3 h-3 bg-slate-900 transform rotate-45 border-t border-l border-white/10" />
-              {info}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-    <div className="relative z-10 mt-auto pt-6">
-      <h3 className="text-3xl lg:text-4xl font-bold text-slate-800 tracking-tight leading-none break-all">{value}</h3>
-      <p className="text-xs uppercase font-bold text-slate-400 tracking-widest mt-2">{label}</p>
-    </div>
-  </div>
-);
-
-const ActionMetricCard = ({ title, value, subtitle, icon: Icon, colorClass, action }: any) => (
-  <div onClick={action} className={`bg-white/60 backdrop-blur-md border border-white/60 p-6 rounded-[32px] shadow-sm flex flex-col justify-between min-h-[160px] ${action ? 'cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all' : ''}`}>
-    <div className="flex items-start justify-between mb-4">
-      <div className={`w-12 h-12 rounded-[20px] shadow-inner flex items-center justify-center ${colorClass}`}>
-        <Icon size={20} strokeWidth={2.5} />
-      </div>
-      <p className="text-4xl font-black text-slate-800 tracking-tight leading-none">{value}</p>
-    </div>
-    <div className="mt-auto">
-      <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-1">{title}</p>
-      <p className="text-xs font-bold text-slate-400 truncate opacity-70">{subtitle}</p>
-    </div>
-  </div>
-);
-
-const MiniStat = ({ label, value, subtitle, icon: Icon, trend }: any) => (
-  <div className="bg-white/60 border border-white/80 p-6 rounded-[28px] shadow-sm relative overflow-hidden">
-    <div className="flex items-center justify-between mb-4 relative z-10">
-      <p className="text-xs uppercase tracking-widest font-black text-slate-400 truncate pr-2">{label}</p>
-      {Icon && <Icon size={16} className="text-slate-300 shrink-0" />}
-    </div>
-    <div className="flex items-center gap-3 relative z-10">
-      <p className="text-2xl lg:text-3xl font-black text-slate-800 leading-tight truncate">{value}</p>
-      {trend !== undefined && trend !== 0 && (
-        <span className={`text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded-lg ${trend >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-          {trend > 0 ? '+' : ''}{trend.toFixed(0)}%
-        </span>
-      )}
-    </div>
-    {subtitle && <p className="text-xs text-slate-400 font-bold mt-2 uppercase tracking-widest truncate relative z-10">{subtitle}</p>}
-  </div>
-);
-
-const PhaseGlassBar = ({ label, value, total, color }: any) => {
-  const pct = total > 0 ? (value / total) * 100 : 0;
-  return (
-    <div className="group">
-      <div className="flex justify-between text-xs font-black uppercase tracking-widest text-slate-500 mb-2">
-        <span>{label}</span>
-        <span className="text-slate-800">{value} <span className="text-slate-300 opacity-50 ml-1">({pct.toFixed(0)}%)</span></span>
-      </div>
-      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-        <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: color }} />
-      </div>
-    </div>
-  );
-};
-
-const ChartCard = ({ title, data }: { title: string, data: any[] }) => (
-  <div>
-    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">{title}</h3>
-    {data.length > 0 ? (
-      <div className="space-y-4">
-        {data.slice(0, 4).map((item: any, idx: number) => (
-          <div key={item.name} className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
-              <span className="text-xs font-black text-slate-600 truncate max-w-[120px] capitalize">{item.name}</span>
-            </div>
-            <span className="text-xs font-black text-slate-800 bg-slate-100/50 px-2 py-0.5 rounded-lg">{item.value}</span>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <p className="text-[11px] text-slate-300 font-bold uppercase tracking-widest">Sem dados</p>
-    )}
-  </div>
-);
-
-const AgendaRow = ({ icon: Icon, label, value, subtitle, colorClass }: any) => (
-  <div className="flex items-center justify-between p-5 rounded-[24px] border border-white/80 bg-white/60 shadow-sm hover:shadow-md transition-shadow cursor-default">
-    <div className="flex items-center gap-5">
-      <div className={`w-12 h-12 rounded-[18px] flex items-center justify-center shadow-inner ${colorClass}`}>
-        <Icon size={20} strokeWidth={2.5} />
-      </div>
-      <div>
-        <h4 className="text-sm font-black text-slate-800 tracking-tight">{label}</h4>
-        {subtitle && <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1.5">{subtitle}</p>}
-      </div>
-    </div>
-    <span className="text-3xl font-black text-slate-800 px-2">{value}</span>
-  </div>
-);
 
 export default Dashboard;

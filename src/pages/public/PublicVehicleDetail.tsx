@@ -132,32 +132,32 @@ function getTC(theme: string): TC {
             textarea: 'w-full bg-black border border-white/10 text-white placeholder-slate-800 rounded-none px-6 py-5 text-sm focus:outline-none focus:border-amber-500/50 transition-all resize-none',
         };
         case 'bold': return {
-            wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-emerald-500/30',
-            nav: 'bg-slate-950 border-b-4 border-emerald-500 sticky top-0 z-50 shadow-2xl',
-            backBtn: 'text-white hover:text-emerald-500 flex items-center gap-3 text-sm font-black uppercase italic tracking-tighter transition-all',
-            thumbActive: 'border-4 border-emerald-500 rounded-none overflow-hidden cursor-pointer',
+            wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-brand-500/30',
+            nav: 'bg-slate-950 border-b-4 border-brand-500 sticky top-0 z-50 shadow-2xl',
+            backBtn: 'text-white hover:text-brand-500 flex items-center gap-3 text-sm font-black uppercase italic tracking-tighter transition-all',
+            thumbActive: 'border-4 border-brand-500 rounded-none overflow-hidden cursor-pointer',
             thumbInactive: 'border-4 border-slate-900 rounded-none overflow-hidden cursor-pointer opacity-40 hover:opacity-100 transition duration-300',
             card: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-8 md:p-20 shadow-2xl',
             title: 'text-white font-black text-3xl md:text-5xl uppercase italic tracking-tighter leading-none',
-            specLabel: 'text-emerald-500 text-xs font-black uppercase tracking-widest',
+            specLabel: 'text-brand-500 text-xs font-black uppercase tracking-widest',
             specValue: 'text-white font-black text-lg md:text-xl italic uppercase',
             divider: 'border-slate-800',
             ctaCard: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-8 md:p-14 sticky top-24 shadow-2xl',
             ctaTitle: 'text-white font-black text-2xl md:text-4xl uppercase italic leading-none',
             ctaBtnOutline: 'w-full py-4 md:py-5 rounded-none font-black uppercase tracking-tighter text-base border-4 border-slate-700 text-white hover:border-white transition-all flex items-center justify-center gap-3',
-            badge: 'bg-emerald-500 text-slate-950',
+            badge: 'bg-brand-500 text-slate-950',
             badgeText: 'font-black uppercase text-[10px] tracking-widest',
-            similarCard: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-emerald-500 transition-all duration-300',
+            similarCard: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-brand-500 transition-all duration-300',
             similarTitle: 'text-white font-black uppercase italic text-base',
             similarBtn: 'mt-2 w-full text-center py-4 rounded-none border-4 border-slate-700 text-white text-xs font-black uppercase hover:border-white transition-all',
-            check: 'text-emerald-500', cross: 'text-slate-700',
-            footer: 'mt-40 bg-black border-t-8 border-emerald-500 py-24',
+            check: 'text-brand-500', cross: 'text-slate-700',
+            footer: 'mt-40 bg-black border-t-8 border-brand-500 py-24',
             footerText: 'text-slate-500 font-black uppercase tracking-[0.4em]',
             formCard: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-12 md:p-32 shadow-2xl',
-            formLabel: 'text-emerald-500 text-sm font-black uppercase tracking-widest',
+            formLabel: 'text-brand-500 text-sm font-black uppercase tracking-widest',
             formTitle: 'text-4xl md:text-8xl font-black text-white mb-10 uppercase italic leading-[0.85]',
-            inputField: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-emerald-500 transition-all',
-            textarea: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-emerald-500 transition-all resize-none',
+            inputField: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-brand-500 transition-all',
+            textarea: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-brand-500 transition-all resize-none',
         };
         case 'luxury': return {
             wrapper: 'min-h-screen bg-[#0f0e0c] text-[#d4af37] font-serif selection:bg-[#d4af37]/20',
@@ -234,14 +234,14 @@ function getTC(theme: string): TC {
             similarCard: 'bg-white border border-slate-100 rounded-[20px] overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300',
             similarTitle: 'text-slate-900 font-extrabold text-sm',
             similarBtn: 'mt-2 w-full text-center py-3 rounded-lg border-2 border-slate-50 text-slate-500 text-xs font-bold hover:bg-slate-50 transition-colors',
-            check: 'text-emerald-500', cross: 'text-slate-300',
+            check: 'text-brand-500', cross: 'text-slate-300',
             footer: 'mt-32 bg-white border-t border-slate-100 py-20',
             footerText: 'text-slate-400 text-[11px] font-bold uppercase tracking-widest',
             formCard: 'bg-white rounded-[32px] md:rounded-[40px] border border-slate-100 p-8 md:p-20 shadow-[0_20px_50px_rgba(0,0,0,0.05)]',
             formLabel: 'text-slate-400 text-[10px] font-black uppercase tracking-widest',
             formTitle: 'text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight',
-            inputField: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-emerald-500 transition-all',
-            textarea: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-emerald-500 transition-all resize-none',
+            inputField: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-brand-500 transition-all',
+            textarea: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-brand-500 transition-all resize-none',
         };
     }
 }
@@ -599,7 +599,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
         </div>
     );
 
@@ -608,7 +608,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
             <div className="text-center">
                 <div className="text-6xl mb-4">🚗</div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">Veículo não encontrado</h1>
-                <Link to={`/site/${slug}`} className="text-emerald-600 underline text-sm">← Voltar para o estoque</Link>
+                <Link to={`/site/${slug}`} className="text-brand-600 underline text-sm">← Voltar para o estoque</Link>
             </div>
         </div>
     );

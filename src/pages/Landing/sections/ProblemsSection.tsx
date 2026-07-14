@@ -49,7 +49,7 @@ const ProblemsSection: React.FC = () => {
             return (
               <div
                 key={index}
-                className="p-8 rounded-2xl border border-slate-200 hover:border-emerald-300 transition-all hover:shadow-xl hover:shadow-emerald-50 group"
+                className="p-8 rounded-2xl border border-slate-200 hover:border-brand-300 transition-all hover:shadow-xl hover:shadow-brand-50 group"
               >
                 <div className="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center text-red-600 mb-4 group-hover:bg-red-100 transition-colors">
                   <Icon size={28} />

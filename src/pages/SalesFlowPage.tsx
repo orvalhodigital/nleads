@@ -20,7 +20,7 @@ const SalesFlowPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
       </div>
     );
   }
@@ -116,7 +116,7 @@ const SalesFlowPage: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-          <BarChart3 size={32} className="text-emerald-500" />
+          <BarChart3 size={32} className="text-brand-500" />
           Fluxo de Vendas
         </h1>
         <p className="text-slate-400 font-bold text-sm mt-2">
@@ -196,7 +196,7 @@ const SalesFlowPage: React.FC = () => {
             <p className="text-slate-400 text-sm mt-1">Marque leads como "Compradores" para vê-los aqui</p>
             <button
               onClick={() => navigate('/leads')}
-              className="mt-4 px-6 py-2 rounded-lg bg-emerald-500 text-white font-bold text-sm hover:bg-emerald-600 transition-all"
+              className="mt-4 px-6 py-2 rounded-lg bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-all"
             >
               Ir para Leads
             </button>
@@ -219,7 +219,7 @@ const SalesFlowPage: React.FC = () => {
             title="Garantias Ativas"
             value={tabCounts.em_garantia}
             subtitle="Em período de cobertura"
-            color="bg-emerald-50"
+            color="bg-brand-50"
           />
           <StatsCard
             title="Taxa de Conclusão"
@@ -243,7 +243,7 @@ interface MetricCardProps {
 
 const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon: Icon, color, subtitle }) => {
   const colorMap = {
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    emerald: 'bg-brand-50 text-brand-600 border-brand-100',
     blue: 'bg-blue-50 text-blue-600 border-blue-100',
     orange: 'bg-orange-50 text-orange-600 border-orange-100',
     red: 'bg-red-50 text-red-600 border-red-100',

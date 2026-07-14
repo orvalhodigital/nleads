@@ -276,7 +276,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
                   );
                   setWhatsappStatus('checking');
                 }}
-                className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 cursor-pointer"
+                className="w-full py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 cursor-pointer"
               >
                 Conectar WhatsApp
               </button>

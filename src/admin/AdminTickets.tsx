@@ -145,7 +145,7 @@ export default function AdminTickets() {
                         </button>
                         <button
                             onClick={() => handleUpdateStatus('closed')}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${selectedTicket.status === 'closed' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${selectedTicket.status === 'closed' ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-brand-600 border-brand-100 hover:bg-brand-50'
                                 }`}
                         >
                             Concluir Ticket
@@ -237,7 +237,7 @@ export default function AdminTickets() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center py-3 border-b border-slate-50">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Status</span>
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedTicket.status === 'closed' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedTicket.status === 'closed' ? 'bg-brand-100 text-brand-600' : 'bg-amber-100 text-amber-600'
                                         }`}>
                                         {selectedTicket.status}
                                     </span>
@@ -352,7 +352,7 @@ export default function AdminTickets() {
                                     </td>
                                     <td className="px-8 py-6 text-center">
                                         <div className="flex flex-col items-center gap-2">
-                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tight ${ticket.status === 'closed' ? 'bg-emerald-50 text-emerald-600' :
+                                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tight ${ticket.status === 'closed' ? 'bg-brand-50 text-brand-600' :
                                                     ticket.status === 'in_progress' ? 'bg-blue-50 text-blue-600' :
                                                         'bg-amber-50 text-amber-600'
                                                 }`}>

@@ -28,10 +28,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold text-white mb-4">Produto</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Funcionalidades</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Preços</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Segurança</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Status</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Funcionalidades</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Preços</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Segurança</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Status</a></li>
             </ul>
           </div>
 
@@ -39,10 +39,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold text-white mb-4">Empresa</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Sobre</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Carreiras</a></li>
-              <li><a href="#" className="hover:text-emerald-400 transition-colors">Contato</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Sobre</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Blog</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Carreiras</a></li>
+              <li><a href="#" className="hover:text-brand-400 transition-colors">Contato</a></li>
             </ul>
           </div>
 
@@ -52,13 +52,13 @@ const Footer: React.FC = () => {
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2">
                 <Mail size={16} />
-                <a href="mailto:contato@otimizza.com.br" className="hover:text-emerald-400 transition-colors">
+                <a href="mailto:contato@otimizza.com.br" className="hover:text-brand-400 transition-colors">
                   contato@otimizza.com.br
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={16} />
-                <a href="tel:+551133334444" className="hover:text-emerald-400 transition-colors">
+                <a href="tel:+551133334444" className="hover:text-brand-400 transition-colors">
                   (11) 3333-4444
                 </a>
               </div>
@@ -79,13 +79,13 @@ const Footer: React.FC = () => {
             © {currentYear} Otimizza. Todos os direitos reservados.
           </div>
           <div className="flex items-center gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-emerald-400 transition-colors">
+            <a href="#" className="hover:text-brand-400 transition-colors">
               Política de Privacidade
             </a>
-            <a href="#" className="hover:text-emerald-400 transition-colors">
+            <a href="#" className="hover:text-brand-400 transition-colors">
               Termos de Serviço
             </a>
-            <a href="#" className="hover:text-emerald-400 transition-colors">
+            <a href="#" className="hover:text-brand-400 transition-colors">
               LGPD
             </a>
           </div>

@@ -40,7 +40,7 @@ const HomePage: React.FC = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 w-full mb-4 lg:mb-8">
                 <div className="text-center md:text-left">
                     <div className="inline-flex items-center gap-2 text-slate-500 font-semibold mb-6 bg-white/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/60 shadow-sm">
-                        <CalendarIcon size={16} className="text-emerald-500" />
+                        <CalendarIcon size={16} className="text-brand-500" />
                         <span className="capitalize">{todayDate}</span>
                     </div>
 
@@ -56,7 +56,7 @@ const HomePage: React.FC = () => {
                 <div className="shrink-0 flex gap-4 w-full md:w-auto flex-col">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="w-full md:w-auto px-8 py-4 sm:py-5 bg-emerald-600 hover:bg-emerald-700 shadow-[0_8px_32px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:scale-95 text-white rounded-full font-extrabold uppercase tracking-widest text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-3 group border border-emerald-500/50"
+                        className="w-full md:w-auto px-8 py-4 sm:py-5 bg-brand-600 hover:bg-brand-700 shadow-[0_8px_32px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:scale-95 text-white rounded-full font-extrabold uppercase tracking-widest text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-3 group border border-brand-500/50"
                     >
                         <TrendingUp size={20} className="text-white" />
                         Acessar Métricas

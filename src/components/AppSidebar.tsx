@@ -33,7 +33,8 @@ const AppSidebar: React.FC = () => {
     const menuItems = [
         { id: '/estrutura-ecv', icon: Target, label: 'Estrutura ECV', end: false, always: true },
         { id: '/dashboard', icon: LayoutDashboard, label: 'Métricas', end: true, always: true },
-        { id: '/inventory', icon: Car, label: 'Veículos', end: false, always: true },
+        ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: profile?.enable_motorcycles ? 'Carros' : 'Veículos', end: false, always: true }] : []),
+        ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),
         { id: '/leads', icon: Users, label: 'Leads', end: false, always: true },
         { id: '/agenda', icon: Calendar, label: 'Agenda', end: false, always: true },
         { id: '/sales-flow', icon: BarChart3, label: 'Fluxo de Vendas', end: false, always: true },
@@ -79,7 +80,7 @@ const AppSidebar: React.FC = () => {
 
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={`p-2 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
+                    className={`p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
                     title={isCollapsed ? "Expandir menu" : "Recolher menu"}
                 >
                     {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -104,8 +105,8 @@ const AppSidebar: React.FC = () => {
                                     ? 'bg-indigo-600/10 text-indigo-600'
                                     : 'bg-indigo-50/30 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50/60 font-black'
                                 : isActive
-                                    ? 'bg-emerald-500/10 text-emerald-600'
-                                    : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-50'
+                                    ? 'bg-brand-500/10 text-brand-600'
+                                    : 'text-slate-400 hover:text-brand-600 hover:bg-slate-50'
                             }
                         `}
                     >
@@ -144,7 +145,7 @@ const AppSidebar: React.FC = () => {
                         className={`flex items-center flex-1 min-w-0 cursor-pointer group/profile relative ${isCollapsed ? 'justify-center' : 'gap-3'}`}
                         title="Ver meu perfil"
                     >
-                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase transition-transform group-hover/profile:scale-105 overflow-hidden border-2 border-transparent group-hover/profile:border-emerald-500">
+                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase transition-transform group-hover/profile:scale-105 overflow-hidden border-2 border-transparent group-hover/profile:border-brand-500">
                             {profile?.avatar_url ? (
                                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
@@ -154,7 +155,7 @@ const AppSidebar: React.FC = () => {
 
                         {!isCollapsed && (
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-slate-900 truncate group-hover/profile:text-emerald-600 transition-colors">{profile?.full_name || 'Usuário'}</p>
+                                <p className="text-xs font-bold text-slate-900 truncate group-hover/profile:text-brand-600 transition-colors">{profile?.full_name || 'Usuário'}</p>
                                 {profile?.company_name && (
                                     <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{profile.company_name}</p>
                                 )}
@@ -169,7 +170,7 @@ const AppSidebar: React.FC = () => {
                                                     e.preventDefault();
                                                     handleUpgrade();
                                                 }}
-                                                className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+                                                className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-brand-500 text-white hover:bg-brand-600 transition-colors"
                                                 title="Fazer upgrade"
                                             >
                                                 Upgrade

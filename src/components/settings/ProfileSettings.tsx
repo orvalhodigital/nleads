@@ -96,7 +96,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 <User size={32} className="text-slate-200" />
                             )}
                         </div>
-                        <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-600 text-white rounded-xl cursor-pointer hover:bg-emerald-700 transition-all flex items-center justify-center shadow-lg border-2 border-white">
+                        <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-brand-600 text-white rounded-xl cursor-pointer hover:bg-brand-700 transition-all flex items-center justify-center shadow-lg border-2 border-white">
                             <Camera size={14} />
                             <input type="file" className="hidden" accept="image/*" onChange={e => handleUpload(e, 'avatar')} />
                         </label>
@@ -104,7 +104,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="text-sm font-bold text-slate-800 truncate">Foto de Perfil</h3>
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-md shrink-0">
+                            <span className="px-2 py-0.5 bg-brand-50 text-brand-600 text-[9px] font-black uppercase tracking-widest rounded-md shrink-0">
                                 {profile.role === 'super_admin' ? 'Super Admin' : profile.role === 'admin' ? 'Proprietário' : 'Vendedor'}
                             </span>
                         </div>
@@ -112,7 +112,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                             Sua foto de identificação no painel, chat de equipe e notificações.
                         </p>
                         <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg">
-                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                            <div className="w-1 h-1 rounded-full bg-brand-500" />
                             <span className="text-[10px] font-bold text-slate-400">Tamanho ideal: 200x200 px</span>
                         </div>
                     </div>
@@ -140,7 +140,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 Exibida no cabeçalho do sistema e no seu site público de vendas para clientes.
                             </p>
                             <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg">
-                                <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                <div className="w-1 h-1 rounded-full bg-brand-500" />
                                 <span className="text-[10px] font-bold text-slate-400">Tamanho ideal: 600x300 px</span>
                             </div>
                         </div>
@@ -158,7 +158,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                                 <input
                                     type="text"
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all"
                                     value={fullName}
                                     onChange={e => setFullName(e.target.value)}
                                     placeholder="Seu nome completo"
@@ -185,7 +185,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 <PhoneIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                                 <input
                                     type="text"
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all"
                                     value={phone}
                                     onChange={e => setPhone(e.target.value)}
                                     placeholder="(00) 00000-0000"
@@ -205,7 +205,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                     className={`w-full pl-10 pr-4 py-3 border border-slate-100 rounded-2xl text-sm font-semibold transition-all outline-none ${
                                         profile.role === 'user'
                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            : 'bg-slate-50 text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5'
+                                            : 'bg-slate-50 text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5'
                                     }`}
                                     value={companyName}
                                     onChange={e => setCompanyName(e.target.value)}
@@ -221,7 +221,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 <input
                                     type="number"
                                     min={0}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all"
                                     value={monthlySalesGoal}
                                     onChange={e => setMonthlySalesGoal(Number(e.target.value))}
                                 />
@@ -236,7 +236,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                     type="number"
                                     min={0}
                                     placeholder="0 = sem meta"
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all"
                                     value={monthlyLeadsGoal || ''}
                                     onChange={e => setMonthlyLeadsGoal(Number(e.target.value))}
                                 />
@@ -251,7 +251,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                     type="number"
                                     min={0}
                                     placeholder="0 = sem meta"
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all"
                                     value={monthlyVisitsGoal || ''}
                                     onChange={e => setMonthlyVisitsGoal(Number(e.target.value))}
                                 />
@@ -266,7 +266,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                     type="number"
                                     min={0}
                                     placeholder="0 = sem meta"
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all"
                                     value={monthlyRevenueGoal || ''}
                                     onChange={e => setMonthlyRevenueGoal(Number(e.target.value))}
                                 />
@@ -279,7 +279,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                                 <input
                                     type="password"
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all"
                                     value={newPassword}
                                     onChange={e => setNewPassword(e.target.value)}
                                     placeholder="Deixe em branco para manter"
@@ -292,7 +292,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex items-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-emerald-600 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-brand-600 transition-all shadow-sm active:scale-95 disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                             Salvar Perfil

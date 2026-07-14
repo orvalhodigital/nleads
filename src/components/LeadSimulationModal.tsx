@@ -46,7 +46,7 @@ export const LeadSimulationModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                 placeholder="000.000.000-00"
                                 value={cpf}
                                 onChange={e => setCpf(e.target.value)}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm"
                             />
                         </div>
                         <div className="space-y-2">
@@ -58,7 +58,7 @@ export const LeadSimulationModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                 placeholder="Nº de Registro"
                                 value={cnh}
                                 onChange={e => setCnh(e.target.value)}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm"
                             />
                         </div>
                     </div>
@@ -73,7 +73,7 @@ export const LeadSimulationModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                 placeholder="R$ 0"
                                 value={formatCurrency(downPayment)}
                                 onChange={e => setDownPayment(parseCurrency(e.target.value))}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm"
                             />
                         </div>
                         <div className="space-y-2">
@@ -83,7 +83,7 @@ export const LeadSimulationModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             <select
                                 value={installments}
                                 onChange={e => setInstallments(e.target.value)}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm appearance-none"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm appearance-none"
                             >
                                 <option value="">Selecione...</option>
                                 <option value="12">12x</option>
@@ -103,7 +103,7 @@ export const LeadSimulationModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             placeholder="Detalhes sobre taxas, banco de preferência, restrições..."
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
-                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all font-semibold text-sm resize-none custom-scrollbar"
+                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm resize-none custom-scrollbar"
                             rows={3}
                         />
                     </div>
@@ -130,7 +130,7 @@ export const LeadSimulationModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                             installments: installments ? parseInt(installments) : 0,
                             notes
                         })}
-                        className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
+                        className="flex-1 py-4 bg-brand-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/20"
                     >
                         Registrar Simulação
                     </button>

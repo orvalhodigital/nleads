@@ -72,7 +72,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                     title: `${v.brand} ${v.model}`,
                     subtitle: `${v.year} · ${v.transmission} · R$ ${v.price?.toLocaleString('pt-BR')}`,
                     tag: v.status === 'sold' ? 'Vendido' : 'Disponível',
-                    tagColor: v.status === 'sold' ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600',
+                    tagColor: v.status === 'sold' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600',
                     href: `/inventory`,
                     state: { selectedVehicleId: v.id }
                 });
@@ -92,7 +92,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                     title: `${m.brand} ${m.model}`,
                     subtitle: `${m.year} · ${m.category} · R$ ${m.price?.toLocaleString('pt-BR')}`,
                     tag: m.status === 'sold' ? 'Vendido' : 'Disponível',
-                    tagColor: m.status === 'sold' ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600',
+                    tagColor: m.status === 'sold' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600',
                     href: `/motorcycles`,
                     state: { selectedMotorcycleId: m.id }
                 });
@@ -121,8 +121,8 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
 
     const typeIcon = (type: string) => {
         if (type === 'lead') return <Users size={13} className="text-sky-500" />;
-        if (type === 'vehicle') return <Car size={13} className="text-emerald-500" />;
-        return <Bike size={13} className="text-emerald-500" />;
+        if (type === 'vehicle') return <Car size={13} className="text-brand-500" />;
+        return <Bike size={13} className="text-brand-500" />;
     };
 
     const typeLabel = (type: string) => {
@@ -176,10 +176,10 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                                 key={r.id + r.type}
                                 onClick={() => handleSelect(r)}
                                 onMouseEnter={() => setSelected(i)}
-                                className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${i === selected ? 'bg-emerald-50' : 'hover:bg-slate-50'}`}
+                                className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${i === selected ? 'bg-brand-50' : 'hover:bg-slate-50'}`}
                             >
                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${r.type === 'lead' ? 'bg-sky-50' :
-                                        r.type === 'vehicle' ? 'bg-emerald-50' : 'bg-emerald-50'
+                                        r.type === 'vehicle' ? 'bg-brand-50' : 'bg-brand-50'
                                     }`}>
                                     {typeIcon(r.type)}
                                 </div>
@@ -195,7 +195,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                                     <p className="text-[10px] font-medium text-slate-400 truncate mt-0.5">{r.subtitle}</p>
                                 </div>
                                 <span className="text-[9px] font-bold text-slate-300 uppercase shrink-0">{typeLabel(r.type)}</span>
-                                {i === selected && <ArrowRight size={12} className="text-emerald-400 shrink-0" />}
+                                {i === selected && <ArrowRight size={12} className="text-brand-400 shrink-0" />}
                             </button>
                         ))}
                     </div>
@@ -210,7 +210,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                         <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3">Dicas rápidas</p>
                         <div className="flex flex-wrap gap-2">
                             {['João', 'Toyota', 'Honda', 'Leads'].map(hint => (
-                                <button key={hint} onClick={() => setQuery(hint)} className="px-3 py-1.5 bg-slate-50 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 rounded-xl text-[11px] font-bold border border-slate-100 transition-colors">
+                                <button key={hint} onClick={() => setQuery(hint)} className="px-3 py-1.5 bg-slate-50 hover:bg-brand-50 text-slate-500 hover:text-brand-600 rounded-xl text-[11px] font-bold border border-slate-100 transition-colors">
                                     {hint}
                                 </button>
                             ))}

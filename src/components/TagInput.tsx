@@ -81,7 +81,7 @@ const TagInput: React.FC<TagInputProps> = ({ label, value, onChange, suggestions
         <div className="w-full">
             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2 block">{label}</label>
             <div
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-slate-700 outline-none focus-within:border-emerald-500 transition-colors flex flex-wrap gap-2 min-h-[46px]"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold text-slate-700 outline-none focus-within:border-brand-500 transition-colors flex flex-wrap gap-2 min-h-[46px]"
                 onClick={() => inputRef.current?.focus()}
             >
                 {value.map((tag, i) => (
@@ -118,7 +118,7 @@ const TagInput: React.FC<TagInputProps> = ({ label, value, onChange, suggestions
                             {filteredSuggestions.map((suggestion, index) => (
                                 <div
                                     key={suggestion}
-                                    className={`px-4 py-2 cursor-pointer text-xs font-bold uppercase transition-colors ${index === activeSuggestion ? 'bg-slate-50 text-emerald-500' : 'text-slate-600 hover:bg-slate-50'}`}
+                                    className={`px-4 py-2 cursor-pointer text-xs font-bold uppercase transition-colors ${index === activeSuggestion ? 'bg-slate-50 text-brand-500' : 'text-slate-600 hover:bg-slate-50'}`}
                                     onClick={() => handleSuggestionClick(suggestion)}
                                     onMouseEnter={() => setActiveSuggestion(index)}
                                 >

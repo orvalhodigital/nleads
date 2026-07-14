@@ -332,26 +332,26 @@ export default function AdminOnboarding() {
                                             key={step.field}
                                             onClick={() => toggleStep(selectedSession, step.field, (selectedSession as any)[step.field])}
                                             className={`flex items-start gap-4 p-5 rounded-3xl border-2 transition-all text-left active:scale-95 group ${(selectedSession as any)[step.field]
-                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-lg shadow-emerald-500/10'
+                                                ? 'bg-brand-50 border-brand-500 text-brand-900 shadow-lg shadow-brand-500/10'
                                                 : 'bg-white border-slate-100 text-slate-600 hover:border-indigo-200 hover:shadow-md'
                                                 }`}
                                         >
-                                            <div className={`p-3 rounded-2xl transition-colors ${(selectedSession as any)[step.field] ? 'bg-emerald-500 text-white shadow-inner' : 'bg-slate-50 text-slate-300 group-hover:text-indigo-400'}`}>
+                                            <div className={`p-3 rounded-2xl transition-colors ${(selectedSession as any)[step.field] ? 'bg-brand-500 text-white shadow-inner' : 'bg-slate-50 text-slate-300 group-hover:text-indigo-400'}`}>
                                                 <step.icon size={20} />
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-center mb-0.5">
                                                     <p className="text-sm font-black uppercase tracking-tight">{step.label}</p>
                                                     {(selectedSession as any)[step.field] ? (
-                                                        <CheckCircle2 size={14} className="text-emerald-500" />
+                                                        <CheckCircle2 size={14} className="text-brand-500" />
                                                     ) : (
                                                         <div className="w-2 h-2 rounded-full bg-slate-200 group-hover:bg-indigo-300" />
                                                     )}
                                                 </div>
-                                                <p className={`text-[11px] font-medium leading-tight ${(selectedSession as any)[step.field] ? 'text-emerald-600' : 'text-slate-400'}`}>{step.desc}</p>
+                                                <p className={`text-[11px] font-medium leading-tight ${(selectedSession as any)[step.field] ? 'text-brand-600' : 'text-slate-400'}`}>{step.desc}</p>
                                                 <div className="flex items-center gap-1.5 mt-2">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${(selectedSession as any)[step.field] ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
-                                                    <p className={`text-[9px] font-bold uppercase tracking-widest ${(selectedSession as any)[step.field] ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${(selectedSession as any)[step.field] ? 'bg-brand-500' : 'bg-amber-400 animate-pulse'}`} />
+                                                    <p className={`text-[9px] font-bold uppercase tracking-widest ${(selectedSession as any)[step.field] ? 'text-brand-500' : 'text-amber-500'}`}>
                                                         {(selectedSession as any)[step.field] ? 'Concluído' : 'Em andamento'}
                                                     </p>
                                                 </div>
@@ -431,7 +431,7 @@ export default function AdminOnboarding() {
                                         href={getWhatsAppLink(selectedSession.profiles.phone, `Olá ${selectedSession.profiles.full_name}, tudo bem? Sou da equipe de Sucesso do Cliente Otimizza!`)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-3 w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100"
+                                        className="flex items-center justify-center gap-3 w-full py-4 bg-brand-500 text-white rounded-2xl font-bold hover:bg-brand-600 transition-all shadow-lg shadow-brand-100"
                                     >
                                         <MessageSquare size={18} />
                                         Falar no WhatsApp
@@ -488,7 +488,7 @@ export default function AdminOnboarding() {
                     <p className="text-2xl font-black text-slate-900">{sessions.filter(s => !s.step_technical_setup).length}</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-3">
+                    <div className="w-10 h-10 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center mb-3">
                         <Video size={20} />
                     </div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Reuniões Hoje</p>
@@ -565,7 +565,7 @@ export default function AdminOnboarding() {
                                                     </div>
                                                     <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                                                         <div
-                                                            className={`h-full transition-all duration-500 ${getProgress(session) > 70 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                                                            className={`h-full transition-all duration-500 ${getProgress(session) > 70 ? 'bg-brand-500' : 'bg-indigo-500'}`}
                                                             style={{ width: `${getProgress(session)}%` }}
                                                         />
                                                     </div>
@@ -573,19 +573,19 @@ export default function AdminOnboarding() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex gap-1.5">
-                                                    <div className={`p-1.5 rounded-lg ${session.step_welcome_meeting ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`} title="Reunião Boas Vindas">
+                                                    <div className={`p-1.5 rounded-lg ${session.step_welcome_meeting ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400'}`} title="Reunião Boas Vindas">
                                                         <Video size={14} />
                                                     </div>
-                                                    <div className={`p-1.5 rounded-lg ${session.step_educational_materials ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`} title="Materiais Enviados">
+                                                    <div className={`p-1.5 rounded-lg ${session.step_educational_materials ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400'}`} title="Materiais Enviados">
                                                         <Play size={14} />
                                                     </div>
-                                                    <div className={`p-1.5 rounded-lg ${session.step_technical_setup ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`} title="Setup Técnico">
+                                                    <div className={`p-1.5 rounded-lg ${session.step_technical_setup ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400'}`} title="Setup Técnico">
                                                         <Settings size={14} />
                                                     </div>
-                                                    <div className={`p-1.5 rounded-lg ${session.step_traffic_setup ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`} title="Tráfego Pago">
+                                                    <div className={`p-1.5 rounded-lg ${session.step_traffic_setup ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400'}`} title="Tráfego Pago">
                                                         <Target size={14} />
                                                     </div>
-                                                    <div className={`p-1.5 rounded-lg ${session.step_first_activation ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`} title="Primeiro Lead">
+                                                    <div className={`p-1.5 rounded-lg ${session.step_first_activation ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400'}`} title="Primeiro Lead">
                                                         <Star size={14} />
                                                     </div>
                                                 </div>
@@ -603,7 +603,7 @@ export default function AdminOnboarding() {
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-emerald-600 block">Acompanhamento Retenção</span>
+                                                        <span className="text-xs font-bold text-brand-600 block">Acompanhamento Retenção</span>
                                                         <span className="text-[10px] text-slate-400">30 dias pós venda</span>
                                                     </div>
                                                 )}
@@ -622,7 +622,7 @@ export default function AdminOnboarding() {
                                                             href={getWhatsAppLink(session.profiles.phone, `Olá ${session.profiles.full_name}, tudo bem? Sou da equipe de Onboarding do Otimizza!`)}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="p-2 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 rounded-lg transition-all text-slate-400 hover:text-emerald-600"
+                                                            className="p-2 hover:bg-brand-50 border border-transparent hover:border-brand-200 rounded-lg transition-all text-slate-400 hover:text-brand-600"
                                                             title="Enviar WhatsApp"
                                                         >
                                                             <MessageSquare size={18} />
@@ -661,7 +661,7 @@ export default function AdminOnboarding() {
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start">
                                                 <h4 className="font-bold text-slate-900">{s.profiles?.full_name}</h4>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${s.step_welcome_meeting ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${s.step_welcome_meeting ? 'bg-brand-100 text-brand-700' : 'bg-amber-100 text-amber-700'}`}>
                                                     {s.step_welcome_meeting ? 'Realizada' : 'Pendente'}
                                                 </span>
                                             </div>

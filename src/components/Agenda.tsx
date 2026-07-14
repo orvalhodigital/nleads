@@ -283,7 +283,7 @@ const Agenda: React.FC = () => {
     const getStatusStyle = (status: VisitStatus) => {
         switch (status) {
             case 'pending': return 'bg-amber-100 text-amber-600';
-            case 'show': return 'bg-emerald-100 text-emerald-600';
+            case 'show': return 'bg-brand-100 text-brand-600';
             case 'noshow': return 'bg-rose-100 text-rose-600';
         }
     };
@@ -428,12 +428,12 @@ const Agenda: React.FC = () => {
                         <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm">
                             <button
                                 onClick={() => setAgendaTab('visits')}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'visits' ? 'bg-white text-emerald-600 shadow-md font-black ring-1 ring-emerald-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'visits' ? 'bg-white text-brand-600 shadow-md font-black ring-1 ring-brand-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
                             >
                                 <CalendarDays size={15} />
                                 <span className="text-[11px] uppercase tracking-wide">Visitas</span>
                                 {stats.visitsPending > 0 && (
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'visits' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-200 text-slate-500'}`}>
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'visits' ? 'bg-brand-50 text-brand-600' : 'bg-slate-200 text-slate-500'}`}>
                                         {stats.visitsPending}
                                     </span>
                                 )}
@@ -471,7 +471,7 @@ const Agenda: React.FC = () => {
                     {agendaTab === 'visits' && (
                         <button
                             onClick={() => setIsFormOpen(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/10 active:scale-95"
+                            className="flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-brand-600 transition-all shadow-md shadow-brand-500/10 active:scale-95"
                         >
                             <Plus size={15} strokeWidth={3} /> Novo Agendamento
                         </button>
@@ -484,10 +484,10 @@ const Agenda: React.FC = () => {
                         <>
                             <div
                                 onClick={() => { setDateFilter(format(new Date(), 'yyyy-MM-dd')); setStatusFilter('all'); }}
-                                className={`bg-white rounded-xl border p-4 flex items-center gap-3 cursor-pointer hover:shadow-sm transition-all active:scale-95 group ${dateFilter === format(new Date(), 'yyyy-MM-dd') ? 'border-emerald-500 ring-1 ring-emerald-500/10 shadow-sm' : 'border-slate-100'}`}
+                                className={`bg-white rounded-xl border p-4 flex items-center gap-3 cursor-pointer hover:shadow-sm transition-all active:scale-95 group ${dateFilter === format(new Date(), 'yyyy-MM-dd') ? 'border-brand-500 ring-1 ring-brand-500/10 shadow-sm' : 'border-slate-100'}`}
                             >
-                                <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-                                    <CalendarDays size={16} className="text-emerald-500" />
+                                <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                                    <CalendarDays size={16} className="text-brand-500" />
                                 </div>
                                 <div>
                                     <p className="text-lg font-black text-slate-900">{dateFilter ? stats.visitsTotal : stats.visitsTodayTotal}</p>
@@ -508,10 +508,10 @@ const Agenda: React.FC = () => {
                             </div>
                             <div
                                 onClick={() => setStatusFilter('show')}
-                                className={`bg-white rounded-xl border p-4 flex items-center gap-3 cursor-pointer hover:shadow-sm transition-all active:scale-95 group ${statusFilter === 'show' ? 'border-emerald-500 ring-1 ring-emerald-500/10 shadow-sm' : 'border-slate-100'}`}
+                                className={`bg-white rounded-xl border p-4 flex items-center gap-3 cursor-pointer hover:shadow-sm transition-all active:scale-95 group ${statusFilter === 'show' ? 'border-brand-500 ring-1 ring-brand-500/10 shadow-sm' : 'border-slate-100'}`}
                             >
-                                <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-                                    <CheckCircle2 size={16} className="text-emerald-500" />
+                                <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                                    <CheckCircle2 size={16} className="text-brand-500" />
                                 </div>
                                 <div>
                                     <p className="text-lg font-black text-slate-900">{stats.visitsShow}</p>
@@ -593,7 +593,7 @@ const Agenda: React.FC = () => {
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                             <input
                                 placeholder="Buscar por nome..."
-                                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-emerald-500/5 transition-all outline-none"
+                                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-brand-500/5 transition-all outline-none"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                             />
@@ -605,7 +605,7 @@ const Agenda: React.FC = () => {
                             <label className="text-[10px] font-bold uppercase text-slate-400 px-1 block flex justify-between items-center h-4">
                                 Filtrar Data
                                 {dateFilter && (
-                                    <button onClick={() => setDateFilter('')} className="text-[8px] text-emerald-500 hover:text-emerald-700 font-extrabold flex items-center gap-0.5 transition-all">
+                                    <button onClick={() => setDateFilter('')} className="text-[8px] text-brand-500 hover:text-brand-700 font-extrabold flex items-center gap-0.5 transition-all">
                                         <X size={10} /> LIMPAR
                                     </button>
                                 )}
@@ -614,7 +614,7 @@ const Agenda: React.FC = () => {
                                 value={dateFilter}
                                 onChange={setDateFilter}
                                 placeholder="Todas as datas"
-                                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[11px] font-semibold focus:bg-white focus:border-emerald-500/30 transition-all outline-none flex items-center justify-between"
+                                className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-[11px] font-semibold focus:bg-white focus:border-brand-500/30 transition-all outline-none flex items-center justify-between"
                             />
                         </div>
                     )}
@@ -639,9 +639,9 @@ const Agenda: React.FC = () => {
                     {viewType === 'calendar' && (
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-between bg-white px-2 py-1.5 rounded-xl border border-slate-100 h-[45px]">
-                                <button onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="p-1 hover:text-emerald-500 text-slate-400"><ChevronLeft size={16} /></button>
+                                <button onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="p-1 hover:text-brand-500 text-slate-400"><ChevronLeft size={16} /></button>
                                 <span className="text-[11px] font-black text-slate-900 uppercase min-w-[120px] text-center">{format(currentDate, 'MMMM yyyy', { locale: ptBR })}</span>
-                                <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 hover:text-emerald-500 text-slate-400"><ChevronRight size={16} /></button>
+                                <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 hover:text-brand-500 text-slate-400"><ChevronRight size={16} /></button>
                             </div>
                         </div>
                     )}
@@ -657,7 +657,7 @@ const Agenda: React.FC = () => {
                             visits.map((visit) => (
                                 <div key={visit.appointmentId} className="group relative bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden">
                                     <div className="p-4 border-b border-slate-50 flex items-center justify-between">
-                                        <div className={`px-2 py-1 rounded text-[9px] font-black uppercase ${isToday(visit.visitDate) ? 'bg-emerald-500 text-white' : isPast(visit.visitDate) ? 'bg-red-100 text-red-500' : 'bg-slate-100 text-slate-500'}`}>
+                                        <div className={`px-2 py-1 rounded text-[9px] font-black uppercase ${isToday(visit.visitDate) ? 'bg-brand-500 text-white' : isPast(visit.visitDate) ? 'bg-red-100 text-red-500' : 'bg-slate-100 text-slate-500'}`}>
                                             {isToday(visit.visitDate) ? '🟢 HOJE ' : isPast(visit.visitDate) ? '⚠️ ' : ''}{format(visit.visitDate, "dd/MM 'às' HH:mm")}
                                         </div>
                                         <button onClick={() => { setEditingVisitId(visit.appointmentId); setTempDate(format(visit.visitDate, "yyyy-MM-dd'T'HH:mm")); }} className="p-1.5 text-slate-300 hover:text-slate-900 transition-colors">
@@ -683,7 +683,7 @@ const Agenda: React.FC = () => {
                                         {visit.vehicle ? (
                                             <div className="bg-slate-50/50 rounded-xl p-3 flex items-center gap-3 border border-slate-100/50 mb-4 cursor-pointer"
                                                 onClick={() => navigate('/inventory', { state: { selectedVehicleId: visit.vehicle!.id } })}>
-                                                <Car size={14} className="text-emerald-500" />
+                                                <Car size={14} className="text-brand-500" />
                                                 <div className="flex-1 min-w-0">
                                                     <p className="font-bold text-slate-900 uppercase text-[9px] truncate">{visit.vehicle.brand} {visit.vehicle.model}</p>
                                                 </div>
@@ -699,7 +699,7 @@ const Agenda: React.FC = () => {
                                                 {getStatusLabel(visit.visit_status || 'pending')}
                                             </div>
                                             <div className="flex gap-1">
-                                                <button onClick={() => handleUpdateVisitStatus(visit.id, visit.appointmentId, visit.visit_status === 'show' ? 'pending' : 'show')} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${visit.visit_status === 'show' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-50 text-slate-300 border border-slate-100 hover:text-emerald-600'}`}>
+                                                <button onClick={() => handleUpdateVisitStatus(visit.id, visit.appointmentId, visit.visit_status === 'show' ? 'pending' : 'show')} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${visit.visit_status === 'show' ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-50 text-slate-300 border border-slate-100 hover:text-brand-600'}`}>
                                                     <CheckCircle2 size={16} />
                                                 </button>
                                                 <button onClick={() => handleUpdateVisitStatus(visit.id, visit.appointmentId, visit.visit_status === 'noshow' ? 'pending' : 'noshow')} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${visit.visit_status === 'noshow' ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-50 text-slate-300 border border-slate-100 hover:text-rose-600'}`}>
@@ -763,7 +763,7 @@ const Agenda: React.FC = () => {
                                             Filtrando por: {followupFilter === 'overdue' ? 'Atrasados' : followupFilter === 'today' ? 'Hoje' : followupFilter === 'upcoming' ? 'Próximos' : 'Sem Data'}
                                         </span>
                                     </div>
-                                    <button onClick={() => setFollowupFilter('all')} className="text-[8px] font-black text-emerald-500 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg transition-all">LIMPAR FILTRO</button>
+                                    <button onClick={() => setFollowupFilter('all')} className="text-[8px] font-black text-brand-500 hover:text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg transition-all">LIMPAR FILTRO</button>
                                 </div>
                             )}
 
@@ -863,11 +863,11 @@ const Agenda: React.FC = () => {
                                         const dayItems = calendarItems.filter(v => isSameDay(v.date, day));
                                         const isCurrentMonth = isSameMonth(day, currentDate);
                                         return (
-                                            <div key={day.toISOString()} className={`min-h-[100px] p-2 rounded-xl border ${!isCurrentMonth ? 'opacity-10 grayscale' : isToday(day) ? 'bg-emerald-50/50 border-emerald-100' : 'border-slate-50 hover:bg-slate-50/30'} transition-all`}>
-                                                <span className={`text-[9px] font-black ${isToday(day) ? 'text-emerald-500' : 'text-slate-300'}`}>{format(day, 'd')}</span>
+                                            <div key={day.toISOString()} className={`min-h-[100px] p-2 rounded-xl border ${!isCurrentMonth ? 'opacity-10 grayscale' : isToday(day) ? 'bg-brand-50/50 border-brand-100' : 'border-slate-50 hover:bg-slate-50/30'} transition-all`}>
+                                                <span className={`text-[9px] font-black ${isToday(day) ? 'text-brand-500' : 'text-slate-300'}`}>{format(day, 'd')}</span>
                                                 <div className="mt-1 space-y-0.5">
                                                     {dayItems.map(v => (
-                                                        <div key={v.id} onClick={() => navigate(`/leads/${v.leadId}`)} className={`p-0.5 px-1 rounded text-[7px] font-black text-white truncate cursor-pointer ${v.type === 'visit' ? 'bg-slate-900 hover:bg-emerald-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
+                                                        <div key={v.id} onClick={() => navigate(`/leads/${v.leadId}`)} className={`p-0.5 px-1 rounded text-[7px] font-black text-white truncate cursor-pointer ${v.type === 'visit' ? 'bg-slate-900 hover:bg-brand-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
                                                             {format(v.date, 'HH:mm')} {v.name}
                                                         </div>
                                                     ))}

@@ -16,7 +16,7 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-emerald-50/30 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-brand-50/30 font-sans">
       <HeroSection onGetStarted={handleGetStarted} />
       <ProblemsSection />
       <SolutionSection />

@@ -125,7 +125,7 @@ const SettingsPage: React.FC = () => {
             {/* Page Header */}
             <div>
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                    <SettingsIcon size={24} className="text-emerald-500" />
+                    <SettingsIcon size={24} className="text-brand-500" />
                     Configurações
                 </h1>
                 <p className="text-slate-400 font-bold text-sm mt-1">Gerencie suas preferências e conexões do sistema</p>
@@ -184,7 +184,7 @@ const SettingsPage: React.FC = () => {
                     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6">
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <Car className="text-emerald-500" size={24} />
+                                <Car className="text-brand-500" size={24} />
                                 Tipos de Veículos em Estoque
                             </h2>
                             <p className="text-sm text-slate-500 mt-1">
@@ -193,9 +193,9 @@ const SettingsPage: React.FC = () => {
                         </div>
 
                         <div className="space-y-4">
-                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${enableCars ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${enableCars ? 'bg-brand-50 border-brand-100' : 'bg-slate-50 border-slate-100'}`}>
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${enableCars ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-200 text-slate-400'}`}>
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${enableCars ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'bg-slate-200 text-slate-400'}`}>
                                         <Car size={22} />
                                     </div>
                                     <div>
@@ -205,7 +205,7 @@ const SettingsPage: React.FC = () => {
                                 </div>
                                 <button onClick={() => setEnableCars(!enableCars)} className="focus:outline-none">
                                     {enableCars
-                                        ? <ToggleRight size={36} className="text-emerald-500" />
+                                        ? <ToggleRight size={36} className="text-brand-500" />
                                         : <ToggleLeft size={36} className="text-slate-300" />}
                                 </button>
                             </div>
@@ -233,7 +233,7 @@ const SettingsPage: React.FC = () => {
                     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6">
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <Clock className="text-emerald-500" size={24} />
+                                <Clock className="text-brand-500" size={24} />
                                 Horário de Funcionamento
                             </h2>
                             <p className="text-sm text-slate-500 mt-1">
@@ -245,7 +245,7 @@ const SettingsPage: React.FC = () => {
                             {businessHours.map((hour, index) => {
                                 const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
                                 return (
-                                    <div key={index} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${hour.open ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                                    <div key={index} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${hour.open ? 'bg-brand-50 border-brand-100' : 'bg-slate-50 border-slate-100'}`}>
                                         <div className="flex-1">
                                             <p className="text-sm font-bold text-slate-900">{dayNames[hour.day]}</p>
                                         </div>
@@ -260,7 +260,7 @@ const SettingsPage: React.FC = () => {
                                                             newHours[index].start = e.target.value;
                                                             setBusinessHours(newHours);
                                                         }}
-                                                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
                                                     />
                                                     <span className="text-xs font-medium text-slate-500">até</span>
                                                     <input
@@ -271,7 +271,7 @@ const SettingsPage: React.FC = () => {
                                                             newHours[index].end = e.target.value;
                                                             setBusinessHours(newHours);
                                                         }}
-                                                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+                                                        className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
                                                     />
                                                 </>
                                             ) : (
@@ -286,7 +286,7 @@ const SettingsPage: React.FC = () => {
                                                 className="focus:outline-none"
                                             >
                                                 {hour.open
-                                                    ? <ToggleRight size={28} className="text-emerald-500" />
+                                                    ? <ToggleRight size={28} className="text-brand-500" />
                                                     : <ToggleLeft size={28} className="text-slate-300" />}
                                             </button>
                                         </div>
@@ -317,7 +317,7 @@ const SettingsPage: React.FC = () => {
                         <button
                             onClick={handleSaveGeral}
                             disabled={loading}
-                            className="w-full md:w-auto md:min-w-[200px] bg-slate-900 text-white py-4 px-8 rounded-2xl shadow-xl shadow-slate-900/20 flex items-center justify-center gap-3 font-bold hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
+                            className="w-full md:w-auto md:min-w-[200px] bg-slate-900 text-white py-4 px-8 rounded-2xl shadow-xl shadow-slate-900/20 flex items-center justify-center gap-3 font-bold hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
                         >
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

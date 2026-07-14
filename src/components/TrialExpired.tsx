@@ -41,19 +41,19 @@ const TrialExpired: React.FC<TrialExpiredProps> = ({ onUpgrade, onLogout }) => {
                     </div>
                     <div className="space-y-4">
                         <div className="flex items-center gap-4 text-slate-600">
-                            <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center">
                                 <CheckCircle size={14} />
                             </div>
                             <span className="font-bold">Mantenha seu estoque ativo</span>
                         </div>
                         <div className="flex items-center gap-4 text-slate-600">
-                            <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center">
                                 <CheckCircle size={14} />
                             </div>
                             <span className="font-bold">Não perca o histórico de leads</span>
                         </div>
                         <div className="flex items-center gap-4 text-slate-600">
-                            <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center">
                                 <CheckCircle size={14} />
                             </div>
                             <span className="font-bold">Acesso a todas as automações</span>
@@ -98,7 +98,7 @@ const TrialExpired: React.FC<TrialExpiredProps> = ({ onUpgrade, onLogout }) => {
 
                                 <button
                                     onClick={() => onUpgrade(plan)}
-                                    className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all active:scale-95 shadow-lg ${plan.slug === 'pro' || plan.slug === 'crm' ? 'bg-indigo-600 text-white hover:bg-slate-900 shadow-indigo-100' : 'bg-white text-slate-900 hover:bg-emerald-500 hover:text-white'}`}
+                                    className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all active:scale-95 shadow-lg ${plan.slug === 'pro' || plan.slug === 'crm' ? 'bg-indigo-600 text-white hover:bg-slate-900 shadow-indigo-100' : 'bg-white text-slate-900 hover:bg-brand-500 hover:text-white'}`}
                                 >
                                     Atualizar Agora
                                 </button>

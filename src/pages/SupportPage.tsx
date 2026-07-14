@@ -147,7 +147,7 @@ export default function SupportPage() {
         switch (status) {
             case 'open': return <Clock className="text-amber-500" size={16} />;
             case 'in_progress': return <MessageCircle className="text-blue-500" size={16} />;
-            case 'closed': return <CheckCircle2 className="text-emerald-500" size={16} />;
+            case 'closed': return <CheckCircle2 className="text-brand-500" size={16} />;
             default: return <Clock className="text-slate-400" size={16} />;
         }
     };
@@ -185,7 +185,7 @@ export default function SupportPage() {
                         <h1 className="text-2xl font-black text-slate-900 leading-none">Ticket #{selectedTicket.id.slice(0, 8)}</h1>
                         <p className="text-slate-500 text-sm mt-1">{selectedTicket.subject}</p>
                     </div>
-                    <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2 border ${selectedTicket.status === 'closed' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                    <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2 border ${selectedTicket.status === 'closed' ? 'bg-brand-50 border-brand-100 text-brand-600' :
                         selectedTicket.status === 'in_progress' ? 'bg-blue-50 border-blue-100 text-blue-600' :
                             'bg-amber-50 border-amber-100 text-amber-600'
                         }`}>
@@ -296,8 +296,8 @@ export default function SupportPage() {
                             </form>
                         )}
                         {selectedTicket.status === 'closed' && (
-                            <div className="p-4 bg-emerald-50 border-t border-emerald-100 text-center">
-                                <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest flex items-center justify-center gap-2">
+                            <div className="p-4 bg-brand-50 border-t border-brand-100 text-center">
+                                <p className="text-[10px] font-black uppercase text-brand-600 tracking-widest flex items-center justify-center gap-2">
                                     <CheckCircle2 size={14} /> Atendimento Finalizado
                                 </p>
                             </div>
@@ -525,7 +525,7 @@ export default function SupportPage() {
                             </div>
 
                             {/* Status Indicator Bar */}
-                            <div className={`absolute bottom-0 left-0 h-1 transition-all ${ticket.status === 'closed' ? 'bg-emerald-500 w-full' :
+                            <div className={`absolute bottom-0 left-0 h-1 transition-all ${ticket.status === 'closed' ? 'bg-brand-500 w-full' :
                                 ticket.status === 'in_progress' ? 'bg-blue-500 w-1/2' :
                                     'bg-amber-400 w-1/4'
                                 }`} />

@@ -231,7 +231,7 @@ export default function LeadImportModal({ isOpen, onClose, onSuccess, currentLea
                 <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <div>
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase flex items-center gap-3">
-                            <Database className="text-emerald-500" />
+                            <Database className="text-brand-500" />
                             Importação de Leads
                         </h2>
                         <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wide">
@@ -250,26 +250,26 @@ export default function LeadImportModal({ isOpen, onClose, onSuccess, currentLea
                     {step === 'upload' && (
                         <div className="h-full flex flex-col items-center justify-center gap-8">
                             <div className="text-center space-y-2">
-                                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto mb-4">
+                                <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center text-brand-500 mx-auto mb-4">
                                     <FileSpreadsheet size={40} />
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-900">Faça o upload da sua planilha</h3>
                                 <p className="text-slate-400 max-w-md mx-auto">
                                     Utilize nosso modelo padrão para importar nomes, telefones e interesses.
                                 </p>
-                                <button onClick={downloadTemplate} className="text-sm font-bold text-emerald-600 hover:underline">
+                                <button onClick={downloadTemplate} className="text-sm font-bold text-brand-600 hover:underline">
                                     Baixar modelo (.xlsx)
                                 </button>
                             </div>
 
                             <label className="cursor-pointer group">
-                                <div className="px-10 py-16 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 group-hover:bg-emerald-50/30 group-hover:border-emerald-300 transition-all text-center">
+                                <div className="px-10 py-16 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 group-hover:bg-brand-50/30 group-hover:border-brand-300 transition-all text-center">
                                     {loading ? (
                                         <span className="text-slate-400 font-bold animate-pulse">Processando arquivo...</span>
                                     ) : (
                                         <>
-                                            <Upload className="mx-auto text-slate-300 group-hover:text-emerald-500 mb-4 transition-colors" size={32} />
-                                            <span className="block text-slate-500 font-bold uppercase text-sm group-hover:text-emerald-700">Clique para selecionar arquivo</span>
+                                            <Upload className="mx-auto text-slate-300 group-hover:text-brand-500 mb-4 transition-colors" size={32} />
+                                            <span className="block text-slate-500 font-bold uppercase text-sm group-hover:text-brand-700">Clique para selecionar arquivo</span>
                                         </>
                                     )}
                                 </div>
@@ -290,7 +290,7 @@ export default function LeadImportModal({ isOpen, onClose, onSuccess, currentLea
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle size={20} className="text-emerald-500" />
+                                        <CheckCircle size={20} className="text-brand-500" />
                                         <span className="font-bold text-slate-700">{importedLeads.filter(l => l.status === 'new').length} Novos</span>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -300,7 +300,7 @@ export default function LeadImportModal({ isOpen, onClose, onSuccess, currentLea
                                 </div>
                                 <button
                                     onClick={toggleAll}
-                                    className="text-xs font-bold text-emerald-600 hover:underline uppercase"
+                                    className="text-xs font-bold text-brand-600 hover:underline uppercase"
                                 >
                                     {selectedIds.size === importedLeads.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
                                 </button>
@@ -308,13 +308,13 @@ export default function LeadImportModal({ isOpen, onClose, onSuccess, currentLea
 
                             <div className="space-y-3">
                                 {importedLeads.map(lead => (
-                                    <div key={lead.importId} className={`p-4 rounded-xl border flex items-center justify-between transition-all ${selectedIds.has(lead.importId) ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-100 opacity-60'}`}>
+                                    <div key={lead.importId} className={`p-4 rounded-xl border flex items-center justify-between transition-all ${selectedIds.has(lead.importId) ? 'bg-brand-50 border-brand-200' : 'bg-white border-slate-100 opacity-60'}`}>
                                         <div className="flex items-center gap-4">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedIds.has(lead.importId)}
                                                 onChange={() => toggleSelection(lead.importId)}
-                                                className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                                className="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                                             />
                                             <div>
                                                 <div className="flex items-center gap-2">

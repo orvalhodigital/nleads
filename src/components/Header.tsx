@@ -296,6 +296,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
             case 'home': return '';
             case 'dashboard': return 'Métricas';
             case 'inventory': return 'Estoque';
+            case 'motorcycles': return 'Estoque de Motos';
             case 'sales-flow': return 'Fluxo de Vendas';
             case 'sales-closed': return 'Vendas Fechadas';
             case 'settings': return 'Configurações';
@@ -331,7 +332,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                                     {getTitle()}
                                 </h2>
                                 {companyName && (
-                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest -mt-0.5">
+                                    <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest -mt-0.5">
                                         {companyName}
                                     </p>
                                 )}
@@ -342,14 +343,14 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
 
                 <div className="flex items-center gap-4 lg:gap-8">
                     <div className="relative hidden md:flex items-center group">
-                        <Search size={16} className="absolute left-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors pointer-events-none" />
+                        <Search size={16} className="absolute left-4 text-slate-400 group-focus-within:text-brand-500 transition-colors pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Pesquisar..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
-                            className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold w-64 focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                            className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold w-64 focus:bg-white focus:border-brand-500 outline-none transition-all"
                         />
 
                         {/* Search Dropdown */}
@@ -374,9 +375,9 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                                                                 onClick={() => handleResultClick('lead', lead.id)}
                                                                 className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors group"
                                                             >
-                                                                <p className="text-sm font-bold text-slate-800 group-hover:text-emerald-600">{lead.name}</p>
+                                                                <p className="text-sm font-bold text-slate-800 group-hover:text-brand-600">{lead.name}</p>
                                                                 <div className="flex items-center gap-2 mt-1">
-                                                                    <div className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-md font-bold">
+                                                                    <div className="flex items-center gap-1 text-[10px] bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded-md font-bold">
                                                                         <MessageCircle size={10} fill="currentColor" fillOpacity={0.2} />
                                                                         {lead.phone}
                                                                     </div>
@@ -403,7 +404,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                                                                 onClick={() => handleResultClick('vehicle', vehicle.id, (vehicle as any).isMoto)}
                                                                 className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors group"
                                                             >
-                                                                <p className="text-sm font-bold text-slate-800 group-hover:text-emerald-600">{vehicle.brand} {vehicle.model}</p>
+                                                                <p className="text-sm font-bold text-slate-800 group-hover:text-brand-600">{vehicle.brand} {vehicle.model}</p>
                                                                 <p className="text-[10px] text-slate-400">{vehicle.year} • {vehicle.color}</p>
                                                             </button>
                                                         </li>
@@ -418,13 +419,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                     </div>
                     <div className="flex items-center gap-2">
                         <LogoRenderer src={logoUrl} variant="icon" className="h-5 w-auto opacity-50 hover:opacity-100 transition-all mr-2 hidden sm:flex" />
-                        <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all relative">
+                        <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-all relative">
                             <Bell size={18} />
                             {unreadCount > 0 && !showHistory && (
-                                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-emerald-500 rounded-full border border-white"></span>
+                                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-brand-500 rounded-full border border-white"></span>
                             )}
                         </button>
-                        <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all">
+                        <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-all">
                             <Settings size={18} />
                         </button>
                     </div>
@@ -451,13 +452,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                         <div className="flex gap-2 mb-4">
                             <button
                                 onClick={() => setShowHistory(false)}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${!showHistory ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${!showHistory ? 'bg-brand-100 text-brand-700' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
                             >
                                 Não Lidas
                             </button>
                             <button
                                 onClick={() => setShowHistory(true)}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${showHistory ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${showHistory ? 'bg-brand-100 text-brand-700' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
                             >
                                 <History size={14} /> Histórico
                             </button>
@@ -482,10 +483,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                                         key={notification.id}
                                         onClick={() => !showHistory && handleMarkAsRead(notification.id)}
                                         className={`p-4 border rounded-2xl flex gap-3 items-start transition-all cursor-pointer group
-                                            ${showHistory ? 'bg-slate-50 border-slate-100 opacity-75' : 'bg-white border-slate-100 hover:border-emerald-200 hover:shadow-sm'}
+                                            ${showHistory ? 'bg-slate-50 border-slate-100 opacity-75' : 'bg-white border-slate-100 hover:border-brand-200 hover:shadow-sm'}
                                         `}
                                     >
-                                        <div className={`p-2 rounded-lg shrink-0 ${showHistory ? 'bg-slate-200 text-slate-500' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        <div className={`p-2 rounded-lg shrink-0 ${showHistory ? 'bg-slate-200 text-slate-500' : 'bg-brand-100 text-brand-600'}`}>
                                             <Bell size={16} />
                                         </div>
                                         <div>
@@ -504,7 +505,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                             <div className="mt-auto pt-4 border-t border-slate-100">
                                 <button
                                     onClick={handleMarkAllAsRead}
-                                    className="w-full py-3 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-emerald-500 transition-colors"
+                                    className="w-full py-3 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-brand-500 transition-colors"
                                 >
                                     Marcar todas como lidas
                                 </button>

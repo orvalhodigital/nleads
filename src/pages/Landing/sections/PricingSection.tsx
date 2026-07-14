@@ -42,7 +42,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onGetStarted }) => {
                 'Suporte por email'
               ].map((feature, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <Check size={18} className="text-emerald-500 flex-shrink-0" />
+                  <Check size={18} className="text-brand-500 flex-shrink-0" />
                   <span className="text-slate-700 font-medium">{feature}</span>
                 </div>
               ))}
@@ -57,8 +57,8 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onGetStarted }) => {
           </div>
 
           {/* Pro Plan */}
-          <div className="p-8 rounded-3xl border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20 bg-white relative">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-1 rounded-full text-sm font-bold">
+          <div className="p-8 rounded-3xl border-2 border-brand-500 shadow-2xl shadow-brand-500/20 bg-white relative">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-500 text-white px-6 py-1 rounded-full text-sm font-bold">
               MAIS POPULAR
             </div>
 
@@ -82,7 +82,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onGetStarted }) => {
                 'Sem limite de usuários'
               ].map((feature, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <Check size={18} className="text-emerald-500 flex-shrink-0" />
+                  <Check size={18} className="text-brand-500 flex-shrink-0" />
                   <span className="text-slate-700 font-medium">{feature}</span>
                 </div>
               ))}
@@ -90,7 +90,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onGetStarted }) => {
 
             <button
               onClick={onGetStarted}
-              className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 group"
+              className="w-full py-3 bg-brand-500 text-white rounded-xl font-bold hover:bg-brand-600 transition-all flex items-center justify-center gap-2 group"
             >
               Começar Grátis
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />

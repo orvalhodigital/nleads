@@ -83,7 +83,7 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
             onClose={onClose}
             title={
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <div className="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center shadow-lg shadow-brand-500/20">
                         <User size={20} />
                     </div>
                     <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Cadastro Rápido</h2>
@@ -104,7 +104,7 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
                         type="submit"
                         form="quick-lead-form"
                         disabled={isSubmitting}
-                        className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center justify-center gap-2"
+                        className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-500/20 hover:bg-brand-600 transition-all flex items-center justify-center gap-2"
                     >
                         {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                         Criar Lead
@@ -123,7 +123,7 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
                                 type="text"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all placeholder:text-slate-300"
+                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-all placeholder:text-slate-300"
                                 placeholder="Ex: João Silva"
                             />
                         </div>
@@ -138,7 +138,7 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
                                 type="text"
                                 value={formData.phone}
                                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all placeholder:text-slate-300"
+                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-all placeholder:text-slate-300"
                                 placeholder="Ex: (11) 99999-9999"
                             />
                         </div>
@@ -152,7 +152,7 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
                                 type="email"
                                 value={formData.email}
                                 onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all placeholder:text-slate-300"
+                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-all placeholder:text-slate-300"
                                 placeholder="Ex: joao@email.com"
                             />
                         </div>

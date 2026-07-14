@@ -46,7 +46,7 @@ const FollowUpCard: React.FC<FollowUpCardProps> = ({ lead, contactDate, vehicle,
             </div>
 
             <div className="px-4 pb-4 mt-auto flex gap-2">
-                <button onClick={onMarkDone} className="flex-1 py-2.5 bg-emerald-50 text-emerald-600 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-emerald-100 transition-colors">
+                <button onClick={onMarkDone} className="flex-1 py-2.5 bg-brand-50 text-brand-600 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-brand-100 transition-colors">
                     <CheckCircle2 size={12} /> Feito
                 </button>
                 <button onClick={onViewLead} className="flex-1 py-2.5 bg-slate-50 text-slate-500 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors">

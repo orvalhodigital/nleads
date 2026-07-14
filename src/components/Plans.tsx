@@ -20,9 +20,9 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
                 {/* Plano Free */}
-                <div className={`relative p-8 rounded-[2.5rem] border-2 transition-all ${!isPro ? 'bg-white border-emerald-500 shadow-xl' : 'bg-slate-50 border-transparent opacity-60'}`}>
+                <div className={`relative p-8 rounded-[2.5rem] border-2 transition-all ${!isPro ? 'bg-white border-brand-500 shadow-xl' : 'bg-slate-50 border-transparent opacity-60'}`}>
                     {!isPro && (
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-emerald-500/30">
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-500 text-white px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-brand-500/30">
                             Plano Atual
                         </div>
                     )}
@@ -41,15 +41,15 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
 
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Até 10 veículos
                             </li>
                             <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Até 50 leads
                             </li>
                             <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Gestão de Estoque
                             </li>
                             <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
@@ -67,15 +67,15 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                 </div>
 
                 {/* Plano Pro */}
-                <div className={`relative p-8 rounded-[2.5rem] border-2 transition-all ${isPro ? 'bg-white border-emerald-500 shadow-xl' : 'bg-slate-900 border-slate-900 text-white'}`}>
+                <div className={`relative p-8 rounded-[2.5rem] border-2 transition-all ${isPro ? 'bg-white border-brand-500 shadow-xl' : 'bg-slate-900 border-slate-900 text-white'}`}>
                     {isPro && (
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-emerald-500/30">
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-500 text-white px-4 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-brand-500/30">
                             Plano Atual
                         </div>
                     )}
                     <div className="flex flex-col h-full">
                         <div className="mb-6">
-                            <span className={`p-3 rounded-2xl inline-flex mb-4 ${isPro ? 'bg-emerald-50 text-emerald-500' : 'bg-emerald-500 text-white'}`}>
+                            <span className={`p-3 rounded-2xl inline-flex mb-4 ${isPro ? 'bg-brand-50 text-brand-500' : 'bg-brand-500 text-white'}`}>
                                 <Star size={24} fill="currentColor" />
                             </span>
                             <h3 className={`text-xl font-black uppercase ${isPro ? 'text-slate-900' : 'text-white'}`}>Plano Pro</h3>
@@ -89,27 +89,27 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
 
                         <ul className="space-y-4 mb-8 flex-1">
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Veículos Ilimitados
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Leads Ilimitados
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Gestão Completa de Estoque
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Agenda de Visitas
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Fluxo de Vendas Completo
                             </li>
                             <li className={`flex items-center gap-3 text-sm font-bold ${isPro ? 'text-slate-600' : 'text-slate-300'}`}>
-                                <Check size={18} className="text-emerald-500" />
+                                <Check size={18} className="text-brand-500" />
                                 Website Profissional
                             </li>
                         </ul>
@@ -118,8 +118,8 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                             onClick={onUpgrade}
                             disabled={isPro}
                             className={`w-full py-4 rounded-2xl font-extrabold text-xs uppercase tracking-widest transition-all ${isPro
-                                    ? 'bg-emerald-50 text-emerald-600 cursor-default'
-                                    : 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-xl shadow-emerald-500/20'
+                                    ? 'bg-brand-50 text-brand-600 cursor-default'
+                                    : 'bg-brand-500 text-white hover:bg-brand-400 shadow-xl shadow-brand-500/20'
                                 }`}
                         >
                             {isPro ? 'Assinatura Ativa' : 'Fazer Upgrade'}
@@ -138,7 +138,7 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
-                            <span className={`font-bold uppercase ${profile.planStatus === 'active' ? 'text-emerald-600' : 'text-red-500'}`}>
+                            <span className={`font-bold uppercase ${profile.planStatus === 'active' ? 'text-brand-600' : 'text-red-500'}`}>
                                 {profile.planStatus === 'active' ? 'Ativo' : 'Expirado'}
                             </span>
                         </div>

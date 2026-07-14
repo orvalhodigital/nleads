@@ -52,7 +52,7 @@ const SalesClosedPage: React.FC = () => {
     if (loading) {
         return (
             <div className="flex-1 flex items-center justify-center min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+                <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
             </div>
         );
     }
@@ -236,7 +236,7 @@ const SalesClosedPage: React.FC = () => {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        <CheckCircle2 className="text-emerald-500" size={32} />
+                        <CheckCircle2 className="text-brand-500" size={32} />
                         Vendas Realizadas
                     </h1>
                     <p className="text-slate-400 font-medium mt-1 text-sm">
@@ -273,8 +273,8 @@ const SalesClosedPage: React.FC = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                            <ShoppingBag size={18} className="text-emerald-500" />
+                        <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                            <ShoppingBag size={18} className="text-brand-500" />
                         </div>
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Vendas no Período</span>
                     </div>
@@ -296,7 +296,7 @@ const SalesClosedPage: React.FC = () => {
                         </div>
                         <span className={`text-[9px] font-black uppercase tracking-widest ${profitMargin < 5 ? 'text-rose-400' : 'text-slate-400'}`}>Margem de Lucro</span>
                     </div>
-                    <p className={`text-2xl font-black ${profitMargin < 5 ? 'text-rose-600' : totalProfit < 0 ? 'text-rose-500' : 'text-emerald-600'}`}>R$ {formatCurrency(totalProfit)}</p>
+                    <p className={`text-2xl font-black ${profitMargin < 5 ? 'text-rose-600' : totalProfit < 0 ? 'text-rose-500' : 'text-brand-600'}`}>R$ {formatCurrency(totalProfit)}</p>
                     <p className={`mt-1 text-[10px] font-bold ${profitMargin < 5 ? 'text-rose-500' : 'text-slate-400'}`}>Margem: {profitMargin.toFixed(1)}%</p>
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
@@ -386,7 +386,7 @@ const SalesClosedPage: React.FC = () => {
                         </div>
                         <div className="rounded-2xl bg-slate-50 p-4">
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Lucro Médio por Venda</p>
-                            <p className={`mt-2 text-2xl font-black ${totalProfit >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>R$ {formatCurrency(salesData.length ? totalProfit / salesData.length : 0)}</p>
+                            <p className={`mt-2 text-2xl font-black ${totalProfit >= 0 ? 'text-brand-600' : 'text-rose-500'}`}>R$ {formatCurrency(salesData.length ? totalProfit / salesData.length : 0)}</p>
                         </div>
                     </div>
                 </div>
@@ -401,7 +401,7 @@ const SalesClosedPage: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Nome do cliente ou veículo..."
-                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:border-emerald-500 transition-all outline-none"
+                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:border-brand-500 transition-all outline-none"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                         />
@@ -413,7 +413,7 @@ const SalesClosedPage: React.FC = () => {
                     <CustomDatePicker
                         value={dateRange.start}
                         onChange={val => setDateRange(prev => ({ ...prev, start: val }))}
-                        className="min-w-[160px] px-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/5 transition-all outline-none flex items-center justify-between"
+                        className="min-w-[160px] px-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-brand-500/5 transition-all outline-none flex items-center justify-between"
                     />
                 </div>
 
@@ -422,7 +422,7 @@ const SalesClosedPage: React.FC = () => {
                     <CustomDatePicker
                         value={dateRange.end}
                         onChange={val => setDateRange(prev => ({ ...prev, end: val }))}
-                        className="min-w-[160px] px-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-500/5 transition-all outline-none flex items-center justify-between"
+                        className="min-w-[160px] px-4 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-brand-500/5 transition-all outline-none flex items-center justify-between"
                     />
                 </div>
 
@@ -445,7 +445,7 @@ const SalesClosedPage: React.FC = () => {
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-slate-50 bg-slate-50/50">
                     <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <Award size={16} className="text-emerald-500" />
+                        <Award size={16} className="text-brand-500" />
                         Relatório Executivo ({salesData.length})
                     </h2>
                 </div>
@@ -503,8 +503,8 @@ const SalesClosedPage: React.FC = () => {
                                         <td className="px-6 py-4 text-right text-sm font-black text-blue-600">R$ {formatCurrency(sale.salePrice)}</td>
                                         <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">R$ {formatCurrency(sale.costBasis)}</td>
                                         <td className="px-6 py-4 text-right text-xs font-bold text-amber-600">R$ {formatCurrency(sale.refurbishmentCosts)}</td>
-                                        <td className={`px-6 py-4 text-right text-sm font-black ${sale.profit >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>R$ {formatCurrency(sale.profit)}</td>
-                                        <td className={`px-6 py-4 text-right text-xs font-black ${sale.margin >= 5 ? 'text-emerald-600' : 'text-rose-500'}`}>{sale.margin.toFixed(1)}%</td>
+                                        <td className={`px-6 py-4 text-right text-sm font-black ${sale.profit >= 0 ? 'text-brand-600' : 'text-rose-500'}`}>R$ {formatCurrency(sale.profit)}</td>
+                                        <td className={`px-6 py-4 text-right text-xs font-black ${sale.margin >= 5 ? 'text-brand-600' : 'text-rose-500'}`}>{sale.margin.toFixed(1)}%</td>
                                         <td className="px-6 py-4 text-right text-xs font-bold text-slate-600">{sale.daysToSell === null ? '-' : `${sale.daysToSell}d`}</td>
                                     </tr>
                                 ))}

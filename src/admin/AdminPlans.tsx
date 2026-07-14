@@ -217,7 +217,7 @@ export default function AdminPlans() {
                                             <div className="flex items-center gap-3 pt-4">
                                                 <button
                                                     onClick={() => setEditForm({ ...editForm, is_active: !editForm.is_active })}
-                                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${editForm.is_active ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-white text-slate-400 border-slate-200'}`}
+                                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${editForm.is_active ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-200' : 'bg-white text-slate-400 border-slate-200'}`}
                                                 >
                                                     {editForm.is_active ? 'Plano Ativo' : 'Plano Inativo'}
                                                 </button>
@@ -306,8 +306,8 @@ export default function AdminPlans() {
                                         <ul className="space-y-3">
                                             {plan.features?.slice(0, Math.ceil(plan.features.length / 2)).map((feat, i) => (
                                                 <li key={i} className="flex items-center gap-3 text-xs font-bold text-slate-500">
-                                                    <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center">
-                                                        <CheckCircle size={12} className="text-emerald-500" />
+                                                    <div className="w-5 h-5 rounded-full bg-brand-50 flex items-center justify-center">
+                                                        <CheckCircle size={12} className="text-brand-500" />
                                                     </div>
                                                     {feat}
                                                 </li>
@@ -316,8 +316,8 @@ export default function AdminPlans() {
                                         <ul className="space-y-3">
                                             {plan.features?.slice(Math.ceil(plan.features.length / 2)).map((feat, i) => (
                                                 <li key={i} className="flex items-center gap-3 text-xs font-bold text-slate-500">
-                                                    <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center">
-                                                        <CheckCircle size={12} className="text-emerald-500" />
+                                                    <div className="w-5 h-5 rounded-full bg-brand-50 flex items-center justify-center">
+                                                        <CheckCircle size={12} className="text-brand-500" />
                                                     </div>
                                                     {feat}
                                                 </li>
@@ -384,11 +384,11 @@ export default function AdminPlans() {
                                                 {format(new Date(camp.start_date), 'dd MMM yyyy', { locale: ptBR })} - {format(new Date(camp.end_date), 'dd MMM yyyy', { locale: ptBR })}
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="font-black text-emerald-600 text-sm">{camp.promo_text}</div>
+                                                <div className="font-black text-brand-600 text-sm">{camp.promo_text}</div>
                                                 <div className="text-[10px] font-bold text-slate-400">R$ {camp.promo_price}</div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tight ${isCurrentlyActive ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tight ${isCurrentlyActive ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400'}`}>
                                                     {isCurrentlyActive ? 'Ativa' : 'Inativa/Expirada'}
                                                 </span>
                                             </td>
@@ -462,7 +462,7 @@ export default function AdminPlans() {
             {modal.isOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
                     <div className="bg-white rounded-[2.5rem] p-10 w-full max-w-sm shadow-2xl text-center animate-scaleUp">
-                        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 ${modal.type === 'success' ? 'bg-emerald-50 text-emerald-500' : modal.type === 'confirm' ? 'bg-amber-50 text-amber-500' : 'bg-rose-50 text-rose-500'}`}>
+                        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 ${modal.type === 'success' ? 'bg-brand-50 text-brand-500' : modal.type === 'confirm' ? 'bg-amber-50 text-amber-500' : 'bg-rose-50 text-rose-500'}`}>
                             {modal.type === 'success' ? <CheckCircle2 size={40} /> : modal.type === 'confirm' ? <AlertCircle size={40} /> : <AlertCircle size={40} />}
                         </div>
                         <h3 className="text-xl font-black text-slate-900 mb-2">{modal.title}</h3>

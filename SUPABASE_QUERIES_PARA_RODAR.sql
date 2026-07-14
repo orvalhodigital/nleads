@@ -15,9 +15,21 @@ ALTER TABLE motivation_quotes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Permitir leitura para todos os usuários"
 ON motivation_quotes FOR SELECT USING (true);
 
--- Permite todas as ações para os admins (usando a mesma policy ou se tiver rules extras)
-CREATE POLICY "Permitir leitura/escrita de frases"
-ON motivation_quotes FOR ALL USING (true); -- Ajuste caso queira restringir para auth.uid() apenas admin
+-- Permite escrita apenas para administradores (com perfil cadastrado em profiles.role = 'admin')
+CREATE POLICY "Permitir escrita apenas para administradores"
+ON motivation_quotes FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
 
 -- 2. Inserindo algumas frases de exemplo (opcional)
 INSERT INTO motivation_quotes (quote, author) VALUES 

@@ -285,20 +285,20 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
         <div className="space-y-6 max-w-[1200px] mx-auto pb-20 animate-fadeIn">
             {/* Header: Status e Links Rápidos */}
             <div className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col lg:flex-row gap-6 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50" />
                 
                 <div className="flex items-center gap-4 lg:w-1/3 relative z-10">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md transition-all ${website_active ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md transition-all ${website_active ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
                         <Globe size={28} className={website_active ? 'animate-pulse' : ''} />
                     </div>
                     <div>
                         <h2 className="text-xl font-black text-slate-900 tracking-tight">Website Público</h2>
                         <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${website_active ? 'text-emerald-600' : 'text-slate-400'}`}>
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${website_active ? 'text-brand-600' : 'text-slate-400'}`}>
                                 {website_active ? 'Online' : 'Offline'}
                             </span>
                             <button onClick={() => setWebsiteActive(!website_active)}
-                                className={`relative w-10 h-5 rounded-full transition-all duration-300 ${website_active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                className={`relative w-10 h-5 rounded-full transition-all duration-300 ${website_active ? 'bg-brand-500' : 'bg-slate-300'}`}>
                                 <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-all shadow-sm ${website_active ? 'translate-x-5' : 'translate-x-0'}`} />
                             </button>
                         </div>
@@ -308,13 +308,13 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 lg:border-l lg:border-slate-100 lg:pl-6 relative z-10">
                     <div className="space-y-1.5">
                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">URL do Site</label>
-                        <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 focus-within:bg-white focus-within:border-emerald-500 transition-all">
+                        <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 focus-within:bg-white focus-within:border-brand-500 transition-all">
                             <span className="text-slate-400 font-bold text-xs">https://painel.orvalhodigital.com.br/</span>
                             <input value={website_slug} onChange={e => setWebsiteSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                                 placeholder="sua-loja" className="bg-transparent border-none outline-none font-black text-slate-900 text-xs flex-1 ml-1" />
                         </div>
                         {website_slug && (
-                            <a href={custom_domain ? `https://${custom_domain}` : `https://painel.orvalhodigital.com.br/${website_slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 mt-2 w-full py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-100 transition-colors">
+                            <a href={custom_domain ? `https://${custom_domain}` : `https://painel.orvalhodigital.com.br/${website_slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 mt-2 w-full py-2 bg-brand-50 text-brand-600 rounded-xl text-[10px] font-black uppercase hover:bg-brand-100 transition-colors">
                                 Acessar Site <LinkIcon size={12} />
                             </a>
                         )}
@@ -322,9 +322,9 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                     <div className="space-y-1.5">
                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Domínio Profissional</label>
                         {custom_domain ? (
-                            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
-                                <Globe size={12} className="text-emerald-600 shrink-0" />
-                                <span className="font-black text-emerald-900 text-xs flex-1 uppercase">{custom_domain}</span>
+                            <div className="flex items-center gap-2 bg-brand-50 border border-brand-100 rounded-xl px-3 py-2.5">
+                                <Globe size={12} className="text-brand-600 shrink-0" />
+                                <span className="font-black text-brand-900 text-xs flex-1 uppercase">{custom_domain}</span>
                                 <button
                                     onClick={handleRemoveDomain}
                                     disabled={loading}
@@ -336,7 +336,7 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                             </div>
                         ) : (
                             <div className="flex items-center gap-1">
-                                <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 focus-within:bg-white focus-within:border-emerald-500 transition-all flex-1">
+                                <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5 focus-within:bg-white focus-within:border-brand-500 transition-all flex-1">
                                     <Globe size={12} className="text-slate-400 mr-2" />
                                     <input
                                         value={customDomainInput}
@@ -348,7 +348,7 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 <button
                                     onClick={handleRegisterDomain}
                                     disabled={domainStatus === 'registering'}
-                                    className="px-2 py-2.5 bg-emerald-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 active:scale-95"
+                                    className="px-2 py-2.5 bg-brand-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-brand-600 transition-all disabled:opacity-50 active:scale-95"
                                 >
                                     {domainStatus === 'registering' ? <Loader2 size={12} className="animate-spin" /> : 'OK'}
                                 </button>
@@ -445,12 +445,12 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                     <div className="space-y-1.5">
                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Título Grande</label>
                                         <input value={website_hero_text} onChange={e => setWebsiteHeroText(e.target.value)}
-                                            placeholder="Ex: Encontre o Seu Veículo Ideal" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-black text-sm outline-none focus:bg-white focus:border-emerald-500" />
+                                            placeholder="Ex: Encontre o Seu Veículo Ideal" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-black text-sm outline-none focus:bg-white focus:border-brand-500" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Subtítulo</label>
                                         <textarea value={website_hero_subtitle} onChange={e => setWebsiteHeroSubtitle(e.target.value)}
-                                            placeholder="Descrição curta de boas-vindas..." className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs h-24 outline-none resize-none focus:bg-white focus:border-emerald-500" />
+                                            placeholder="Descrição curta de boas-vindas..." className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs h-24 outline-none resize-none focus:bg-white focus:border-brand-500" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -504,7 +504,7 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                     <div className="space-y-10">
                         {/* WhatsApp e CTA */}
                         <div className="space-y-6">
-                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><MessageSquare size={14} className="text-emerald-500" /> Canais de Conversão</h3>
+                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><MessageSquare size={14} className="text-brand-500" /> Canais de Conversão</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5">
                                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">WhatsApp Principal</label>
@@ -524,14 +524,14 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                             <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><Zap size={14} className="text-amber-500" /> Gatilhos de Venda</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <input type="checkbox" checked={show_floating_whatsapp} onChange={e => setShowFloatingWhatsapp(e.target.checked)} className="w-4 h-4 accent-emerald-500" />
+                                    <input type="checkbox" checked={show_floating_whatsapp} onChange={e => setShowFloatingWhatsapp(e.target.checked)} className="w-4 h-4 accent-brand-500" />
                                     <div>
                                         <p className="text-[11px] font-black text-slate-900 uppercase">WhatsApp Flutuante</p>
                                         <p className="text-[9px] text-slate-500 font-medium">Botão fixo no canto da tela.</p>
                                     </div>
                                 </label>
                                 <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <input type="checkbox" checked={show_exit_popup} onChange={e => setShowExitPopup(e.target.checked)} className="w-4 h-4 accent-emerald-500" />
+                                    <input type="checkbox" checked={show_exit_popup} onChange={e => setShowExitPopup(e.target.checked)} className="w-4 h-4 accent-brand-500" />
                                     <div>
                                         <p className="text-[11px] font-black text-slate-900 uppercase">Popup de Saída</p>
                                         <p className="text-[9px] text-slate-500 font-medium">Captura leads antes do fechamento.</p>
@@ -616,7 +616,7 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
             {/* Ação de Salvar Flutuante */}
             <div className="fixed bottom-8 right-8 z-[100]">
                 <button onClick={handleSave} disabled={loading}
-                    className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-full font-black uppercase tracking-widest text-xs shadow-2xl hover:bg-emerald-600 hover:scale-105 active:scale-95 transition-all disabled:opacity-50">
+                    className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-full font-black uppercase tracking-widest text-xs shadow-2xl hover:bg-brand-600 hover:scale-105 active:scale-95 transition-all disabled:opacity-50">
                     {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                     Publicar Alterações
                 </button>

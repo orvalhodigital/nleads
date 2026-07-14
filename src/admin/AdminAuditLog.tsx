@@ -57,7 +57,7 @@ export default function AdminAuditLog() {
   const getActionColor = (action: string) => {
     switch (action) {
       case 'create':
-        return 'bg-emerald-100 text-emerald-700';
+        return 'bg-brand-100 text-brand-700';
       case 'update':
         return 'bg-blue-100 text-blue-700';
       case 'delete':

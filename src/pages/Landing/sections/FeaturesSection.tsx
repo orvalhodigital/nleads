@@ -55,9 +55,9 @@ const FeaturesSection: React.FC = () => {
             return (
               <div
                 key={index}
-                className="p-8 rounded-2xl border border-slate-200 hover:border-emerald-300 transition-all hover:shadow-xl hover:shadow-emerald-50 group hover:-translate-y-1"
+                className="p-8 rounded-2xl border border-slate-200 hover:border-brand-300 transition-all hover:shadow-xl hover:shadow-brand-50 group hover:-translate-y-1"
               >
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center text-brand-600 mb-4 group-hover:bg-brand-500 group-hover:text-white transition-all">
                   <Icon size={24} />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">{feature.title}</h3>
@@ -68,12 +68,12 @@ const FeaturesSection: React.FC = () => {
         </div>
 
         {/* Bottom section */}
-        <div className="mt-16 p-8 lg:p-12 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-3xl text-white">
+        <div className="mt-16 p-8 lg:p-12 bg-gradient-to-r from-brand-600 to-brand-500 rounded-3xl text-white">
           <div className="max-w-2xl">
             <h3 className="text-2xl lg:text-3xl font-black mb-4">
               Tudo isso no Plano Free
             </h3>
-            <p className="text-lg text-emerald-50 mb-6">
+            <p className="text-lg text-brand-50 mb-6">
               Comece a usar Otimizza 100% grátis. Sem cartão, sem surpresas, sem limite de tempo.
             </p>
             <div className="grid grid-cols-2 gap-4 text-sm font-bold">

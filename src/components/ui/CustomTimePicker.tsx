@@ -53,7 +53,7 @@ export const CustomTimePicker: React.FC<CustomTimePickerProps> = ({ value, onCha
     return (
         <div className="relative" ref={containerRef}>
             <div
-                className={`flex items-center justify-between cursor-pointer ${className || 'w-full text-sm font-semibold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 transition-all outline-none'}`}
+                className={`flex items-center justify-between cursor-pointer ${className || 'w-full text-sm font-semibold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 transition-all outline-none'}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className={value ? 'text-slate-800' : 'text-slate-400 font-medium'}>
@@ -69,7 +69,7 @@ export const CustomTimePicker: React.FC<CustomTimePickerProps> = ({ value, onCha
                             key={time}
                             data-time={time}
                             className={`px-4 py-2.5 mx-2 rounded-xl text-sm font-bold cursor-pointer transition-colors ${value === time
-                                    ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
+                                    ? 'bg-brand-500 text-white shadow-sm shadow-brand-500/20'
                                     : 'text-slate-600 hover:bg-slate-50'
                                 }`}
                             onClick={() => handleSelect(time)}

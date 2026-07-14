@@ -39,10 +39,16 @@ CREATE POLICY "Admins can read all audit logs" ON admin_audit_logs
     )
   );
 
--- Policy 2: Service role (backend) can insert logs
-CREATE POLICY "Service role can insert audit logs" ON admin_audit_logs
+-- Policy 2: Only authenticated administrators can insert audit logs for themselves
+CREATE POLICY "Admins can insert audit logs for themselves" ON admin_audit_logs
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    auth.uid() = admin_id AND
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
 
 -- Policy 3: Prevent updates/deletes to audit logs (immutable)
 CREATE POLICY "Prevent audit log modifications" ON admin_audit_logs

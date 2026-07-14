@@ -10,10 +10,16 @@ import { ArrowLeft } from 'lucide-react';
 const VehicleFormPage: React.FC = () => {
     const { id } = useParams<{ id?: string }>();
     const navigate = useNavigate();
-    const { vehicles, motorcycles, profile, addVehicle, updateVehicle } = useData();
+    const { 
+        vehicles, motorcycles, profile, 
+        addVehicle, updateVehicle, 
+        addMotorcycle, updateMotorcycle 
+    } = useData();
 
     const isEditing = !!id;
-    const vehicleToEdit = isEditing ? vehicles.find(v => v.id === id) : undefined;
+    const vehicleToEdit = isEditing 
+        ? (vehicles.find(v => v.id === id) || motorcycles.find(m => m.id === id)) 
+        : undefined;
 
     if (profile?.plan !== 'pro' && !isEditing && (vehicles.length + motorcycles.length) >= 10) {
         return (
@@ -49,23 +55,32 @@ const VehicleFormPage: React.FC = () => {
     // Redirect to inventory if editing but vehicle not found
     React.useEffect(() => {
         if (isEditing && !vehicleToEdit) {
-            // Wait a bit for initial data load if vehicles is empty
-            if (vehicles.length > 0) {
+            // Wait a bit for initial data load if vehicles/motorcycles is empty
+            if (vehicles.length > 0 || motorcycles.length > 0) {
                 navigate('/inventory');
             }
         }
-    }, [isEditing, vehicleToEdit, vehicles.length, navigate]);
+    }, [isEditing, vehicleToEdit, vehicles.length, motorcycles.length, navigate]);
 
     return (
         <VehicleForm
             isEditing={isEditing}
-            initialData={vehicleToEdit}
+            initialData={vehicleToEdit as any}
             onSave={async (v) => {
                 try {
+                    const isMoto = v.vehicleCategory === 'moto';
                     if (isEditing && id) {
-                        await updateVehicle({ ...v, id } as any);
+                        if (isMoto) {
+                            await updateMotorcycle({ ...v, id } as any);
+                        } else {
+                            await updateVehicle({ ...v, id } as any);
+                        }
                     } else {
-                        await addVehicle(v as any);
+                        if (isMoto) {
+                            await addMotorcycle(v as any);
+                        } else {
+                            await addVehicle(v as any);
+                        }
                     }
                 } catch (err: any) {
                     console.error('Erro ao salvar veículo:', err);

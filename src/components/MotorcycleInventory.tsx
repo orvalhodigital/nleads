@@ -6,6 +6,8 @@ import {
     UserCheck, Users, Tag, Send, LayoutGrid, List,
     Bike, Hash, Palette, Zap, AlertCircle, TrendingUp, TrendingDown, Minus, Shield, ImagePlus, FileText
 } from 'lucide-react';
+import { MotoGridCard, MotoListCard } from './motorcycle-inventory/MotoCards';
+import { MotoFilters } from './motorcycle-inventory/MotoFilters';
 import { Lead, LeadPhase, SaleDetails, LeadTemperature, Motorcycle, MotorcycleCategory, MotoStartType, MotoFuelSystem, MotoCooling, MotoBrakeType, LeadCommunication } from '../types';
 import { Switch } from './ui/switch';
 import { motorcycleService } from '../services/motorcycleService';
@@ -62,141 +64,6 @@ interface Props {
     onViewLead: (id: string) => void;
 }
 
-// ─── Memoized card components ─────────────────────────────────────────────────
-interface MotoCardProps { moto: Motorcycle; onSelect: (m: Motorcycle) => void; onToggleWebsite?: (m: Motorcycle) => void; }
-
-const MotoGridCard = memo(({ moto: m, onSelect, onToggleWebsite }: MotoCardProps) => {
-    const isOnWebsite = m.showOnWebsite !== false;
-
-    const handleToggleClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onToggleWebsite?.({ ...m, showOnWebsite: !isOnWebsite });
-    };
-
-    return (
-        <div className={`bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col relative overflow-hidden ${m.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : 'hover:border-emerald-200/60'}`}>
-            <div className="relative p-3 pb-0">
-                {m.imageUrl ? (
-                    <div onClick={() => onSelect(m)} className="w-full aspect-square rounded-xl overflow-hidden shadow-inner bg-slate-50 cursor-pointer">
-                        <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                    </div>
-                ) : (
-                    <div onClick={() => onSelect(m)} className="w-full aspect-square rounded-xl bg-slate-50 flex flex-col items-center justify-center text-slate-200 gap-1.5 border border-slate-100/50 cursor-pointer">
-                        <Bike size={48} strokeWidth={1} />
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Sem Imagem</span>
-                    </div>
-                )}
-                {m.status === 'sold' ? (
-                    <div className="absolute top-6 right-6 bg-rose-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-rose-500/30 animate-pulse">Vendida</div>
-                ) : (
-                    <div className="absolute top-6 right-6 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-lg z-20 shadow-lg shadow-emerald-500/30">Em Estoque</div>
-                )}
-                <div className="absolute bottom-4 left-7 z-20">
-                    <span className="text-[8px] font-extrabold text-white uppercase tracking-widest bg-slate-900/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 shadow-lg">{m.category}</span>
-                </div>
-                {onToggleWebsite && (
-                    <div className="absolute bottom-3 right-4 z-20 flex items-center gap-2">
-                        <span className={`text-[8px] font-black uppercase tracking-wider transition-colors duration-300 drop-shadow-sm ${isOnWebsite ? 'text-emerald-300' : 'text-rose-300'}`}>
-                            {isOnWebsite ? 'Site' : 'Oculto'}
-                        </span>
-                        <button onClick={handleToggleClick} role="switch" aria-checked={isOnWebsite}
-                            className={`relative w-9 h-5 rounded-full transition-colors duration-300 shadow-lg focus:outline-none ${isOnWebsite ? 'bg-emerald-500' : 'bg-rose-500'}`}>
-                            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${isOnWebsite ? 'left-4' : 'left-0.5'}`} />
-                        </button>
-                    </div>
-                )}
-            </div>
-            <div className="p-5 pt-4 flex flex-col flex-1">
-                <div className="mb-4">
-                    <h3 onClick={() => onSelect(m)} className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mb-1.5 group-hover:text-emerald-600 transition-colors cursor-pointer">
-                        {m.brand} {m.model}
-                    </h3>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                            <Calendar size={10} className="text-slate-300" />
-                            <span>{m.year}{m.modelYear && m.modelYear !== m.year ? ` / ${String(m.modelYear).slice(-2)}` : ''}</span>
-                        </div>
-                        <div className="w-1 h-1 rounded-full bg-slate-200" />
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                            <Gauge size={10} className="text-slate-300" />
-                            <span>{m.mileage > 0 ? `${m.mileage.toLocaleString()} km` : '---'}</span>
-                        </div>
-                    </div>
-                </div>
-                <div onClick={() => onSelect(m)} className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50 cursor-pointer">
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.15em] mb-0.5">Preço de Venda</span>
-                        <p className={`text-lg font-black tracking-tighter ${m.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
-                            R$ {m.price.toLocaleString()}
-                        </p>
-                    </div>
-                    <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-slate-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
-                        <ChevronLeft className="rotate-180" size={16} strokeWidth={3} />
-                    </div>
-                </div>
-            </div>
-            <div className={`h-1 w-full ${m.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
-        </div>
-    );
-});
-
-const MotoListCard = memo(({ moto: m, onSelect, onToggleWebsite }: MotoCardProps) => {
-    const isOnWebsite = m.showOnWebsite !== false;
-
-    const handleToggleClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onToggleWebsite?.({ ...m, showOnWebsite: !isOnWebsite });
-    };
-
-    return (
-        <div className={`bg-white p-3 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-emerald-100 transition-all group flex flex-col sm:flex-row gap-4 relative overflow-hidden ${m.status === 'sold' ? 'opacity-90 grayscale-[0.2]' : ''}`}>
-            <div onClick={() => onSelect(m)} className="w-full sm:w-40 h-28 sm:h-28 rounded-xl overflow-hidden shrink-0 bg-slate-50 relative border border-slate-100 shadow-inner cursor-pointer">
-                {m.imageUrl ? (
-                    <img src={m.imageUrl} alt={m.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-200"><Bike size={32} strokeWidth={1} /></div>
-                )}
-                {m.status === 'sold' && (
-                    <div className="absolute top-2 right-2 bg-rose-500 text-white text-[7px] font-black uppercase tracking-wide px-2 py-1 rounded z-10 shadow-lg">Vendida</div>
-                )}
-            </div>
-            <div onClick={() => onSelect(m)} className="flex-1 flex flex-col py-1 cursor-pointer min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50">{m.category}</span>
-                    {m.plate && <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">{m.plate}</span>}
-                </div>
-                <h3 className="text-base font-black text-slate-900 uppercase tracking-tight leading-tight group-hover:text-emerald-600 transition-colors truncate">
-                    {m.brand} {m.model}
-                </h3>
-                <div className="flex items-center gap-3 text-[11px] font-bold text-slate-400 mt-1.5 flex-wrap">
-                    <div className="flex items-center gap-1"><Calendar size={12} className="text-slate-300" /><span>{m.year}</span></div>
-                    <div className="flex items-center gap-1"><Gauge size={12} className="text-slate-300" /><span>{m.mileage > 0 ? `${m.mileage.toLocaleString()} km` : '---'}</span></div>
-                    <div className="flex items-center gap-1"><Zap size={12} className="text-slate-300" /><span>{m.engine}</span></div>
-                </div>
-            </div>
-            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-between gap-4 pl-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-slate-100 pt-3 sm:pt-1 sm:pb-1 min-w-max">
-                <div className="text-right">
-                    <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Preço</p>
-                    <p className={`text-xl font-black leading-none tracking-tighter ${m.status === 'sold' ? 'text-slate-400 line-through' : 'text-emerald-500'}`}>
-                        R$ {m.price.toLocaleString()}
-                    </p>
-                </div>
-                {onToggleWebsite && (
-                    <div className="flex flex-col items-end gap-1.5">
-                        <span className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${isOnWebsite ? 'text-emerald-600' : 'text-rose-500'}`}>
-                            {isOnWebsite ? 'No Site' : 'Oculto'}
-                        </span>
-                        <button onClick={handleToggleClick} role="switch" aria-checked={isOnWebsite}
-                            className={`relative w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${isOnWebsite ? 'bg-emerald-500 focus:ring-emerald-400' : 'bg-rose-500 focus:ring-rose-400'}`}>
-                            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${isOnWebsite ? 'left-6' : 'left-1'}`} />
-                        </button>
-                    </div>
-                )}
-            </div>
-            <div className={`h-1 w-full ${m.status === 'sold' ? 'bg-rose-500/20' : 'bg-emerald-500/20'} absolute bottom-0 left-0`} />
-        </div>
-    );
-});
 // ──────────────────────────────────────────────────────────────────────────────
 
 const MotorcycleInventory: React.FC<Props> = ({
@@ -645,7 +512,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                     </button>
                     <div className="flex gap-3">
                         {m.status === 'available' && (
-                            <button onClick={handleOpenSell} className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all">
+                            <button onClick={handleOpenSell} className="flex items-center gap-2 px-6 py-2.5 bg-brand-500 text-white rounded-xl font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all">
                                 <DollarSign size={16} /> Registrar Venda
                             </button>
                         )}
@@ -682,11 +549,11 @@ const MotorcycleInventory: React.FC<Props> = ({
                             {/* Mini Gallery Row */}
                             {(m.galleryImages?.length ?? 0) > 0 && (
                                 <div className="grid grid-cols-6 gap-3 mb-10">
-                                    <div className="aspect-square rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 cursor-pointer">
+                                    <div className="aspect-square rounded-xl overflow-hidden border-2 border-brand-500 shadow-lg shadow-brand-500/10 cursor-pointer">
                                         <img src={m.imageUrl} alt="" className="w-full h-full object-cover" />
                                     </div>
                                     {m.galleryImages?.map((url, i) => (
-                                        <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer opacity-60 hover:opacity-100">
+                                        <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 hover:border-brand-200 transition-all cursor-pointer opacity-60 hover:opacity-100">
                                             <img src={url} alt="" className="w-full h-full object-cover" />
                                         </div>
                                     ))}
@@ -695,7 +562,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                             <div className="relative z-10">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-4 py-1.5 rounded-lg border border-emerald-100/50">{m.category}</span>
+                                        <span className="text-[10px] font-extrabold text-brand-600 uppercase tracking-widest bg-brand-50 px-4 py-1.5 rounded-lg border border-brand-100/50">{m.category}</span>
                                         {m.isSingleOwner && <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest bg-slate-100 px-4 py-1.5 rounded-lg">Único Dono</span>}
                                         {m.hasWarranty && <span className="text-[10px] font-extrabold text-blue-500 uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-lg">Garantia</span>}
                                         {m.isIpvaPaid && <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest bg-indigo-50 px-4 py-1.5 rounded-lg">IPVA Pago</span>}
@@ -707,7 +574,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                     {m.brand} <br /> {m.model}
                                 </h1>
                                 <div className="flex items-end gap-4 mb-4">
-                                    <p className="text-4xl font-black text-emerald-500 tracking-tighter">R$ {(m.price || 0).toLocaleString('pt-BR')}</p>
+                                    <p className="text-4xl font-black text-brand-500 tracking-tighter">R$ {(m.price || 0).toLocaleString('pt-BR')}</p>
                                     {m.fipePrice ? (
                                         <div className="mb-1">
                                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tabela FIPE</p>
@@ -747,9 +614,9 @@ const MotorcycleInventory: React.FC<Props> = ({
 
                         {m.status === 'sold' && m.saleDetails && (
                             <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white">
-                                <h3 className="text-lg font-extrabold tracking-tight mb-6 flex items-center gap-3"><Check size={24} className="text-emerald-400" /> Detalhes da Venda</h3>
+                                <h3 className="text-lg font-extrabold tracking-tight mb-6 flex items-center gap-3"><Check size={24} className="text-brand-400" /> Detalhes da Venda</h3>
                                 <div className="grid grid-cols-3 gap-8">
-                                    <div><p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Valor</p><p className="text-3xl font-black text-emerald-400">R$ {m.saleDetails.salePrice.toLocaleString()}</p></div>
+                                    <div><p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Valor</p><p className="text-3xl font-black text-brand-400">R$ {m.saleDetails.salePrice.toLocaleString()}</p></div>
                                     <div><p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Data</p><p className="text-xl font-bold">{new Date(m.saleDetails.saleDate).toLocaleDateString()}</p></div>
                                     <div><p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Comprador</p><p className="text-xl font-bold">{m.saleDetails.buyerName}</p></div>
                                 </div>
@@ -759,28 +626,28 @@ const MotorcycleInventory: React.FC<Props> = ({
 
                     <div className="space-y-6">
                         <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
-                            <div className="flex items-center gap-3 mb-2"><UserCheck size={24} className="text-emerald-500" /><h3 className="text-lg font-extrabold text-slate-900">Leads Compatíveis</h3></div>
+                            <div className="flex items-center gap-3 mb-2"><UserCheck size={24} className="text-brand-500" /><h3 className="text-lg font-extrabold text-slate-900">Leads Compatíveis</h3></div>
                             <p className="text-slate-400 text-sm font-medium mb-4">Encontramos <strong className="text-slate-900">{matchingLeads.length} leads</strong> com perfil de moto.</p>
                             <div className="flex gap-2 mb-2">
                                 <button onClick={() => prepareMessageModal('all')} className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-800 transition-all">Enviar p/ Todos</button>
-                                <button onClick={() => prepareMessageModal('new')} className="flex-1 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-emerald-100 transition-all">Enviar p/ Novos</button>
+                                <button onClick={() => prepareMessageModal('new')} className="flex-1 py-3 bg-brand-50 text-brand-600 border border-brand-100 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-brand-100 transition-all">Enviar p/ Novos</button>
                             </div>
                         </div>
                         <div className="space-y-4">
                             {matchingLeads.map(lead => {
                                 const hasReceived = communications.some(c => c.lead_id === lead.id);
                                 return (
-                                <div key={lead.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all group cursor-pointer relative">
+                                <div key={lead.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group cursor-pointer relative">
                                     {hasReceived && (
-                                        <div className="absolute top-6 right-6 w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600" title="Mensagem já enviada">
+                                        <div className="absolute top-6 right-6 w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center text-brand-600" title="Mensagem já enviada">
                                             <Check size={16} strokeWidth={3} />
                                         </div>
                                     )}
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-lg text-slate-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors">{lead.name.charAt(0)}</div>
+                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-lg text-slate-300 group-hover:bg-brand-500 group-hover:text-white transition-colors">{lead.name.charAt(0)}</div>
                                         <div>
                                             <p className="font-extrabold text-slate-900 uppercase leading-none">{lead.name}</p>
-                                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Orçamento: R$ {lead.preferences.moto_valor_max?.toLocaleString() || '—'}</p>
+                                            <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest mt-1">Orçamento: R$ {lead.preferences.moto_valor_max?.toLocaleString() || '—'}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
@@ -811,7 +678,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 <div className="p-10 space-y-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Preço Final</label>
-                                        <input type="text" required value={formatCurrency(sellData.salePrice)} onChange={e => setSellData({ ...sellData, salePrice: parseCurrency(e.target.value) })} className="w-full p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-2xl font-black outline-none text-lg" />
+                                        <input type="text" required value={formatCurrency(sellData.salePrice)} onChange={e => setSellData({ ...sellData, salePrice: parseCurrency(e.target.value) })} className="w-full p-4 bg-brand-50 border border-brand-100 text-brand-700 rounded-2xl font-black outline-none text-lg" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Data da Venda</label>
@@ -834,7 +701,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 </div>
                                 <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
                                     <button type="button" onClick={() => setIsSellModalOpen(false)} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Cancelar</button>
-                                    <button type="submit" className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20">Confirmar Venda</button>
+                                    <button type="submit" className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-brand-600 transition-all shadow-xl shadow-brand-500/20">Confirmar Venda</button>
                                 </div>
                             </form>
                         </div>
@@ -852,14 +719,14 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 <textarea value={msgTemplate} onChange={e => setMsgTemplate(e.target.value)} className="w-full h-36 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-medium text-sm text-slate-700 resize-none leading-relaxed" />
                                 <div className="flex gap-2 flex-wrap">
                                     {['{{nome}}', '{{marca}}', '{{modelo}}', '{{ano}}', '{{valor}}'].map(tag => (
-                                        <button key={tag} onClick={() => setMsgTemplate(p => p + ' ' + tag)} className="px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">{tag}</button>
+                                        <button key={tag} onClick={() => setMsgTemplate(p => p + ' ' + tag)} className="px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors">{tag}</button>
                                     ))}
                                 </div>
                                 <p className="text-[10px] text-slate-400 font-medium italic">* Clique nas tags para adicionar ao texto.</p>
                             </div>
                             <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
                                 <button onClick={() => setIsMessageModalOpen(false)} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Cancelar</button>
-                                <button onClick={handleSendMsg} disabled={uploading} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 disabled:opacity-60"><Send size={16} /> {uploading ? 'Enviando...' : 'Registrar Envio'}</button>
+                                <button onClick={handleSendMsg} disabled={uploading} className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-brand-600 flex items-center justify-center gap-2 shadow-xl shadow-brand-500/20 disabled:opacity-60"><Send size={16} /> {uploading ? 'Enviando...' : 'Registrar Envio'}</button>
                             </div>
                         </div>
                     </div>
@@ -875,7 +742,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                             <div className="p-6 border-b border-slate-50">
                                 <div className="relative mb-4">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-                                    <input autoFocus type="text" placeholder="Buscar por nome ou telefone..." className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-colors" value={selectorSearch} onChange={e => setSelectorSearch(e.target.value)} />
+                                    <input autoFocus type="text" placeholder="Buscar por nome ou telefone..." className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-12 pr-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-colors" value={selectorSearch} onChange={e => setSelectorSearch(e.target.value)} />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto p-2">
@@ -884,8 +751,8 @@ const MotorcycleInventory: React.FC<Props> = ({
                                         const isSelected = selectorSelectedIds.includes(lead.id);
                                         return (
                                             <div key={lead.id} onClick={() => setSelectorSelectedIds(prev => isSelected ? prev.filter(id => id !== lead.id) : [...prev, lead.id])}
-                                                className={`p-4 rounded-xl flex items-center gap-4 cursor-pointer transition-colors border ${isSelected ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-transparent hover:bg-slate-50'}`}>
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 bg-white'}`}>
+                                                className={`p-4 rounded-xl flex items-center gap-4 cursor-pointer transition-colors border ${isSelected ? 'bg-brand-50 border-brand-200' : 'bg-white border-transparent hover:bg-slate-50'}`}>
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-brand-500 border-brand-500 text-white' : 'border-slate-300 bg-white'}`}>
                                                     {isSelected && <Check size={12} strokeWidth={4} />}
                                                 </div>
                                                 <div className="flex-1"><p className="font-extrabold text-slate-900 uppercase text-xs">{lead.name}</p><p className="text-[10px] font-bold text-slate-400">{lead.phone}</p></div>
@@ -908,7 +775,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                             setMsgTemplate('Olá {{nome}}, temos uma moto incrível: {{marca}} {{modelo}} {{ano}} por R$ {{valor}}. Quer saber mais?');
                                             setIsMessageModalOpen(true);
                                         }}
-                                        className="px-8 py-3 bg-emerald-500 text-white rounded-xl font-extrabold text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        className="px-8 py-3 bg-brand-500 text-white rounded-xl font-extrabold text-[10px] uppercase tracking-widest hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
                                         Prosseguir
                                     </button>
                                 </div>
@@ -965,7 +832,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 suggestions={Object.keys(motoDatabase)}
                                 placeholder="Ex: Honda"
                                 required
-                                className={getFieldClassName('brand', 'w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none')}
+                                className={getFieldClassName('brand', 'w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none')}
                             />
                             {formErrors.brand && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.brand}</p>}
                         </div>
@@ -989,41 +856,41 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 }}
                                 suggestions={(motoDatabase[form.brand] || []).map(m => m.name)}
                                 placeholder="Ex: CB 300F"
-                                className={getFieldClassName('model', 'w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none')}
+                                className={getFieldClassName('model', 'w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none')}
                             />
                             {formErrors.model && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.model}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Categoria</label>
-                            <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value as MotorcycleCategory }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400">
+                            <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value as MotorcycleCategory }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400">
                                 {MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}
                             </select>
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Cilindrada</label>
-                            <select value={form.engine} onChange={e => setForm(p => ({ ...p, engine: e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400">
+                            <select value={form.engine} onChange={e => setForm(p => ({ ...p, engine: e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400">
                                 {MOTO_ENGINES.map(e => <option key={e}>{e}</option>)}
                                 {form.engine && !MOTO_ENGINES.includes(form.engine) && <option value={form.engine}>{form.engine}</option>}
                             </select>
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Ano Fabr.</label>
-                            <input type="number" required value={form.year} onChange={e => setForm(p => ({ ...p, year: +e.target.value }))} className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400')} />
+                            <input type="number" required value={form.year} onChange={e => setForm(p => ({ ...p, year: +e.target.value }))} className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400')} />
                             {formErrors.year && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.year}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Ano Modelo</label>
-                            <input type="number" value={form.modelYear ?? form.year} onChange={e => setForm(p => ({ ...p, modelYear: +e.target.value }))} className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400')} />
+                            <input type="number" value={form.modelYear ?? form.year} onChange={e => setForm(p => ({ ...p, modelYear: +e.target.value }))} className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400')} />
                             {formErrors.modelYear && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.modelYear}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Quilometragem</label>
-                            <input type="text" required value={formatKM(form.mileage)} onChange={e => setForm(p => ({ ...p, mileage: parseKM(e.target.value) }))} className={getFieldClassName('mileage', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400')} />
+                            <input type="text" required value={formatKM(form.mileage)} onChange={e => setForm(p => ({ ...p, mileage: parseKM(e.target.value) }))} className={getFieldClassName('mileage', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400')} />
                             {formErrors.mileage && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.mileage}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Cor</label>
-                            <input type="text" placeholder="Preta, Vermelha..." value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-emerald-400" />
+                            <input type="text" placeholder="Preta, Vermelha..." value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400" />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Placa</label>
@@ -1038,14 +905,14 @@ const MotorcycleInventory: React.FC<Props> = ({
                                     }}
                                     onKeyDown={handlePlateKeyDown}
                                     maxLength={8}
-                                    className="flex-1 min-w-0 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-semibold text-sm uppercase"
+                                    className="flex-1 min-w-0 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/5 transition-all font-semibold text-sm uppercase"
                                 />
                                 <button
                                     type="button"
                                     onClick={lookupPlate}
                                     disabled={lookupLoading}
                                     title="Consultar placa"
-                                    className="shrink-0 w-14 h-14 flex items-center justify-center rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white transition-all shadow-sm disabled:opacity-60"
+                                    className="shrink-0 w-14 h-14 flex items-center justify-center rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-95 text-white transition-all shadow-sm disabled:opacity-60"
                                 >
                                     {lookupLoading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
                                 </button>
@@ -1060,13 +927,13 @@ const MotorcycleInventory: React.FC<Props> = ({
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Preço de Venda</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 mt-[1px] text-emerald-700 font-bold text-sm">R$</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 mt-[1px] text-brand-700 font-bold text-sm">R$</span>
                                 <input
                                     type="text"
                                     required
                                     value={formatCurrency(form.price)}
                                     onChange={e => setForm(p => ({ ...p, price: parseCurrency(e.target.value) }))}
-                                    className={getFieldClassName('price', 'w-full p-4 pl-12 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl outline-none font-bold text-sm')}
+                                    className={getFieldClassName('price', 'w-full p-4 pl-12 bg-brand-50 text-brand-700 border border-brand-100 rounded-2xl outline-none font-bold text-sm')}
                                 />
                             </div>
                             {formErrors.price && <p className="text-[10px] font-bold text-red-500 px-1">{formErrors.price}</p>}
@@ -1081,11 +948,11 @@ const MotorcycleInventory: React.FC<Props> = ({
                                             <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Tabela FIPE</p>
                                             <p className="text-sm font-bold text-blue-700">R$ {formatCurrency(form.fipePrice)}</p>
                                         </div>
-                                        <div className={`p-3 rounded-xl border flex items-center gap-2 ${isAbove ? 'bg-orange-50 border-orange-100' : isBelow ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
-                                            {isAbove ? <TrendingUp size={16} className="text-orange-500 shrink-0" /> : isBelow ? <TrendingDown size={16} className="text-emerald-500 shrink-0" /> : <Minus size={16} className="text-slate-400 shrink-0" />}
+                                        <div className={`p-3 rounded-xl border flex items-center gap-2 ${isAbove ? 'bg-orange-50 border-orange-100' : isBelow ? 'bg-brand-50 border-brand-100' : 'bg-slate-50 border-slate-100'}`}>
+                                            {isAbove ? <TrendingUp size={16} className="text-orange-500 shrink-0" /> : isBelow ? <TrendingDown size={16} className="text-brand-500 shrink-0" /> : <Minus size={16} className="text-slate-400 shrink-0" />}
                                             <div>
                                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">vs FIPE</p>
-                                                <p className={`text-sm font-black ${isAbove ? 'text-orange-600' : isBelow ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                                <p className={`text-sm font-black ${isAbove ? 'text-orange-600' : isBelow ? 'text-brand-600' : 'text-slate-500'}`}>
                                                     {isAbove ? '+' : isBelow ? '-' : ''}{absDiff}%
                                                 </p>
                                             </div>
@@ -1102,8 +969,8 @@ const MotorcycleInventory: React.FC<Props> = ({
                             { key: 'hasWarranty', label: 'Garantia' },
                             { key: 'isIpvaPaid', label: 'IPVA Pago' },
                         ].map(({ key, label }) => (
-                            <label key={key} className={`flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${(form as any)[key] ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${(form as any)[key] ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300'}`}>
+                            <label key={key} className={`flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${(form as any)[key] ? 'bg-brand-50 border-brand-200 text-brand-700' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${(form as any)[key] ? 'bg-brand-500 border-brand-500 text-white' : 'border-slate-300'}`}>
                                     {(form as any)[key] && <Check size={12} strokeWidth={4} />}
                                 </div>
                                 <input type="checkbox" className="hidden" checked={(form as any)[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.checked }))} />
@@ -1147,7 +1014,7 @@ const MotorcycleInventory: React.FC<Props> = ({
 
                     <div className="space-y-6 pt-6 border-t border-slate-100">
                         <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                            <div className="w-1.5 h-4 bg-brand-500 rounded-full" />
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Descrições do Anúncio</h3>
                         </div>
                         
@@ -1161,7 +1028,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 onChange={e => setForm({ ...form, shortDescription: e.target.value })}
                                 placeholder="Ex: Oferta imperdível! Moto em excelente estado, revisada e com garantia. Confira agora!"
                                 maxLength={160}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-sm h-24 resize-none"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/5 transition-all font-medium text-sm h-24 resize-none"
                             />
                             <p className="text-[9px] font-medium text-slate-400 px-1 italic">Dica: Este texto aparece abaixo do título nas pesquisas do Google.</p>
                         </div>
@@ -1172,7 +1039,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 value={form.description}
                                 onChange={e => setForm({ ...form, description: e.target.value })}
                                 placeholder="Descreva detalhadamente a moto, acessórios, histórico de manutenção, etc..."
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-sm h-48 resize-none"
+                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/5 transition-all font-medium text-sm h-48 resize-none"
                             />
                         </div>
                     </div>
@@ -1218,7 +1085,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                 const active = form.optionals.includes(opt);
                                 return (
                                     <button key={opt} type="button" onClick={() => setForm(p => ({ ...p, optionals: active ? p.optionals.filter(o => o !== opt) : [...p.optionals, opt] }))}
-                                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${active ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-emerald-300'}`}>
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${active ? 'bg-brand-500 text-white border-brand-500' : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-brand-300'}`}>
                                         {opt}
                                     </button>
                                 );
@@ -1250,9 +1117,9 @@ const MotorcycleInventory: React.FC<Props> = ({
                                     )}
                                 </div>
                                 <label className="block w-full cursor-pointer group">
-                                    <div className={`max-w-[280px] w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-emerald-500 hover:bg-emerald-50'}`}>
-                                        {uploading ? <Loader2 size={16} className="animate-spin text-emerald-500" /> : <Upload size={16} className="text-slate-400 group-hover:text-emerald-500" />}
-                                        <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-emerald-600'}`}>{uploading ? 'Enviando...' : 'Fazer Upload'}</span>
+                                    <div className={`max-w-[280px] w-full py-3.5 px-6 rounded-2xl border transition-all text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-brand-500 hover:bg-brand-50'}`}>
+                                        {uploading ? <Loader2 size={16} className="animate-spin text-brand-500" /> : <Upload size={16} className="text-slate-400 group-hover:text-brand-500" />}
+                                        <span className={`text-[11px] font-black uppercase tracking-widest ${uploading ? 'text-slate-400' : 'text-slate-600 group-hover:text-brand-600'}`}>{uploading ? 'Enviando...' : 'Fazer Upload'}</span>
                                     </div>
                                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
                                 </label>
@@ -1303,7 +1170,7 @@ const MotorcycleInventory: React.FC<Props> = ({
         <div className="flex flex-col h-full space-y-6 animate-fadeIn pb-10 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-[1920px] mx-auto w-full">
             {/* Toast */}
             {notification && (
-                <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[9999] px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-wide shadow-2xl animate-fadeUp ${notification.type === 'success' ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-rose-500 text-white shadow-rose-500/30'}`}>
+                <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[9999] px-6 py-4 rounded-2xl font-bold text-sm uppercase tracking-wide shadow-2xl animate-fadeUp ${notification.type === 'success' ? 'bg-brand-500 text-white shadow-brand-500/30' : 'bg-rose-500 text-white shadow-rose-500/30'}`}>
                     {notification.type === 'success' ? '✓' : '!'} {notification.message}
                 </div>
             )}
@@ -1312,10 +1179,10 @@ const MotorcycleInventory: React.FC<Props> = ({
                 <div className="flex flex-wrap items-center justify-between gap-6 px-1">
                     <div className="flex items-center gap-3">
                         <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm">
-                            <button onClick={() => setInventoryView('available')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'available' ? 'bg-white text-emerald-600 shadow-md font-black ring-1 ring-emerald-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}>
-                                <div className={`w-2 h-2 rounded-full ${inventoryView === 'available' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                            <button onClick={() => setInventoryView('available')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'available' ? 'bg-white text-brand-600 shadow-md font-black ring-1 ring-brand-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}>
+                                <div className={`w-2 h-2 rounded-full ${inventoryView === 'available' ? 'bg-brand-500 animate-pulse' : 'bg-slate-300'}`} />
                                 <span className="text-[11px] uppercase tracking-[0.1em]">Em Estoque</span>
-                                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'available' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-200 text-slate-500'}`}>{motorcycles.filter(m => m.status === 'available').length}</span>
+                                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'available' ? 'bg-brand-50 text-brand-600' : 'bg-slate-200 text-slate-500'}`}>{motorcycles.filter(m => m.status === 'available').length}</span>
                             </button>
                             <button onClick={() => setInventoryView('sold')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'sold' ? 'bg-white text-rose-600 shadow-md font-black ring-1 ring-rose-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}>
                                 <div className={`w-2 h-2 rounded-full ${inventoryView === 'sold' ? 'bg-rose-500 animate-pulse' : 'bg-slate-300'}`} />
@@ -1335,7 +1202,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                             <Filter size={15} strokeWidth={2.5} /> Filtrar
                         </button>
 
-                        <select value={sortBy} onChange={e => setSortBy(e.target.value as 'brand' | 'a-z' | 'z-a')} className="px-5 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] hover:bg-slate-50 transition-all shadow-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10">
+                        <select value={sortBy} onChange={e => setSortBy(e.target.value as 'brand' | 'a-z' | 'z-a')} className="px-5 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] hover:bg-slate-50 transition-all shadow-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10">
                             <option value="brand">Ordenar: Marca</option>
                             <option value="a-z">Ordenar: A-Z</option>
                             <option value="z-a">Ordenar: Z-A</option>
@@ -1343,20 +1210,19 @@ const MotorcycleInventory: React.FC<Props> = ({
                     </div>
 
                     <div className="flex gap-3">
-                        <button onClick={() => { setSelected('new'); setForm(EMPTY_MOTO); }} className="flex items-center gap-2 px-7 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.12em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 ring-2 ring-emerald-500/10 ring-offset-2 ring-offset-slate-50">
+                        <button onClick={() => { setSelected('new'); setForm(EMPTY_MOTO); }} className="flex items-center gap-2 px-7 py-3 bg-brand-500 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.12em] hover:bg-brand-600 transition-all shadow-xl shadow-brand-500/20 active:scale-95 ring-2 ring-brand-500/10 ring-offset-2 ring-offset-slate-50">
                             <Plus size={16} strokeWidth={3} /> Nova Moto
                         </button>
                     </div>
                 </div>
 
                 {isFilterOpen && (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm animate-fadeUp">
-                        <div className="space-y-1.5"><label className="text-[10px] font-bold uppercase text-slate-400 px-1 block">Categoria</label><select value={filters.category} onChange={e => setFilters(f => ({ ...f, category: e.target.value }))} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none"><option value="">Todas</option>{MOTO_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
-                        <div className="space-y-1.5"><label className="text-[10px] font-bold uppercase text-slate-400 px-1 block">Ano</label><div className="flex gap-2"><input type="number" value={filters.yearMin} onChange={e => setFilters(f => ({ ...f, yearMin: e.target.value }))} placeholder="De" className="w-full px-3 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/5" /><input type="number" value={filters.yearMax} onChange={e => setFilters(f => ({ ...f, yearMax: e.target.value }))} placeholder="Até" className="w-full px-3 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/5" /></div></div>
-                        <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Mín.</label><input type="number" value={filters.priceMin} onChange={e => setFilters(f => ({ ...f, priceMin: e.target.value }))} placeholder="0" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
-                        <div className="space-y-1.5"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preço Máx.</label><input type="number" value={filters.priceMax} onChange={e => setFilters(f => ({ ...f, priceMax: e.target.value }))} placeholder="999.999" className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none" /></div>
-                        <div className="flex items-end"><button onClick={clearFilters} className="w-full py-3.5 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-slate-200 transition-all">Limpar Filtros</button></div>
-                    </div>
+                    <MotoFilters
+                        filters={filters}
+                        onChangeFilters={setFilters}
+                        clearFilters={clearFilters}
+                        motoCategories={MOTO_CATEGORIES}
+                    />
                 )}
             </div>
 

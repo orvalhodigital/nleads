@@ -74,7 +74,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onStart }) =>
             </div>
             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-indigo-600 to-emerald-500 transition-all"
+                className="h-full bg-gradient-to-r from-indigo-600 to-brand-500 transition-all"
                 style={{ width: `${(completedCount / 4) * 100}%` }}
               />
             </div>
@@ -86,19 +86,19 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onStart }) =>
               <div
                 key={item.id}
                 className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                  item.done ? 'bg-emerald-50' : 'bg-slate-50 hover:bg-slate-100'
+                  item.done ? 'bg-brand-50' : 'bg-slate-50 hover:bg-slate-100'
                 }`}
               >
                 <div
                   className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                    item.done ? 'bg-emerald-500' : 'bg-slate-300'
+                    item.done ? 'bg-brand-500' : 'bg-slate-300'
                   }`}
                 >
                   {item.done && <CheckCircle2 size={16} className="text-white" />}
                 </div>
                 <span
                   className={`text-sm font-medium ${
-                    item.done ? 'text-emerald-900 line-through' : 'text-slate-700'
+                    item.done ? 'text-brand-900 line-through' : 'text-slate-700'
                   }`}
                 >
                   {item.label}

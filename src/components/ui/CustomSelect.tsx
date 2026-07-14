@@ -63,7 +63,7 @@ const DropdownPortal: React.FC<{
                 width: pos.width,
                 zIndex: 20000,
             }}
-            className="bg-white border border-emerald-100 shadow-2xl rounded-2xl overflow-hidden animate-slideDown"
+            className="bg-white border border-brand-100 shadow-2xl rounded-2xl overflow-hidden animate-slideDown"
             onMouseDown={e => e.stopPropagation()}
         >
             {children}
@@ -125,7 +125,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 className={`
                     w-full px-4 py-3.5 bg-slate-50 border transition-all cursor-pointer flex items-center justify-between
-                    ${isOpen ? 'border-emerald-500 ring-4 ring-emerald-500/10 rounded-2xl' : 'border-slate-100 rounded-2xl hover:border-slate-200'}
+                    ${isOpen ? 'border-brand-500 ring-4 ring-brand-500/10 rounded-2xl' : 'border-slate-100 rounded-2xl hover:border-slate-200'}
                     ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}
                     ${error ? 'border-red-500 ring-red-500/10' : ''}
                     ${className}
@@ -141,7 +141,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
                 </div>
-                <ChevronDown size={18} className={`text-slate-500 transition-transform shrink-0 ${isOpen ? 'rotate-180 text-emerald-500' : ''}`} />
+                <ChevronDown size={18} className={`text-slate-500 transition-transform shrink-0 ${isOpen ? 'rotate-180 text-brand-500' : ''}`} />
             </div>
 
             {isOpen && !disabled && (
@@ -156,7 +156,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 onClick={e => e.stopPropagation()}
-                                className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-emerald-200"
+                                className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-brand-200"
                             />
                             {searchTerm && (
                                 <button
@@ -177,20 +177,20 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                                     onClick={(e) => { e.stopPropagation(); handleSelect(option.value); }}
                                     className={`
                                         px-4 py-3 rounded-xl cursor-pointer flex items-center justify-between group transition-colors
-                                        ${option.value === value ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50'}
+                                        ${option.value === value ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-50'}
                                     `}
                                 >
                                     <div className="flex items-center gap-3 truncate">
                                         {option.icon && (
-                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${option.value === value ? (option.color || 'bg-emerald-100 text-emerald-600') : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
+                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${option.value === value ? (option.color || 'bg-brand-100 text-brand-600') : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
                                                 {option.icon}
                                             </div>
                                         )}
-                                        <span className={`text-xs font-black uppercase tracking-tight truncate ${option.value === value ? 'text-emerald-700' : 'text-slate-700'}`}>
+                                        <span className={`text-xs font-black uppercase tracking-tight truncate ${option.value === value ? 'text-brand-700' : 'text-slate-700'}`}>
                                             {option.label}
                                         </span>
                                     </div>
-                                    {option.value === value && <Check size={16} className="text-emerald-600 shrink-0" />}
+                                    {option.value === value && <Check size={16} className="text-brand-600 shrink-0" />}
                                 </div>
                             ))
                         ) : (

@@ -135,7 +135,7 @@ describe('Sales Flow Integration Tests', () => {
     it('should show expiring warning with color', () => {
       const daysLeft = 5;
       const isWarning = daysLeft <= 7 && daysLeft > 0;
-      const colorClass = isWarning ? 'text-amber-600' : 'text-emerald-600';
+      const colorClass = isWarning ? 'text-amber-600' : 'text-brand-600';
 
       expect(isWarning).toBe(true);
       expect(colorClass).toContain('amber');
@@ -144,7 +144,7 @@ describe('Sales Flow Integration Tests', () => {
     it('should show expired warning with color', () => {
       const daysLeft = -2;
       const isExpired = daysLeft <= 0;
-      const colorClass = isExpired ? 'text-red-600' : 'text-emerald-600';
+      const colorClass = isExpired ? 'text-red-600' : 'text-brand-600';
 
       expect(isExpired).toBe(true);
       expect(colorClass).toContain('red');

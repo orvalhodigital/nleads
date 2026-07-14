@@ -17,7 +17,7 @@ const IS_SYSTEM_DOMAIN = isSystemHost(window.location.hostname);
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
       <p className="text-slate-400 text-sm font-medium animate-pulse">Carregando...</p>
     </div>
   </div>
@@ -30,6 +30,7 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const InventoryPage = lazy(() => import('./pages/InventoryPage'));
 const LeadsPage = lazy(() => import('./pages/LeadsPage'));
+const MotorcyclesPage = lazy(() => import('./pages/MotorcyclesPage'));
 const SalesClosedPage = lazy(() => import('./pages/SalesClosedPage'));
 const SalesFlowPage = lazy(() => import('./pages/SalesFlowPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
@@ -82,6 +83,7 @@ const App: React.FC = () => {
                     <Route path="inventory" element={<InventoryPage />} />
                     <Route path="inventory/new" element={<VehicleFormPage />} />
                     <Route path="inventory/edit/:id" element={<VehicleFormPage />} />
+                    <Route path="motorcycles" element={<MotorcyclesPage />} />
                     <Route path="leads" element={<LeadsPage />} />
                     <Route path="leads/new" element={<LeadFormPage />} />
                     <Route path="leads/edit/:id" element={<LeadFormPage />} />

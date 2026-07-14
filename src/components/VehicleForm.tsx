@@ -15,6 +15,9 @@ import AutocompleteInput from './ui/AutocompleteInput';
 import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
 import { useToast } from '../contexts/ToastContext';
 import { generateSeoDetails } from '../services/geminiService';
+import { VehicleFormSeo } from './vehicle-form/VehicleFormSeo';
+import { VehicleFormCosts } from './vehicle-form/VehicleFormCosts';
+import { VehicleFormPricing } from './vehicle-form/VehicleFormPricing';
 
 interface VehicleFormProps {
     initialData?: Vehicle;
@@ -969,246 +972,42 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
                 {/* ── TAB 2: SEO & META TAGS ────────────────────────────────────── */}
                 {activeTab === 'seo' && (
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8 animate-fadeUp">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                            <div>
-                                <h3 className="text-lg font-black text-slate-900">Otimização para Mecanismos de Busca (SEO)</h3>
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wide">Indexação Google & IA</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={handleGenerateAI}
-                                disabled={aiGenerating}
-                                className="px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                            >
-                                {aiGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                                Gerar com IA
-                            </button>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">SEO Headline (Título no Google)</label>
-                                <input
-                                    type="text"
-                                    value={formData.seoHeadline || ''}
-                                    onChange={e => setFormData({ ...formData, seoHeadline: e.target.value })}
-                                    maxLength={70}
-                                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
-                                    placeholder="Ex: Compre Chevrolet Onix 1.6 Flex 2022 Conservado | Nome Concessionária"
-                                />
-                                <span className="text-[9px] font-bold text-slate-300 block text-right">{(formData.seoHeadline || '').length}/70 caracteres recomendados</span>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Meta Descrição (Snippet de Busca)</label>
-                                <textarea
-                                    value={formData.seoDescription || ''}
-                                    onChange={e => setFormData({ ...formData, seoDescription: e.target.value })}
-                                    maxLength={160}
-                                    className="w-full p-4 h-32 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
-                                    placeholder="Ex: Oferta imperdível de Onix 2022! Câmbio automático, laudo cautelar aprovado e garantia de 90 dias. Confira as condições exclusivas de financiamento..."
-                                />
-                                <span className="text-[9px] font-bold text-slate-300 block text-right">{(formData.seoDescription || '').length}/160 caracteres recomendados</span>
-                            </div>
-                        </div>
-
-                        {/* Google Preview Widget */}
-                        <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">Prévia no Google Search</p>
-                            <div className="space-y-1">
-                                <p className="text-[11px] text-slate-500 font-medium font-sans">https://sualoja.com.br/estoque/{formData.model?.toLowerCase() || 'veiculo'}</p>
-                                <h4 className="text-indigo-600 font-sans hover:underline text-lg font-medium leading-snug cursor-pointer">
-                                    {formData.seoHeadline || `${formData.brand} ${formData.model} ${formData.year} à Venda - Loja`}
-                                </h4>
-                                <p className="text-slate-600 text-xs font-sans leading-relaxed">
-                                    {formData.seoDescription || 'Confira os opcionais, quilometragem, fotos e preço e agende uma visita agora mesmo para simular o financiamento...'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    <VehicleFormSeo
+                        formData={formData}
+                        setFormData={setFormData}
+                        handleGenerateAI={handleGenerateAI}
+                        aiGenerating={aiGenerating}
+                    />
                 )}
 
                 {/* ── TAB 3: CUSTOS OPERACIONAIS ────────────────────────────────── */}
                 {activeTab === 'custos' && (
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8 animate-fadeUp">
-                        <div>
-                            <h3 className="text-lg font-black text-slate-900">Custos Operacionais do Veículo</h3>
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wide">Reparos, Impostos, Preparação e Mídia</p>
-                        </div>
-
-                        {/* Fast inserts buttons */}
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Adicionar Custos Frequentes</p>
-                            <div className="flex flex-wrap gap-2">
-                                {[
-                                    { label: 'Tráfego Pago / Mídia', amount: 150 },
-                                    { label: 'Oficina Mecânica', amount: 500 },
-                                    { label: 'Peças de Reposição', amount: 350 },
-                                    { label: 'Pintura', amount: 400 },
-                                    { label: 'Polimento', amount: 180 },
-                                    { label: 'Lavagem Detalhada', amount: 80 },
-                                    { label: 'Documentação / IPVA', amount: 600 }
-                                ].map((item, idx) => (
-                                    <button
-                                        type="button"
-                                        key={idx}
-                                        onClick={() => addOperationalCost(item.label, item.amount)}
-                                        className="px-4 py-2.5 bg-slate-50 border border-slate-100 hover:border-violet-500 hover:bg-violet-50/20 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-                                    >
-                                        <PlusCircle size={14} className="text-violet-600" />
-                                        {item.label} (R$ {item.amount})
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Custom inputs */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Descrição do Custo</label>
-                                <input
-                                    type="text"
-                                    value={newCostDesc}
-                                    onChange={e => setNewCostDesc(e.target.value)}
-                                    placeholder="Ex: Troca de pastilhas"
-                                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Valor (R$)</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">R$</span>
-                                    <input
-                                        type="text"
-                                        value={formatCurrency(newCostAmount)}
-                                        onChange={e => setNewCostAmount(parseCurrency(e.target.value))}
-                                        className="w-full p-4 pl-12 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex items-end">
-                                <button
-                                    type="button"
-                                    onClick={() => addOperationalCost(newCostDesc, newCostAmount)}
-                                    className="w-full py-4 bg-slate-900 text-white hover:bg-violet-600 rounded-2xl font-black text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                                >
-                                    <Plus size={16} /> Adicionar Custo
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Costs list */}
-                        <div className="pt-6 border-t border-slate-100 space-y-4">
-                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Histórico de Custos Adicionados</p>
-                            
-                            {(!formData.operationalCosts || formData.operationalCosts.length === 0) ? (
-                                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p className="text-slate-400 font-medium text-xs uppercase tracking-wider">Nenhum custo operacional lançado para este veículo.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
-                                    {formData.operationalCosts.map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-                                            <div>
-                                                <p className="text-xs font-black text-slate-800">{item.description}</p>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.date}</p>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-xs font-black text-slate-900">R$ {formatCurrency(item.amount)}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeOperationalCost(item.id)}
-                                                    className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors cursor-pointer"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Total summary */}
-                            <div className="flex justify-between items-center p-6 bg-slate-900 text-white rounded-3xl mt-4">
-                                <span className="text-xs font-black uppercase tracking-widest text-slate-400">Total de Custos de Preparação</span>
-                                <span className="text-2xl font-black">R$ {formatCurrency(totalCosts)}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <VehicleFormCosts
+                        formData={formData}
+                        newCostDesc={newCostDesc}
+                        setNewCostDesc={setNewCostDesc}
+                        newCostAmount={newCostAmount}
+                        setNewCostAmount={setNewCostAmount}
+                        addOperationalCost={addOperationalCost}
+                        removeOperationalCost={removeOperationalCost}
+                        formatCurrency={formatCurrency}
+                        parseCurrency={parseCurrency}
+                        totalCosts={totalCosts}
+                    />
                 )}
 
                 {/* ── TAB 4: COMPRA E VENDA ────────────────────────────────────── */}
                 {activeTab === 'compra_venda' && (
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8 animate-fadeUp">
-                        <div>
-                            <h3 className="text-lg font-black text-slate-900">Configuração de Valores Comerciais</h3>
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wide">Cálculo de Margem & Sugestão de Preço</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Preço de Compra */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Valor Pago no Veículo (Compra)</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">R$</span>
-                                    <input
-                                        type="text"
-                                        value={formatCurrency(formData.purchasePrice || 0)}
-                                        onChange={e => setFormData({ ...formData, purchasePrice: parseCurrency(e.target.value) })}
-                                        className="w-full p-4 pl-12 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
-                                    />
-                                </div>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Custo de Aquisição Inicial</p>
-                            </div>
-
-                            {/* Custos Operacionais */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Custos de Preparação (Total)</label>
-                                <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl h-[54px] flex items-center">
-                                    <p className="text-sm font-bold text-slate-700">R$ {formatCurrency(totalCosts)}</p>
-                                </div>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Soma da aba de custos</p>
-                            </div>
-
-                            {/* Preço Sugerido */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço Sugerido de Venda</label>
-                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl h-[54px] flex items-center justify-between">
-                                    <span className="text-sm font-black text-indigo-700">R$ {formatCurrency(formData.suggestedSalePrice || calculatedSuggestedPrice)}</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, price: formData.suggestedSalePrice || calculatedSuggestedPrice })}
-                                        className="text-[9px] font-black uppercase text-indigo-600 bg-white border border-indigo-200 px-3 py-1 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer"
-                                    >
-                                        Usar Sugestão
-                                    </button>
-                                </div>
-                                <p className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest px-1 flex items-center gap-1">
-                                    <Sparkles size={10} /> Sugerido com margem de 20%
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Definição de preço final de venda */}
-                        <div className="pt-6 border-t border-slate-100 space-y-4">
-                            <div className="space-y-2" id="field-price">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Preço Final de Venda (Anunciado)</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-violet-700 font-bold text-sm">R$</span>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formatCurrency(formData.price)}
-                                        onChange={e => setFormData({ ...formData, price: parseCurrency(e.target.value) })}
-                                        className={getFieldClassName('price', 'w-full p-5 pl-12 bg-violet-50 text-violet-700 border border-violet-100 rounded-2xl outline-none font-black text-lg')}
-                                    />
-                                </div>
-                                {errors.price && <p className="text-[10px] font-bold text-red-500 px-1">{errors.price}</p>}
-                                <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest px-1">Este valor aparecerá no seu website e propostas</p>
-                            </div>
-                        </div>
-                    </div>
+                    <VehicleFormPricing
+                        formData={formData}
+                        setFormData={setFormData}
+                        formatCurrency={formatCurrency}
+                        parseCurrency={parseCurrency}
+                        totalCosts={totalCosts}
+                        calculatedSuggestedPrice={calculatedSuggestedPrice}
+                        errors={errors}
+                        getFieldClassName={getFieldClassName}
+                    />
                 )}
             </form>
 

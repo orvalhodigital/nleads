@@ -9,7 +9,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onGetStarted }) => {
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-500 -z-10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-brand-500 -z-10" />
       <div className="absolute inset-0 opacity-10 -z-10">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl" />
@@ -37,7 +37,7 @@ const CTASection: React.FC<CTASectionProps> = ({ onGetStarted }) => {
         {/* CTA Button */}
         <button
           onClick={onGetStarted}
-          className="inline-flex items-center gap-2 px-10 py-5 bg-white text-emerald-600 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all shadow-2xl active:scale-95 mb-6"
+          className="inline-flex items-center gap-2 px-10 py-5 bg-white text-brand-600 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all shadow-2xl active:scale-95 mb-6"
         >
           Começar Grátis Agora
           <ArrowRight size={24} />

@@ -50,10 +50,16 @@ CREATE POLICY "Admins can read all audit logs" ON admin_audit_logs
     )
   );
 
--- Política: Sistema (service role) pode inserir
-CREATE POLICY "Service role can insert audit logs" ON admin_audit_logs
+-- Política: Apenas admins podem inserir logs para si mesmos
+CREATE POLICY "Admins can insert audit logs for themselves" ON admin_audit_logs
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    auth.uid() = admin_id AND
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
 ```
 
 ### Step 3: Verificar

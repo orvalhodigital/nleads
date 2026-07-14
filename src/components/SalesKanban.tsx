@@ -17,7 +17,7 @@ interface SalesKanbanProps {
 const PHASES: { id: SalePhase; name: string; color: string; bgColor: string }[] = [
   { id: 'documentacao', name: '📋 Documentação', color: 'bg-blue-500', bgColor: 'bg-blue-50' },
   { id: 'entrega', name: '🚚 Entrega', color: 'bg-orange-500', bgColor: 'bg-orange-50' },
-  { id: 'em_garantia', name: '⏱️ Em Garantia', color: 'bg-emerald-500', bgColor: 'bg-emerald-50' },
+  { id: 'em_garantia', name: '⏱️ Em Garantia', color: 'bg-brand-500', bgColor: 'bg-brand-50' },
   { id: 'apos_garantia', name: '📞 Pós-Venda', color: 'bg-purple-500', bgColor: 'bg-purple-50' },
 ];
 
@@ -216,13 +216,13 @@ const SalesCard: React.FC<SalesCardProps> = ({ lead, guaranteeConfigs, phase }) 
 
       {warranty && phase === 'em_garantia' && (
         <div className={`p-2 rounded-lg border ${
-          isWarrantyExpired ? 'bg-red-50 border-red-200' : isWarrantyExpiring ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'
+          isWarrantyExpired ? 'bg-red-50 border-red-200' : isWarrantyExpiring ? 'bg-amber-50 border-amber-200' : 'bg-brand-50 border-brand-200'
         }`}>
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <p className="text-[10px] font-bold text-slate-700 truncate">{warranty.name}</p>
               {daysLeft !== null && (
-                <p className={`text-[10px] font-bold mt-1 ${isWarrantyExpired ? 'text-red-600' : isWarrantyExpiring ? 'text-amber-600' : 'text-emerald-600'}`}>
+                <p className={`text-[10px] font-bold mt-1 ${isWarrantyExpired ? 'text-red-600' : isWarrantyExpiring ? 'text-amber-600' : 'text-brand-600'}`}>
                   {isWarrantyExpired ? '❌ Vencida' : daysLeft === 0 ? '⚠️ Vence hoje' : `${daysLeft}d restante${daysLeft !== 1 ? 's' : ''}`}
                 </p>
               )}

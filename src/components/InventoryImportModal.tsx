@@ -583,7 +583,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                 <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <div>
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase flex items-center gap-3">
-                            <Database className="text-emerald-500" />
+                            <Database className="text-brand-500" />
                             Importação de Estoque
                         </h2>
                         <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wide">
@@ -604,23 +604,23 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                     {step === 'upload' && (
                         <div className="h-full flex flex-col items-center justify-center gap-8">
                             <div className="text-center space-y-2">
-                                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto mb-4">
+                                <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center text-brand-500 mx-auto mb-4">
                                     <FileSpreadsheet size={40} />
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-900">Faça o upload da sua planilha</h3>
                                 <p className="text-slate-400 max-w-md mx-auto">
                                     Para garantir a importação correta, utilize nosso modelo padrão.
                                 </p>
-                                <button onClick={downloadTemplate} className="text-sm font-bold text-emerald-600 hover:underline">
+                                <button onClick={downloadTemplate} className="text-sm font-bold text-brand-600 hover:underline">
                                     Baixar modelo (.xlsx)
                                 </button>
                             </div>
 
                             <label className="cursor-pointer group">
-                                <div className="px-10 py-16 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 group-hover:bg-emerald-50/30 group-hover:border-emerald-300 transition-all text-center">
+                                <div className="px-10 py-16 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50 group-hover:bg-brand-50/30 group-hover:border-brand-300 transition-all text-center">
                                     {loading ? (
                                         <div className="space-y-4">
-                                            <span className="text-emerald-600 font-black text-2xl block animate-pulse">
+                                            <span className="text-brand-600 font-black text-2xl block animate-pulse">
                                                 {importProgress.total > 0 
                                                     ? `${Math.round((importProgress.current / importProgress.total) * 100)}%`
                                                     : 'Processando...'
@@ -628,7 +628,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                                             </span>
                                             <div className="w-64 h-2 bg-slate-100 rounded-full overflow-hidden mx-auto">
                                                 <div 
-                                                    className="h-full bg-emerald-500 transition-all duration-300"
+                                                    className="h-full bg-brand-500 transition-all duration-300"
                                                     style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }}
                                                 />
                                             </div>
@@ -638,8 +638,8 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                                         </div>
                                     ) : (
                                         <>
-                                            <Upload className="mx-auto text-slate-300 group-hover:text-emerald-500 mb-4 transition-colors" size={32} />
-                                            <span className="block text-slate-500 font-bold uppercase text-sm group-hover:text-emerald-700">Clique para selecionar arquivo</span>
+                                            <Upload className="mx-auto text-slate-300 group-hover:text-brand-500 mb-4 transition-colors" size={32} />
+                                            <span className="block text-slate-500 font-bold uppercase text-sm group-hover:text-brand-700">Clique para selecionar arquivo</span>
                                         </>
                                     )}
                                 </div>
@@ -659,12 +659,12 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle size={20} className="text-emerald-500" />
+                                    <CheckCircle size={20} className="text-brand-500" />
                                     <span className="font-bold text-slate-700">{newVehicles.length} Novos Veículos Detectados</span>
                                 </div>
                                 <button
                                     onClick={() => setSelectedNewIds(selectedNewIds.size === newVehicles.length ? new Set() : new Set(newVehicles.map(v => v.importId)))}
-                                    className="text-xs font-bold text-emerald-600 hover:underline uppercase"
+                                    className="text-xs font-bold text-brand-600 hover:underline uppercase"
                                 >
                                     {selectedNewIds.size === newVehicles.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
                                 </button>
@@ -672,24 +672,24 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
 
                             <div className="space-y-3">
                                 {newVehicles.map(v => (
-                                    <div key={v.importId} className={`p-4 rounded-xl border flex items-center justify-between transition-all ${selectedNewIds.has(v.importId) ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-100 opacity-60'}`}>
+                                    <div key={v.importId} className={`p-4 rounded-xl border flex items-center justify-between transition-all ${selectedNewIds.has(v.importId) ? 'bg-brand-50 border-brand-200' : 'bg-white border-slate-100 opacity-60'}`}>
                                         <div className="flex items-center gap-4">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedNewIds.has(v.importId)}
                                                 onChange={() => toggleNewSelection(v.importId)}
-                                                className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                                className="w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                                             />
                                             <div>
                                                 <p className="font-bold text-slate-800">{v.brand} {v.model}</p>
                                                 <div className="flex gap-3 text-xs text-slate-500 font-medium">
                                                     <span>{v.year}</span>
                                                     <span>{v.plate}</span>
-                                                    <span className="text-emerald-600">R$ {formatCurrency(v.price)}</span>
+                                                    <span className="text-brand-600">R$ {formatCurrency(v.price)}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="px-3 py-1 bg-white text-emerald-600 text-[10px] font-bold uppercase rounded border border-emerald-100">
+                                        <div className="px-3 py-1 bg-white text-brand-600 text-[10px] font-bold uppercase rounded border border-brand-100">
                                             Importar
                                         </div>
                                     </div>
@@ -748,7 +748,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                                                     type="checkbox"
                                                     checked={isSelected}
                                                     onChange={() => toggleMissingSelection(v.id)}
-                                                    className="mt-1 w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                                    className="mt-1 w-5 h-5 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                                                 />
                                                 <div className="flex-1">
                                                     <div className="flex justify-between">
@@ -756,7 +756,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                                                             <p className="font-bold text-slate-800">{v.brand} {v.model}</p>
                                                             <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{v.plate}</span>
                                                         </div>
-                                                        <p className="font-bold text-emerald-600">R$ {formatCurrency(v.price)}</p>
+                                                        <p className="font-bold text-brand-600">R$ {formatCurrency(v.price)}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -836,7 +836,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
 
                     {step === 'missing_vehicles' && (
                         <>
-                            <button onClick={handleProcessMissing} disabled={loading} className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all">
+                            <button onClick={handleProcessMissing} disabled={loading} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 shadow-lg shadow-brand-500/20 transition-all">
                                 {loading ? 'Processando...' : 'Finalizar Importação'}
                             </button>
                         </>

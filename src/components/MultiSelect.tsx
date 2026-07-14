@@ -41,7 +41,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ label, options, value, onChan
                     <button
                         type="button"
                         onClick={handleSelectAll}
-                        className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider hover:text-emerald-600 transition-colors"
+                        className="text-[9px] font-bold text-brand-500 uppercase tracking-wider hover:text-brand-600 transition-colors"
                     >
                         {isAllSelected ? 'Desmarcar Todos' : 'Marcar Todos'}
                     </button>
@@ -57,8 +57,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({ label, options, value, onChan
                             type="button"
                             onClick={() => toggleOption(option)}
                             className={`px-3 py-1.5 rounded-lg border text-xs font-bold uppercase transition-all flex items-center gap-2 ${isSelected
-                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20'
-                                : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-emerald-300 hover:text-emerald-600'
+                                ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20'
+                                : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-brand-300 hover:text-brand-600'
                                 }`}
                         >
                             {isSelected && <Check size={12} strokeWidth={4} />}

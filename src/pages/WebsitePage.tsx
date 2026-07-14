@@ -10,7 +10,7 @@ const WebsitePage: React.FC = () => {
         return (
             <div className="flex-1 flex items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+                    <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
                     <p className="text-slate-400 font-bold text-sm animate-pulse">Carregando Motor de Temas...</p>
                 </div>
             </div>

@@ -295,9 +295,9 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     amber: { columnBg: 'bg-amber-50/50', headerBg: 'bg-amber-100/50', border: 'border-amber-200', bgIcon: 'bg-amber-100', textStrong: 'text-slate-900', btnBg: 'bg-amber-500', bgSection: 'bg-amber-50/50' },
     sky: { columnBg: 'bg-slate-200/40', headerBg: 'bg-sky-100/50', border: 'border-sky-200', bgIcon: 'bg-sky-100', textStrong: 'text-slate-900', btnBg: 'bg-sky-500', bgSection: 'bg-sky-50/50' },
     indigo: { columnBg: 'bg-slate-200/40', headerBg: 'bg-indigo-100/50', border: 'border-indigo-200', bgIcon: 'bg-indigo-100', textStrong: 'text-slate-900', btnBg: 'bg-indigo-600', bgSection: 'bg-indigo-50/50' },
-    emerald: { columnBg: 'bg-emerald-50/40', headerBg: 'bg-emerald-100/50', border: 'border-emerald-200', bgIcon: 'bg-emerald-100', textStrong: 'text-slate-900', btnBg: 'bg-emerald-500', bgSection: 'bg-emerald-50/50' },
+    emerald: { columnBg: 'bg-brand-50/40', headerBg: 'bg-brand-100/50', border: 'border-brand-200', bgIcon: 'bg-brand-100', textStrong: 'text-slate-900', btnBg: 'bg-brand-500', bgSection: 'bg-brand-50/50' },
     violet: { columnBg: 'bg-violet-50/50', headerBg: 'bg-violet-100/50', border: 'border-violet-200', bgIcon: 'bg-violet-100', textStrong: 'text-slate-900', btnBg: 'bg-violet-500', bgSection: 'bg-violet-50/50' },
-    green: { columnBg: 'bg-emerald-100/30', headerBg: 'bg-emerald-200/50', border: 'border-emerald-300', bgIcon: 'bg-emerald-200', textStrong: 'text-slate-900', btnBg: 'bg-emerald-600', bgSection: 'bg-emerald-100/40' },
+    green: { columnBg: 'bg-brand-100/30', headerBg: 'bg-brand-200/50', border: 'border-brand-300', bgIcon: 'bg-brand-200', textStrong: 'text-slate-900', btnBg: 'bg-brand-600', bgSection: 'bg-brand-100/40' },
     rose: { columnBg: 'bg-rose-50/50', headerBg: 'bg-rose-100/50', border: 'border-rose-200', bgIcon: 'bg-rose-100', textStrong: 'text-slate-900', btnBg: 'bg-rose-500', bgSection: 'bg-rose-50/60' },
     slate: { columnBg: 'bg-slate-100', headerBg: 'bg-slate-200/80', border: 'border-slate-300', bgIcon: 'bg-slate-300', textStrong: 'text-slate-900', btnBg: 'bg-slate-600', bgSection: 'bg-slate-200/50' },
   };
@@ -356,7 +356,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       onClick={() => !snapshot.isDragging && navigate(`/leads/${lead.id}`)}
-                                      className={`group bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 cursor-grab active:cursor-grabbing ${snapshot.isDragging ? 'shadow-xl ring-1 ring-emerald-500/50' : ''} shrink-0`}
+                                      className={`group bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 cursor-grab active:cursor-grabbing ${snapshot.isDragging ? 'shadow-xl ring-1 ring-brand-500/50' : ''} shrink-0`}
                                       style={provided.draggableProps.style}
                                     >
                                       <div className="flex items-center gap-2.5 mb-2 relative">
@@ -379,12 +379,12 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                                       </div>
                                       <div className="space-y-1.5 mb-2.5">
                                         {lead.preferences.interesse_carro && (lead.preferences.carro_valor_max || lead.preferences.valor_maximo) && (
-                                          <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-brand-50/50 rounded-xl border border-brand-100/50">
                                             <div className="flex items-center gap-1.5">
-                                              <Car size={10} className="text-emerald-500" />
-                                              <span className="text-[8px] font-black text-emerald-600 uppercase tracking-wider">Carro</span>
+                                              <Car size={10} className="text-brand-500" />
+                                              <span className="text-[8px] font-black text-brand-600 uppercase tracking-wider">Carro</span>
                                             </div>
-                                            <span className="text-[10px] font-black text-emerald-700">R$ {formatCurrency(lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 0)}</span>
+                                            <span className="text-[10px] font-black text-brand-700">R$ {formatCurrency(lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 0)}</span>
                                           </div>
                                         )}
                                         {lead.preferences.interesse_moto && lead.preferences.moto_valor_max && (
@@ -419,7 +419,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                           {provided.placeholder}
                           {loadingLeads && (
                             <div className="flex justify-center p-4">
-                              <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                              <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                             </div>
                           )}
                         </div>
@@ -443,7 +443,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
                 <th className="p-5 w-16 text-center">
-                  <input type="checkbox" checked={selectedLeadIds.size === visibleLeads.length && visibleLeads.length > 0} onChange={toggleAllVisible} className="rounded-md border-slate-300 text-emerald-600" />
+                  <input type="checkbox" checked={selectedLeadIds.size === visibleLeads.length && visibleLeads.length > 0} onChange={toggleAllVisible} className="rounded-md border-slate-300 text-brand-600" />
                 </th>
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cliente</th>
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fase Atual</th>
@@ -459,13 +459,13 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 return (
                   <tr key={lead.id} onClick={() => navigate(`/leads/${lead.id}`)} className="hover:bg-slate-50/30 transition-all cursor-pointer group/row">
                     <td className="p-5 text-center" onClick={e => e.stopPropagation()}>
-                      <input type="checkbox" checked={selectedLeadIds.has(lead.id)} onChange={() => toggleLeadSelection(lead.id)} className="rounded-md border-slate-200 text-emerald-600" />
+                      <input type="checkbox" checked={selectedLeadIds.has(lead.id)} onChange={() => toggleLeadSelection(lead.id)} className="rounded-md border-slate-200 text-brand-600" />
                     </td>
                     <td className="p-5">
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-xl ${colors.btnBg} text-white flex items-center justify-center font-bold uppercase text-xs shadow-sm`}>{lead.name.charAt(0)}</div>
                         <div>
-                          <p className="text-sm font-bold text-slate-900 group-hover/row:text-emerald-600 transition-colors">{lead.name}</p>
+                          <p className="text-sm font-bold text-slate-900 group-hover/row:text-brand-600 transition-colors">{lead.name}</p>
                           <span className="text-[10px] font-semibold text-slate-400">{lead.phone} • {lead.source}</span>
                         </div>
                       </div>
@@ -539,7 +539,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
               <select
                 value={filterVendedor}
                 onChange={e => setFilterVendedor(e.target.value)}
-                className="px-4 py-3 bg-white border border-slate-100 rounded-xl text-[11px] font-bold text-slate-600 uppercase tracking-wide focus:outline-none focus:border-emerald-400 transition-all"
+                className="px-4 py-3 bg-white border border-slate-100 rounded-xl text-[11px] font-bold text-slate-600 uppercase tracking-wide focus:outline-none focus:border-brand-400 transition-all"
               >
                 <option value="all">Todos os vendedores</option>
                 {teamMembers.map(m => (
@@ -550,7 +550,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
           </div>
           <div className="flex gap-2">
             <button onClick={() => setIsImportModalOpen(true)} className="px-5 py-3 bg-white border border-slate-100 text-slate-900 rounded-xl text-[11px] font-bold uppercase">Importar</button>
-            <button onClick={() => navigate('/leads/new')} className="px-6 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-bold uppercase shadow-md active:scale-95">Novo Lead</button>
+            <button onClick={() => navigate('/leads/new')} className="px-6 py-3 bg-brand-500 text-white rounded-xl text-[11px] font-bold uppercase shadow-md active:scale-95">Novo Lead</button>
           </div>
         </div>
       </div>

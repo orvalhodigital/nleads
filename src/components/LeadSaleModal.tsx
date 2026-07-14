@@ -150,7 +150,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                 {/* Header */}
                 <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div className="flex items-center gap-4 flex-1">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <div className="w-12 h-12 rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-lg shadow-brand-500/20">
                             <DollarSign size={24} />
                         </div>
                         <div className="flex-1">
@@ -195,7 +195,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                 <input
                                     type="text"
                                     placeholder="Nome completo"
-                                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all"
+                                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-all"
                                     value={walkInName}
                                     onChange={e => setWalkInName(e.target.value)}
                                 />
@@ -205,7 +205,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                 <input
                                     type="tel"
                                     placeholder="(11) 99999-9999"
-                                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all"
+                                    className="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-all"
                                     value={walkInPhone}
                                     onChange={e => setWalkInPhone(e.target.value)}
                                 />
@@ -221,7 +221,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                             <input
                                 type="text"
                                 placeholder="Buscar no estoque por marca, modelo ou placa..."
-                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 transition-all"
+                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:border-brand-500 transition-all"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
@@ -236,11 +236,11 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                         if (salePrice === 0) setSalePrice(v.price);
                                     }}
                                     className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between group
-                                        ${selectedVehicleId === v.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-white hover:border-emerald-200'}
+                                        ${selectedVehicleId === v.id ? 'border-brand-500 bg-brand-50' : 'border-slate-100 bg-white hover:border-brand-200'}
                                     `}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedVehicleId === v.id ? 'bg-emerald-500 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-500'}`}>
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedVehicleId === v.id ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-brand-100 group-hover:text-brand-500'}`}>
                                             <Car size={24} />
                                         </div>
                                         <div>
@@ -249,7 +249,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                         </div>
                                     </div>
                                     {selectedVehicleId === v.id && (
-                                        <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                                        <div className="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center">
                                             <Check size={14} />
                                         </div>
                                     )}
@@ -271,7 +271,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                 <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                 <input
                                     type="text"
-                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-emerald-500 transition-all"
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-brand-500 transition-all"
                                     value={formatCurrency(salePrice)}
                                     onChange={e => setSalePrice(parseCurrency(e.target.value))}
                                 />
@@ -284,7 +284,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                 <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                 <input
                                     type="text"
-                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-emerald-500 transition-all"
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-brand-500 transition-all"
                                     value={formatCurrency(refurbishmentCosts)}
                                     onChange={e => setRefurbishmentCosts(parseCurrency(e.target.value))}
                                 />
@@ -300,7 +300,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                                     <CustomDatePicker
                                         value={saleDate}
                                         onChange={(date) => setSaleDate(date)}
-                                        className="w-full pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-emerald-500 transition-all cursor-pointer"
+                                        className="w-full pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black text-slate-900 outline-none focus:border-brand-500 transition-all cursor-pointer"
                                     />
                                 </div>
                             </div>
@@ -320,7 +320,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                     <button
                         onClick={handleConfirm}
                         disabled={isSubmitting || !selectedVehicleId || salePrice <= 0}
-                        className="flex-[2] py-5 bg-emerald-500 text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-500/30 hover:bg-emerald-600 disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-3"
+                        className="flex-[2] py-5 bg-brand-500 text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-500/30 hover:bg-brand-600 disabled:opacity-50 disabled:grayscale transition-all flex items-center justify-center gap-3"
                     >
                         {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Check size={20} />}
                         Finalizar Venda

@@ -177,7 +177,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
 
                             <section className="space-y-6">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                                    <div className="w-1.5 h-6 bg-brand-500 rounded-full" />
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Informações Básicas</h3>
                                 </div>
 
@@ -188,7 +188,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                             required
                                             value={leadForm.name}
                                             onChange={e => setLeadForm({ ...leadForm, name: e.target.value })}
-                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-emerald-500/30 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-brand-500/30 outline-none focus:ring-4 focus:ring-brand-500/5 transition-all"
                                             placeholder="Ex: João Silva"
                                         />
                                     </div>
@@ -198,7 +198,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                             required
                                             value={leadForm.phone}
                                             onChange={e => setLeadForm({ ...leadForm, phone: e.target.value })}
-                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-emerald-500/30 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-brand-500/30 outline-none focus:ring-4 focus:ring-brand-500/5 transition-all"
                                             placeholder="(00) 00000-0000"
                                         />
                                     </div>
@@ -210,7 +210,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                         type="email"
                                         value={leadForm.email}
                                         onChange={e => setLeadForm({ ...leadForm, email: e.target.value })}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-emerald-500/30 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-brand-500/30 outline-none focus:ring-4 focus:ring-brand-500/5 transition-all"
                                         placeholder="email@exemplo.com"
                                     />
                                 </div>
@@ -228,7 +228,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                                 type="button"
                                                 onClick={() => setLeadForm({ ...leadForm, phase: p as LeadPhase })}
                                                 className={`px-4 py-2.5 rounded-xl border font-black text-[10px] uppercase tracking-widest transition-all ${leadForm.phase === p
-                                                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20 active:scale-95'
+                                                    ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20 active:scale-95'
                                                     : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                                     }`}
                                             >
@@ -241,7 +241,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
 
                             <section className="space-y-8 pt-6 border-t border-slate-100">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                                    <div className="w-1.5 h-6 bg-brand-500 rounded-full" />
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Qualificação e Origem</h3>
                                 </div>
 
@@ -254,7 +254,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                                 type="button"
                                                 onClick={() => setLeadForm({ ...leadForm, temperature: temp })}
                                                 className={`py-4 px-2 rounded-2xl border font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${leadForm.temperature === temp
-                                                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 active:scale-95'
+                                                    ? 'bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20 active:scale-95'
                                                     : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
                                                     }`}
                                             >
@@ -272,7 +272,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                     <select
                                         value={leadForm.source}
                                         onChange={e => setLeadForm({ ...leadForm, source: e.target.value })}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all appearance-none"
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white outline-none focus:ring-4 focus:ring-brand-500/5 transition-all appearance-none"
                                     >
                                         {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
@@ -282,7 +282,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                             <section className="space-y-8 bg-slate-50/50 p-8 rounded-[40px] border border-slate-100">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                                        <div className="w-1.5 h-6 bg-brand-500 rounded-full" />
                                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Perfil de Interesse</h3>
                                     </div>
                                     <div className="flex gap-2">
@@ -308,7 +308,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                     {leadForm.preferences.interesse_carro && (
                                         <div className="space-y-6 p-6 bg-white rounded-3xl border border-slate-100 animate-fadeIn">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Target size={14} className="text-emerald-500" />
+                                                <Target size={14} className="text-brand-500" />
                                                 <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Interesse em Carros</h4>
                                             </div>
                                             
@@ -352,7 +352,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                                         type="text"
                                                         value={formatCurrency(leadForm.preferences.carro_valor_max)}
                                                         onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, carro_valor_max: parseCurrency(e.target.value) } })}
-                                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-emerald-500/30 outline-none transition-all"
+                                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white focus:border-brand-500/30 outline-none transition-all"
                                                         placeholder="R$ 0,00"
                                                     />
                                                 </div>
@@ -472,7 +472,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
 
                             <section className="space-y-6">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                                    <div className="w-1.5 h-6 bg-brand-500 rounded-full" />
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Informações Complementares</h3>
                                 </div>
 
@@ -481,7 +481,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                     <textarea
                                         value={leadForm.preferences.observacoes_adicionais}
                                         onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, observacoes_adicionais: e.target.value } })}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all min-h-[120px] resize-none"
+                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm focus:bg-white outline-none focus:ring-4 focus:ring-brand-500/5 transition-all min-h-[120px] resize-none"
                                         placeholder="Alguma nota importante sobre o cliente ou negociação..."
                                     />
                                 </div>
@@ -489,7 +489,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 cursor-pointer transition-all hover:bg-white" onClick={() => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, possui_entrada: !leadForm.preferences.possui_entrada } })}>
-                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${leadForm.preferences.possui_entrada ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-200'}`}>
+                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${leadForm.preferences.possui_entrada ? 'bg-brand-500 border-brand-500' : 'bg-white border-slate-200'}`}>
                                                 {leadForm.preferences.possui_entrada && <Check size={14} className="text-white" strokeWidth={4} />}
                                             </div>
                                             <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">Possui Entrada</span>
@@ -501,7 +501,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                                     type="text"
                                                     value={formatCurrency(leadForm.preferences.valor_entrada)}
                                                     onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, valor_entrada: parseCurrency(e.target.value) } })}
-                                                    className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm focus:border-emerald-500/30 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                                                    className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm focus:border-brand-500/30 outline-none focus:ring-4 focus:ring-brand-500/5 transition-all"
                                                     placeholder="Ex: 50.000"
                                                 />
                                             </div>
@@ -510,7 +510,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
 
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 cursor-pointer transition-all hover:bg-white" onClick={() => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, possui_troca: !leadForm.preferences.possui_troca } })}>
-                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${leadForm.preferences.possui_troca ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-200'}`}>
+                                            <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${leadForm.preferences.possui_troca ? 'bg-brand-500 border-brand-500' : 'bg-white border-slate-200'}`}>
                                                 {leadForm.preferences.possui_troca && <Check size={14} className="text-white" strokeWidth={4} />}
                                             </div>
                                             <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">Possui Troca</span>
@@ -522,7 +522,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                                                     type="text"
                                                     value={leadForm.preferences.veiculo_troca || ''}
                                                     onChange={e => setLeadForm({ ...leadForm, preferences: { ...leadForm.preferences, veiculo_troca: e.target.value } })}
-                                                    className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm focus:border-emerald-500/30 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all"
+                                                    className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm focus:border-brand-500/30 outline-none focus:ring-4 focus:ring-brand-500/5 transition-all"
                                                     placeholder="Marca, modelo, ano..."
                                                 />
                                             </div>
@@ -552,7 +552,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                         <button
                             type="submit"
                             form="lead-form"
-                            className="px-8 py-3.5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+                            className="px-8 py-3.5 bg-brand-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-600 transition-all shadow-lg shadow-brand-500/20 active:scale-95"
                         >
                             {isEditing ? 'Salvar Alterações' : 'Criar Lead'}
                         </button>

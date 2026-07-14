@@ -390,7 +390,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                 </div>
 
                                 {message && (
-                                    <div className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-slideIn ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                    <div className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-3 animate-slideIn ${message.type === 'success' ? 'bg-brand-50 text-brand-600' : 'bg-rose-50 text-rose-600'}`}>
                                         <Check size={16} /> {message.text}
                                     </div>
                                 )}
@@ -441,7 +441,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                             <span className={`text-sm font-bold capitalize ${subTextColor}`}>/ {plan.interval === 'day' ? `${plan.duration_days} dias` : plan.interval === 'month' ? 'mês' : 'ano'}</span>
                                         </div>
                                         {campaign && !isCurrentPlan && (
-                                            <span className="text-[10px] font-black uppercase text-emerald-500 mt-1 tracking-wider">
+                                            <span className="text-[10px] font-black uppercase text-brand-500 mt-1 tracking-wider">
                                                 {campaign.promo_text}
                                             </span>
                                         )}
@@ -451,7 +451,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                 return (
                                     <div key={plan.id} className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col h-full group ${cardBg}`}>
                                         {isCurrentPlan && (
-                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30 whitespace-nowrap z-10">
+                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-500/30 whitespace-nowrap z-10">
                                                 Plano Atual
                                             </div>
                                         )}
@@ -483,7 +483,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                             {plan.features.map((feat, i) => (
                                                 <li key={i} className={`flex items-start gap-3 text-xs font-bold leading-tight ${textColor === 'text-white' ? 'text-slate-300' : 'text-slate-600'}`}>
                                                     <div className="mt-0.5 shrink-0">
-                                                        <Check size={16} className="text-emerald-500" />
+                                                        <Check size={16} className="text-brand-500" />
                                                     </div>
                                                     {feat}
                                                 </li>
@@ -494,10 +494,10 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                                             onClick={() => onUpgrade(plan)}
                                             disabled={isCurrentPlan}
                                             className={`w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${isCurrentPlan
-                                                ? 'bg-emerald-50 text-emerald-600 cursor-default border border-emerald-100'
+                                                ? 'bg-brand-50 text-brand-600 cursor-default border border-brand-100'
                                                 : (isBlack
-                                                    ? 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-xl shadow-emerald-500/20 active:scale-95'
-                                                    : 'bg-slate-900 text-white hover:bg-emerald-500 shadow-xl shadow-slate-900/10 active:scale-95')
+                                                    ? 'bg-brand-500 text-white hover:bg-brand-400 shadow-xl shadow-brand-500/20 active:scale-95'
+                                                    : 'bg-slate-900 text-white hover:bg-brand-500 shadow-xl shadow-slate-900/10 active:scale-95')
                                                 }`}
                                         >
                                             {isCurrentPlan ? 'ATIVO' : (plan.style?.cta || 'Selecionar Plano')}

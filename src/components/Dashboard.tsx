@@ -236,8 +236,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     // Comercial Actions
     const matchesProntos = activeLeads.filter(l =>
       availableVehicles.some(v =>
-        l.preferences.marcas.includes(v.brand) ||
-        l.preferences.modelos.includes(v.model)
+        (l.preferences?.marcas || []).includes(v.brand) ||
+        (l.preferences?.modelos || []).includes(v.model)
       )
     ).length;
 
@@ -246,13 +246,15 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     ).length;
 
     const leadsEsquecidos = activeLeads.filter(l => {
-      const lastUpdate = parseISO(l.lastUpdate);
+      const lastUpdateStr = l.lastUpdate || l.updated_at || l.createdAt;
+      if (!lastUpdateStr) return false;
+      const lastUpdate = parseISO(lastUpdateStr);
       const diff = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24);
       return diff > 3;
     }).length;
 
-    const leadsComEntrada = activeLeads.filter(l => l.preferences.possui_entrada && (l.preferences.valor_entrada || 0) > 0).length;
-    const leadsComTroca = activeLeads.filter(l => l.preferences.possui_troca).length;
+    const leadsComEntrada = activeLeads.filter(l => l.preferences?.possui_entrada && (l.preferences?.valor_entrada || 0) > 0).length;
+    const leadsComTroca = activeLeads.filter(l => l.preferences?.possui_troca).length;
 
     // Sales by Brand
     const salesByBrandMap: Record<string, number> = {};
@@ -264,24 +266,26 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     // Interest Charts
     const brandInterestMap: Record<string, number> = {};
     leads.forEach(l => {
-      l.preferences.marcas.forEach(b => brandInterestMap[b] = (brandInterestMap[b] || 0) + 1);
+      (l.preferences?.marcas || []).forEach(b => brandInterestMap[b] = (brandInterestMap[b] || 0) + 1);
     });
     const brandInterest = Object.entries(brandInterestMap).map(([name, value]) => ({ name, value }));
 
     const typeInterestMap: Record<string, number> = {};
     leads.forEach(l => {
-      l.preferences.tipos_veiculo.forEach(t => typeInterestMap[t] = (typeInterestMap[t] || 0) + 1);
+      (l.preferences?.tipos_veiculo || []).forEach(t => typeInterestMap[t] = (typeInterestMap[t] || 0) + 1);
     });
     const typeInterest = Object.entries(typeInterestMap).map(([name, value]) => ({ name, value }));
 
     const leadSourcesMap: Record<string, number> = {};
-    leads.forEach(l => leadSourcesMap[l.source] = (leadSourcesMap[l.source] || 0) + 1);
+    leads.forEach(l => {
+      if (l.source) leadSourcesMap[l.source] = (leadSourcesMap[l.source] || 0) + 1;
+    });
     const leadSources = Object.entries(leadSourcesMap).map(([name, value]) => ({ name, value }));
 
     const modelInterestMap: Record<string, number> = {};
     leads.forEach(l => {
-      l.preferences.modelos?.forEach(m => modelInterestMap[m] = (modelInterestMap[m] || 0) + 1);
-      l.preferences.modelos_moto?.forEach(m => modelInterestMap[m] = (modelInterestMap[m] || 0) + 1);
+      (l.preferences?.modelos || []).forEach(m => modelInterestMap[m] = (modelInterestMap[m] || 0) + 1);
+      (l.preferences?.modelos_moto || []).forEach(m => modelInterestMap[m] = (modelInterestMap[m] || 0) + 1);
     });
     const modelInterest = Object.entries(modelInterestMap)
       .map(([name, value]) => ({ name, value }))

@@ -293,11 +293,11 @@ const LeadManager: React.FC<LeadManagerProps> = ({
 
   const colorMapping: Record<string, any> = {
     amber: { columnBg: 'bg-amber-50/50', headerBg: 'bg-amber-100/50', border: 'border-amber-200', bgIcon: 'bg-amber-100', textStrong: 'text-slate-900', btnBg: 'bg-amber-500', bgSection: 'bg-amber-50/50' },
-    sky: { columnBg: 'bg-slate-200/40', headerBg: 'bg-sky-100/50', border: 'border-sky-200', bgIcon: 'bg-sky-100', textStrong: 'text-slate-900', btnBg: 'bg-sky-500', bgSection: 'bg-sky-50/50' },
-    indigo: { columnBg: 'bg-slate-200/40', headerBg: 'bg-indigo-100/50', border: 'border-indigo-200', bgIcon: 'bg-indigo-100', textStrong: 'text-slate-900', btnBg: 'bg-indigo-600', bgSection: 'bg-indigo-50/50' },
-    emerald: { columnBg: 'bg-brand-50/40', headerBg: 'bg-brand-100/50', border: 'border-brand-200', bgIcon: 'bg-brand-100', textStrong: 'text-slate-900', btnBg: 'bg-brand-500', bgSection: 'bg-brand-50/50' },
+    sky: { columnBg: 'bg-sky-50/55', headerBg: 'bg-sky-100/50', border: 'border-sky-200', bgIcon: 'bg-sky-100', textStrong: 'text-slate-900', btnBg: 'bg-sky-500', bgSection: 'bg-sky-50/50' },
+    indigo: { columnBg: 'bg-indigo-50/55', headerBg: 'bg-indigo-100/50', border: 'border-indigo-200', bgIcon: 'bg-indigo-100', textStrong: 'text-slate-900', btnBg: 'bg-indigo-600', bgSection: 'bg-indigo-50/50' },
+    emerald: { columnBg: 'bg-emerald-50/55', headerBg: 'bg-emerald-100/50', border: 'border-emerald-200', bgIcon: 'bg-emerald-100', textStrong: 'text-slate-900', btnBg: 'bg-emerald-500', bgSection: 'bg-emerald-50/50' },
     violet: { columnBg: 'bg-violet-50/50', headerBg: 'bg-violet-100/50', border: 'border-violet-200', bgIcon: 'bg-violet-100', textStrong: 'text-slate-900', btnBg: 'bg-violet-500', bgSection: 'bg-violet-50/50' },
-    green: { columnBg: 'bg-brand-100/30', headerBg: 'bg-brand-200/50', border: 'border-brand-300', bgIcon: 'bg-brand-200', textStrong: 'text-slate-900', btnBg: 'bg-brand-600', bgSection: 'bg-brand-100/40' },
+    green: { columnBg: 'bg-green-50/55', headerBg: 'bg-green-100/50', border: 'border-green-200', bgIcon: 'bg-green-100', textStrong: 'text-slate-900', btnBg: 'bg-green-600', bgSection: 'bg-green-50/50' },
     rose: { columnBg: 'bg-rose-50/50', headerBg: 'bg-rose-100/50', border: 'border-rose-200', bgIcon: 'bg-rose-100', textStrong: 'text-slate-900', btnBg: 'bg-rose-500', bgSection: 'bg-rose-50/60' },
     slate: { columnBg: 'bg-slate-100', headerBg: 'bg-slate-200/80', border: 'border-slate-300', bgIcon: 'bg-slate-300', textStrong: 'text-slate-900', btnBg: 'bg-slate-600', bgSection: 'bg-slate-200/50' },
   };

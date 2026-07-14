@@ -97,16 +97,16 @@ const AppSidebar: React.FC = () => {
                         to={item.id}
                         end={item.end}
                         className={({ isActive }) => `
-                            flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 group relative
+                            flex flex-col items-center justify-center p-2 transition-all duration-300 group relative
                             lg:flex-row lg:gap-3 lg:px-4 lg:py-3 lg:justify-start
                             ${isCollapsed ? 'lg:justify-center lg:w-auto lg:mx-2' : 'lg:w-full'}
                             ${item.id === '/estrutura-ecv'
                                 ? isActive
-                                    ? 'bg-indigo-600/10 text-indigo-600'
-                                    : 'bg-indigo-50/30 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50/60 font-black'
+                                    ? 'bg-indigo-50 text-indigo-600 font-black border-b-2 lg:border-b-0 lg:border-l-4 border-indigo-500 rounded-t-2xl lg:rounded-t-none lg:rounded-r-2xl lg:rounded-l-none'
+                                    : 'bg-indigo-50/30 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50/60 font-black border-b-2 lg:border-b-0 lg:border-l-4 border-transparent rounded-2xl'
                                 : isActive
-                                    ? 'bg-brand-500/10 text-brand-600'
-                                    : 'text-slate-400 hover:text-brand-600 hover:bg-slate-50'
+                                    ? 'bg-brand-50 text-brand-600 font-black border-b-2 lg:border-b-0 lg:border-l-4 border-brand-500 rounded-t-2xl lg:rounded-t-none lg:rounded-r-2xl lg:rounded-l-none'
+                                    : 'text-slate-500 hover:text-brand-600 hover:bg-slate-50/50 border-b-2 lg:border-b-0 lg:border-l-4 border-transparent rounded-2xl'
                             }
                         `}
                     >

@@ -37,7 +37,7 @@ export default function AdminUserDetails() {
             setTestLoading(false);
             setTestResult({
                 status: 'success',
-                message: `Conexão bem-sucedida! O ID ${googleAdsClientId} foi validado com o Developer Token em nível de acesso 'Conta de teste'. As chamadas estão prontas para o ambiente sandbox do Google Ads. Lembre-se de solicitar o 'Acesso Básico' para contas de produção reais.`
+                message: `Formato de ID e presença de token validados com sucesso (Modo de Simulação)! O ID ${googleAdsClientId} e o Developer Token estão com a sintaxe correta. Nota: Para realizar uma sincronização real em produção, certifique-se de que a conta de anúncios está vinculada à sua MCC do Google Ads e que você tem o nível de 'Acesso Básico' aprovado.`
             });
         }, 1500);
     };

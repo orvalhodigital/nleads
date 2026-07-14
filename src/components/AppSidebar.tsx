@@ -31,7 +31,7 @@ const AppSidebar: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = React.useState(false);
 
     const menuItems = [
-        { id: '/estrutura-ecv', icon: Target, label: 'Estrutura ECV', end: false, always: true },
+        // { id: '/estrutura-ecv', icon: Target, label: 'Estrutura ECV', end: false, always: true },
         { id: '/dashboard', icon: LayoutDashboard, label: 'Métricas', end: true, always: true },
         ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: profile?.enable_motorcycles ? 'Carros' : 'Veículos', end: false, always: true }] : []),
         ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false, always: true }] : []),

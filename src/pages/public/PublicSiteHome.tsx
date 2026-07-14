@@ -140,7 +140,7 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             cardSub: 'text-brand-500 text-xs font-black uppercase tracking-widest',
             cardBadge: 'bg-slate-800 text-white text-[10px] font-black px-4 py-1 uppercase tracking-widest',
             cardBtnDetail: 'flex-1 border-4 border-slate-700 text-white text-sm font-black uppercase py-4 hover:border-white transition-all text-center',
-            cardBtnWa: 'flex-1 bg-brand-500 text-slate-950 text-sm font-black uppercase py-4 hover:bg-brand-400 transition-all text-center shadow-[0_0_30px_rgba(16,185,129,0.3)]',
+            cardBtnWa: 'flex-1 bg-brand-500 text-slate-950 text-sm font-black uppercase py-4 hover:bg-brand-400 transition-all text-center shadow-[0_0_30px_rgba(139,92,246,0.25)]',
             filterPill: 'px-6 md:px-8 py-3 md:py-4 rounded-none border-4 border-slate-800 bg-transparent text-white text-xs md:text-sm font-black uppercase hover:border-white transition-all',
             filterPillActive: 'px-6 md:px-8 py-3 md:py-4 rounded-none bg-brand-500 text-slate-950 text-xs md:text-sm font-black uppercase transition-all',
             input: 'bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-brand-500 transition-all',

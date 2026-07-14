@@ -317,7 +317,7 @@ const SettingsPage: React.FC = () => {
                         <button
                             onClick={handleSaveGeral}
                             disabled={loading}
-                            className="w-full md:w-auto md:min-w-[200px] bg-slate-900 text-white py-4 px-8 rounded-2xl shadow-xl shadow-slate-900/20 flex items-center justify-center gap-3 font-bold hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
+                            className="w-full md:w-auto md:min-w-[200px] bg-brand-500 text-white py-4 px-8 rounded-2xl shadow-xl shadow-brand-500/20 flex items-center justify-center gap-3 font-bold hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group border border-brand-400/30"
                         >
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

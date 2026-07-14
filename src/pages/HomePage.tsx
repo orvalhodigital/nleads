@@ -56,7 +56,7 @@ const HomePage: React.FC = () => {
                 <div className="shrink-0 flex gap-4 w-full md:w-auto flex-col">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="w-full md:w-auto px-8 py-4 sm:py-5 bg-brand-600 hover:bg-brand-700 shadow-[0_8px_32px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:scale-95 text-white rounded-full font-extrabold uppercase tracking-widest text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-3 group border border-brand-500/50"
+                        className="w-full md:w-auto px-8 py-4 sm:py-5 bg-brand-600 hover:bg-brand-700 shadow-[0_8px_32px_rgba(139,92,246,0.25)] hover:-translate-y-1 active:scale-95 text-white rounded-full font-extrabold uppercase tracking-widest text-sm sm:text-base transition-all duration-300 flex items-center justify-center gap-3 group border border-brand-500/50"
                     >
                         <TrendingUp size={20} className="text-white" />
                         Acessar Métricas

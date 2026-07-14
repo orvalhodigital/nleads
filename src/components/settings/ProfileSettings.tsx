@@ -292,7 +292,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex items-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-brand-600 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 px-8 py-3 bg-brand-500 text-white rounded-2xl font-bold text-sm hover:bg-brand-600 transition-all shadow-md shadow-brand-500/20 active:scale-95 disabled:opacity-50 border border-brand-400/30"
                         >
                             {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                             Salvar Perfil

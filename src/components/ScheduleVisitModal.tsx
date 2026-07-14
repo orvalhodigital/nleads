@@ -187,7 +187,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                         </div>
                     </div>
 
-                    <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-brand-500 transition-all flex items-center justify-center gap-2 mt-4">
+                    <button type="submit" className="w-full py-4 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/30 transition-all flex items-center justify-center gap-2 mt-4 border border-brand-400/30">
                         <Plus size={16} /> Finalizar Agendamento
                     </button>
                 </form>

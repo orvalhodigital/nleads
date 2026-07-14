@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Users, Car, DollarSign, Flame, AlertTriangle, ShoppingBag, Award, Percent, Target, Timer, Calendar
+  Users, Car, DollarSign, Flame, AlertTriangle, ShoppingBag, Award, Percent, Target, Timer, Calendar, TrendingUp
 } from 'lucide-react';
 import { Lead, Profile, Vehicle } from '../../types';
 import { formatCurrency } from '../../utils/formatters';

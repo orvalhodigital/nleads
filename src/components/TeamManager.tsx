@@ -461,7 +461,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                     <p className="text-[11px] text-slate-400 bg-brand-50 rounded-xl p-3 border border-brand-100">
                         ⚡ O vendedor acessa o sistema com o e-mail e senha definidos acima.
                     </p>
-                    <button type="submit" disabled={!createEmail || !createName || !createPassword || createLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <button type="submit" disabled={!createEmail || !createName || !createPassword || createLoading} className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 border border-brand-400/30">
                         {createLoading ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
                         {createLoading ? 'Criando...' : 'Criar Vendedor'}
                     </button>
@@ -491,7 +491,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
                     <Field label="Telefone" icon={<Phone size={15} />}>
                         <input type="tel" value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="(11) 99999-9999" className={inputCls} />
                     </Field>
-                    <button type="submit" disabled={editLoading} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <button type="submit" disabled={editLoading} className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 shadow-md shadow-brand-500/20 flex items-center justify-center gap-2 border border-brand-400/30">
                         {editLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                         {editLoading ? 'Salvando...' : 'Salvar Alterações'}
                     </button>

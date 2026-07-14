@@ -400,7 +400,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${timeRange === range ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'}`}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${timeRange === range ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20 border border-brand-400/30' : 'text-slate-500 hover:bg-white/50'}`}
               >
                 {range === 'today' ? 'Hoje' : range === '7d' ? '7D' : range === '15d' ? '15D' : range === 'month' ? 'Mês' : range === 'all' ? 'Tudo' : 'Personalizado'}
               </button>

@@ -171,7 +171,7 @@ const SalesFlowPage: React.FC = () => {
             onClick={() => setActiveTab(key)}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === key
-                ? 'bg-slate-900 text-white shadow-lg'
+                ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 border border-brand-400/30'
                 : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
             }`}
           >

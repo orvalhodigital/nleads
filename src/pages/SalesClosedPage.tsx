@@ -263,7 +263,7 @@ const SalesClosedPage: React.FC = () => {
                     <button
                         key={option.key}
                         onClick={() => applyQuickRange(option.key as QuickRange)}
-                        className={`rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${quickRange === option.key ? 'bg-slate-900 text-white shadow-lg' : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'}`}
+                        className={`rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${quickRange === option.key ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 border border-brand-400/30' : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'}`}
                     >
                         {option.label}
                     </button>

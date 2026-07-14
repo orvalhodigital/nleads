@@ -82,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
                         <item.icon
                             size={22}
                             strokeWidth={currentView === item.id ? 2.5 : 2}
-                            className={`shrink-0 transition-all duration-300 ${currentView === item.id ? 'scale-110 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'group-hover:scale-110'}`}
+                            className={`shrink-0 transition-all duration-300 ${currentView === item.id ? 'scale-110 drop-shadow-[0_0_8px_rgba(139,92,246,0.3)]' : 'group-hover:scale-110'}`}
                         />
                         <span className={`
                             text-[10px] font-bold mt-1

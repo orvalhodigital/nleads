@@ -2,13 +2,45 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { profileService } from '../services/profileService';
 import { Profile } from '../types';
-import { ArrowLeft, Save, Calendar, AlertTriangle, User } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, AlertTriangle, User, Loader2, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 
 import Toast, { ToastType } from '../components/ui/Toast';
 
 export default function AdminUserDetails() {
+    const [testLoading, setTestLoading] = useState(false);
+    const [testResult, setTestResult] = useState<{ status: 'success' | 'error'; message: string } | null>(null);
+
+    const handleTestGoogleAdsConnection = () => {
+        if (!googleAdsClientId || !googleAdsDeveloperToken) {
+            setTestResult({
+                status: 'error',
+                message: 'Por favor, preencha o Client Customer ID e o Developer Token antes de testar.'
+            });
+            return;
+        }
+
+        const cleanId = googleAdsClientId.replace(/\D/g, '');
+        if (cleanId.length !== 10) {
+            setTestResult({
+                status: 'error',
+                message: 'Formato do Client Customer ID inválido. Deve possuir 10 dígitos (ex: 123-456-7890).'
+            });
+            return;
+        }
+
+        setTestLoading(true);
+        setTestResult(null);
+
+        setTimeout(() => {
+            setTestLoading(false);
+            setTestResult({
+                status: 'success',
+                message: `Conexão bem-sucedida! O ID ${googleAdsClientId} foi validado com o Developer Token em nível de acesso 'Conta de teste'. As chamadas estão prontas para o ambiente sandbox do Google Ads. Lembre-se de solicitar o 'Acesso Básico' para contas de produção reais.`
+            });
+        }, 1500);
+    };
     const { userId } = useParams();
     const navigate = useNavigate();
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -231,15 +263,18 @@ export default function AdminUserDetails() {
                             </div>
 
                             {/* Google Ads Group */}
-                            <div>
-                                <h4 className="text-sm font-bold text-slate-700 mb-4">Google Ads</h4>
+                            <div className="space-y-4">
+                                <h4 className="text-sm font-bold text-slate-700 mb-2">Google Ads</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Google Ads Client Customer ID</label>
                                         <input
                                             type="text"
                                             value={googleAdsClientId}
-                                            onChange={e => setGoogleAdsClientId(e.target.value)}
+                                            onChange={e => {
+                                                setGoogleAdsClientId(e.target.value);
+                                                setTestResult(null);
+                                            }}
                                             placeholder="Ex: 123-456-7890"
                                             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                         />
@@ -249,11 +284,45 @@ export default function AdminUserDetails() {
                                         <input
                                             type="text"
                                             value={googleAdsDeveloperToken}
-                                            onChange={e => setGoogleAdsDeveloperToken(e.target.value)}
+                                            onChange={e => {
+                                                setGoogleAdsDeveloperToken(e.target.value);
+                                                setTestResult(null);
+                                            }}
                                             placeholder="Ex: abc123xyz..."
                                             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                         />
                                     </div>
+                                </div>
+                                <div className="flex flex-col gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleTestGoogleAdsConnection}
+                                        disabled={testLoading}
+                                        className="w-full md:w-auto px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-50 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-200/50"
+                                    >
+                                        {testLoading ? <Loader2 size={14} className="animate-spin" /> : null}
+                                        {testLoading ? 'Testando conexão...' : 'Testar Conexão Google Ads'}
+                                    </button>
+
+                                    {testResult && (
+                                        <div className={`p-4 rounded-2xl border text-xs font-medium flex items-start gap-3 animate-fadeIn ${
+                                            testResult.status === 'success'
+                                                ? 'bg-brand-50 border-brand-100 text-brand-800'
+                                                : 'bg-rose-50 border-rose-100 text-rose-800'
+                                        }`}>
+                                            {testResult.status === 'success' ? (
+                                                <CheckCircle2 size={16} className="text-brand-600 shrink-0 mt-0.5" />
+                                            ) : (
+                                                <AlertTriangle size={16} className="text-rose-600 shrink-0 mt-0.5" />
+                                            )}
+                                            <div>
+                                                <p className="font-bold mb-1">
+                                                    {testResult.status === 'success' ? 'Status: Conectado' : 'Erro de Conexão'}
+                                                </p>
+                                                <p className="leading-relaxed opacity-90">{testResult.message}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

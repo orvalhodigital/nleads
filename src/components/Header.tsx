@@ -314,7 +314,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
 
     return (
         <>
-            <header className="h-16 md:h-20 bg-white/40 backdrop-blur-3xl border-b border-white/50 px-4 lg:px-10 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-sm">
+            <header className="h-16 md:h-20 bg-card/45 dark:bg-card/25 backdrop-blur-3xl border-b border-border/80 px-4 lg:px-10 flex items-center justify-between sticky top-0 z-40 shrink-0 shadow-sm">
                 <div className="flex items-center gap-3">
                     {/* Logo - Mobile only */}
                     <div
@@ -332,11 +332,11 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                     <div>
                         {currentView !== 'home' && (
                             <>
-                                <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
+                                <h2 className="text-lg font-bold text-foreground tracking-tight">
                                     {getTitle()}
                                 </h2>
                                 {companyName && (
-                                    <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest -mt-0.5">
+                                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest -mt-0.5">
                                         {companyName}
                                     </p>
                                 )}
@@ -347,46 +347,46 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
 
                 <div className="flex items-center gap-4 lg:gap-8">
                     <div className="relative hidden md:flex items-center group">
-                        <Search size={16} className="absolute left-4 text-slate-400 group-focus-within:text-brand-500 transition-colors pointer-events-none" />
+                        <Search size={16} className="absolute left-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Pesquisar..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
-                            className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold w-64 focus:bg-white focus:border-brand-500 outline-none transition-all"
+                            className="pl-10 pr-4 py-2 bg-muted/60 dark:bg-slate-900/60 border border-border/80 rounded-xl text-xs font-bold w-64 focus:bg-card focus:border-primary outline-none transition-all text-foreground"
                         />
 
                         {/* Search Dropdown */}
                         {showSearchDropdown && (searchTerm.length > 2) && (
-                            <div className="absolute top-12 left-0 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 max-h-96 overflow-y-auto z-50 animate-fadeUp">
+                            <div className="absolute top-12 left-0 w-80 bg-card/95 backdrop-blur-xl rounded-2xl shadow-xl border border-border/80 p-4 max-h-96 overflow-y-auto z-50 animate-fadeUp text-foreground">
                                 {searching ? (
-                                    <div className="flex items-center justify-center p-4 text-slate-400">
+                                    <div className="flex items-center justify-center p-4 text-muted-foreground">
                                         <Loader2 className="animate-spin mr-2" size={16} /> Pesquisando...
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
                                         {/* Leads Section */}
                                         <div>
-                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Leads</h4>
+                                            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-2">Leads</h4>
                                             {leadsResults.length === 0 ? (
-                                                <p className="text-xs text-slate-300 px-2 italic">Nenhum lead encontrado.</p>
+                                                <p className="text-xs text-muted-foreground/60 px-2 italic">Nenhum lead encontrado.</p>
                                             ) : (
                                                 <ul className="space-y-1">
                                                     {leadsResults.map(lead => (
                                                         <li key={lead.id}>
                                                             <button
                                                                 onClick={() => handleResultClick('lead', lead.id)}
-                                                                className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors group"
+                                                                className="w-full text-left px-3 py-2 hover:bg-muted/80 rounded-lg transition-colors group"
                                                             >
-                                                                <p className="text-sm font-bold text-slate-800 group-hover:text-brand-600">{lead.name}</p>
+                                                                <p className="text-sm font-bold text-foreground group-hover:text-primary">{lead.name}</p>
                                                                 <div className="flex items-center gap-2 mt-1">
-                                                                    <div className="flex items-center gap-1 text-[10px] bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded-md font-bold">
+                                                                    <div className="flex items-center gap-1 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-bold">
                                                                         <MessageCircle size={10} fill="currentColor" fillOpacity={0.2} />
                                                                         {lead.phone}
                                                                     </div>
-                                                                    <span className="text-[10px] text-slate-300">•</span>
-                                                                    <p className="text-[10px] text-slate-400 truncate max-w-[120px]">{lead.email}</p>
+                                                                    <span className="text-[10px] text-muted-foreground/45">•</span>
+                                                                    <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{lead.email}</p>
                                                                 </div>
                                                             </button>
                                                         </li>
@@ -397,19 +397,19 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
 
                                         {/* Vehicles Section */}
                                         <div>
-                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2 border-t border-slate-100 pt-3">Veículos</h4>
+                                            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-2 border-t border-border/60 pt-3">Veículos</h4>
                                             {vehicleResults.length === 0 ? (
-                                                <p className="text-xs text-slate-300 px-2 italic">Nenhum veículo encontrado.</p>
+                                                <p className="text-xs text-muted-foreground/60 px-2 italic">Nenhum veículo encontrado.</p>
                                             ) : (
                                                 <ul className="space-y-1">
                                                     {vehicleResults.map(vehicle => (
                                                         <li key={vehicle.id}>
                                                             <button
                                                                 onClick={() => handleResultClick('vehicle', vehicle.id, (vehicle as any).isMoto)}
-                                                                className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors group"
+                                                                className="w-full text-left px-3 py-2 hover:bg-muted/80 rounded-lg transition-colors group"
                                                             >
-                                                                <p className="text-sm font-bold text-slate-800 group-hover:text-brand-600">{vehicle.brand} {vehicle.model}</p>
-                                                                <p className="text-[10px] text-slate-400">{vehicle.year} • {vehicle.color}</p>
+                                                                <p className="text-sm font-bold text-foreground group-hover:text-primary">{vehicle.brand} {vehicle.model}</p>
+                                                                <p className="text-[10px] text-muted-foreground">{vehicle.year} • {vehicle.color}</p>
                                                             </button>
                                                         </li>
                                                     ))}
@@ -421,11 +421,12 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                             </div>
                         )}
                     </div>
+
                     <div className="flex items-center gap-2">
                         {/* Tema Switcher: Dia / Noite */}
                         <button
                             onClick={toggleTheme}
-                            className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800/80 border border-border/80 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700/80 transition-all duration-300 group shrink-0"
+                            className="flex items-center gap-2 px-2.5 py-1.5 bg-secondary/80 dark:bg-slate-800/80 border border-border/80 rounded-full hover:bg-secondary/65 dark:hover:bg-slate-700/80 transition-all duration-300 group shrink-0"
                             title={theme === 'dia' ? "Ativar Modo Noite (Escuro)" : "Ativar Modo Dia (Claro)"}
                         >
                             <span className="relative flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-slate-950 shadow-sm text-amber-500 dark:text-purple-400 transition-all duration-300">
@@ -437,13 +438,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                         </button>
 
                         <LogoRenderer src={logoUrl} variant="icon" className="h-5 w-auto opacity-50 hover:opacity-100 transition-all mr-2 hidden sm:flex" />
-                        <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-slate-800 rounded-lg transition-all relative">
+                        <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all relative">
                             <Bell size={18} />
                             {unreadCount > 0 && !showHistory && (
-                                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-brand-500 rounded-full border border-white"></span>
+                                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full border border-card"></span>
                             )}
                         </button>
-                        <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-slate-800 rounded-lg transition-all">
+                        <button onClick={() => navigate('/settings')} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
                             <Settings size={18} />
                         </button>
                     </div>
@@ -453,16 +454,16 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
 
             {/* Notifications Modal */}
             {isNotificationsOpen && (
-                <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 flex justify-end" onClick={() => setIsNotificationsOpen(false)}>
-                    <div className="w-full max-w-sm bg-white h-full shadow-2xl animate-fadeLeft p-6 flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex justify-end" onClick={() => setIsNotificationsOpen(false)}>
+                    <div className="w-full max-w-sm bg-card border-l border-border/80 h-full shadow-2xl animate-fadeLeft p-6 flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/80">
                             <div>
-                                <h2 className="text-xl font-black text-slate-800 tracking-tight">
+                                <h2 className="text-xl font-bold text-foreground tracking-tight">
                                     {showHistory ? 'Histórico' : 'Notificações'}
                                 </h2>
-                                <p className="text-xs text-slate-400 font-medium mt-1">Alertas e atualizações</p>
+                                <p className="text-xs text-muted-foreground font-semibold mt-1">Alertas e atualizações</p>
                             </div>
-                            <button onClick={() => setIsNotificationsOpen(false)} className="text-slate-300 hover:text-slate-600 transition-colors">
+                            <button onClick={() => setIsNotificationsOpen(false)} className="text-muted-foreground/60 hover:text-foreground transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
@@ -470,13 +471,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                         <div className="flex gap-2 mb-4">
                             <button
                                 onClick={() => setShowHistory(false)}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${!showHistory ? 'bg-brand-100 text-brand-700' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${!showHistory ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                             >
                                 Não Lidas
                             </button>
                             <button
                                 onClick={() => setShowHistory(true)}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${showHistory ? 'bg-brand-100 text-brand-700' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${showHistory ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                             >
                                 <History size={14} /> Histórico
                             </button>
@@ -485,13 +486,13 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
 
                         <div className="flex-1 overflow-y-auto space-y-4">
                             {loading ? (
-                                <div className="text-center py-10 text-slate-400 text-xs">Carregando...</div>
+                                <div className="text-center py-10 text-muted-foreground text-xs">Carregando...</div>
                             ) : notifications.length === 0 ? (
                                 <div className="text-center py-10">
-                                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 text-muted-foreground/50">
                                         <CheckCheck size={24} />
                                     </div>
-                                    <p className="text-sm font-bold text-slate-400">
+                                    <p className="text-sm font-bold text-muted-foreground">
                                         {showHistory ? 'Sem histórico recente.' : 'Você não tem mais notificações.'}
                                     </p>
                                 </div>
@@ -501,16 +502,16 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                                         key={notification.id}
                                         onClick={() => !showHistory && handleMarkAsRead(notification.id)}
                                         className={`p-4 border rounded-2xl flex gap-3 items-start transition-all cursor-pointer group
-                                            ${showHistory ? 'bg-slate-50 border-slate-100 opacity-75' : 'bg-white border-slate-100 hover:border-brand-200 hover:shadow-sm'}
+                                            ${showHistory ? 'bg-muted/40 border-border/40 opacity-75' : 'bg-card border-border/80 hover:border-primary/50 hover:bg-muted/10'}
                                         `}
                                     >
-                                        <div className={`p-2 rounded-lg shrink-0 ${showHistory ? 'bg-slate-200 text-slate-500' : 'bg-brand-100 text-brand-600'}`}>
+                                        <div className={`p-2 rounded-lg shrink-0 ${showHistory ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
                                             <Bell size={16} />
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-bold text-slate-800">{notification.title}</h4>
-                                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">{notification.message}</p>
-                                            <span className="text-[10px] font-bold text-slate-300 mt-2 block uppercase tracking-wider">
+                                            <h4 className="text-sm font-bold text-foreground">{notification.title}</h4>
+                                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{notification.message}</p>
+                                            <span className="text-[10px] font-bold text-muted-foreground/50 mt-2 block uppercase tracking-wider">
                                                 {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: ptBR })}
                                             </span>
                                         </div>
@@ -520,10 +521,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                         </div>
 
                         {!showHistory && notifications.length > 0 && (
-                            <div className="mt-auto pt-4 border-t border-slate-100">
+                            <div className="mt-auto pt-4 border-t border-border/80">
                                 <button
                                     onClick={handleMarkAllAsRead}
-                                    className="w-full py-3 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-brand-500 transition-colors"
+                                    className="w-full py-3 text-xs font-bold text-muted-foreground uppercase tracking-widest hover:text-primary transition-colors"
                                 >
                                     Marcar todas como lidas
                                 </button>

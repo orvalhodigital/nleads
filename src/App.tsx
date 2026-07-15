@@ -15,10 +15,10 @@ const IS_SYSTEM_DOMAIN = isSystemHost(window.location.hostname);
 
 // Loading Component
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+  <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      <p className="text-slate-400 text-sm font-medium animate-pulse">Carregando...</p>
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <p className="text-muted-foreground text-sm font-semibold animate-pulse">Carregando...</p>
     </div>
   </div>
 );

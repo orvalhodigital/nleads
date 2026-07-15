@@ -324,16 +324,16 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 <div key={phase} className={`shrink-0 flex flex-col gap-2 h-full p-2 rounded-[28px] ${colors.columnBg} transition-all duration-300 border border-slate-200/20 ${isCollapsed ? 'w-[70px]' : 'w-[290px]'} overflow-hidden`}>
                   <div
                     onClick={() => isDisqualified && setIsDisqualifiedExpanded(!isDisqualifiedExpanded)}
-                    className={`flex items-center justify-between px-4 py-3 border rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all ${isCollapsed ? 'flex-col gap-10 py-8 ' + colors.headerBg + ' ' + colors.border : 'bg-white border-slate-200/60'}`}
+                    className={`flex items-center justify-between px-4 py-3 border rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all ${isCollapsed ? 'flex-col gap-10 py-8 ' + colors.headerBg + ' ' + colors.border : 'bg-card border-border/80'}`}
                   >
                     <div className={`flex items-center gap-2.5 ${isCollapsed ? 'flex-col' : ''}`}>
                       <div className={`p-2.5 rounded-xl ${colors.bgIcon} ${colors.textStrong} shadow-sm`}>
                         {getPhaseIcon(phase)}
                       </div>
-                      {!isCollapsed && <h3 className="text-[11px] font-black text-slate-800 tracking-wider uppercase">{phase}</h3>}
-                      {isCollapsed && <h3 className="text-[10px] font-black text-slate-400 [writing-mode:vertical-lr] rotate-180 uppercase tracking-[0.2em]">{phase}</h3>}
+                      {!isCollapsed && <h3 className="text-[11px] font-black text-foreground tracking-wider uppercase">{phase}</h3>}
+                      {isCollapsed && <h3 className="text-[10px] font-black text-muted-foreground [writing-mode:vertical-lr] rotate-180 uppercase tracking-[0.2em]">{phase}</h3>}
                     </div>
-                    {!isCollapsed && <div className="flex items-center justify-center min-w-[24px] h-6 px-1.5 bg-white border border-slate-200 text-slate-500 rounded-lg text-[10px] font-black">{leadsInPhase.length}</div>}
+                    {!isCollapsed && <div className="flex items-center justify-center min-w-[24px] h-6 px-1.5 bg-muted border border-border/80 text-muted-foreground rounded-lg text-[10px] font-black">{leadsInPhase.length}</div>}
                   </div>
 
                   {!isCollapsed && (
@@ -356,13 +356,13 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       onClick={() => !snapshot.isDragging && navigate(`/leads/${lead.id}`)}
-                                      className={`group bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 cursor-grab active:cursor-grabbing ${snapshot.isDragging ? 'shadow-xl ring-1 ring-brand-500/50' : ''} shrink-0`}
+                                      className={`group bg-card p-3.5 rounded-2xl border border-border/80 shadow-sm hover:shadow-md hover:border-primary/40 cursor-grab active:cursor-grabbing ${snapshot.isDragging ? 'shadow-xl ring-1 ring-primary/50' : ''} shrink-0`}
                                       style={provided.draggableProps.style}
                                     >
                                       <div className="flex items-center gap-2.5 mb-2 relative">
                                         <div className={`relative w-9 h-9 shrink-0 rounded-lg ${colors.btnBg} text-white flex items-center justify-center font-bold text-xs shadow-sm`}>
                                           {lead.name.charAt(0)}
-                                          <div className={`absolute -right-1 -bottom-1 w-4 h-4 rounded-full border border-white flex items-center justify-center shadow-sm ${
+                                          <div className={`absolute -right-1 -bottom-1 w-4 h-4 rounded-full border border-card flex items-center justify-center shadow-sm ${
                                             lead.temperature === LeadTemperature.HOT ? 'bg-rose-500' :
                                             lead.temperature === LeadTemperature.WARM ? 'bg-amber-400' :
                                             'bg-blue-400'
@@ -373,39 +373,39 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                                           </div>
                                         </div>
                                         <div className="flex-1 min-w-0 pr-6">
-                                          <h4 className="text-[13px] font-bold text-slate-900 truncate tracking-tight">{lead.name}</h4>
-                                          <p className="text-[10px] font-medium text-slate-400 mt-0.5">{lead.source} • {lead.phone}</p>
+                                          <h4 className="text-[13px] font-bold text-foreground truncate tracking-tight">{lead.name}</h4>
+                                          <p className="text-[10px] font-semibold text-muted-foreground mt-0.5">{lead.source} • {lead.phone}</p>
                                         </div>
                                       </div>
                                       <div className="space-y-1.5 mb-2.5">
                                         {lead.preferences.interesse_carro && (lead.preferences.carro_valor_max || lead.preferences.valor_maximo) && (
-                                          <div className="flex items-center justify-between px-3 py-1.5 bg-brand-50/50 rounded-xl border border-brand-100/50">
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/10">
                                             <div className="flex items-center gap-1.5">
-                                              <Car size={10} className="text-brand-500" />
-                                              <span className="text-[8px] font-black text-brand-600 uppercase tracking-wider">Carro</span>
+                                              <Car size={10} className="text-primary" />
+                                              <span className="text-[8px] font-black text-primary dark:text-primary-foreground uppercase tracking-wider">Carro</span>
                                             </div>
-                                            <span className="text-[10px] font-black text-brand-700">R$ {formatCurrency(lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 0)}</span>
+                                            <span className="text-[10px] font-bold text-primary dark:text-primary-foreground">R$ {formatCurrency(lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 0)}</span>
                                           </div>
                                         )}
                                         {lead.preferences.interesse_moto && lead.preferences.moto_valor_max && (
-                                          <div className="flex items-center justify-between px-3 py-1.5 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-indigo-500/5 dark:bg-indigo-950/20 rounded-xl border border-indigo-500/10 dark:border-indigo-800/20">
                                             <div className="flex items-center gap-1.5">
                                               <Target size={10} className="text-indigo-500" />
-                                              <span className="text-[8px] font-black text-indigo-600 uppercase tracking-wider">Moto</span>
+                                              <span className="text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Moto</span>
                                             </div>
-                                            <span className="text-[10px] font-black text-indigo-700">R$ {formatCurrency(lead.preferences.moto_valor_max)}</span>
+                                            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">R$ {formatCurrency(lead.preferences.moto_valor_max)}</span>
                                           </div>
                                         )}
                                         {!lead.preferences.interesse_carro && !lead.preferences.interesse_moto && lead.preferences.valor_maximo && (
-                                          <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100/50">
-                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Geral</span>
-                                            <span className="text-[10px] font-black text-slate-700">R$ {formatCurrency(lead.preferences.valor_maximo)}</span>
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-muted rounded-xl border border-border">
+                                            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">Geral</span>
+                                            <span className="text-[10px] font-bold text-foreground">R$ {formatCurrency(lead.preferences.valor_maximo)}</span>
                                           </div>
                                         )}
                                         {(() => { const vn = getVendorName(lead); return vn ? (
                                           <div className="flex items-center gap-1 pt-0.5">
-                                            <User size={9} className="text-slate-300 shrink-0" />
-                                            <span className="text-[9px] text-slate-400 font-semibold truncate">{vn}</span>
+                                            <User size={9} className="text-muted-foreground/50 shrink-0" />
+                                            <span className="text-[9px] text-muted-foreground font-semibold truncate">{vn}</span>
                                           </div>
                                         ) : null; })()}
                                       </div>
@@ -419,7 +419,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                           {provided.placeholder}
                           {loadingLeads && (
                             <div className="flex justify-center p-4">
-                              <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                             </div>
                           )}
                         </div>
@@ -437,7 +437,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
 
   const renderList = () => {
     return (
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col h-full">
+      <div className="bg-card rounded-3xl border border-border/80 shadow-sm overflow-hidden flex flex-col h-full">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -448,66 +448,66 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cliente</th>
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fase Atual</th>
                 <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temperatura</th>
-                {isEmpresa && <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vendedor</th>}
-                <th className="p-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Data de Cadastro</th>
+                {isEmpresa && <th className="p-5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Vendedor</th>}
+                <th className="p-5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-right">Data de Cadastro</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-border/40 bg-card">
               {visibleLeads.map(lead => {
                 const displayPhase = getDisplayPhase(lead);
                 const colors = colorMapping[getPhaseColor(displayPhase)] || colorMapping.slate;
                 return (
-                  <tr key={lead.id} onClick={() => navigate(`/leads/${lead.id}`)} className="hover:bg-slate-50/30 transition-all cursor-pointer group/row">
+                  <tr key={lead.id} onClick={() => navigate(`/leads/${lead.id}`)} className="hover:bg-muted/35 transition-all cursor-pointer group/row">
                     <td className="p-5 text-center" onClick={e => e.stopPropagation()}>
-                      <input type="checkbox" checked={selectedLeadIds.has(lead.id)} onChange={() => toggleLeadSelection(lead.id)} className="rounded-md border-slate-200 text-brand-600" />
+                      <input type="checkbox" checked={selectedLeadIds.has(lead.id)} onChange={() => toggleLeadSelection(lead.id)} className="rounded-md border-border text-primary" />
                     </td>
                     <td className="p-5">
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-xl ${colors.btnBg} text-white flex items-center justify-center font-bold uppercase text-xs shadow-sm`}>{lead.name.charAt(0)}</div>
                         <div>
-                          <p className="text-sm font-bold text-slate-900 group-hover/row:text-brand-600 transition-colors">{lead.name}</p>
-                          <span className="text-[10px] font-semibold text-slate-400">{lead.phone} • {lead.source}</span>
+                          <p className="text-sm font-bold text-foreground group-hover/row:text-primary transition-colors">{lead.name}</p>
+                          <span className="text-[10px] font-semibold text-muted-foreground">{lead.phone} • {lead.source}</span>
                         </div>
                       </div>
                     </td>
                     <td className="p-5">
                       <div className="flex items-center gap-2.5">
                         <div className={`w-7 h-7 rounded-lg ${colors.bgSection} ${colors.textStrong} flex items-center justify-center border ${colors.border}`}>{getPhaseIcon(displayPhase)}</div>
-                        <span className="text-[11px] font-bold text-slate-700">{displayPhase}</span>
+                        <span className="text-[11px] font-bold text-foreground">{displayPhase}</span>
                       </div>
                     </td>
                     <td className="p-5">
-                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-100">
+                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-muted border border-border/80">
                         {lead.temperature === LeadTemperature.HOT && <Flame size={12} className="text-rose-500 shrink-0" />}
                         {lead.temperature === LeadTemperature.WARM && <Droplet size={12} className="text-amber-500 shrink-0" />}
                         {lead.temperature === LeadTemperature.COLD && <Snowflake size={12} className="text-blue-400 shrink-0" />}
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">{lead.temperature}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">{lead.temperature}</span>
                       </div>
                     </td>
                     {isEmpresa && (
                       <td className="p-5">
                         {(() => { const vn = getVendorName(lead); return vn ? (
                           <div className="flex items-center gap-1.5">
-                            <User size={12} className="text-slate-300" />
-                            <span className="text-xs font-semibold text-slate-500">{vn}</span>
+                            <User size={12} className="text-muted-foreground/60" />
+                            <span className="text-xs font-semibold text-muted-foreground">{vn}</span>
                           </div>
-                        ) : <span className="text-xs text-slate-300">—</span>; })()}
+                        ) : <span className="text-xs text-muted-foreground/45">—</span>; })()}
                       </td>
                     )}
-                    <td className="p-5 text-right"><span className="text-xs font-semibold text-slate-400">{new Date(lead.createdAt).toLocaleDateString()}</span></td>
+                    <td className="p-5 text-right"><span className="text-xs font-semibold text-muted-foreground">{new Date(lead.createdAt).toLocaleDateString()}</span></td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          {visibleLeads.length === 0 && <div className="py-20 text-center text-slate-400 text-sm font-medium">Nenhum lead encontrado.</div>}
+          {visibleLeads.length === 0 && <div className="py-20 text-center text-muted-foreground text-sm font-medium">Nenhum lead encontrado.</div>}
         </div>
         {hasMoreLeads && (
-          <div className="p-6 border-t border-slate-50 flex justify-center bg-slate-50/20">
+          <div className="p-6 border-t border-border/85 flex justify-center bg-muted/20">
             <button
               onClick={onLoadMore}
               disabled={loadingLeads}
-              className="flex items-center gap-2 px-8 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-3 bg-card border border-border text-muted-foreground hover:bg-muted hover:text-foreground rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all disabled:opacity-50"
             >
               {loadingLeads ? 'Carregando...' : 'Carregar mais leads'}
             </button>
@@ -522,24 +522,24 @@ const LeadManager: React.FC<LeadManagerProps> = ({
       <div className="flex flex-col gap-6 shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-6 px-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
-              <button onClick={() => setViewMode('kanban')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 font-semibold'}`}>
+            <div className="flex bg-muted/80 dark:bg-slate-900/60 p-1 rounded-xl border border-border/80">
+              <button onClick={() => setViewMode('kanban')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'kanban' ? 'bg-card text-foreground shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}>
                 <LayoutGrid size={15} />
                 <span className="text-[11px] uppercase">Kanban</span>
               </button>
-              <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 font-semibold'}`}>
+              <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-card text-foreground shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}>
                 <Rows size={15} />
                 <span className="text-[11px] uppercase">Lista</span>
               </button>
             </div>
-            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all ${isFilterOpen ? 'bg-slate-900 text-white' : 'bg-white text-slate-600'}`}>
+            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all ${isFilterOpen ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20' : 'bg-card border-border/80 text-muted-foreground hover:bg-muted'}`}>
               <Filter size={15} /> Filtrar
             </button>
             {isEmpresa && teamMembers.length > 0 && (
               <select
                 value={filterVendedor}
                 onChange={e => setFilterVendedor(e.target.value)}
-                className="px-4 py-3 bg-white border border-slate-100 rounded-xl text-[11px] font-bold text-slate-600 uppercase tracking-wide focus:outline-none focus:border-brand-400 transition-all"
+                className="px-4 py-3 bg-card border border-border/85 rounded-xl text-[11px] font-bold text-muted-foreground uppercase tracking-wide focus:outline-none focus:border-primary transition-all"
               >
                 <option value="all">Todos os vendedores</option>
                 {teamMembers.map(m => (
@@ -551,14 +551,14 @@ const LeadManager: React.FC<LeadManagerProps> = ({
           <div className="flex gap-2">
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="flex items-center gap-1.5 px-5 py-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-5 py-3 bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer"
             >
               <Upload size={14} />
               Importar
             </button>
             <button
               onClick={() => navigate('/leads/new')}
-              className="flex items-center gap-1.5 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-[11px] font-black uppercase tracking-wider shadow-md hover:shadow-lg shadow-brand-500/20 hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-6 py-3 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-md hover:shadow-lg shadow-primary/20 hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
             >
               <Plus size={14} />
               Novo Lead

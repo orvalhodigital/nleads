@@ -87,7 +87,7 @@ const Inventory: React.FC<InventoryProps> = ({
   // Sell Form State
   const [sellData, setSellData] = useState<SaleDetails>({
     salePrice: 0,
-
+    refurbishmentCosts: 0,
     saleDate: new Date().toISOString().split('T')[0],
     buyerName: '',
     buyerLeadId: '',
@@ -375,6 +375,7 @@ const Inventory: React.FC<InventoryProps> = ({
     if (selectedVehicle) {
       setSellData({
         salePrice: selectedVehicle.price,
+        refurbishmentCosts: 0,
         saleDate: new Date().toISOString().split('T')[0],
         buyerName: '',
         buyerLeadId: '',

@@ -18,7 +18,7 @@ export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, ASAAS-Signature');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, ASAAS-Signature, asaas-access-token');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -28,14 +28,18 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
-  // Verificar token do webhook para maior segurança
+  // ─── Segurança: token do webhook OBRIGATÓRIO (fail-closed) ──────────────────
+  // ⚠️ Configure ASAAS_WEBHOOK_TOKEN no Vercel E no painel do Asaas (mesmo valor),
+  // senão TODAS as confirmações de pagamento serão rejeitadas.
   const webhookToken = process.env.ASAAS_WEBHOOK_TOKEN;
-  if (webhookToken) {
-    const requestToken = req.headers['asaas-access-token'];
-    if (requestToken !== webhookToken) {
-      console.warn('Unauthorized webhook request - invalid token');
-      return res.status(401).json({ error: 'Unauthorized: invalid webhook token' });
-    }
+  if (!webhookToken) {
+    console.error('ASAAS_WEBHOOK_TOKEN não configurado — rejeitando webhook por segurança.');
+    return res.status(500).json({ error: 'Webhook não configurado no servidor.' });
+  }
+  const requestToken = req.headers['asaas-access-token'];
+  if (requestToken !== webhookToken) {
+    console.warn('Unauthorized webhook request - invalid token');
+    return res.status(401).json({ error: 'Unauthorized: invalid webhook token' });
   }
 
   try {
@@ -44,37 +48,68 @@ export default async function handler(req: any, res: any) {
 
     console.log('Asaas Webhook received event:', event, 'Payment ID:', payment?.id);
 
-    // We process successful payment events
+    // Processamos apenas eventos de pagamento efetivado
     if (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED') {
-      const userId = payment.externalReference; // The user_id we passed earlier
+      const userId = payment?.externalReference; // O user_id enviado na criação da cobrança
 
       if (!userId) {
         console.error('No externalReference (userId) found in payment payload');
         return res.status(400).json({ error: 'Missing externalReference' });
       }
 
-      // Update user plan to 'pro' and planStatus to 'active'
+      // Buscar perfil para (a) validar valor e (b) idempotência
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, plan, plan_status')
+        .eq('id', userId)
+        .single();
+
+      if (profileError || !profile) {
+        console.error('Profile não encontrado para userId:', userId, profileError);
+        return res.status(404).json({ error: 'Profile not found' });
+      }
+
+      // Idempotência: se já está PRO/ativo, não reprocessa (evita estender trial repetido)
+      if (profile.plan === 'pro' && profile.plan_status === 'active') {
+        console.log(`User ${userId} já é PRO/ativo — evento ignorado (idempotência).`);
+        return res.status(200).json({ success: true, message: 'Already processed', userId });
+      }
+
+      // Validação do valor pago contra o(s) plano(s) cadastrado(s)
+      const paidValue = Number(payment?.value);
+      if (Number.isFinite(paidValue) && paidValue > 0) {
+        const { data: plans } = await supabase.from('plans').select('price');
+        const validPrices = (plans || [])
+          .map((p: any) => Number(p.price))
+          .filter((n: number) => Number.isFinite(n) && n > 0);
+        if (validPrices.length > 0 && !validPrices.some((price) => Math.abs(price - paidValue) < 0.01)) {
+          console.warn(`Valor pago (${paidValue}) não corresponde a nenhum plano ${JSON.stringify(validPrices)} — user ${userId}.`);
+          return res.status(400).json({ error: 'Valor do pagamento não corresponde a nenhum plano.' });
+        }
+      }
+
+      // Atualiza o perfil para PRO (colunas snake_case, conforme o schema)
       const { data, error } = await supabase
         .from('profiles')
         .update({
           plan: 'pro',
-          planStatus: 'active',
-          trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Extend or set plan details
+          plan_status: 'active',
+          trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         })
         .eq('id', userId)
         .select()
         .single();
 
-      if (error) {
+      if (error || !data) {
         console.error('Error updating profile in Supabase:', error);
-        throw error;
+        throw error || new Error('Update returned no row');
       }
 
       console.log(`Successfully upgraded user ${userId} to pro plan.`);
       return res.status(200).json({ success: true, message: 'User upgraded successfully', userId });
     }
 
-    // Default response for unhandled events
+    // Resposta padrão para eventos não tratados
     return res.status(200).json({ success: true, message: 'Event ignored' });
 
   } catch (error: any) {

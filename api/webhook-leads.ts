@@ -28,13 +28,17 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
-  // Verificação do token secreto do webhook
+  // ─── Segurança: token do webhook OBRIGATÓRIO (fail-closed) ──────────────────
+  // ⚠️ Configure WEBHOOK_SECRET no Vercel E no cliente que envia os leads (ex.: n8n),
+  // enviando o header X-Webhook-Token com o mesmo valor. Sem isso, os leads são rejeitados.
   const webhookSecret = process.env.WEBHOOK_SECRET;
-  if (webhookSecret) {
-    const tokenHeader = req.headers['x-webhook-token'];
-    if (tokenHeader !== webhookSecret) {
-      return res.status(401).json({ error: 'Unauthorized: invalid or missing webhook token.' });
-    }
+  if (!webhookSecret) {
+    console.error('WEBHOOK_SECRET não configurado — rejeitando webhook por segurança.');
+    return res.status(500).json({ error: 'Webhook não configurado no servidor.' });
+  }
+  const tokenHeader = req.headers['x-webhook-token'];
+  if (tokenHeader !== webhookSecret) {
+    return res.status(401).json({ error: 'Unauthorized: invalid or missing webhook token.' });
   }
 
   try {

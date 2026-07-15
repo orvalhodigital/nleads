@@ -49,7 +49,7 @@ export default function AdminUserDetails() {
     const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
     // Form states
-    const [plan, setPlan] = useState<'trial' | 'pro'>('trial');
+    const [plan, setPlan] = useState<'trial' | 'pro' | 'free'>('trial');
     const [planStatus, setPlanStatus] = useState<'active' | 'expired'>('active');
     const [trialEndsAt, setTrialEndsAt] = useState('');
     const [fullName, setFullName] = useState('');

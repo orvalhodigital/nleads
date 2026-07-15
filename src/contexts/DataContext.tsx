@@ -7,6 +7,8 @@ import { vehicleService } from '../services/vehicleService';
 import { motorcycleService } from '../services/motorcycleService';
 import { Profile, Lead, Vehicle, Motorcycle, SaleDetails } from '../types';
 import { useToast } from './ToastContext';
+import { validateLeadInput } from '../schemas/leadSchema';
+import { validateVehicleInput } from '../schemas/vehicleSchema';
 
 const EMPRESA_ROLES = ['empresa', 'super_admin', 'admin'] as const;
 const isEmpresaRole = (role?: string): boolean => EMPRESA_ROLES.includes(role as any);
@@ -214,24 +216,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const loadData = useCallback(async (showLoader = true) => {
         if (showLoader) setLoading(true);
-        try {
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Carregamento expirou. Verifique sua conexão e credenciais Supabase.')), 15000)
-            );
 
-            await Promise.race([
-                (async () => {
-                    await refreshProfile();
-                    setPage(0);
-                    await Promise.allSettled([
-                        fetchLeads(0, false),
-                        refreshVehicles(),
-                        refreshMotorcycles(),
-                        refreshTeamMembers(),
-                    ]);
-                })(),
-                timeoutPromise
-            ]);
+        // Uma tentativa completa de carregamento, com timeout de 15s.
+        const attemptLoad = () => Promise.race([
+            (async () => {
+                await refreshProfile();
+                setPage(0);
+                await Promise.allSettled([
+                    fetchLeads(0, false),
+                    refreshVehicles(),
+                    refreshMotorcycles(),
+                    refreshTeamMembers(),
+                ]);
+            })(),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Carregamento expirou. Verifique sua conexão e credenciais Supabase.')), 15000)
+            ),
+        ]);
+
+        try {
+            try {
+                await attemptLoad();
+            } catch (firstErr) {
+                // Retry único após breve espera — resiliência a falhas transitórias de rede.
+                console.warn('loadData: 1ª tentativa falhou, tentando novamente...', firstErr);
+                await new Promise(r => setTimeout(r, 1500));
+                await attemptLoad();
+            }
         } catch (err) {
             console.error('loadData error:', err);
             showToast('error', (err as Error).message || 'Erro ao carregar dados. Verifique sua conexão e credenciais Supabase em .env.local');
@@ -279,6 +290,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         if (isFreePlan && leads.length >= 50) {
             showToast('error', 'Limite do plano Free atingido (máximo 50 leads). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
+        }
+        const validationError = validateLeadInput(leadData);
+        if (validationError) {
+            showToast('error', validationError);
+            throw new Error('VALIDATION_ERROR');
         }
         try {
             const { adminId } = getAdminContext(p);
@@ -333,9 +349,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     }, [showToast]);
 
     const deleteLead = useCallback(async (id: string) => {
-        await leadService.delete(id);
-        setLeads((prev: Lead[]) => prev.filter((l: Lead) => l.id !== id));
-    }, []);
+        try {
+            await leadService.delete(id);
+            setLeads((prev: Lead[]) => prev.filter((l: Lead) => l.id !== id));
+        } catch (err) {
+            console.error('Error deleting lead:', err);
+            showToast('error', 'Erro ao excluir lead.');
+            throw err;
+        }
+    }, [showToast]);
 
     const addVehicle = useCallback(async (vehicleData: Omit<Vehicle, 'id'>) => {
         const p = profileRef.current;
@@ -344,27 +366,56 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
         }
-        const { adminId } = getAdminContext(p);
-        const res = await vehicleService.create(vehicleData, p?.id || impersonatedUserId, adminId);
-        setVehicles((prev: Vehicle[]) => [res, ...prev]);
-        return res;
+        const vehicleValidationError = validateVehicleInput(vehicleData);
+        if (vehicleValidationError) {
+            showToast('error', vehicleValidationError);
+            throw new Error('VALIDATION_ERROR');
+        }
+        try {
+            const { adminId } = getAdminContext(p);
+            const res = await vehicleService.create(vehicleData, p?.id || impersonatedUserId, adminId);
+            setVehicles((prev: Vehicle[]) => [res, ...prev]);
+            return res;
+        } catch (err) {
+            console.error('Error adding vehicle:', err);
+            showToast('error', 'Erro ao cadastrar veículo.');
+            throw err;
+        }
     }, [impersonatedUserId, vehicles, motorcycles, showToast]);
 
     const updateVehicle = useCallback(async (vehicleData: Vehicle) => {
-        const res = await vehicleService.update(vehicleData);
-        setVehicles((prev: Vehicle[]) => prev.map((v: Vehicle) => v.id === res.id ? res : v));
-        return res;
-    }, []);
+        try {
+            const res = await vehicleService.update(vehicleData);
+            setVehicles((prev: Vehicle[]) => prev.map((v: Vehicle) => v.id === res.id ? res : v));
+            return res;
+        } catch (err) {
+            console.error('Error updating vehicle:', err);
+            showToast('error', 'Erro ao atualizar veículo.');
+            throw err;
+        }
+    }, [showToast]);
 
     const deleteVehicle = useCallback(async (id: string) => {
-        await vehicleService.delete(id);
-        setVehicles((prev: Vehicle[]) => prev.filter((v: Vehicle) => v.id !== id));
-    }, []);
+        try {
+            await vehicleService.delete(id);
+            setVehicles((prev: Vehicle[]) => prev.filter((v: Vehicle) => v.id !== id));
+        } catch (err) {
+            console.error('Error deleting vehicle:', err);
+            showToast('error', 'Erro ao excluir veículo.');
+            throw err;
+        }
+    }, [showToast]);
 
     const handleSellVehicle = useCallback(async (id: string, details: SaleDetails) => {
-        await vehicleService.sell(id, details);
-        await refreshVehicles();
-    }, [refreshVehicles]);
+        try {
+            await vehicleService.sell(id, details);
+            await refreshVehicles();
+        } catch (err) {
+            console.error('Error selling vehicle:', err);
+            showToast('error', 'Erro ao registrar a venda.');
+            throw err;
+        }
+    }, [refreshVehicles, showToast]);
 
     const addMotorcycle = useCallback(async (motoData: Omit<Motorcycle, 'id'>) => {
         const p = profileRef.current;
@@ -373,22 +424,45 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
         }
-        const { adminId } = getAdminContext(p);
-        const res = await motorcycleService.create(motoData, p?.id || impersonatedUserId, adminId);
-        setMotorcycles((prev: Motorcycle[]) => [res, ...prev]);
-        return res;
+        const motoValidationError = validateVehicleInput(motoData);
+        if (motoValidationError) {
+            showToast('error', motoValidationError);
+            throw new Error('VALIDATION_ERROR');
+        }
+        try {
+            const { adminId } = getAdminContext(p);
+            const res = await motorcycleService.create(motoData, p?.id || impersonatedUserId, adminId);
+            setMotorcycles((prev: Motorcycle[]) => [res, ...prev]);
+            return res;
+        } catch (err) {
+            console.error('Error adding motorcycle:', err);
+            showToast('error', 'Erro ao cadastrar moto.');
+            throw err;
+        }
     }, [impersonatedUserId, vehicles, motorcycles, showToast]);
 
     const updateMotorcycle = useCallback(async (motoData: Motorcycle) => {
-        const res = await motorcycleService.update(motoData);
-        setMotorcycles((prev: Motorcycle[]) => prev.map((m: Motorcycle) => m.id === res.id ? res : m));
-        return res;
-    }, []);
+        try {
+            const res = await motorcycleService.update(motoData);
+            setMotorcycles((prev: Motorcycle[]) => prev.map((m: Motorcycle) => m.id === res.id ? res : m));
+            return res;
+        } catch (err) {
+            console.error('Error updating motorcycle:', err);
+            showToast('error', 'Erro ao atualizar moto.');
+            throw err;
+        }
+    }, [showToast]);
 
     const deleteMotorcycle = useCallback(async (id: string) => {
-        await motorcycleService.delete(id);
-        setMotorcycles((prev: Motorcycle[]) => prev.filter((m: Motorcycle) => m.id !== id));
-    }, []);
+        try {
+            await motorcycleService.delete(id);
+            setMotorcycles((prev: Motorcycle[]) => prev.filter((m: Motorcycle) => m.id !== id));
+        } catch (err) {
+            console.error('Error deleting motorcycle:', err);
+            showToast('error', 'Erro ao excluir moto.');
+            throw err;
+        }
+    }, [showToast]);
 
     const value = useMemo(() => ({
         session,

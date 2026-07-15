@@ -87,7 +87,7 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [walkInName, setWalkInName] = useState('');
     const [walkInPhone, setWalkInPhone] = useState('');
     const [sellData, setSellData] = useState<SaleDetails>({
-        salePrice: 0, saleDate: new Date().toISOString().split('T')[0],
+        salePrice: 0, refurbishmentCosts: 0, saleDate: new Date().toISOString().split('T')[0],
         buyerName: '', buyerLeadId: '', isFollowUpSale: true
     });
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -391,7 +391,7 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     const handleOpenSell = () => {
         if (!selected || selected === 'new') return;
-        setSellData({ salePrice: (selected as Motorcycle).price, saleDate: new Date().toISOString().split('T')[0], buyerName: '', buyerLeadId: '', isFollowUpSale: true });
+        setSellData({ salePrice: (selected as Motorcycle).price, refurbishmentCosts: 0, saleDate: new Date().toISOString().split('T')[0], buyerName: '', buyerLeadId: '', isFollowUpSale: true });
         setWalkInName(''); setWalkInPhone('');
         setIsSellModalOpen(true);
     };

@@ -337,7 +337,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         }));
     };
 
-    const getFieldClassName = (field: string, base: string) => `${base} ${errors[field] ? 'border-red-300 bg-red-50/60 focus:ring-red-500/10' : ''}`;
+    const getFieldClassName = (field: string, base: string) => `${base} ${errors[field] ? 'border-rose-400 bg-rose-500/5 focus:ring-rose-500/10' : ''}`;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -375,18 +375,18 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     if (step === 'plate') {
         return (
             <PageContainer className="flex items-center justify-center min-h-[75vh] animate-fadeUp">
-                <div className="bg-slate-900 text-white rounded-[3rem] p-10 md:p-16 max-w-xl w-full border-b-8 border-slate-950 shadow-2xl relative overflow-hidden text-center space-y-8">
+                <div className="bg-card text-foreground rounded-[3rem] p-10 md:p-16 max-w-xl w-full border border-border/80 shadow-2xl relative overflow-hidden text-center space-y-8">
                     <div className="absolute top-0 right-0 p-10 opacity-5">
                         <Target size={180} />
                     </div>
 
                     <div className="relative z-10 space-y-6">
-                        <div className="w-16 h-16 rounded-2xl bg-violet-500/10 text-violet-500 flex items-center justify-center border border-violet-500/20 mx-auto">
+                        <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 mx-auto">
                             <Hash size={32} />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-3xl font-black tracking-tight">Cadastro de Veículo</h2>
-                            <p className="text-slate-400 text-sm font-medium">Informe a placa para preencher os dados técnicos automaticamente.</p>
+                            <h2 className="text-3xl font-bold tracking-tight">Cadastro de Veículo</h2>
+                            <p className="text-muted-foreground text-sm font-medium">Informe a placa para preencher os dados técnicos automaticamente.</p>
                         </div>
 
                         <div className="space-y-4">
@@ -400,10 +400,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 onKeyDown={handlePlateKeyDown}
                                 placeholder="ABC1234"
                                 maxLength={8}
-                                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl text-center text-2xl font-black tracking-widest text-white placeholder-slate-600 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all uppercase"
+                                className="w-full p-5 bg-muted/65 border border-border/80 rounded-2xl text-center text-2xl font-bold tracking-widest text-foreground placeholder-muted-foreground/50 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all uppercase"
                             />
                             {plateError && (
-                                <p className="text-xs font-bold text-red-400 flex items-center justify-center gap-1.5 pt-1">
+                                <p className="text-xs font-bold text-rose-400 flex items-center justify-center gap-1.5 pt-1">
                                     <AlertCircle size={13} /> {plateError}
                                 </p>
                             )}
@@ -414,7 +414,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 type="button"
                                 onClick={lookupPlate}
                                 disabled={lookupLoading}
-                                className="flex-1 py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-extrabold uppercase tracking-wider text-xs transition-all shadow-xl shadow-violet-600/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                className="flex-1 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold uppercase tracking-wider text-xs transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                             >
                                 {lookupLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
                                 {lookupLoading ? 'Consultando...' : 'Consultar Placa'}
@@ -422,7 +422,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             <button
                                 type="button"
                                 onClick={() => setStep('category_select')}
-                                className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-extrabold uppercase tracking-wider text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                className="flex-1 py-4 bg-muted/70 hover:bg-muted text-foreground border border-border/80 rounded-2xl font-bold uppercase tracking-wider text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 Sem Placa
                             </button>
@@ -437,10 +437,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     if (step === 'category_select') {
         return (
             <PageContainer className="flex items-center justify-center min-h-[75vh] animate-fadeUp">
-                <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl max-w-xl w-full text-center space-y-8">
+                <div className="bg-card rounded-[3rem] p-10 border border-border/80 shadow-xl max-w-xl w-full text-center space-y-8">
                     <div className="space-y-2">
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Tipo de Veículo</h2>
-                        <p className="text-slate-500 font-bold text-sm">Selecione o tipo do veículo para continuar o cadastro manual.</p>
+                        <h2 className="text-3xl font-bold text-foreground tracking-tight">Tipo de Veículo</h2>
+                        <p className="text-muted-foreground font-semibold text-sm">Selecione o tipo do veículo para continuar o cadastro manual.</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -457,12 +457,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     setFormData(prev => ({ ...prev, vehicleCategory: cat.value as any, plate: 'SEM PLACA' }));
                                     setStep('form');
                                 }}
-                                className="flex flex-col items-center justify-center p-6 rounded-2xl border border-slate-100 hover:border-violet-500 hover:bg-violet-50/20 transition-all gap-3 cursor-pointer group"
+                                className="flex flex-col items-center justify-center p-6 rounded-2xl border border-border/80 hover:border-primary hover:bg-primary/5 transition-all gap-3 cursor-pointer group"
                             >
-                                <div className="p-3 rounded-xl bg-slate-50 text-slate-600 group-hover:bg-violet-100 group-hover:text-violet-700 transition-colors">
+                                <div className="p-3 rounded-xl bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                                     {cat.icon}
                                 </div>
-                                <span className="text-xs font-extrabold text-slate-800">{cat.label}</span>
+                                <span className="text-xs font-bold text-foreground">{cat.label}</span>
                             </button>
                         ))}
                     </div>
@@ -470,7 +470,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                     <button
                         type="button"
                         onClick={() => setStep('plate')}
-                        className="text-xs font-black uppercase text-slate-400 hover:text-slate-600 tracking-widest pt-2 block mx-auto cursor-pointer"
+                        className="text-xs font-bold uppercase text-muted-foreground hover:text-foreground tracking-widest pt-2 block mx-auto cursor-pointer"
                     >
                         Voltar para consulta de placa
                     </button>
@@ -494,31 +494,31 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 setStep('plate');
                             }
                         }}
-                        className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all hover:bg-slate-50 shadow-sm"
+                        className="w-12 h-12 rounded-2xl bg-card border border-border/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all hover:bg-muted shadow-sm"
                     >
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
+                        <h1 className="text-3xl font-bold text-foreground tracking-tight uppercase">
                             {isEditing ? 'Editar Veículo' : 'Novo Veículo'}
                         </h1>
-                        <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">
-                            Categoria ativa: <span className="text-violet-600 font-extrabold">{formData.vehicleCategory?.toUpperCase()}</span>
+                        <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-widest">
+                            Categoria ativa: <span className="text-primary font-bold">{formData.vehicleCategory?.toUpperCase()}</span>
                         </p>
                     </div>
                 </div>
 
                 {/* Subtitle / Context Badges */}
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-violet-50 rounded-xl border border-violet-100/50">
-                        <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-                        <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest">Ambiente de Cadastro</span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-primary/20">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Ambiente de Cadastro</span>
                     </div>
                 </div>
             </div>
 
             {/* Segmented Tab Navigation */}
-            <div className="flex border-b border-slate-200 mb-8 overflow-x-auto custom-scrollbar gap-2 pb-2">
+            <div className="flex border-b border-border/80 mb-8 overflow-x-auto custom-scrollbar gap-2 pb-2">
                 {[
                     { id: 'dados', label: 'Dados do Veículo', icon: <Settings size={16} /> },
                     { id: 'seo', label: 'SEO & Meta Tags', icon: <Target size={16} /> },
@@ -529,10 +529,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         type="button"
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer border ${
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer border ${
                             activeTab === tab.id
-                                ? 'bg-violet-600 text-white border-violet-600 shadow-md'
-                                : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50'
+                                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                : 'bg-card text-muted-foreground border-border/80 hover:bg-muted'
                         }`}
                     >
                         {tab.icon}
@@ -544,106 +544,106 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             <form id="vehicle-form" onSubmit={handleSubmit} className="space-y-8">
                 {/* ── TAB 1: DADOS DO VEÍCULO ────────────────────────────────────── */}
                 {activeTab === 'dados' && (
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-10">
+                    <div className="bg-card rounded-[2.5rem] p-10 border border-border/80 shadow-sm space-y-10">
                         <section className="space-y-6">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-4 bg-violet-500 rounded-full" />
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Identificação Básica</h3>
+                                <div className="w-1.5 h-4 bg-primary rounded-full" />
+                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Identificação Básica</h3>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2" id="field-brand">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Marca</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Marca</label>
                                     <AutocompleteInput
                                         required
                                         value={formData.brand}
                                         onChangeValue={(val) => setFormData({ ...formData, brand: val, model: '' })}
                                         suggestions={Object.keys(carDatabase)}
-                                        className={getFieldClassName('brand', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')}
+                                        className={getFieldClassName('brand', 'w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all')}
                                         placeholder="Ex: Chevrolet"
                                     />
-                                    {errors.brand && <p className="text-[10px] font-bold text-red-500 px-1">{errors.brand}</p>}
+                                    {errors.brand && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.brand}</p>}
                                 </div>
                                 <div className="space-y-2" id="field-model">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Modelo</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Modelo</label>
                                     <AutocompleteInput
                                         required
                                         value={formData.model}
                                         onChangeValue={(val) => setFormData(prev => ({ ...prev, model: val }))}
                                         suggestions={carDatabase[Object.keys(carDatabase).find(k => k.toLowerCase() === formData.brand.toLowerCase()) || ''] || []}
-                                        className={getFieldClassName('model', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')}
+                                        className={getFieldClassName('model', 'w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all')}
                                         placeholder="Ex: Onix"
                                     />
-                                    {errors.model && <p className="text-[10px] font-bold text-red-500 px-1">{errors.model}</p>}
+                                    {errors.model && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.model}</p>}
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div className="space-y-2" id="field-plate">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Placa</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Placa</label>
                                     <input
                                         value={formData.plate}
                                         onChange={e => setFormData({ ...formData, plate: e.target.value.toUpperCase() })}
                                         placeholder="ABC1234"
                                         maxLength={8}
-                                        className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm uppercase"
+                                        className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm uppercase text-foreground focus:bg-card focus:border-primary/45 transition-all"
                                     />
                                 </div>
 
                                 <div className="space-y-2" id="field-year">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Fab.</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Ano Fab.</label>
                                     <input 
                                         type="number" 
                                         required 
                                         value={formData.year || ''} 
                                         onChange={e => setFormData({ ...formData, year: e.target.value ? parseInt(e.target.value) : 0 })} 
-                                        className={getFieldClassName('year', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} 
+                                        className={getFieldClassName('year', 'w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all')} 
                                     />
                                 </div>
 
                                 <div className="space-y-2" id="field-modelYear">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ano Modelo</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Ano Modelo</label>
                                     <input 
                                         type="number" 
                                         required 
                                         value={formData.modelYear || ''} 
                                         onChange={e => setFormData({ ...formData, modelYear: e.target.value ? parseInt(e.target.value) : 0 })} 
-                                        className={getFieldClassName('modelYear', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')} 
+                                        className={getFieldClassName('modelYear', 'w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all')} 
                                     />
                                 </div>
 
                                 <div className="space-y-2" id="field-mileage">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Quilometragem (KM)</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Quilometragem (KM)</label>
                                     <input
                                         type="text"
                                         required
                                         value={formatKM(formData.mileage)}
                                         onChange={e => setFormData({ ...formData, mileage: parseKM(e.target.value) })}
-                                        className={getFieldClassName('mileage', 'w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm')}
+                                        className={getFieldClassName('mileage', 'w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all')}
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Cor</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Cor</label>
                                     <input
                                         type="text"
                                         value={formData.color}
                                         onChange={e => setFormData({ ...formData, color: e.target.value })}
-                                        className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
+                                        className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all"
                                         placeholder="Ex: Preto"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Combustível</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Combustível</label>
                                     <select
                                         value={formData.fuelType || 'Flex'}
                                         onChange={e => setFormData({ ...formData, fuelType: e.target.value as FuelType })}
-                                        className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer"
+                                        className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer"
                                     >
-                                        {FUEL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        {FUEL_TYPES.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                     </select>
                                 </div>
                             </div>
@@ -653,42 +653,42 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         {formData.vehicleCategory === 'moto' ? (
                             <section className="space-y-6 animate-slideIn">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações de Moto</h3>
+                                    <div className="w-1.5 h-4 bg-primary rounded-full" />
+                                    <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações de Moto</h3>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Categoria Moto</label>
-                                        <select value={formData.motoCategory} onChange={e => setFormData({ ...formData, motoCategory: e.target.value as MotorcycleCategory })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {MOTORCYCLE_CATEGORIES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Categoria Moto</label>
+                                        <select value={formData.motoCategory} onChange={e => setFormData({ ...formData, motoCategory: e.target.value as MotorcycleCategory })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {MOTORCYCLE_CATEGORIES.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Tipo de Partida</label>
-                                        <select value={formData.startType} onChange={e => setFormData({ ...formData, startType: e.target.value as MotoStartType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {MOTO_START_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Tipo de Partida</label>
+                                        <select value={formData.startType} onChange={e => setFormData({ ...formData, startType: e.target.value as MotoStartType })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {MOTO_START_TYPES.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Freio</label>
-                                        <select value={formData.brakeType} onChange={e => setFormData({ ...formData, brakeType: e.target.value as MotoBrakeType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {MOTO_BRAKE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Freio</label>
+                                        <select value={formData.brakeType} onChange={e => setFormData({ ...formData, brakeType: e.target.value as MotoBrakeType })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {MOTO_BRAKE_TYPES.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Alimentação</label>
-                                        <select value={formData.fuelSystem} onChange={e => setFormData({ ...formData, fuelSystem: e.target.value as MotoFuelSystem })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {MOTO_FUEL_SYSTEMS.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Alimentação</label>
+                                        <select value={formData.fuelSystem} onChange={e => setFormData({ ...formData, fuelSystem: e.target.value as MotoFuelSystem })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {MOTO_FUEL_SYSTEMS.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Arrefecimento</label>
-                                        <select value={formData.cooling} onChange={e => setFormData({ ...formData, cooling: e.target.value as MotoCooling })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {MOTO_COOLING_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Arrefecimento</label>
+                                        <select value={formData.cooling} onChange={e => setFormData({ ...formData, cooling: e.target.value as MotoCooling })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {MOTO_COOLING_OPTIONS.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -697,40 +697,40 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             /* SPECIFIC FIELDS FOR CARS / GENERAL */
                             <section className="space-y-6">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações Técnicas</h3>
+                                    <div className="w-1.5 h-4 bg-primary rounded-full" />
+                                    <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Zap size={13} /> Especificações Técnicas</h3>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Tipo Carroceria</label>
-                                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as VehicleType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Tipo Carroceria</label>
+                                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as VehicleType })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {VEHICLE_TYPES.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Câmbio</label>
-                                        <select value={formData.transmission} onChange={e => setFormData({ ...formData, transmission: e.target.value as TransmissionType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {TRANSMISSION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Câmbio</label>
+                                        <select value={formData.transmission} onChange={e => setFormData({ ...formData, transmission: e.target.value as TransmissionType })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {TRANSMISSION_TYPES.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Motor</label>
-                                        <select value={formData.engine} onChange={e => setFormData({ ...formData, engine: e.target.value as EngineType })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer">
-                                            {ENGINE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Motor</label>
+                                        <select value={formData.engine} onChange={e => setFormData({ ...formData, engine: e.target.value as EngineType })} className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer">
+                                            {ENGINE_TYPES.map(t => <option key={t} value={t} className="bg-card text-foreground">{t}</option>)}
                                         </select>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Portas</label>
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Portas</label>
                                         <select
                                             value={formData.doors || 4}
                                             onChange={e => setFormData({ ...formData, doors: parseInt(e.target.value) === 2 ? 2 : 4 })}
-                                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm cursor-pointer"
+                                            className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl font-bold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all cursor-pointer"
                                         >
-                                            {DOOR_OPTIONS.map(d => <option key={d} value={d}>{d} Portas</option>)}
+                                            {DOOR_OPTIONS.map(d => <option key={d} value={d} className="bg-card text-foreground">{d} Portas</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -740,8 +740,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         {/* General options checklist */}
                         <section className="space-y-6">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-4 bg-violet-500 rounded-full" />
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Condições e Chaves</h3>
+                                <div className="w-1.5 h-4 bg-primary rounded-full" />
+                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Condições e Chaves</h3>
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
@@ -755,21 +755,21 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                         type="button"
                                         key={check.key}
                                         onClick={() => setFormData(prev => ({ ...prev, [check.key]: !prev[check.key as keyof typeof prev] }))}
-                                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all gap-2 ${formData[check.key as keyof typeof formData] ? 'bg-violet-50 border-violet-200 text-violet-700' : 'bg-white border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+                                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all gap-2 ${formData[check.key as keyof typeof formData] ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-card border-border/80 text-muted-foreground hover:bg-muted'}`}
                                     >
-                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData[check.key as keyof typeof formData] ? 'bg-violet-500 border-violet-500 text-white' : 'bg-white border-slate-200'}`}>
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData[check.key as keyof typeof formData] ? 'bg-primary border-primary text-primary-foreground' : 'bg-card border-border/80'}`}>
                                             {formData[check.key as keyof typeof formData] && <Check size={12} strokeWidth={4} />}
                                         </div>
-                                        <span className="text-[9px] font-black uppercase tracking-widest">{check.label}</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-widest">{check.label}</span>
                                     </button>
                                 ))}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                                <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasSpareKey ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasSpareKey ? 'bg-primary/10 border-primary/20' : 'bg-card border-border/80'}`}>
                                     <div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Chave Reserva</p>
-                                        <p className={`text-sm font-bold mt-0.5 ${formData.hasSpareKey ? 'text-violet-700' : 'text-slate-400'}`}>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Chave Reserva</p>
+                                        <p className={`text-sm font-bold mt-0.5 ${formData.hasSpareKey ? 'text-primary' : 'text-muted-foreground'}`}>
                                             {formData.hasSpareKey ? 'Sim' : 'Não'}
                                         </p>
                                     </div>
@@ -779,10 +779,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     />
                                 </div>
 
-                                <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasOwnerManual ? 'bg-violet-50 border-violet-200' : 'bg-white border-slate-100'}`}>
+                                <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${formData.hasOwnerManual ? 'bg-primary/10 border-primary/20' : 'bg-card border-border/80'}`}>
                                     <div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Manual do Proprietário</p>
-                                        <p className={`text-sm font-bold mt-0.5 ${formData.hasOwnerManual ? 'text-violet-700' : 'text-slate-400'}`}>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Manual do Proprietário</p>
+                                        <p className={`text-sm font-bold mt-0.5 ${formData.hasOwnerManual ? 'text-primary' : 'text-muted-foreground'}`}>
                                             {formData.hasOwnerManual ? 'Sim' : 'Não'}
                                         </p>
                                     </div>
@@ -798,7 +798,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         <section className="space-y-6">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais do Veículo</h3>
+                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais do Veículo</h3>
                             </div>
 
                             <div className="space-y-5">
@@ -806,7 +806,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     <div key={category.label}>
                                         <div className="flex items-center gap-2 mb-3">
                                             <div className={`w-1 h-3 ${category.color} rounded-full`} />
-                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{category.label}</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{category.label}</p>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {category.items.map(opt => {
@@ -824,8 +824,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                                                 }));
                                                             }}
                                                         className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all border ${isSelected
-                                                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                                                            : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                                                            ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                                            : 'bg-card text-muted-foreground border-border/80 hover:border-border hover:bg-muted'
                                                         }`}
                                                     >
                                                         {opt}
@@ -855,7 +855,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                         }
                                     }}
                                     placeholder="Adicionar outro opcional..."
-                                    className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
+                                    className="flex-1 p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all"
                                 />
                                 <button
                                     type="button"
@@ -868,7 +868,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                             setCustomOption('');
                                         }
                                     }}
-                                    className="px-6 bg-slate-900 text-white rounded-2xl hover:bg-violet-600 transition-colors"
+                                    className="px-6 bg-primary text-primary-foreground rounded-2xl hover:bg-primary/95 transition-all shadow-md shadow-primary/20 flex items-center justify-center cursor-pointer"
                                 >
                                     <Plus size={20} />
                                 </button>
@@ -879,33 +879,33 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         <section className="space-y-6">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><ImagePlus size={13} /> Mídia e Descrição</h3>
+                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><ImagePlus size={13} /> Mídia e Descrição</h3>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Foto Principal</label>
-                                    <div className="aspect-square max-w-[280px] rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Foto Principal</label>
+                                    <div className="aspect-square max-w-[280px] rounded-2xl bg-muted/70 border-2 border-dashed border-border/80 overflow-hidden relative group">
                                         {formData.imageUrl ? (
                                             <>
                                                 <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="w-12 h-12 rounded-full bg-white text-red-500 flex items-center justify-center shadow-xl">
+                                                    <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="w-12 h-12 rounded-full bg-card text-rose-500 flex items-center justify-center shadow-xl">
                                                         <X size={20} />
                                                     </button>
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-3">
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/50 gap-3">
                                                 <Upload size={40} strokeWidth={1} />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Nenhuma Foto</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Nenhuma Foto</span>
                                             </div>
                                         )}
                                     </div>
                                     <label className="block w-full cursor-pointer">
-                                        <div className={`max-w-[280px] w-full py-3 px-6 rounded-2xl border text-center flex items-center justify-center gap-3 ${uploading ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-violet-500 hover:bg-violet-50'}`}>
-                                            {uploading ? <Loader2 size={16} className="animate-spin text-violet-500" /> : <Upload size={16} />}
-                                            <span className="text-[11px] font-black uppercase tracking-widest">{uploading ? 'Enviando...' : 'Fazer Upload'}</span>
+                                        <div className={`max-w-[280px] w-full py-3 px-6 rounded-2xl border text-center flex items-center justify-center gap-3 ${uploading ? 'bg-muted border-border' : 'bg-card border-border/80 text-muted-foreground hover:text-foreground hover:border-primary hover:bg-primary/5'}`}>
+                                            {uploading ? <Loader2 size={16} className="animate-spin text-primary" /> : <Upload size={16} />}
+                                            <span className="text-[11px] font-bold uppercase tracking-widest">{uploading ? 'Enviando...' : 'Fazer Upload'}</span>
                                         </div>
                                         <input type="file" ref={logoInputRef} accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
                                     </label>
@@ -913,14 +913,14 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between px-1">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Galeria</label>
-                                        <span className="text-[10px] font-bold text-slate-300">{formData.galleryImages?.length || 0}/6 fotos</span>
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Galeria</label>
+                                        <span className="text-[10px] font-bold text-muted-foreground/50">{formData.galleryImages?.length || 0}/6 fotos</span>
                                     </div>
 
                                     {(formData.galleryImages?.length ?? 0) > 0 && (
                                         <div className="grid grid-cols-3 gap-2">
                                             {formData.galleryImages!.map((url, i) => (
-                                                <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100">
+                                                <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-muted">
                                                     <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
                                                     <button
                                                         type="button"
@@ -936,9 +936,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
                                     {(formData.galleryImages?.length || 0) < 6 && (
                                         <label className="block w-full cursor-pointer">
-                                            <div className={`max-w-[280px] w-full py-3 px-4 rounded-2xl border text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-slate-50' : 'bg-white border-slate-200 hover:border-violet-500'}`}>
-                                                {galleryUploading ? <Loader2 size={16} className="animate-spin text-violet-500" /> : <Upload size={16} />}
-                                                <span className="text-[11px] font-black uppercase tracking-widest">Adicionar Fotos</span>
+                                            <div className={`max-w-[280px] w-full py-3 px-4 rounded-2xl border text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-muted' : 'bg-card border-border/80 hover:border-primary hover:text-foreground'}`}>
+                                                {galleryUploading ? <Loader2 size={16} className="animate-spin text-primary" /> : <Upload size={16} />}
+                                                <span className="text-[11px] font-bold uppercase tracking-widest">Adicionar Fotos</span>
                                             </div>
                                             <input type="file" ref={galleryInputRef} accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={galleryUploading} />
                                         </label>
@@ -947,22 +947,22 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Descrição Comercial Curta</label>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Descrição Comercial Curta</label>
                                 <input
                                     type="text"
                                     value={formData.shortDescription || ''}
                                     onChange={e => setFormData({ ...formData, shortDescription: e.target.value })}
-                                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
+                                    className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all"
                                     placeholder="Ex: Completo com teto solar e baixa quilometragem."
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Detalhes Adicionais</label>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Detalhes Adicionais</label>
                                 <textarea
                                     value={formData.description || ''}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full p-4 h-32 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-semibold text-sm"
+                                    className="w-full p-4 h-32 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm text-foreground focus:bg-card focus:border-primary/45 transition-all"
                                     placeholder="Ex: Manual e chave cópia. Todas as revisões efetuadas em concessionária autorizada..."
                                 />
                             </div>
@@ -1012,10 +1012,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             </form>
 
             {/* Sticky Bottom Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-700/50 px-6 py-4">
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border/80 px-6 py-4 shadow-xl">
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
                     <div>
-                        <p className="text-xs font-bold text-slate-400">
+                        <p className="text-xs font-bold text-muted-foreground">
                             {isEditing ? 'Editando veículo' : 'Novo cadastro'}
                         </p>
                     </div>
@@ -1023,7 +1023,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         <button
                             type="button"
                             onClick={() => { clearDraft(); navigate('/inventory'); }}
-                            className="px-6 py-3.5 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors cursor-pointer"
+                            className="px-6 py-3.5 text-muted-foreground text-[10px] font-bold uppercase tracking-widest hover:text-foreground transition-colors cursor-pointer"
                         >
                             Cancelar
                         </button>
@@ -1031,7 +1031,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             type="submit"
                             form="vehicle-form"
                             disabled={uploading || galleryUploading || submitting}
-                            className="px-8 py-3.5 bg-violet-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-violet-700 transition-all shadow-lg shadow-violet-600/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+                            className="px-8 py-3.5 bg-primary text-primary-foreground rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-md shadow-primary/20 active:scale-95 disabled:opacity-50 cursor-pointer"
                         >
                             {submitting ? (
                                 <span className="flex items-center gap-2"><Loader2 size={14} className="animate-spin" /> Salvando...</span>

@@ -34,6 +34,28 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
         setLoading(false);
     };
 
+    const handleForgotPassword = async () => {
+        setError(null);
+        setSuccess(null);
+        if (!email.trim()) {
+            setError('Informe seu e-mail no campo acima para receber o link de redefinição.');
+            return;
+        }
+        setLoading(true);
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+                redirectTo: `${window.location.origin}/redefinir-senha`,
+            });
+            if (error) throw error;
+            setSuccess('Se este e-mail estiver cadastrado, enviamos um link para redefinir a senha. Verifique sua caixa de entrada.');
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message || 'Não foi possível enviar o link de redefinição.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -189,7 +211,7 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#57a89a]/10 focus:border-[#57a89a] transition-all outline-none"
+                                    className="w-full pl-10 pr-4 py-2 sm:py-2.5 xl:py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs xl:text-sm text-slate-900 focus:bg-white focus:ring-4 focus:ring-[#8b5cf6]/10 focus:border-[#8b5cf6] transition-all outline-none"
                                     placeholder="seu@email.com"
                                 />
                             </div>
@@ -215,6 +237,18 @@ export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) 
                                     {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                                 </button>
                             </div>
+                            {!isSignUp && (
+                                <div className="flex justify-end pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={handleForgotPassword}
+                                        disabled={loading}
+                                        className="text-[10px] sm:text-[11px] font-bold text-slate-400 hover:text-[#8b5cf6] transition-colors disabled:opacity-50"
+                                    >
+                                        Esqueci minha senha
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {error && (

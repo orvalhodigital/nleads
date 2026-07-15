@@ -57,10 +57,18 @@ export const planService = {
   },
 
   async getAsaasUpgradeLink(userId: string, planId: string): Promise<string> {
+    // Envia o token da sessão para o endpoint autenticar o chamador.
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+      throw new Error('Sessão expirada. Faça login novamente para prosseguir com o upgrade.');
+    }
+
     const response = await fetch('/api/create-asaas-payment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ userId, planId }),
     });

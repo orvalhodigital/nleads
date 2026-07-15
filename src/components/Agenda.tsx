@@ -413,42 +413,42 @@ const Agenda: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-between gap-6 px-1">
                     <div className="flex items-center gap-3">
                         {/* Tab Selector */}
-                        <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm">
+                        <div className="flex bg-muted/80 dark:bg-slate-900/60 p-1 rounded-xl border border-border/80 backdrop-blur-sm">
                             <button
                                 onClick={() => setAgendaTab('visits')}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'visits' ? 'bg-white text-brand-600 shadow-md font-black ring-1 ring-brand-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'visits' ? 'bg-card text-primary shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
                             >
                                 <CalendarDays size={15} />
                                 <span className="text-[11px] uppercase tracking-wide">Visitas</span>
                                 {stats.visitsPending > 0 && (
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'visits' ? 'bg-brand-50 text-brand-600' : 'bg-slate-200 text-slate-500'}`}>
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'visits' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                                         {stats.visitsPending}
                                     </span>
                                 )}
                             </button>
                             <button
                                 onClick={() => setAgendaTab('followups')}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'followups' ? 'bg-white text-blue-600 shadow-md font-black ring-1 ring-blue-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'followups' ? 'bg-card text-primary shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
                             >
                                 <PhoneCall size={15} />
                                 <span className="text-[11px] uppercase tracking-wide">Follow-ups</span>
                                 {(stats.followupsOverdue + stats.followupsToday) > 0 && (
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'followups' ? 'bg-red-50 text-red-600' : 'bg-slate-200 text-slate-500'}`}>
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'followups' ? 'bg-rose-500/10 text-rose-500' : 'bg-muted text-muted-foreground'}`}>
                                         {stats.followupsOverdue + stats.followupsToday}
                                     </span>
                                 )}
                             </button>
                         </div>
 
-                        <div className="h-10 w-px bg-slate-200 mx-1 hidden md:block" />
+                        <div className="h-10 w-px bg-border/80 mx-1 hidden md:block" />
 
                         {/* View Type */}
-                        <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
+                        <div className="flex bg-muted/80 dark:bg-slate-900/60 p-1 rounded-xl border border-border/80">
                             {(['list', 'calendar'] as const).map((v) => (
                                 <button
                                     key={v}
                                     onClick={() => setViewType(v)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${viewType === v ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-700 font-semibold'}`}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${viewType === v ? 'bg-card text-foreground shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
                                 >
                                     {v === 'list' ? <LayoutList size={15} strokeWidth={2.5} /> : <CalendarDays size={15} strokeWidth={2.5} />}
                                 </button>
@@ -459,7 +459,7 @@ const Agenda: React.FC = () => {
                     {agendaTab === 'visits' && (
                         <button
                             onClick={() => setIsFormOpen(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-brand-600 transition-all shadow-md shadow-brand-500/10 active:scale-95"
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-primary/90 transition-all shadow-md shadow-primary/20 active:scale-95"
                         >
                             <Plus size={15} strokeWidth={3} /> Novo Agendamento
                         </button>

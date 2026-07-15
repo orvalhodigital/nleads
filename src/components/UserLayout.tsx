@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
+import ErrorBoundary from './ErrorBoundary';
 import OtimizzaLogo, { LogoRenderer } from './OtimizzaLogo';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import logoOrvalhoVertical from '../assets/branding/logos/logo-orvalho.png';
@@ -119,7 +120,9 @@ const UserLayout: React.FC = () => {
 
                 <div className="flex-1 overflow-y-auto p-4 pb-28 lg:px-10 lg:pt-10 lg:pb-6 flex flex-col">
                     <div className="w-full flex-1 flex flex-col animate-fadeUp">
-                        <Outlet />
+                        <ErrorBoundary resetKey={location.pathname}>
+                            <Outlet />
+                        </ErrorBoundary>
                     </div>
                 </div>
             </main>

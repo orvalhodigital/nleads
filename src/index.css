@@ -1,3 +1,8 @@
+/* Tailwind CSS v4 — gera preflight + utilitários no build (Vite/PostCSS).
+   Antes o projeto dependia do Play CDN (cdn.tailwindcss.com) em runtime; agora
+   os utilitários são compilados. NÃO reintroduzir o CDN. Ver DESIGN_GUIDELINES.md. */
+@import "tailwindcss";
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     height: 8px;
@@ -45,6 +50,19 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Superfície de vidro padrão (assinatura do painel).
+     Use em cards/painéis flutuantes. No mobile o blur é mais leve por custo. */
+  .surface-glass {
+    background: color-mix(in oklab, var(--card) 60%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    backdrop-filter: blur(12px);
+  }
+  @media (min-width: 768px) {
+    .surface-glass {
+      backdrop-filter: blur(24px);
+    }
+  }
 }
 
 @keyframes slideInRight {
@@ -69,6 +87,22 @@
     transform: translateX(100%);
     opacity: 0;
   }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out forwards;
 }
 
 @keyframes slideInLeft {
@@ -164,20 +198,23 @@
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: 'Outfit', 'Plus Jakarta Sans', 'Inter', sans-serif;
-  
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c084fc;
-  --color-brand-400: #a855f7;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
-  --color-brand-950: #2e1065;
+  /* Tipografia — ver docs/DESIGN_GUIDELINES.md.
+     Corpo/UI  → font-sans (Inter). Títulos/display → font-heading (Bricolage). */
+  --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', var(--font-sans);
+
+  /* Escala da marca — azul-violeta (índigo). Puxada do roxo para o azul em 2026-07-15. */
+  --color-brand-50: #f2f3fe;
+  --color-brand-100: #e6e7fd;
+  --color-brand-200: #d0d2fb;
+  --color-brand-300: #b0b2f7;
+  --color-brand-400: #8b8bf1;
+  --color-brand-500: #6f66ea;
+  --color-brand-600: #5b46e5;
+  --color-brand-700: #4c37cc;
+  --color-brand-800: #3f2ea5;
+  --color-brand-900: #362a83;
+  --color-brand-950: #221a4d;
 
   --color-brand-green: var(--color-brand-500);
   --color-brand-lightgreen: var(--color-brand-300);
@@ -224,82 +261,106 @@
 }
 
 :root {
-  --background: #FAF9FF;
-  --foreground: #0B0720;
+  --background: #FAFAFF;
+  --foreground: #0B0A20;
   --card: #FFFFFF;
-  --card-foreground: #0B0720;
+  --card-foreground: #0B0A20;
   --popover: #FFFFFF;
-  --popover-foreground: #0B0720;
-  --primary: #7C3AED;
+  --popover-foreground: #0B0A20;
+  --primary: #5B46E5;
   --primary-foreground: #FFFFFF;
-  --secondary: #EDE9FE;
-  --secondary-foreground: #4C1D95;
-  --muted: #F5F3FF;
+  --secondary: #E9E9FE;
+  --secondary-foreground: #362A83;
+  --muted: #F3F3FF;
   --muted-foreground: #6366F1;
-  --accent: rgba(124, 58, 237, 0.08);
-  --accent-foreground: #7C3AED;
+  --accent: rgba(91, 70, 229, 0.08);
+  --accent-foreground: #5B46E5;
   --destructive: #EF4444;
-  --border: #E4DFFF;
-  --input: #E4DFFF;
-  --ring: rgba(124, 58, 237, 0.3);
-  --chart-1: #7C3AED;
+  --border: #E1E1FB;
+  --input: #E1E1FB;
+  --ring: rgba(91, 70, 229, 0.3);
+  --chart-1: #5B46E5;
   --chart-2: #F97316;
   --chart-3: #06B6D4;
   --chart-4: #10B981;
   --chart-5: #EC4899;
   --radius: 1.5rem;
-  --sidebar: #EDE9FE;
-  --sidebar-foreground: #4C1D95;
-  --sidebar-primary: #7C3AED;
+  --sidebar: #E9E9FE;
+  --sidebar-foreground: #362A83;
+  --sidebar-primary: #5B46E5;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #FFFFFF;
-  --sidebar-accent-foreground: #7C3AED;
-  --sidebar-border: #DCD6FF;
-  --sidebar-ring: rgba(124, 58, 237, 0.3);
+  --sidebar-accent-foreground: #5B46E5;
+  --sidebar-border: #D6D6FB;
+  --sidebar-ring: rgba(91, 70, 229, 0.3);
 }
 
 .dark {
-  --background: #090615;
-  --foreground: #F5F3FF;
-  --card: #141026;
-  --card-foreground: #F5F3FF;
-  --popover: #141026;
-  --popover-foreground: #F5F3FF;
-  --primary: #A78BFA;
-  --primary-foreground: #090615;
-  --secondary: #251B40;
-  --secondary-foreground: #F5F3FF;
-  --muted: #1A1333;
-  --muted-foreground: #A78BFA;
-  --accent: rgba(167, 139, 250, 0.15);
-  --accent-foreground: #A78BFA;
+  --background: #080816;
+  --foreground: #F4F4FF;
+  --card: #131426;
+  --card-foreground: #F4F4FF;
+  --popover: #131426;
+  --popover-foreground: #F4F4FF;
+  --primary: #9D92FB;
+  --primary-foreground: #080816;
+  --secondary: #232145;
+  --secondary-foreground: #F4F4FF;
+  --muted: #191838;
+  --muted-foreground: #9D92FB;
+  --accent: rgba(157, 146, 251, 0.15);
+  --accent-foreground: #9D92FB;
   --destructive: #EF4444;
-  --border: #33275A;
-  --input: #33275A;
-  --ring: rgba(167, 139, 250, 0.4);
-  --chart-1: #A78BFA;
+  --border: #302C5E;
+  --input: #302C5E;
+  --ring: rgba(157, 146, 251, 0.4);
+  --chart-1: #9D92FB;
   --chart-2: #FB923C;
   --chart-3: #22D3EE;
   --chart-4: #34D399;
   --chart-5: #F472B6;
-  --sidebar: #141026;
-  --sidebar-foreground: #FAF9FF;
-  --sidebar-primary: #A78BFA;
-  --sidebar-primary-foreground: #090615;
-  --sidebar-accent: #251B40;
-  --sidebar-accent-foreground: #FAF9FF;
-  --sidebar-border: #33275A;
-  --sidebar-ring: rgba(167, 139, 250, 0.4);
+  --sidebar: #131426;
+  --sidebar-foreground: #FAFAFF;
+  --sidebar-primary: #9D92FB;
+  --sidebar-primary-foreground: #080816;
+  --sidebar-accent: #232145;
+  --sidebar-accent-foreground: #FAFAFF;
+  --sidebar-border: #302C5E;
+  --sidebar-ring: rgba(157, 146, 251, 0.4);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Transição suave ao alternar Dia/Noite */
+    transition: color-scheme 0.3s ease;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11'; /* Inter: números/letras mais legíveis */
+  }
+  /* Títulos usam Bricolage Grotesque por padrão. Para exceções, use `font-sans`. */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+    letter-spacing: -0.02em; /* aperto óptico p/ elegância */
+  }
+}
+
+/* Acessibilidade: respeita quem desativou animações no sistema operacional.
+   Reduz drasticamente animações/transições sem quebrar a funcionalidade. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

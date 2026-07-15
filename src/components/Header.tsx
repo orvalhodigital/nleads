@@ -423,17 +423,26 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Tema Switcher: Dia / Noite */}
+                        {/* Tema Switcher: Dia / Noite — knob deslizante */}
                         <button
                             onClick={toggleTheme}
-                            className="flex items-center gap-2 px-2.5 py-1.5 bg-secondary/80 dark:bg-slate-800/80 border border-border/80 rounded-full hover:bg-secondary/65 dark:hover:bg-slate-700/80 transition-all duration-300 group shrink-0"
-                            title={theme === 'dia' ? "Ativar Modo Noite (Escuro)" : "Ativar Modo Dia (Claro)"}
+                            role="switch"
+                            aria-checked={theme === 'noite'}
+                            aria-label={theme === 'dia' ? "Ativar Modo Noite (escuro)" : "Ativar Modo Dia (claro)"}
+                            title={theme === 'dia' ? "Ativar Modo Noite (escuro)" : "Ativar Modo Dia (claro)"}
+                            className="relative flex items-center h-8 w-[58px] rounded-full bg-secondary/80 dark:bg-slate-800/80 border border-border/80 hover:border-primary/40 transition-colors duration-300 shrink-0 px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                            <span className="relative flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-slate-950 shadow-sm text-amber-500 dark:text-purple-400 transition-all duration-300">
-                                {theme === 'dia' ? <Sun size={12} fill="currentColor" /> : <Moon size={12} fill="currentColor" />}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider hidden sm:inline pr-1">
-                                {theme === 'dia' ? 'Dia' : 'Noite'}
+                            {/* Ícones de fundo (guias) */}
+                            <Sun size={13} className="absolute left-[9px] text-amber-500/70 dark:text-amber-500/30 transition-colors" />
+                            <Moon size={13} className="absolute right-[9px] text-primary/40 dark:text-primary transition-colors" />
+                            {/* Knob deslizante */}
+                            <span
+                                className="relative z-10 flex items-center justify-center w-6 h-6 rounded-full bg-card shadow-sm ring-1 ring-border/60 transition-transform duration-300 ease-out"
+                                style={{ transform: theme === 'noite' ? 'translateX(26px)' : 'translateX(0px)' }}
+                            >
+                                {theme === 'dia'
+                                    ? <Sun size={13} className="text-amber-500" fill="currentColor" />
+                                    : <Moon size={13} className="text-primary" fill="currentColor" />}
                             </span>
                         </button>
 

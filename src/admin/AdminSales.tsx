@@ -280,7 +280,7 @@ export default function AdminSales() {
                             {sale.source || '—'}
                           </td>
                           <td className="px-6 py-4 text-right text-sm text-slate-400">
-                            {sale.created_at ? new Date(sale.created_at).toLocaleDateString('pt-BR') : 'N/A'}
+                            {sale.createdAt ? new Date(sale.createdAt).toLocaleDateString('pt-BR') : 'N/A'}
                           </td>
                         </tr>
                       ))}

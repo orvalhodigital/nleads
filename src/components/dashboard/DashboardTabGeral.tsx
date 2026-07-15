@@ -83,11 +83,11 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-amber-400/20 rounded-full blur-[40px] pointer-events-none" />
               <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 bg-amber-400/30 rounded-2xl flex items-center justify-center shrink-0 border border-amber-400/40 shadow-inner">
-                  <AlertTriangle size={28} className="text-amber-700" />
+                  <AlertTriangle size={28} className="text-amber-700 dark:text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-amber-900 tracking-tight leading-tight">{attentionLeads.length} leads precisam de atenção!</h3>
-                  <p className="text-xs font-semibold text-amber-800 mt-1 tracking-tight">Parados há mais de 15 dias na mesma fase do funil.</p>
+                  <h3 className="text-lg font-black text-amber-900 dark:text-amber-200 tracking-tight leading-tight">{attentionLeads.length} leads precisam de atenção!</h3>
+                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-300/90 mt-1 tracking-tight">Parados há mais de 15 dias na mesma fase do funil.</p>
                 </div>
               </div>
               <button onClick={() => navigate('/leads')} className="relative z-10 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-3.5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-amber-500/30 hover:-translate-y-0.5 whitespace-nowrap cursor-pointer">
@@ -100,11 +100,11 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-rose-400/20 rounded-full blur-[40px] pointer-events-none" />
               <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 bg-rose-400/30 rounded-2xl flex items-center justify-center shrink-0 border border-rose-400/40 shadow-inner">
-                  <Car size={28} className="text-rose-700" />
+                  <Car size={28} className="text-rose-700 dark:text-rose-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-rose-900 tracking-tight leading-tight">{staleVehicles} veículos parados há 60+ dias!</h3>
-                  <p className="text-xs font-semibold text-rose-800 mt-1 tracking-tight">Reduzir preço ou fazer promoção para acelerar giro.</p>
+                  <h3 className="text-lg font-black text-rose-900 dark:text-rose-200 tracking-tight leading-tight">{staleVehicles} veículos parados há 60+ dias!</h3>
+                  <p className="text-xs font-semibold text-rose-800 dark:text-rose-300/90 mt-1 tracking-tight">Reduzir preço ou fazer promoção para acelerar giro.</p>
                 </div>
               </div>
               <button onClick={() => navigate('/inventory')} className="relative z-10 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3.5 rounded-[20px] font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-rose-500/30 hover:-translate-y-0.5 whitespace-nowrap cursor-pointer">
@@ -121,8 +121,8 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
           value={salesThisMonth.length}
           trend={salesCountGrowth}
           icon={ShoppingBag}
-          colorClass="text-brand-600 bg-brand-500/10"
-          glowClass="bg-brand-400/30"
+          colorClass="text-primary bg-primary/10"
+          glowClass="bg-primary/25"
           info="Sua conversão final. Estratégia: Analise quais marcas saíram mais para comprar estoque similar."
           onClick={() => navigate('/leads?status=won')}
         />
@@ -131,8 +131,8 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
           value={`R$ ${formatCurrency(revenueThisMonth)}`}
           trend={salesGrowth}
           icon={DollarSign}
-          colorClass="text-brand-600 bg-brand-500/10"
-          glowClass="bg-brand-400/30"
+          colorClass="text-primary bg-primary/10"
+          glowClass="bg-primary/25"
           info="Dinheiro entrando no caixa. Estratégia: Compare com o custo do estoque para entender sua margem real bruta."
           onClick={() => navigate('/reporting')}
         />
@@ -141,8 +141,8 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
           value={leadsThisMonth.length}
           trend={leadsGrowth}
           icon={Users}
-          colorClass="text-indigo-600 bg-indigo-500/10"
-          glowClass="bg-indigo-400/30"
+          colorClass="text-primary bg-primary/10"
+          glowClass="bg-primary/25"
           info="Volume de oportunidades criadas este mês. Estratégia: Se baixo, invista em tráfego ou mídias. Se alto com pouca venda, cheque o atendimento."
           onClick={() => navigate('/leads')}
         />
@@ -150,8 +150,8 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
           label="Taxa Conversão"
           value={`${conversionRate.toFixed(1)}%`}
           icon={Percent}
-          colorClass="text-purple-600 bg-purple-500/10"
-          glowClass="bg-purple-400/30"
+          colorClass="text-emerald-600 bg-emerald-500/10 dark:text-emerald-400 dark:bg-emerald-500/15"
+          glowClass="bg-emerald-400/25"
           info="Sua eficiência comercial. Estratégia: O ideal é acima de 10%. Abaixo disso indica gargalo na negociação ou leads desqualificados."
           onClick={() => navigate('/reporting')}
         />
@@ -159,8 +159,8 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
           label="Estoque"
           value={availableVehicles.length}
           icon={Car}
-          colorClass="text-blue-600 bg-blue-500/10"
-          glowClass="bg-blue-400/30"
+          colorClass="text-cyan-600 bg-cyan-500/10 dark:text-cyan-400 dark:bg-cyan-500/15"
+          glowClass="bg-cyan-400/25"
           info="Quantidade de veículos disponíveis. Estratégia: Estoque parado é dinheiro morrendo. Foque nos carros que estão há mais de 30 dias na loja."
           onClick={() => navigate('/inventory')}
         />
@@ -168,8 +168,8 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
           label="Ticket Médio"
           value={`R$ ${formatCurrency(ticketMedioVendas)}`}
           icon={Target}
-          colorClass="text-rose-600 bg-rose-500/10"
-          glowClass="bg-rose-400/30"
+          colorClass="text-amber-600 bg-amber-500/10 dark:text-amber-400 dark:bg-amber-500/15"
+          glowClass="bg-amber-400/25"
           info="Valor médio das suas vendas. Estratégia: Se quiser aumentar o faturamento sem aumentar o número de vendas, foque em produtos de maior valor."
           onClick={() => navigate('/reporting')}
         />
@@ -321,7 +321,7 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
           <div className="flex flex-col gap-6">
             <div className="flex items-end justify-between px-2 pb-4">
               <div>
-                <p className="text-5xl font-bold text-foreground tracking-tight">{hotLeads}</p>
+                <p className="text-5xl font-heading font-bold text-foreground tracking-tight">{hotLeads}</p>
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-2">Leads Quentes 🎉</p>
               </div>
             </div>

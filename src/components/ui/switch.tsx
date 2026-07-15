@@ -50,7 +50,10 @@ const Switch = React.forwardRef<
         padding: 2,
         cursor: props.disabled ? 'not-allowed' : 'pointer',
         opacity: props.disabled ? 0.5 : 1,
-        backgroundColor: isOn ? '#10b981' : '#cbd5e1',
+        // Cores da marca via tokens (funcionam nos temas Dia/Noite)
+        backgroundColor: isOn
+          ? 'var(--primary)'
+          : 'color-mix(in oklab, var(--muted-foreground) 35%, transparent)',
         transition: 'background-color 200ms ease',
         outline: 'none',
         border: 'none',

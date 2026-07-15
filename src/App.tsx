@@ -25,6 +25,7 @@ const PageLoader = () => (
 
 // Lazy Loaded Components
 const Auth = lazy(() => import('./components/Auth'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 const HomePage = lazy(() => import('./pages/HomePage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -76,6 +77,7 @@ const App: React.FC = () => {
                         <Auth mode="signup" />
                       </DataProvider>
                     } />
+                    <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
                     <Route path="/*" element={
                       <DataProvider>
                         <UserLayout />

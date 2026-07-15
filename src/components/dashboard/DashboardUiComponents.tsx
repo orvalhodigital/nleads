@@ -44,7 +44,7 @@ export const KpiGlassCard: React.FC<KpiGlassCardProps> = ({
 }) => (
   <div
     onClick={onClick}
-    className={`bg-card/60 dark:bg-card/40 backdrop-blur-3xl border border-border/80 p-6 rounded-3xl shadow-sm shadow-purple-500/5 dark:shadow-black/25 transition-all duration-300 group relative flex flex-col justify-between min-h-[160px] z-10 ${onClick ? 'cursor-pointer hover:bg-card/90 dark:hover:bg-card/60 hover:shadow-md hover:shadow-purple-500/10' : ''}`}
+    className={`bg-card/60 dark:bg-card/40 backdrop-blur-3xl border border-border/80 p-6 rounded-3xl shadow-sm shadow-primary/5 dark:shadow-black/25 transition-all duration-300 group relative flex flex-col justify-between min-h-[160px] z-10 ${onClick ? 'cursor-pointer hover:bg-card/90 dark:hover:bg-card/60 hover:shadow-md hover:shadow-primary/10 hover:-translate-y-0.5' : ''}`}
   >
     {/* Glow clipping container */}
     <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
@@ -97,7 +97,7 @@ export const ActionMetricCard: React.FC<ActionMetricCardProps> = ({ title, value
       <div className={`w-12 h-12 rounded-xl shadow-inner flex items-center justify-center ${colorClass}`}>
         <Icon size={20} strokeWidth={2.5} />
       </div>
-      <p className="text-4xl font-bold text-foreground tracking-tight leading-none">{value}</p>
+      <p className="text-4xl font-heading font-bold text-foreground tracking-tight leading-none">{value}</p>
     </div>
     <div className="mt-auto">
       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{title}</p>
@@ -121,7 +121,7 @@ export const MiniStat: React.FC<MiniStatProps> = ({ label, value, subtitle, icon
       {Icon && <Icon size={16} className="text-muted-foreground/40 shrink-0" />}
     </div>
     <div className="flex items-center gap-3 relative z-10">
-      <p className="text-2xl lg:text-3xl font-bold text-foreground leading-tight truncate">{value}</p>
+      <p className="text-2xl lg:text-3xl font-heading font-bold text-foreground leading-tight truncate">{value}</p>
       {trend !== undefined && trend !== 0 && (
         <span className={`text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-lg ${trend >= 0 ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground' : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'}`}>
           {trend > 0 ? '+' : ''}{trend.toFixed(0)}%
@@ -199,6 +199,6 @@ export const AgendaRow: React.FC<AgendaRowProps> = ({ icon: Icon, label, value, 
         {subtitle && <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mt-1.5">{subtitle}</p>}
       </div>
     </div>
-    <span className="text-3xl font-bold text-foreground px-2">{value}</span>
+    <span className="text-3xl font-heading font-bold text-foreground px-2">{value}</span>
   </div>
 );

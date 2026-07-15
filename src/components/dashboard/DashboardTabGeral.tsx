@@ -184,126 +184,126 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
         <GlassSection>
-          <SectionHeader icon={Award} title="Funil do Mês" subtitle="Estoque → Leads → Visitas → Vendas" color="text-brand-500 bg-brand-500/10 border-brand-500/20" />
+          <SectionHeader icon={Award} title="Funil do Mês" subtitle="Estoque → Leads → Visitas → Vendas" color="text-primary bg-primary/10 border-primary/20" />
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* — Estoque — */}
-            <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100/50 p-4 space-y-3">
+            <div className="rounded-2xl bg-indigo-500/5 dark:bg-indigo-950/20 border border-indigo-500/10 dark:border-indigo-800/20 p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center">
                   <Car size={14} className="text-indigo-500" />
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-500">Estoque</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Estoque</span>
               </div>
               <div className="space-y-1.5">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs font-bold text-slate-500">Giro mensal</span>
-                  <span className="text-sm font-black text-indigo-600">{stockTurnover.toFixed(1)}%</span>
+                  <span className="text-xs font-semibold text-muted-foreground">Giro mensal</span>
+                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{stockTurnover.toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs font-bold text-slate-500">Tempo médio de venda</span>
-                  <span className={`text-sm font-black ${averageDaysToSell > 45 ? 'text-rose-500' : 'text-slate-700'}`}>{averageDaysToSell.toFixed(0)}d</span>
+                  <span className="text-xs font-semibold text-muted-foreground">Tempo médio de venda</span>
+                  <span className={`text-sm font-bold ${averageDaysToSell > 45 ? 'text-rose-500' : 'text-foreground'}`}>{averageDaysToSell.toFixed(0)}d</span>
                 </div>
                 {staleVehicles > 0 && (
-                  <div className="flex justify-between items-baseline pt-1 border-t border-indigo-100/50">
-                    <span className="text-xs font-bold text-rose-400">Parados +60d</span>
-                    <span className="text-sm font-black text-rose-500">{staleVehicles}</span>
+                  <div className="flex justify-between items-baseline pt-1 border-t border-indigo-500/10">
+                    <span className="text-xs font-semibold text-rose-500">Parados +60d</span>
+                    <span className="text-sm font-bold text-rose-500">{staleVehicles}</span>
                   </div>
                 )}
               </div>
             </div>
 
             {/* — Leads — */}
-            <div className="rounded-2xl bg-brand-50/60 border border-brand-100/50 p-4 space-y-3">
+            <div className="rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary-foreground/10 p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-brand-500/10 flex items-center justify-center">
-                  <Users size={14} className="text-brand-500" />
+                <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                  <Users size={14} className="text-primary" />
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-brand-600">Leads</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary-foreground">Leads</span>
               </div>
               <div>
                 {profile?.monthly_leads_goal ? (
                   <>
                     <div className="flex justify-between items-baseline mb-2">
-                      <span className="text-3xl font-black text-brand-700">{leadsThisCalMonth}</span>
-                      <span className="text-xs font-bold text-slate-400">/{profile.monthly_leads_goal}</span>
+                      <span className="text-3xl font-bold text-primary dark:text-primary-foreground">{leadsThisCalMonth}</span>
+                      <span className="text-xs font-semibold text-muted-foreground">/{profile.monthly_leads_goal}</span>
                     </div>
-                    <div className="h-2 w-full bg-brand-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-brand-500 transition-all duration-700" style={{ width: `${Math.min((leadsThisCalMonth / profile.monthly_leads_goal) * 100, 100)}%` }} />
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${Math.min((leadsThisCalMonth / profile.monthly_leads_goal) * 100, 100)}%` }} />
                     </div>
-                    <p className="text-[9px] font-bold text-slate-400 mt-1">{Math.round((leadsThisCalMonth / profile.monthly_leads_goal) * 100)}% da meta</p>
+                    <p className="text-[9px] font-bold text-muted-foreground mt-1">{Math.round((leadsThisCalMonth / profile.monthly_leads_goal) * 100)}% da meta</p>
                   </>
                 ) : (
-                  <p className="text-3xl font-black text-slate-800">{leadsThisCalMonth}<span className="text-sm font-bold text-slate-400 ml-1">leads</span></p>
+                  <p className="text-3xl font-bold text-foreground">{leadsThisCalMonth}<span className="text-sm font-semibold text-muted-foreground ml-1">leads</span></p>
                 )}
               </div>
             </div>
 
             {/* — Visitas — */}
-            <div className="rounded-2xl bg-blue-50/60 border border-blue-100/50 p-4 space-y-3">
+            <div className="rounded-2xl bg-blue-500/5 dark:bg-blue-950/20 border border-blue-500/10 dark:border-blue-800/20 p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center">
                   <Calendar size={14} className="text-blue-500" />
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-blue-600">Visitas</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">Visitas</span>
               </div>
               <div>
                 {profile?.monthly_visits_goal ? (
                   <>
                     <div className="flex justify-between items-baseline mb-2">
-                      <span className="text-3xl font-black text-blue-700">{visitsThisMonthDone}</span>
-                      <span className="text-xs font-bold text-slate-400">/{profile.monthly_visits_goal}</span>
+                      <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">{visitsThisMonthDone}</span>
+                      <span className="text-xs font-semibold text-muted-foreground">/{profile.monthly_visits_goal}</span>
                     </div>
-                    <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div className="h-full rounded-full bg-blue-500 transition-all duration-700" style={{ width: `${Math.min((visitsThisMonthDone / profile.monthly_visits_goal) * 100, 100)}%` }} />
                     </div>
-                    <p className="text-[9px] font-bold text-slate-400 mt-1">{Math.round((visitsThisMonthDone / profile.monthly_visits_goal) * 100)}% da meta</p>
+                    <p className="text-[9px] font-bold text-muted-foreground mt-1">{Math.round((visitsThisMonthDone / profile.monthly_visits_goal) * 100)}% da meta</p>
                   </>
                 ) : (
-                  <p className="text-3xl font-black text-slate-800">{visitsThisMonthDone}<span className="text-sm font-bold text-slate-400 ml-1">realizadas</span></p>
+                  <p className="text-3xl font-bold text-foreground">{visitsThisMonthDone}<span className="text-sm font-semibold text-muted-foreground ml-1">realizadas</span></p>
                 )}
                 {visitsThisMonthTotal > 0 && (
-                  <p className="text-[9px] font-bold text-slate-400 mt-1">{visitShowRate}% de comparecimento ({visitsThisMonthTotal} agendadas)</p>
+                  <p className="text-[9px] font-bold text-muted-foreground mt-1">{visitShowRate}% de comparecimento ({visitsThisMonthTotal} agendadas)</p>
                 )}
               </div>
             </div>
 
             {/* — Vendas — */}
-            <div className="rounded-2xl bg-brand-50/60 border border-brand-100/50 p-4 space-y-3">
+            <div className="rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary-foreground/10 p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-brand-500/10 flex items-center justify-center">
-                  <ShoppingBag size={14} className="text-brand-500" />
+                <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                  <ShoppingBag size={14} className="text-primary" />
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-brand-600">Vendas</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary-foreground">Vendas</span>
               </div>
               <div className="space-y-2">
                 <div>
                   {monthlyGoal > 0 ? (
                     <>
                       <div className="flex justify-between items-baseline mb-1">
-                        <span className="text-2xl font-black text-brand-700">{salesCountThisCalMonth}</span>
-                        <span className="text-xs font-bold text-slate-400">/{monthlyGoal} unid.</span>
+                        <span className="text-2xl font-bold text-primary dark:text-primary-foreground">{salesCountThisCalMonth}</span>
+                        <span className="text-xs font-semibold text-muted-foreground">/{monthlyGoal} unid.</span>
                       </div>
-                      <div className="h-2 w-full bg-brand-100 rounded-full overflow-hidden">
-                        {(() => { const pct = Math.min((salesCountThisCalMonth / monthlyGoal) * 100, 100); return <div className={`h-full rounded-full transition-all duration-700 ${pct < 30 ? 'bg-rose-400' : pct < 75 ? 'bg-amber-400' : 'bg-brand-500'}`} style={{ width: `${pct}%` }} />; })()}
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        {(() => { const pct = Math.min((salesCountThisCalMonth / monthlyGoal) * 100, 100); return <div className={`h-full rounded-full transition-all duration-700 ${pct < 30 ? 'bg-rose-400' : pct < 75 ? 'bg-amber-400' : 'bg-primary'}`} style={{ width: `${pct}%` }} />; })()}
                       </div>
                     </>
                   ) : (
-                    <p className="text-2xl font-black text-slate-800">{salesCountThisCalMonth}<span className="text-sm font-bold text-slate-400 ml-1">vendas</span></p>
+                    <p className="text-2xl font-bold text-foreground">{salesCountThisCalMonth}<span className="text-sm font-semibold text-muted-foreground ml-1">vendas</span></p>
                   )}
                 </div>
                 {profile?.monthly_revenue_goal ? (
-                  <div className="pt-1 border-t border-brand-100/50">
+                  <div className="pt-1 border-t border-primary/10">
                     <div className="flex justify-between items-baseline mb-1">
-                      <span className="text-xs font-bold text-slate-500">Faturamento</span>
-                      <span className="text-xs font-black text-brand-700">R$ {formatCurrency(revenueThisCalMonth)}</span>
+                      <span className="text-xs font-semibold text-muted-foreground">Faturamento</span>
+                      <span className="text-xs font-bold text-primary dark:text-primary-foreground">R$ {formatCurrency(revenueThisCalMonth)}</span>
                     </div>
-                    <div className="h-1.5 w-full bg-brand-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-brand-400 transition-all duration-700" style={{ width: `${Math.min((revenueThisCalMonth / profile.monthly_revenue_goal) * 100, 100)}%` }} />
+                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${Math.min((revenueThisCalMonth / profile.monthly_revenue_goal) * 100, 100)}%` }} />
                     </div>
-                    <p className="text-[9px] font-bold text-slate-400 mt-0.5">{Math.round((revenueThisCalMonth / profile.monthly_revenue_goal) * 100)}% de R$ {formatCurrency(profile.monthly_revenue_goal)}</p>
+                    <p className="text-[9px] font-bold text-muted-foreground mt-0.5">{Math.round((revenueThisCalMonth / profile.monthly_revenue_goal) * 100)}% de R$ {formatCurrency(profile.monthly_revenue_goal)}</p>
                   </div>
                 ) : (
-                  <p className="text-xs font-bold text-slate-400">R$ {formatCurrency(revenueThisCalMonth)}</p>
+                  <p className="text-xs font-bold text-muted-foreground">R$ {formatCurrency(revenueThisCalMonth)}</p>
                 )}
                 {salesNeeded > 0 && monthlyGoal > 0 && (
                   <p className="text-[9px] font-bold text-amber-500">{salesPerDayNeeded}/dia nos próximos {daysLeftInMonth}d</p>
@@ -315,14 +315,14 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
 
         <GlassSection>
           <div className="flex items-center justify-between mb-6">
-            <SectionHeader icon={Flame} title="Radar Quente" subtitle="Leads com alta intenção" color="text-red-500 bg-red-500/10 border-red-500/20" />
+            <SectionHeader icon={Flame} title="Radar Quente" subtitle="Leads com alta intenção" color="text-rose-500 bg-rose-500/10 border-rose-500/20" />
           </div>
 
           <div className="flex flex-col gap-6">
             <div className="flex items-end justify-between px-2 pb-4">
               <div>
-                <p className="text-5xl font-black text-slate-800 tracking-tight">{hotLeads}</p>
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400 mt-2">Leads Quentes 🎉</p>
+                <p className="text-5xl font-bold text-foreground tracking-tight">{hotLeads}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-2">Leads Quentes 🎉</p>
               </div>
             </div>
 
@@ -338,10 +338,10 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
       {/* Vendas em Processamento */}
       <GlassSection>
         <div className="flex items-center justify-between mb-6">
-          <SectionHeader icon={ShoppingBag} title="Vendas em Processamento" subtitle="Fluxo pós-venda" color="text-brand-500 bg-brand-500/10 border-brand-500/20" />
+          <SectionHeader icon={ShoppingBag} title="Vendas em Processamento" subtitle="Fluxo pós-venda" color="text-primary bg-primary/10 border-primary/20" />
           <button
             onClick={() => navigate('/sales-flow')}
-            className="px-4 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-600 text-xs font-bold transition-all cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold transition-all cursor-pointer"
           >
             Ver Kanban →
           </button>
@@ -349,24 +349,24 @@ export const DashboardTabGeral: React.FC<DashboardTabGeralProps> = ({
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100">
-              <p className="text-xs font-black uppercase tracking-widest text-blue-600">Documentação</p>
-              <p className="text-2xl font-black text-blue-900 mt-2">{leads.filter(l => l.saleStatus === 'documentacao').length}</p>
+            <div className="p-4 rounded-2xl bg-blue-500/5 dark:bg-blue-950/20 border border-blue-500/10 dark:border-blue-800/20">
+              <p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">Documentação</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2">{leads.filter(l => l.saleStatus === 'documentacao').length}</p>
             </div>
-            <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100">
-              <p className="text-xs font-black uppercase tracking-widest text-orange-600">Entrega</p>
-              <p className="text-2xl font-black text-orange-900 mt-2">{leads.filter(l => l.saleStatus === 'entrega').length}</p>
+            <div className="p-4 rounded-2xl bg-orange-500/5 dark:bg-orange-950/20 border border-orange-500/10 dark:border-orange-800/20">
+              <p className="text-xs font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">Entrega</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-2">{leads.filter(l => l.saleStatus === 'entrega').length}</p>
             </div>
-            <div className="p-4 rounded-2xl bg-brand-50 border border-brand-100">
-              <p className="text-xs font-black uppercase tracking-widest text-brand-600">Em Garantia</p>
-              <p className="text-2xl font-black text-brand-900 mt-2">{leads.filter(l => l.saleStatus === 'em_garantia').length}</p>
+            <div className="p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary-foreground/10">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary dark:text-primary-foreground">Em Garantia</p>
+              <p className="text-2xl font-bold text-primary dark:text-primary-foreground mt-2">{leads.filter(l => l.saleStatus === 'em_garantia').length}</p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Total de Vendas</p>
-            <p className="text-3xl font-black text-slate-900 mt-2">{leads.filter(l => l.saleStatus).length}</p>
-            <p className="text-xs font-bold text-slate-500 mt-2">Leads em fluxo de pós-venda</p>
+          <div className="p-4 rounded-2xl bg-card/60 dark:bg-card/30 border border-border/80">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total de Vendas</p>
+            <p className="text-3xl font-bold text-foreground mt-2">{leads.filter(l => l.saleStatus).length}</p>
+            <p className="text-xs font-semibold text-muted-foreground/80 mt-2">Leads em fluxo de pós-venda</p>
           </div>
         </div>
       </GlassSection>

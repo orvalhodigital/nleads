@@ -59,8 +59,8 @@ const AppSidebar: React.FC = () => {
 
     return (
         <aside className={`
-            fixed bottom-4 left-4 right-4 h-[68px] bg-white/70 dark:bg-slate-900/75 backdrop-blur-2xl border border-white/20 dark:border-slate-800/40 rounded-3xl shadow-2xl flex flex-row z-[100] transition-all duration-300
-            lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:h-auto lg:bg-white/30 dark:lg:bg-slate-950/20 lg:backdrop-blur-3xl lg:border-r lg:border-border/60 lg:border-t-0 lg:flex-col lg:z-50 lg:shrink-0 lg:shadow-none lg:rounded-none
+            fixed bottom-4 left-4 right-4 h-[68px] bg-secondary/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-border/80 rounded-3xl shadow-2xl flex flex-row z-[100] transition-all duration-300
+            lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:h-auto lg:bg-secondary/70 dark:lg:bg-secondary/20 lg:backdrop-blur-3xl lg:border-r lg:border-border/60 lg:border-t-0 lg:flex-col lg:z-50 lg:shrink-0 lg:shadow-none lg:rounded-none
             ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-64'}
         `}>
             <div className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center px-4 py-5' : 'justify-between px-4 py-4'}`}>
@@ -101,8 +101,8 @@ const AppSidebar: React.FC = () => {
                             lg:flex-row lg:gap-3 lg:px-4 lg:py-3 lg:justify-start lg:rounded-2xl
                             ${isCollapsed ? 'lg:justify-center lg:w-auto lg:mx-2' : 'lg:w-full'}
                             ${isActive
-                                ? 'bg-primary text-primary-foreground font-bold shadow-sm shadow-primary/10'
-                                : 'text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10'
+                                ? 'bg-primary text-primary-foreground font-bold shadow-md shadow-primary/20'
+                                : 'text-foreground/75 dark:text-foreground/80 hover:text-primary dark:hover:text-primary-foreground hover:bg-primary/10 dark:hover:bg-primary/20'
                             }
                         `}
                     >

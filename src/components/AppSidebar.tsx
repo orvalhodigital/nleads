@@ -59,8 +59,8 @@ const AppSidebar: React.FC = () => {
 
     return (
         <aside className={`
-            fixed bottom-0 left-0 w-full h-[72px] bg-white/60 backdrop-blur-2xl border-t border-white/50 flex flex-row z-[100] transition-all duration-300
-            lg:relative lg:h-auto lg:bg-white/40 lg:backdrop-blur-3xl lg:border-r lg:border-white/50 lg:border-t-0 lg:flex-col lg:z-50 lg:shrink-0
+            fixed bottom-4 left-4 right-4 h-[68px] bg-white/70 dark:bg-slate-900/75 backdrop-blur-2xl border border-white/20 dark:border-slate-800/40 rounded-3xl shadow-2xl flex flex-row z-[100] transition-all duration-300
+            lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:h-auto lg:bg-white/30 dark:lg:bg-slate-950/20 lg:backdrop-blur-3xl lg:border-r lg:border-border/60 lg:border-t-0 lg:flex-col lg:z-50 lg:shrink-0 lg:shadow-none lg:rounded-none
             ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-64'}
         `}>
             <div className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center px-4 py-5' : 'justify-between px-4 py-4'}`}>
@@ -80,7 +80,7 @@ const AppSidebar: React.FC = () => {
 
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={`p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-all shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
+                    className={`p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/5 transition-all shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
                     title={isCollapsed ? "Expandir menu" : "Recolher menu"}
                 >
                     {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -88,8 +88,8 @@ const AppSidebar: React.FC = () => {
             </div>
 
             <nav className="
-                flex-1 flex flex-row items-center justify-around px-2
-                lg:flex-col lg:px-4 lg:space-y-2 lg:mt-4 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:min-h-0
+                flex-1 flex flex-row items-center gap-1 px-3 overflow-x-auto hide-scrollbar
+                lg:flex-col lg:px-4 lg:space-y-2 lg:mt-4 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:min-h-0 lg:overflow-x-visible
             ">
                 {menuItems.map(item => (
                     <NavLink
@@ -97,28 +97,24 @@ const AppSidebar: React.FC = () => {
                         to={item.id}
                         end={item.end}
                         className={({ isActive }) => `
-                            flex flex-col items-center justify-center p-2 transition-all duration-300 group relative
-                            lg:flex-row lg:gap-3 lg:px-4 lg:py-3 lg:justify-start
+                            flex flex-col items-center justify-center p-2 transition-all duration-300 group relative shrink-0 rounded-xl
+                            lg:flex-row lg:gap-3 lg:px-4 lg:py-3 lg:justify-start lg:rounded-2xl
                             ${isCollapsed ? 'lg:justify-center lg:w-auto lg:mx-2' : 'lg:w-full'}
-                            ${item.id === '/estrutura-ecv'
-                                ? isActive
-                                    ? 'bg-indigo-50 text-indigo-600 font-black border-b-2 lg:border-b-0 lg:border-l-4 border-indigo-500 rounded-t-2xl lg:rounded-t-none lg:rounded-r-2xl lg:rounded-l-none'
-                                    : 'bg-indigo-50/30 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50/60 font-black border-b-2 lg:border-b-0 lg:border-l-4 border-transparent rounded-2xl'
-                                : isActive
-                                    ? 'bg-brand-50 text-brand-600 font-black border-b-2 lg:border-b-0 lg:border-l-4 border-brand-500 rounded-t-2xl lg:rounded-t-none lg:rounded-r-2xl lg:rounded-l-none'
-                                    : 'text-slate-500 hover:text-brand-600 hover:bg-slate-50/50 border-b-2 lg:border-b-0 lg:border-l-4 border-transparent rounded-2xl'
+                            ${isActive
+                                ? 'bg-primary text-primary-foreground font-bold shadow-sm shadow-primary/10'
+                                : 'text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10'
                             }
                         `}
                     >
                         {({ isActive }) => (
                             <>
                                 <item.icon
-                                    size={22}
+                                    size={20}
                                     strokeWidth={isActive ? 2.5 : 2}
                                     className={`shrink-0 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
                                 />
                                 <span className={`
-                                    text-[10px] font-bold mt-1
+                                    text-[9px] font-bold mt-0.5
                                     lg:text-sm lg:mt-0 lg:font-semibold
                                     ${isCollapsed ? 'lg:hidden' : ''}
                                 `}>
@@ -138,14 +134,14 @@ const AppSidebar: React.FC = () => {
                 ))}
             </nav>
 
-            <div className="hidden lg:block p-4 mt-auto border-t border-slate-50">
+            <div className="hidden lg:block p-4 mt-auto border-t border-border/60">
                 <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} p-2 lg:p-0`}>
                     <NavLink
                         to="/settings"
                         className={`flex items-center flex-1 min-w-0 cursor-pointer group/profile relative ${isCollapsed ? 'justify-center' : 'gap-3'}`}
                         title="Ver meu perfil"
                     >
-                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase transition-transform group-hover/profile:scale-105 overflow-hidden border-2 border-transparent group-hover/profile:border-brand-500">
+                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-xs font-bold text-white shrink-0 uppercase transition-transform group-hover/profile:scale-105 overflow-hidden border-2 border-transparent group-hover/profile:border-primary">
                             {profile?.avatar_url ? (
                                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
@@ -155,22 +151,22 @@ const AppSidebar: React.FC = () => {
 
                         {!isCollapsed && (
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-slate-900 truncate group-hover/profile:text-brand-600 transition-colors">{profile?.full_name || 'Usuário'}</p>
+                                <p className="text-xs font-bold text-foreground truncate group-hover/profile:text-primary transition-colors">{profile?.full_name || 'Usuário'}</p>
                                 {profile?.company_name && (
-                                    <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">{profile.company_name}</p>
+                                    <p className="text-[10px] font-medium text-muted-foreground truncate mt-0.5">{profile.company_name}</p>
                                 )}
                                 <div className="flex items-center gap-2 mt-1">
                                     {profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial' ? (
-                                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border bg-slate-900 text-white border-slate-900">PRO</span>
+                                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border bg-primary text-primary-foreground border-primary">PRO</span>
                                     ) : (
                                         <>
-                                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border bg-amber-100 text-amber-700 border-amber-200">FREE</span>
+                                            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/60">FREE</span>
                                             <button
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     handleUpgrade();
                                                 }}
-                                                className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-brand-500 text-white hover:bg-brand-600 transition-colors"
+                                                className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/95 transition-colors"
                                                 title="Fazer upgrade"
                                             >
                                                 Upgrade
@@ -192,7 +188,7 @@ const AppSidebar: React.FC = () => {
                     {!isCollapsed && (
                         <button
                             onClick={() => supabase.auth.signOut()}
-                            className="hidden lg:flex text-slate-300 hover:text-red-500 transition-colors bg-transparent p-2 rounded-lg hover:bg-red-50 shrink-0"
+                            className="hidden lg:flex text-slate-400 hover:text-red-500 transition-colors bg-transparent p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 shrink-0"
                             title="Sair"
                         >
                             <LogOut size={16} />

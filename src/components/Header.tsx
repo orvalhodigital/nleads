@@ -10,8 +10,11 @@ import {
     Loader2,
     Download,
     Upload,
-    Database
+    Database,
+    Sun,
+    Moon
 } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
 import { View, Lead, Vehicle } from '../types';
 import { notificationService, Notification } from '../services/notificationService';
@@ -34,6 +37,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavigate, companyName }) => {
     const navigate = useNavigate();
+    const { theme, toggleTheme } = useTheme();
     const { profile, isEmpresa } = useData();
     const { logoUrl } = useSystemSettings();
     const adminId = isEmpresa ? profile?.id : profile?.parent_id;
@@ -418,14 +422,28 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                         )}
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* Tema Switcher: Dia / Noite */}
+                        <button
+                            onClick={toggleTheme}
+                            className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800/80 border border-border/80 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700/80 transition-all duration-300 group shrink-0"
+                            title={theme === 'dia' ? "Ativar Modo Noite (Escuro)" : "Ativar Modo Dia (Claro)"}
+                        >
+                            <span className="relative flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-slate-950 shadow-sm text-amber-500 dark:text-purple-400 transition-all duration-300">
+                                {theme === 'dia' ? <Sun size={12} fill="currentColor" /> : <Moon size={12} fill="currentColor" />}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider hidden sm:inline pr-1">
+                                {theme === 'dia' ? 'Dia' : 'Noite'}
+                            </span>
+                        </button>
+
                         <LogoRenderer src={logoUrl} variant="icon" className="h-5 w-auto opacity-50 hover:opacity-100 transition-all mr-2 hidden sm:flex" />
-                        <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-all relative">
+                        <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-slate-800 rounded-lg transition-all relative">
                             <Bell size={18} />
                             {unreadCount > 0 && !showHistory && (
                                 <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-brand-500 rounded-full border border-white"></span>
                             )}
                         </button>
-                        <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-all">
+                        <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-slate-800 rounded-lg transition-all">
                             <Settings size={18} />
                         </button>
                     </div>

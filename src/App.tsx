@@ -47,70 +47,74 @@ const PublicVehicleDetail = lazy(() => import('./pages/public/PublicVehicleDetai
 const CustomDomainRedirect = lazy(() => import('./pages/CustomDomainRedirect'));
 const CustomDomainVehicleDetail = lazy(() => import('./pages/CustomDomainVehicleDetail'));
 
+import { ThemeProvider } from './contexts/ThemeContext';
+
 const App: React.FC = () => {
   return (
     <HelmetProvider>
-      <ToastProvider>
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              {/* Rotas públicas — acessíveis em qualquer domínio */}
-              <Route path="/site/:slug" element={<PublicSiteHome />} />
-              <Route path="/site/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
-              <Route path="/paineldoadm/*" element={<AdminApp />} />
+      <ThemeProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Rotas públicas — acessíveis em qualquer domínio */}
+                <Route path="/site/:slug" element={<PublicSiteHome />} />
+                <Route path="/site/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
+                <Route path="/paineldoadm/*" element={<AdminApp />} />
 
-              {IS_SYSTEM_DOMAIN ? (
-                <>
-                  {/* Domínio do sistema: vai direto pro painel */}
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/login" element={
-                    <DataProvider>
-                      <Auth mode="login" />
-                    </DataProvider>
-                  } />
-                  <Route path="/nova-conta" element={
-                    <DataProvider>
-                      <Auth mode="signup" />
-                    </DataProvider>
-                  } />
-                  <Route path="/*" element={
-                    <DataProvider>
-                      <UserLayout />
-                    </DataProvider>
-                  }>
-                    <Route index element={<HomePage />} />
-                    <Route path="dashboard" element={<DashboardPage />} />
-                    <Route path="inventory" element={<InventoryPage />} />
-                    <Route path="inventory/new" element={<VehicleFormPage />} />
-                    <Route path="inventory/edit/:id" element={<VehicleFormPage />} />
-                    <Route path="motorcycles" element={<MotorcyclesPage />} />
-                    <Route path="leads" element={<LeadsPage />} />
-                    <Route path="leads/new" element={<LeadFormPage />} />
-                    <Route path="leads/edit/:id" element={<LeadFormPage />} />
-                    <Route path="leads/:id" element={<LeadDetailPage />} />
-                    <Route path="leads/:id/action/:actionType" element={<LeadActionPage />} />
-                    <Route path="agenda" element={<AgendaPage />} />
-                    <Route path="sales-closed" element={<SalesClosedPage />} />
-                    <Route path="sales-flow" element={<SalesFlowPage />} />
-                    <Route path="plans" element={<Navigate to="/settings" replace />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="support" element={<SupportPage />} />
-                    <Route path="website" element={<WebsitePage />} />
-                    <Route path="estrutura-ecv" element={<EstruturaECV />} />
-                  </Route>
-                </>
-              ) : (
-                <>
-                  {/* Domínio personalizado do cliente: mostra o site público */}
-                  <Route path="/" element={<CustomDomainRedirect />} />
-                  <Route path="/veiculo/:vehicleParam" element={<CustomDomainVehicleDetail />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </>
-              )}
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </ToastProvider>
+                {IS_SYSTEM_DOMAIN ? (
+                  <>
+                    {/* Domínio do sistema: vai direto pro painel */}
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/login" element={
+                      <DataProvider>
+                        <Auth mode="login" />
+                      </DataProvider>
+                    } />
+                    <Route path="/nova-conta" element={
+                      <DataProvider>
+                        <Auth mode="signup" />
+                      </DataProvider>
+                    } />
+                    <Route path="/*" element={
+                      <DataProvider>
+                        <UserLayout />
+                      </DataProvider>
+                    }>
+                      <Route index element={<HomePage />} />
+                      <Route path="dashboard" element={<DashboardPage />} />
+                      <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="inventory/new" element={<VehicleFormPage />} />
+                      <Route path="inventory/edit/:id" element={<VehicleFormPage />} />
+                      <Route path="motorcycles" element={<MotorcyclesPage />} />
+                      <Route path="leads" element={<LeadsPage />} />
+                      <Route path="leads/new" element={<LeadFormPage />} />
+                      <Route path="leads/edit/:id" element={<LeadFormPage />} />
+                      <Route path="leads/:id" element={<LeadDetailPage />} />
+                      <Route path="leads/:id/action/:actionType" element={<LeadActionPage />} />
+                      <Route path="agenda" element={<AgendaPage />} />
+                      <Route path="sales-closed" element={<SalesClosedPage />} />
+                      <Route path="sales-flow" element={<SalesFlowPage />} />
+                      <Route path="plans" element={<Navigate to="/settings" replace />} />
+                      <Route path="settings" element={<SettingsPage />} />
+                      <Route path="support" element={<SupportPage />} />
+                      <Route path="website" element={<WebsitePage />} />
+                      <Route path="estrutura-ecv" element={<EstruturaECV />} />
+                    </Route>
+                  </>
+                ) : (
+                  <>
+                    {/* Domínio personalizado do cliente: mostra o site público */}
+                    <Route path="/" element={<CustomDomainRedirect />} />
+                    <Route path="/veiculo/:vehicleParam" element={<CustomDomainVehicleDetail />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </>
+                )}
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </ToastProvider>
+      </ThemeProvider>
     </HelmetProvider>
   );
 };

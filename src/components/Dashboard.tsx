@@ -381,26 +381,18 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
 
   return (
-    <div className="relative animate-fadeUp pb-24 w-full min-h-screen text-slate-800">
-      {/* ──── LIQUID GLASS BACKGROUND STYLING ──── */}
-      <div className="fixed inset-0 pointer-events-none z-[0] bg-[#f8fafc]" />
-      <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden mix-blend-multiply opacity-50">
-        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-brand-400/30 rounded-full blur-[140px] animate-pulse-slow" />
-        <div className="absolute top-[20%] -right-[15%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[140px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-[-20%] left-[20%] w-[800px] h-[800px] bg-indigo-400/10 rounded-full blur-[160px] animate-pulse-slow" style={{ animationDelay: '4s' }} />
-      </div>
-
+    <div className="relative animate-fadeUp pb-24 w-full min-h-screen text-foreground">
       <PageContainer className="space-y-8 mt-6 relative z-10">
 
         {/* ═══════════════════════ HEADER / FILTROS ═══════════════════════ */}
         <div className="flex flex-wrap items-center gap-3 pb-4">
           {/* Período */}
-          <div className="flex bg-white/40 backdrop-blur-xl p-1 rounded-[18px] border border-white/60 shadow-sm">
+          <div className="flex bg-card/45 dark:bg-slate-900/50 backdrop-blur-xl p-1 rounded-2xl border border-border/80 shadow-sm">
             {(['today', '7d', '15d', 'month', 'all', 'custom'] as const).map(range => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${timeRange === range ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20 border border-brand-400/30' : 'text-slate-500 hover:bg-white/50'}`}
+                className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${timeRange === range ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/15' : 'text-muted-foreground hover:bg-card/60 dark:hover:bg-slate-800/80'}`}
               >
                 {range === 'today' ? 'Hoje' : range === '7d' ? '7D' : range === '15d' ? '15D' : range === 'month' ? 'Mês' : range === 'all' ? 'Tudo' : 'Personalizado'}
               </button>
@@ -408,21 +400,21 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
           </div>
 
           {timeRange === 'custom' && (
-            <div className="flex items-center gap-2 bg-white/40 backdrop-blur-xl p-1.5 rounded-[18px] border border-white/60 shadow-sm animate-fadeRight">
-              <CustomDatePicker value={customStartDate} onChange={setCustomStartDate} className="bg-transparent text-xs font-bold text-slate-700 outline-none pr-2" />
-              <div className="w-px h-4 bg-slate-200 mx-1" />
-              <CustomDatePicker value={customEndDate} onChange={setCustomEndDate} className="bg-transparent text-xs font-bold text-slate-700 outline-none" />
+            <div className="flex items-center gap-2 bg-card/45 dark:bg-slate-900/50 backdrop-blur-xl p-1.5 rounded-2xl border border-border/80 shadow-sm animate-fadeRight">
+              <CustomDatePicker value={customStartDate} onChange={setCustomStartDate} className="bg-transparent text-xs font-bold text-foreground outline-none pr-2" />
+              <div className="w-px h-4 bg-border mx-1" />
+              <CustomDatePicker value={customEndDate} onChange={setCustomEndDate} className="bg-transparent text-xs font-bold text-foreground outline-none" />
             </div>
           )}
 
           {/* Origens + Temperatura */}
-          <div className="flex items-center gap-2 bg-white/40 backdrop-blur-xl p-1 rounded-[18px] border border-white/60 shadow-sm">
-            <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)} className="bg-transparent text-xs font-black uppercase tracking-widest text-slate-500 px-3 py-2.5 outline-none cursor-pointer hover:bg-white/50 rounded-xl transition-all">
+          <div className="flex items-center gap-2 bg-card/45 dark:bg-slate-900/50 backdrop-blur-xl p-1 rounded-2xl border border-border/80 shadow-sm">
+            <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)} className="bg-transparent text-xs font-bold uppercase tracking-wider text-muted-foreground px-3 py-2 outline-none cursor-pointer hover:bg-card/60 dark:hover:bg-slate-800/80 rounded-xl transition-all">
               <option value="all">Todas Origens</option>
               {['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Indicação', 'Telefone', 'Outros'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <div className="w-px h-4 bg-slate-200" />
-            <select value={filterTemp} onChange={(e) => setFilterTemp(e.target.value)} className="bg-transparent text-xs font-black uppercase tracking-widest text-slate-500 px-3 py-2.5 outline-none cursor-pointer hover:bg-white/50 rounded-xl transition-all">
+            <div className="w-px h-4 bg-border" />
+            <select value={filterTemp} onChange={(e) => setFilterTemp(e.target.value)} className="bg-transparent text-xs font-bold uppercase tracking-wider text-muted-foreground px-3 py-2 outline-none cursor-pointer hover:bg-card/60 dark:hover:bg-slate-800/80 rounded-xl transition-all">
               <option value="all">Temperaturas</option>
               <option value="HOT">🔥 Quentes</option>
               <option value="WARM">⚡ Mornos</option>
@@ -431,28 +423,28 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
           </div>
 
           {monthlyGoal > 0 && isGoalReached && (
-            <div className="flex items-center gap-3 bg-gradient-to-br from-brand-500 to-brand-400 text-white px-5 py-2.5 rounded-[18px] shadow-xl shadow-brand-500/20 border border-brand-400/50">
-              <Award size={18} className="text-brand-50" />
-              <span className="text-xs font-extrabold">Meta Atingida! 🎉</span>
+            <div className="flex items-center gap-3 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-5 py-2.5 rounded-2xl shadow-md shadow-primary/10 border border-primary/20">
+              <Award size={18} className="opacity-90" />
+              <span className="text-xs font-bold">Meta Atingida! 🎉</span>
             </div>
           )}
         </div>
 
         {/* ═══════════════════════ CITAÇÃO MOTIVACIONAL ═══════════════════════ */}
         {quote.text && (
-          <div className="bg-white/50 backdrop-blur-3xl border border-white/60 p-8 rounded-[40px] shadow-[0_8px_32px_rgb(0,0,0,0.03)] animate-fadeUp">
+          <div className="bg-card/45 dark:bg-card/25 backdrop-blur-3xl border border-border/60 p-6 md:p-8 rounded-3xl shadow-sm animate-fadeUp">
             <div className="flex items-center gap-6">
-              <div className="text-6xl text-slate-300 flex-shrink-0">"</div>
+              <div className="text-5xl text-muted-foreground/20 flex-shrink-0">"</div>
               <div className="flex-1">
-                <p className="text-lg font-bold text-slate-800 leading-relaxed italic">{quote.text}</p>
-                <p className="text-sm font-black text-slate-400 uppercase tracking-widest mt-4">— {quote.author}</p>
+                <p className="text-base font-bold text-foreground leading-relaxed italic">{quote.text}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-4">— {quote.author}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* ═══════════════════════ TABS NAV ═══════════════════════ */}
-        <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm w-fit">
+        <div className="flex bg-muted/60 dark:bg-slate-900/60 p-1 rounded-2xl border border-border/80 backdrop-blur-sm w-fit">
           {([
             { key: 'geral',     label: 'Resumo',     icon: LayoutDashboard },
             { key: 'comercial', label: 'Comercial',  icon: TrendingUp },
@@ -462,10 +454,10 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap ${activeTab === key ? 'bg-white text-slate-900 shadow-md font-black ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
+              className={`flex items-center gap-2 px-5 py-2 rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === key ? 'bg-card text-foreground shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
             >
               <Icon size={14} strokeWidth={activeTab === key ? 2.5 : 2} />
-              <span className="text-[11px] uppercase tracking-wide">{label}</span>
+              <span className="text-[10px] uppercase tracking-wider">{label}</span>
             </button>
           ))}
         </div>

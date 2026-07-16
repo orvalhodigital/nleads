@@ -254,6 +254,38 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const [filterTemp, setFilterTemp] = useState<string>('all');
   const [filterVendedor, setFilterVendedor] = useState<string>('all');
   const [searchQueryLeads, setSearchQueryLeads] = useState('');
+  // Filtros comerciais: leads sem contato há N dias e sinais de intenção de compra.
+  const [filterParados, setFilterParados] = useState<string>('all');
+  const [filterEntrada, setFilterEntrada] = useState(false);
+  const [filterTroca, setFilterTroca] = useState(false);
+
+  const LEAD_SOURCES = ['Site', 'WhatsApp', 'Facebook', 'Instagram', 'Indicação', 'Telefone', 'Outros'];
+
+  const daysSince = (dateStr?: string): number => {
+    if (!dateStr) return Infinity;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return Infinity;
+    return (Date.now() - d.getTime()) / 86400000;
+  };
+
+  const activeFilterCount =
+    (filterPhase !== 'all' ? 1 : 0) +
+    (filterSource !== 'all' ? 1 : 0) +
+    (filterTemp !== 'all' ? 1 : 0) +
+    (isEmpresa && filterVendedor !== 'all' ? 1 : 0) +
+    (filterParados !== 'all' ? 1 : 0) +
+    (filterEntrada ? 1 : 0) +
+    (filterTroca ? 1 : 0);
+
+  const clearFilters = () => {
+    setFilterPhase('all');
+    setFilterSource('all');
+    setFilterTemp('all');
+    setFilterVendedor('all');
+    setFilterParados('all');
+    setFilterEntrada(false);
+    setFilterTroca(false);
+  };
 
   const memberMap = useMemo(() => {
     const map = new Map<string, Profile>();
@@ -321,42 +353,40 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const visibleLeads = useMemo(() => {
     const allowedPhases = new Set(phases);
     if (type === 'leads') allowedPhases.add(LeadPhase.DISQUALIFIED);
+    const query = searchQueryLeads.trim().toLowerCase();
+    const paradosDias = filterParados === 'all' ? null : Number(filterParados);
 
     return leads.filter(lead => {
-      if (type === 'leads' && lead.is_buyer) {
-        if (searchQueryLeads) {
-          const query = searchQueryLeads.toLowerCase();
-          return (
-            lead.name.toLowerCase().includes(query) ||
-            lead.phone.toLowerCase().includes(query) ||
-            lead.email.toLowerCase().includes(query)
-          );
-        }
-        if (filterPhase !== 'all' && filterPhase !== LeadPhase.COMPLETED) return false;
-        if (filterSource !== 'all' && lead.source !== filterSource) return false;
-        if (filterTemp !== 'all' && lead.temperature !== filterTemp) return false;
-        return true;
+      // Compradores entram pela flag is_buyer e não pelas fases do funil.
+      const isBuyer = type === 'leads' && !!lead.is_buyer;
+      if (!isBuyer && !allowedPhases.has(lead.phase)) return false;
+
+      if (filterPhase !== 'all') {
+        if (isBuyer ? filterPhase !== LeadPhase.COMPLETED : lead.phase !== filterPhase) return false;
       }
-
-      if (!allowedPhases.has(lead.phase)) return false;
-
-      if (filterPhase !== 'all' && lead.phase !== filterPhase) return false;
       if (filterSource !== 'all' && lead.source !== filterSource) return false;
       if (filterTemp !== 'all' && lead.temperature !== filterTemp) return false;
       if (isEmpresa && filterVendedor !== 'all' && lead.user_id !== filterVendedor) return false;
+      if (filterEntrada && !lead.preferences?.possui_entrada) return false;
+      if (filterTroca && !lead.preferences?.possui_troca) return false;
+      if (paradosDias !== null && daysSince(lead.lastUpdate || lead.createdAt) < paradosDias) return false;
 
-      if (searchQueryLeads) {
-        const query = searchQueryLeads.toLowerCase();
-        return (
-          lead.name.toLowerCase().includes(query) ||
-          lead.phone.toLowerCase().includes(query) ||
-          lead.email.toLowerCase().includes(query)
-        );
+      if (query) {
+        const hit =
+          lead.name?.toLowerCase().includes(query) ||
+          lead.phone?.toLowerCase().includes(query) ||
+          lead.email?.toLowerCase().includes(query);
+        if (!hit) return false;
       }
 
       return true;
     });
-  }, [leads, phases, filterPhase, filterSource, filterTemp, searchQueryLeads, type]);
+  }, [
+    leads, phases, type, searchQueryLeads,
+    filterPhase, filterSource, filterTemp,
+    filterVendedor, isEmpresa,
+    filterParados, filterEntrada, filterTroca,
+  ]);
 
   const onDragEnd = async (result: any) => {
     if (!result.destination) return;
@@ -437,15 +467,17 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     }
   };
 
+  // Paleta das colunas do Kanban. Cada tom tem par claro/escuro; o texto forte usa o
+  // token `text-foreground` para adaptar sozinho. Ver DESIGN_GUIDELINES.md §3/§4.
   const colorMapping: Record<string, any> = {
-    amber: { columnBg: 'bg-amber-50/50', headerBg: 'bg-amber-100/50', border: 'border-amber-200', bgIcon: 'bg-amber-100', textStrong: 'text-slate-900', btnBg: 'bg-amber-500', bgSection: 'bg-amber-50/50' },
-    sky: { columnBg: 'bg-sky-50/55', headerBg: 'bg-sky-100/50', border: 'border-sky-200', bgIcon: 'bg-sky-100', textStrong: 'text-slate-900', btnBg: 'bg-sky-500', bgSection: 'bg-sky-50/50' },
-    indigo: { columnBg: 'bg-indigo-50/55', headerBg: 'bg-indigo-100/50', border: 'border-indigo-200', bgIcon: 'bg-indigo-100', textStrong: 'text-slate-900', btnBg: 'bg-indigo-600', bgSection: 'bg-indigo-50/50' },
-    emerald: { columnBg: 'bg-emerald-50/55', headerBg: 'bg-emerald-100/50', border: 'border-emerald-200', bgIcon: 'bg-emerald-100', textStrong: 'text-slate-900', btnBg: 'bg-emerald-500', bgSection: 'bg-emerald-50/50' },
-    violet: { columnBg: 'bg-violet-50/50', headerBg: 'bg-violet-100/50', border: 'border-violet-200', bgIcon: 'bg-violet-100', textStrong: 'text-slate-900', btnBg: 'bg-violet-500', bgSection: 'bg-violet-50/50' },
-    green: { columnBg: 'bg-green-50/55', headerBg: 'bg-green-100/50', border: 'border-green-200', bgIcon: 'bg-green-100', textStrong: 'text-slate-900', btnBg: 'bg-green-600', bgSection: 'bg-green-50/50' },
-    rose: { columnBg: 'bg-rose-50/50', headerBg: 'bg-rose-100/50', border: 'border-rose-200', bgIcon: 'bg-rose-100', textStrong: 'text-slate-900', btnBg: 'bg-rose-500', bgSection: 'bg-rose-50/60' },
-    slate: { columnBg: 'bg-slate-100', headerBg: 'bg-slate-200/80', border: 'border-slate-300', bgIcon: 'bg-slate-300', textStrong: 'text-slate-900', btnBg: 'bg-slate-600', bgSection: 'bg-slate-200/50' },
+    amber: { columnBg: 'bg-amber-50/50 dark:bg-amber-950/20', headerBg: 'bg-amber-100/50 dark:bg-amber-900/25', border: 'border-amber-200 dark:border-amber-900/40', bgIcon: 'bg-amber-100 dark:bg-amber-900/40', textStrong: 'text-foreground', btnBg: 'bg-amber-500', bgSection: 'bg-amber-50/50 dark:bg-amber-950/20' },
+    sky: { columnBg: 'bg-sky-50/55 dark:bg-sky-950/20', headerBg: 'bg-sky-100/50 dark:bg-sky-900/25', border: 'border-sky-200 dark:border-sky-900/40', bgIcon: 'bg-sky-100 dark:bg-sky-900/40', textStrong: 'text-foreground', btnBg: 'bg-sky-500', bgSection: 'bg-sky-50/50 dark:bg-sky-950/20' },
+    indigo: { columnBg: 'bg-indigo-50/55 dark:bg-indigo-950/20', headerBg: 'bg-indigo-100/50 dark:bg-indigo-900/25', border: 'border-indigo-200 dark:border-indigo-900/40', bgIcon: 'bg-indigo-100 dark:bg-indigo-900/40', textStrong: 'text-foreground', btnBg: 'bg-indigo-600', bgSection: 'bg-indigo-50/50 dark:bg-indigo-950/20' },
+    emerald: { columnBg: 'bg-emerald-50/55 dark:bg-emerald-950/20', headerBg: 'bg-emerald-100/50 dark:bg-emerald-900/25', border: 'border-emerald-200 dark:border-emerald-900/40', bgIcon: 'bg-emerald-100 dark:bg-emerald-900/40', textStrong: 'text-foreground', btnBg: 'bg-emerald-500', bgSection: 'bg-emerald-50/50 dark:bg-emerald-950/20' },
+    violet: { columnBg: 'bg-violet-50/50 dark:bg-violet-950/20', headerBg: 'bg-violet-100/50 dark:bg-violet-900/25', border: 'border-violet-200 dark:border-violet-900/40', bgIcon: 'bg-violet-100 dark:bg-violet-900/40', textStrong: 'text-foreground', btnBg: 'bg-violet-500', bgSection: 'bg-violet-50/50 dark:bg-violet-950/20' },
+    green: { columnBg: 'bg-green-50/55 dark:bg-green-950/20', headerBg: 'bg-green-100/50 dark:bg-green-900/25', border: 'border-green-200 dark:border-green-900/40', bgIcon: 'bg-green-100 dark:bg-green-900/40', textStrong: 'text-foreground', btnBg: 'bg-green-600', bgSection: 'bg-green-50/50 dark:bg-green-950/20' },
+    rose: { columnBg: 'bg-rose-50/50 dark:bg-rose-950/20', headerBg: 'bg-rose-100/50 dark:bg-rose-900/25', border: 'border-rose-200 dark:border-rose-900/40', bgIcon: 'bg-rose-100 dark:bg-rose-900/40', textStrong: 'text-foreground', btnBg: 'bg-rose-500', bgSection: 'bg-rose-50/60 dark:bg-rose-950/20' },
+    slate: { columnBg: 'bg-muted', headerBg: 'bg-muted/80', border: 'border-border', bgIcon: 'bg-secondary', textStrong: 'text-foreground', btnBg: 'bg-slate-600 dark:bg-slate-500', bgSection: 'bg-muted/60' },
   };
 
   const renderKanban = () => {
@@ -678,21 +710,40 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                 <span className="text-[11px] uppercase">Lista</span>
               </button>
             </div>
-            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all ${isFilterOpen ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20' : 'bg-card border-border/80 text-muted-foreground hover:bg-muted'}`}>
+            {/* Busca rápida — nome, telefone ou e-mail */}
+            <div className="relative">
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={searchQueryLeads}
+                onChange={e => setSearchQueryLeads(e.target.value)}
+                placeholder="Buscar nome, telefone ou e-mail..."
+                aria-label="Buscar leads"
+                className="w-56 md:w-72 pl-10 pr-9 py-3 bg-card border border-border/80 rounded-xl text-xs font-semibold text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring transition-all"
+              />
+              {searchQueryLeads && (
+                <button
+                  onClick={() => setSearchQueryLeads('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Limpar busca"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              aria-expanded={isFilterOpen}
+              className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all ${isFilterOpen || activeFilterCount > 0 ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20' : 'bg-card border-border/80 text-muted-foreground hover:bg-muted'}`}
+            >
               <Filter size={15} /> Filtrar
+              {activeFilterCount > 0 && (
+                <span className="ml-0.5 min-w-[20px] h-5 px-1.5 rounded-full bg-primary-foreground/25 text-[10px] font-black flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
             </button>
-            {isEmpresa && teamMembers.length > 0 && (
-              <select
-                value={filterVendedor}
-                onChange={e => setFilterVendedor(e.target.value)}
-                className="px-4 py-3 bg-card border border-border/85 rounded-xl text-[11px] font-bold text-muted-foreground uppercase tracking-wide focus:outline-none focus:border-primary transition-all"
-              >
-                <option value="all">Todos os vendedores</option>
-                {teamMembers.map(m => (
-                  <option key={m.id} value={m.id}>{m.full_name || m.email}</option>
-                ))}
-              </select>
-            )}
           </div>
           <div className="flex gap-2">
             <button
@@ -711,6 +762,125 @@ const LeadManager: React.FC<LeadManagerProps> = ({
             </button>
           </div>
         </div>
+
+        {/* ═══════════ PAINEL DE FILTROS ═══════════ */}
+        {isFilterOpen && (
+          <div className="surface-glass rounded-2xl p-5 animate-fadeUp">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label htmlFor="f-fase" className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Fase</label>
+                <select
+                  id="f-fase"
+                  value={filterPhase}
+                  onChange={e => setFilterPhase(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-card border border-border/80 rounded-xl text-xs font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring transition-all"
+                >
+                  <option value="all">Todas as fases</option>
+                  {phases.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="f-origem" className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Origem</label>
+                <select
+                  id="f-origem"
+                  value={filterSource}
+                  onChange={e => setFilterSource(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-card border border-border/80 rounded-xl text-xs font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring transition-all"
+                >
+                  <option value="all">Todas as origens</option>
+                  {LEAD_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="f-parados" className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Sem contato há</label>
+                <select
+                  id="f-parados"
+                  value={filterParados}
+                  onChange={e => setFilterParados(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-card border border-border/80 rounded-xl text-xs font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring transition-all"
+                >
+                  <option value="all">Qualquer tempo</option>
+                  <option value="3">+3 dias</option>
+                  <option value="7">+7 dias</option>
+                  <option value="15">+15 dias</option>
+                  <option value="30">+30 dias</option>
+                </select>
+              </div>
+
+              {isEmpresa && teamMembers.length > 0 && (
+                <div>
+                  <label htmlFor="f-vendedor" className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Vendedor</label>
+                  <select
+                    id="f-vendedor"
+                    value={filterVendedor}
+                    onChange={e => setFilterVendedor(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-card border border-border/80 rounded-xl text-xs font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring transition-all"
+                  >
+                    <option value="all">Todos os vendedores</option>
+                    {teamMembers.map(m => (
+                      <option key={m.id} value={m.id}>{m.full_name || m.email}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Temperatura + sinais de compra + limpar */}
+            <div className="flex flex-wrap items-center gap-2 mt-5 pt-4 border-t border-border/60">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mr-1">Temperatura</span>
+              {([
+                { v: 'all', label: 'Todas', icon: null as React.ReactNode },
+                { v: LeadTemperature.HOT, label: 'Quente', icon: <Flame size={13} /> },
+                { v: LeadTemperature.WARM, label: 'Morna', icon: <Droplet size={13} /> },
+                { v: LeadTemperature.COLD, label: 'Fria', icon: <Snowflake size={13} /> },
+              ]).map(t => (
+                <button
+                  key={t.v}
+                  onClick={() => setFilterTemp(t.v)}
+                  aria-pressed={filterTemp === t.v}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold transition-all ${filterTemp === t.v ? 'bg-primary text-primary-foreground border-primary' : 'bg-card border-border/80 text-muted-foreground hover:bg-muted'}`}
+                >
+                  {t.icon}{t.label}
+                </button>
+              ))}
+
+              <span className="w-px h-5 bg-border mx-2 hidden sm:block" />
+
+              <button
+                onClick={() => setFilterEntrada(!filterEntrada)}
+                aria-pressed={filterEntrada}
+                title="Leads que informaram ter valor de entrada"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold transition-all ${filterEntrada ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40' : 'bg-card border-border/80 text-muted-foreground hover:bg-muted'}`}
+              >
+                <DollarSign size={13} /> Com entrada
+              </button>
+              <button
+                onClick={() => setFilterTroca(!filterTroca)}
+                aria-pressed={filterTroca}
+                title="Leads que têm veículo para dar na troca"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold transition-all ${filterTroca ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40' : 'bg-card border-border/80 text-muted-foreground hover:bg-muted'}`}
+              >
+                <Car size={13} /> Com troca
+              </button>
+
+              <div className="ml-auto flex items-center gap-3">
+                <span className="text-[11px] font-bold text-muted-foreground">
+                  {visibleLeads.length} {visibleLeads.length === 1 ? 'lead' : 'leads'}
+                </span>
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <X size={13} /> Limpar filtros
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex-1 min-h-0">{viewMode === 'kanban' ? renderKanban() : renderList()}</div>
       <LeadImportModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} currentLeads={leads} />

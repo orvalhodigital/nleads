@@ -39,16 +39,16 @@ const HomePage: React.FC = () => {
             {/* ════════════ HEADER & GREETING ════════════ */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 w-full mb-4 lg:mb-8">
                 <div className="text-center md:text-left">
-                    <div className="inline-flex items-center gap-2 text-slate-500 font-semibold mb-6 bg-white/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/60 shadow-sm">
-                        <CalendarIcon size={16} className="text-brand-500" />
+                    <div className="inline-flex items-center gap-2 text-muted-foreground font-semibold mb-6 surface-glass px-5 py-2.5 rounded-full shadow-sm">
+                        <CalendarIcon size={16} className="text-primary" />
                         <span className="capitalize">{todayDate}</span>
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-800 tracking-tight mb-4 drop-shadow-sm">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-4">
                         Olá, {firstName}! <span className="inline-block animate-wave-emoji cursor-default">👋</span>
                     </h1>
 
-                    <p className="text-lg text-slate-600 max-w-2xl font-medium leading-relaxed italic bg-white/30 backdrop-blur-sm p-4 rounded-2xl border border-white/40">
+                    <p className="text-lg text-muted-foreground max-w-2xl font-medium leading-relaxed italic surface-glass p-4 rounded-2xl">
                         "{quote}"
                     </p>
                 </div>
@@ -70,46 +70,46 @@ const HomePage: React.FC = () => {
 
                 <div
                     onClick={() => navigate('/leads')}
-                    className="bg-white/40 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                    className="surface-glass p-6 rounded-[2rem] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
                 >
-                    <div className="w-12 h-12 bg-blue-500/10 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all duration-300">
+                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
                         <Users size={24} strokeWidth={2.5} />
                     </div>
-                    <p className="text-4xl font-black text-slate-800 mb-1">{leadsNovosHoje}</p>
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Novos Leads Hoje</p>
+                    <p className="text-4xl font-heading font-bold text-foreground mb-1">{leadsNovosHoje}</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Novos Leads Hoje</p>
                 </div>
 
                 <div
                     onClick={() => navigate('/agenda')}
-                    className="bg-white/40 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                    className="surface-glass p-6 rounded-[2rem] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
                 >
-                    <div className="w-12 h-12 bg-rose-500/10 text-rose-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-rose-500/20 transition-all duration-300">
+                    <div className="w-12 h-12 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-rose-500/20 transition-all duration-300">
                         <CalendarIcon size={24} strokeWidth={2.5} />
                     </div>
-                    <p className="text-4xl font-black text-slate-800 mb-1">{visitasHoje}</p>
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Visitas Marcadas Hoje</p>
+                    <p className="text-4xl font-heading font-bold text-foreground mb-1">{visitasHoje}</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Visitas Marcadas Hoje</p>
                 </div>
 
                 <div
                     onClick={() => navigate('/agenda')}
-                    className="bg-white/40 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                    className="surface-glass p-6 rounded-[2rem] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
                 >
-                    <div className="w-12 h-12 bg-amber-500/10 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-amber-500/20 transition-all duration-300">
+                    <div className="w-12 h-12 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-amber-500/20 transition-all duration-300">
                         <Clock size={24} strokeWidth={2.5} />
                     </div>
-                    <p className="text-4xl font-black text-slate-800 mb-1">{followupsHoje}</p>
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Follow-Ups Hoje</p>
+                    <p className="text-4xl font-heading font-bold text-foreground mb-1">{followupsHoje}</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Follow-Ups Hoje</p>
                 </div>
 
                 <div
                     onClick={() => navigate('/inventory')}
-                    className="bg-white/40 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                    className="surface-glass p-6 rounded-[2rem] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
                 >
-                    <div className="w-12 h-12 bg-indigo-500/10 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-500/20 transition-all duration-300">
+                    <div className="w-12 h-12 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-cyan-500/20 transition-all duration-300">
                         <Car size={24} strokeWidth={2.5} />
                     </div>
-                    <p className="text-4xl font-black text-slate-800 mb-1">{estoqueDisponivel}</p>
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Veículos no Estoque</p>
+                    <p className="text-4xl font-heading font-bold text-foreground mb-1">{estoqueDisponivel}</p>
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Veículos no Estoque</p>
                 </div>
 
             </div>

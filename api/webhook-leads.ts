@@ -28,17 +28,21 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
-  // ─── Segurança: token do webhook OBRIGATÓRIO (fail-closed) ──────────────────
-  // ⚠️ Configure WEBHOOK_SECRET no Vercel E no cliente que envia os leads (ex.: n8n),
-  // enviando o header X-Webhook-Token com o mesmo valor. Sem isso, os leads são rejeitados.
+  // ─── Segurança: token do webhook ────────────────────────────────────────────
+  // Ativação em 2 passos, para não derrubar a entrada de leads do n8n:
+  //   1) defina WEBHOOK_SECRET no Vercel;
+  //   2) faça o n8n enviar o header `X-Webhook-Token` com o MESMO valor.
+  // Enquanto WEBHOOK_SECRET não existir, o endpoint segue aberto (comportamento atual)
+  // e apenas avisa. Assim que a env var for criada, a checagem passa a ser OBRIGATÓRIA.
+  // ⚠️ Endpoint aberto permite injeção anônima de leads — configure isso.
   const webhookSecret = process.env.WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error('WEBHOOK_SECRET não configurado — rejeitando webhook por segurança.');
-    return res.status(500).json({ error: 'Webhook não configurado no servidor.' });
-  }
-  const tokenHeader = req.headers['x-webhook-token'];
-  if (tokenHeader !== webhookSecret) {
-    return res.status(401).json({ error: 'Unauthorized: invalid or missing webhook token.' });
+    console.warn('[SEGURANÇA] WEBHOOK_SECRET não configurado — endpoint de leads ACEITANDO requisições não autenticadas. Configure a env var + header no n8n.');
+  } else {
+    const tokenHeader = req.headers['x-webhook-token'];
+    if (tokenHeader !== webhookSecret) {
+      return res.status(401).json({ error: 'Unauthorized: invalid or missing webhook token.' });
+    }
   }
 
   try {

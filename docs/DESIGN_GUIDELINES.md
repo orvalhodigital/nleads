@@ -102,6 +102,18 @@ Os tokens são definidos em `src/index.css` (`:root` = Dia, `.dark` = Noite) e e
 
 ## 4. Tema Dia / Noite
 
+**🔴 CRÍTICO — a variante `dark:` depende de UMA linha no `src/index.css`:**
+```css
+@custom-variant dark (&:where(.dark, .dark *));
+```
+No **Tailwind v4** o `dark:` usa `@media (prefers-color-scheme)` por padrão. O v3 fazia
+por classe via `darkMode: 'class'` no config — que o v4 **não carrega**. Sem essa linha,
+**todas** as utilitárias `dark:*` seguem o tema do **sistema operacional** em vez do botão
+Dia/Noite: os tokens (`.dark { --background }`) escurecem, mas os `dark:bg-*`/`dark:text-*`
+não aplicam — o tema quebra pela metade (foi exatamente o bug de 2026-07-15: 115 regras
+presas no media query, 0 na classe). **Nunca remova essa linha.**
+Sintoma: você liga o Noite, o fundo escurece, mas painéis/textos continuam com cara de tema claro.
+
 - Controlado por `ThemeContext` (`src/contexts/ThemeContext.tsx`), valores `'dia' | 'noite'`.
 - Aplica/remove a classe `.dark` no `<html>` e persiste em `localStorage` (`otimizza_theme`).
 - Toggle fica no `Header` (`src/components/Header.tsx`).

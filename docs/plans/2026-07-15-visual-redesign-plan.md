@@ -171,6 +171,53 @@ Ordem sugerida por impacto/visibilidade. Cada tela: validar Dia/Noite + mobile.
 
 ---
 
+## 🌙 TEMA NOITE — diagnóstico definitivo (2026-07-15)
+
+### 🔴 CAUSA-RAIZ REAL (descoberta em 2026-07-15, após o diagnóstico abaixo)
+
+A variante `dark:` do Tailwind v4 estava ligada ao **sistema operacional**, não ao botão Dia/Noite.
+Medido no navegador: **115 regras** em `@media (prefers-color-scheme: dark)` e **0** usando a classe
+`.dark`. Com o SO do usuário em modo claro, **nenhuma** utilitária `dark:*` aplicava — os tokens
+escureciam, o resto não. Daí o "desajustado e sem coerência".
+
+**Correção (1 linha em `src/index.css`):** `@custom-variant dark (&:where(.dark, .dark *));`
+→ resultado: **232 regras por classe, 0 por media query**. Consertou o app inteiro de uma vez,
+sem precisar migrar as ~40 telas. **Nunca remover.**
+
+> ⚠️ Isso reduz MUITO o escopo da migração de tokens listada abaixo: boa parte das telas
+> "quebradas" já tinha variantes `dark:` corretas que simplesmente nunca aplicavam.
+> Reavaliar tela a tela antes de sair trocando classes.
+
+---
+
+**Diagnóstico anterior (ainda válido, mas secundário):** contrastes de texto medidos passam
+(18:1, 16:1, 6.7:1). Além da causa-raiz acima, o Noite tinha **dois** problemas:
+
+1. **Telas com cor clara hardcoded sem variante `dark:`** → texto escuro sobre fundo escuro = **invisível**.
+   Exemplo confirmado: `HomePage.tsx` usava `text-slate-800`/`text-slate-500`/`bg-white/40` — "Olá, Jose!",
+   a citação e os rótulos dos KPIs sumiam. **Corrigido e verificado.**
+2. **Superfícies sem escada de elevação** (medido, antes): sidebar/fundo 1.03:1, muted/card 1.05:1,
+   card/fundo 1.11:1, borda/card 1.25:1 → nada se separa. **Corrigido**: fundo `#0D1017` → sidebar
+   `#12161F` → card `#1A1F2B` → popover `#232936`; borda 1.25 → **1.47:1**; base dessaturada (39% → 28%).
+
+### Escopo restante (mapeado por grep) — cores hardcoded no PAINEL do usuário
+> Ignorar `src/admin/*`, `pages/public/*`, `pages/Landing/*`, `Auth.tsx` e `PublicNavbar/PublicFooter`:
+> são telas de **tema claro fixo por design**.
+
+Maiores ofensores (nº de ocorrências de `text-slate-[5-9]00` / `bg-white/` / `border-white/`):
+`MotorcycleInventory` 54 · `Inventory` 38 · `SupportPage` 24 · `SalesClosedPage` 22 · `LeadDetailPage` 20 ·
+`OnboardingWizard` 18 · `TeamManager` 16 · `InventoryImportModal` 14 · `SettingsPage` 13 · `GuaranteeSettings` 13 ·
+`SalesFlowPage` 11 · `SalesKanban` 9 · `LeadSaleModal` 9 · `UserArea` 9 · `TrialExpired` 8 · `LeadImportModal` 8 ·
+`LeadManager` 8 · `LeadPreferences` 8 · `GlobalSearch` 6 · `LeadSchedulingModal` 6 + caudas menores.
+
+**Total no painel: ~250 ocorrências em ~40 arquivos.** É trabalho mecânico (trocar por tokens), mas
+precisa ser feito **tela a tela com verificação visual no Noite** — ver cheatsheet em `DESIGN_GUIDELINES.md`.
+
+- [x] `HomePage.tsx` — corrigido e verificado ao vivo
+- [ ] demais telas da lista acima
+
+---
+
 ## 📝 Diário de bordo (append-only — cada IA anota o que fez)
 
 ### 2026-07-15 — Fase 0 (IA: Claude/Opus)

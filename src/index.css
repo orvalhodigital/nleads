@@ -3,6 +3,14 @@
    os utilitários são compilados. NÃO reintroduzir o CDN. Ver DESIGN_GUIDELINES.md. */
 @import "tailwindcss";
 
+/* 🔴 CRÍTICO — liga a variante `dark:` à CLASSE .dark (e não ao tema do sistema).
+   No Tailwind v4 o `dark:` usa @media (prefers-color-scheme) por padrão; o v3 fazia isso
+   via `darkMode: 'class'` no config, que o v4 não carrega. Sem esta linha, TODAS as ~115
+   utilitárias `dark:*` do app seguem o SO em vez do botão Dia/Noite — os tokens escurecem
+   mas os `dark:bg-*`/`dark:text-*` não aplicam, quebrando o tema Noite pela metade.
+   NÃO REMOVER. Ver DESIGN_GUIDELINES.md §4. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     height: 8px;
@@ -296,37 +304,43 @@
 }
 
 .dark {
-  --background: #0B0F19;
-  --foreground: #F8FAFC;
-  --card: #151B26;
-  --card-foreground: #F8FAFC;
-  --popover: #151B26;
-  --popover-foreground: #F8FAFC;
+  /* Escada de elevação: background → sidebar → card → popover.
+     Antes tudo tinha ~o mesmo tom (card/fundo 1.11:1, sidebar/fundo 1.03:1, borda/card
+     1.25:1) — sem hierarquia, "chapado". Agora há degraus e a BORDA define o card
+     (1.25 → 1.47:1), que é o que realmente separa superfícies no escuro.
+     Base dessaturada (fundo 39% → 28%) para o violeta do --primary poder se destacar.
+     Contrastes de texto verificados ≥ 4.5:1. Sem preto chapado. */
+  --background: #0D1017;
+  --foreground: #F1F5F9;
+  --card: #1A1F2B;
+  --card-foreground: #F1F5F9;
+  --popover: #232936;
+  --popover-foreground: #F1F5F9;
   --primary: #8F83F7;
-  --primary-foreground: #0B0F19;
-  --secondary: #1F293D;
-  --secondary-foreground: #F8FAFC;
-  --muted: #161F30;
-  --muted-foreground: #94A3B8;
-  --accent: rgba(143, 131, 247, 0.10);
-  --accent-foreground: #8F83F7;
-  --destructive: #EF4444;
-  --border: #232D3F;
-  --input: #232D3F;
-  --ring: rgba(143, 131, 247, 0.35);
+  --primary-foreground: #0D1017;
+  --secondary: #262D3B;
+  --secondary-foreground: #F1F5F9;
+  --muted: #1F252F;
+  --muted-foreground: #98A4B8;
+  --accent: rgba(143, 131, 247, 0.12);
+  --accent-foreground: #A79EFF;
+  --destructive: #F87171;
+  --border: #333B4D;
+  --input: #2B3242;
+  --ring: rgba(143, 131, 247, 0.40);
   --chart-1: #8F83F7;
   --chart-2: #FB923C;
   --chart-3: #22D3EE;
   --chart-4: #34D399;
   --chart-5: #F472B6;
-  --sidebar: #0E1321;
+  --sidebar: #12161F;
   --sidebar-foreground: #E2E8F0;
   --sidebar-primary: #8F83F7;
-  --sidebar-primary-foreground: #0B0F19;
-  --sidebar-accent: #1F293D;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #1E2638;
-  --sidebar-ring: rgba(143, 131, 247, 0.35);
+  --sidebar-primary-foreground: #0D1017;
+  --sidebar-accent: #262D3B;
+  --sidebar-accent-foreground: #F1F5F9;
+  --sidebar-border: #2B3242;
+  --sidebar-ring: rgba(143, 131, 247, 0.40);
 }
 
 @layer base {

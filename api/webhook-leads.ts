@@ -66,20 +66,49 @@ export default async function handler(req: any, res: any) {
       funnel_history: {},
     };
 
-    const { data, error } = await supabase
-      .from('leads')
-      .insert(newLead)
-      .select()
-      .single();
+    let attempts = 0;
+    const maxAttempts = 3;
+    let delay = 1000;
+    let insertData: any = null;
+    let lastError: any = null;
 
-    if (error) {
-      if (error.code === '42501') {
-        return res.status(403).json({ error: 'Permission denied. Configure SUPABASE_SERVICE_ROLE_KEY.' });
+    while (attempts < maxAttempts) {
+      attempts++;
+      try {
+        const { data, error } = await supabase
+          .from('leads')
+          .insert(newLead)
+          .select()
+          .single();
+
+        if (error) {
+          if (error.code === '42501') {
+            return res.status(403).json({ error: 'Permission denied. Configure SUPABASE_SERVICE_ROLE_KEY.' });
+          }
+          throw error;
+        }
+
+        insertData = data;
+        lastError = null;
+        break;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`Tentativa ${attempts} de inserção de lead falhou. Detalhes:`, err.message || err);
+        
+        if (attempts >= maxAttempts) {
+          break;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2;
       }
-      throw error;
     }
 
-    return res.status(200).json({ success: true, message: 'Lead imported successfully', data });
+    if (lastError) {
+      throw lastError;
+    }
+
+    return res.status(200).json({ success: true, message: 'Lead imported successfully', data: insertData });
 
   } catch (error: any) {
     console.error('Webhook Handler Error:', error);

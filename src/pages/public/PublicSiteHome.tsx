@@ -1,16 +1,46 @@
-import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { websiteService, PublicProfile } from '../../services/websiteService';
 import { Vehicle } from '../../types';
 import { toVehicleSlug } from '../../utils/vehicleSlug';
-import { MessageCircle, Search, ChevronDown, Car, MapPin, Send, Shield, Award, CreditCard, RefreshCw, Filter, SlidersHorizontal, ExternalLink, Menu, X } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import { 
+    MessageCircle, 
+    Search, 
+    ChevronDown, 
+    Car, 
+    MapPin, 
+    Send, 
+    Shield, 
+    Award, 
+    CreditCard, 
+    RefreshCw, 
+    Filter, 
+    SlidersHorizontal, 
+    ExternalLink, 
+    Menu, 
+    X,
+    Star,
+    Clock,
+    Check,
+    CheckCircle2,
+    Users,
+    DollarSign,
+    Sparkles,
+    ThumbsUp,
+    Wrench,
+    Lock,
+    Calendar,
+    AlertTriangle,
+    Info,
+    HelpCircle
+} from 'lucide-react';
 import { motion } from 'framer-motion';
-import Lottie from 'lottie-react';
-import whatsappAnimation from '../../assets/whatsapp-lottie.json';
 import { PublicNavbar } from '../../components/PublicNavbar';
 import { PublicFooter } from '../../components/PublicFooter';
+
+const ContactSection = React.lazy(() => import('../../components/public/ContactSection'));
+
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -35,9 +65,42 @@ const replaceVariables = (text: string, data: { vehicle?: any; profile?: any }) 
         .replace(/\[PRECO\]/gi, data.vehicle ? fmt.format(data.vehicle.price) : '');
 };
 
+const IconMap: Record<string, React.ComponentType<any>> = {
+    MessageCircle,
+    Search,
+    ChevronDown,
+    Car,
+    MapPin,
+    Send,
+    Shield,
+    Award,
+    CreditCard,
+    RefreshCw,
+    Filter,
+    SlidersHorizontal,
+    ExternalLink,
+    Menu,
+    X,
+    Star,
+    Clock,
+    Check,
+    CheckCircle2,
+    Users,
+    DollarSign,
+    Sparkles,
+    ThumbsUp,
+    Wrench,
+    Lock,
+    Calendar,
+    AlertTriangle,
+    Info,
+    HelpCircle
+};
+
 const DynamicIcon = ({ name, ...props }: { name?: string; size?: number; className?: string; style?: React.CSSProperties }) => {
     if (!name) return <Shield {...props} />;
-    const IconComponent = (Icons as any)[name];
+    const normalized = name.charAt(0).toUpperCase() + name.slice(1);
+    const IconComponent = IconMap[name] || IconMap[normalized];
     if (!IconComponent) return <Shield {...props} />;
     return <IconComponent {...props} />;
 };
@@ -290,49 +353,7 @@ const CategorySection: React.FC<{
     );
 };
 
-// ─── Contact Form ─────────────────────────────────────────────────────────────
 
-const ContactForm: React.FC<{ profile: PublicProfile; tc: TC }> = ({ profile, tc }) => {
-    const [form, setForm] = useState({ name: '', phone: '', message: '' });
-    const [sent, setSent] = useState(false);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!profile.website_whatsapp || !form.name || !form.phone) return;
-        const msg = `Olá, *${profile.company_name}*! Me chamo *${form.name}*, telefone: ${form.phone}.${form.message ? ` ${form.message}` : ''}`;
-        window.open(buildWaUrl(profile.website_whatsapp, msg), '_blank');
-        setSent(true);
-        setForm({ name: '', phone: '', message: '' });
-        setTimeout(() => setSent(false), 4000);
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                    <label className={tc.formLabel}>Seu nome *</label>
-                    <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                        placeholder="Como podemos te chamar?" className={tc.inputField} />
-                </div>
-                <div>
-                    <label className={tc.formLabel}>Telefone *</label>
-                    <input required type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                        placeholder="(11) 99999-9999" className={tc.inputField} />
-                </div>
-            </div>
-            <div>
-                <label className={tc.formLabel}>Mensagem</label>
-                <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                    placeholder="Qual veículo te interessa? Tem alguma dúvida?" rows={3} className={tc.textarea} />
-            </div>
-            <button type="submit"
-                className="w-full py-3.5 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-colors shadow-lg"
-                style={{ backgroundColor: sent ? '#16a34a' : profile.website_primary_color || '#10b981' }}>
-                {sent ? <><Send size={16} /> Mensagem enviada!</> : <><MessageCircle size={16} /> Enviar via WhatsApp</>}
-            </button>
-        </form>
-    );
-};
 
 // ─── Price Slider ─────────────────────────────────────────────────────────────
 
@@ -670,8 +691,16 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
             <Helmet>
                 <title>{seoTitle}</title>
                 <meta name="description" content={seoDesc} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={window.location.href} />
                 <meta property="og:title" content={seoTitle} />
                 <meta property="og:description" content={seoDesc} />
+                <meta property="og:site_name" content={profile.company_name} />
+                {profile.company_logo && <meta property="og:image" content={profile.company_logo} />}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={seoTitle} />
+                <meta name="twitter:description" content={seoDesc} />
+                {profile.company_logo && <meta name="twitter:image" content={profile.company_logo} />}
                 <meta name="robots" content="index, follow" />
             </Helmet>
 
@@ -1275,44 +1304,29 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                 )
             )}
 
-            {/* Contact Form + Google Maps */}
-            {(profile.website_sections?.show_contact_form && profile.website_whatsapp) || (profile.website_sections?.show_maps && profile.website_google_maps) ? (
-                <section id="contato" className="max-w-[1250px] mx-auto px-4 pb-8">
-                    <div className={tc.formCard}>
-                        <h2 className={tc.formTitle}>Entre em Contato</h2>
-                        {profile.website_city && (
-                            <p className="flex items-center gap-1 text-sm opacity-50 mb-5">
-                                <MapPin size={13} /> {profile.website_city}
-                            </p>
-                        )}
-                        <div className={`grid grid-cols-1 ${profile.website_sections?.show_maps && profile.website_google_maps ? 'md:grid-cols-2' : ''} gap-8`}>
-                            {profile.website_sections?.show_contact_form && profile.website_whatsapp && (
-                                <div>
-                                    <p className="text-sm opacity-60 mb-4">Preencha o formulário e entraremos em contato pelo WhatsApp.</p>
-                                    <ContactForm profile={profile} tc={tc} />
-                                </div>
-                            )}
-                            {profile.website_sections?.show_maps && profile.website_google_maps && (
-                                <div>
-                                    <p className={`text-sm font-semibold mb-3 ${tc.formLabel}`}>Como chegar</p>
-                                    <iframe src={profile.website_google_maps} width="100%" height="320"
-                                        className="rounded-xl border-0 w-full" loading="lazy"
-                                        allowFullScreen referrerPolicy="no-referrer-when-downgrade" />
-                                </div>
-                            )}
-                        </div>
+            {/* Contact Form + Google Maps (Lazy Loaded) */}
+            {((profile.website_sections?.show_contact_form && profile.website_whatsapp) || (profile.website_sections?.show_maps && profile.website_google_maps)) && (
+                <Suspense fallback={
+                    <div className="max-w-[1250px] mx-auto px-4 pb-8 min-h-[250px] flex items-center justify-center">
+                        <div className="animate-pulse text-xs font-bold text-slate-400 uppercase tracking-widest">Carregando contato e mapa...</div>
                     </div>
-                </section>
-            ) : null}
+                }>
+                    <ContactSection profile={profile} tc={tc} />
+                </Suspense>
+            )}
 
             {/* Footer */}
             <PublicFooter profile={profile} mainWaUrl={mainWaUrl} />
 
-            {/* Floating WA */}
+            {/* Floating WA com SVG Animado */}
             {profile.website_whatsapp && (
                 <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                    className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-400 hover:scale-110 transition-all z-50 overflow-hidden">
-                    <Lottie animationData={whatsappAnimation} loop={true} className="w-16 h-16 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-400 hover:scale-110 hover:-translate-y-1 transition-all z-50 animate-bounce group"
+                    title="Chamar no WhatsApp"
+                    aria-label="Chamar no WhatsApp">
+                    <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-current group-hover:scale-110 transition-transform">
+                        <path d="M19.007 4.93A9.847 9.847 0 0 0 12.034 2c-5.441 0-9.886 4.444-9.89 9.89a9.833 9.833 0 0 0 1.324 4.96L2.06 22l5.305-1.392a9.866 9.866 0 0 0 4.664 1.173h.004c5.441 0 9.886-4.444 9.89-9.89a9.84 9.84 0 0 0-2.916-6.961M12.034 20.172h-.004a8.174 8.174 0 0 1-4.17-1.14l-.298-.177-3.1 1.026.837-3.03-.195-.31a8.173 8.173 0 0 1-1.25-4.321c.004-4.51 3.682-8.188 8.196-8.188a8.177 8.177 0 0 1 5.792 2.404 8.18 8.18 0 0 1 2.399 5.8a8.212 8.212 0 0 1-8.207 8.196m4.496-6.142c-.246-.123-1.458-.72-1.685-.803-.227-.082-.392-.123-.556.123-.164.246-.636.803-.78 1.018-.144.214-.288.24-.534.116-.246-.123-1.037-.382-1.975-1.218-.73-.65-1.222-1.453-1.365-1.7-.144-.246-.015-.38.109-.502.11-.11.246-.288.37-.432.124-.144.165-.246.248-.41.082-.164.04-.308-.02-.432-.062-.124-.557-1.343-.763-1.838-.2-.48-.4-.413-.556-.421-.144-.007-.309-.008-.474-.008a.91.91 0 0 0-.659.308c-.227.247-.865.845-.865 2.062s.886 2.392.984 2.52c.099.127 1.742 2.658 4.22 3.727.59.254 1.05.405 1.41.52.593.189 1.133.162 1.56.098.476-.07 1.458-.596 1.664-1.173.206-.577.206-1.071.144-1.173-.06-.102-.226-.143-.472-.266" />
+                    </svg>
                 </a>
             )}
         </div>

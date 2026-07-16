@@ -100,8 +100,8 @@ const UserLayout: React.FC = () => {
         <div className="flex h-screen bg-background text-foreground relative overflow-hidden font-sans">
             {/* Ambient Animated Blobs for Liquid Glass Effect */}
             <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-primary/10 dark:bg-primary/5 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply dark:mix-blend-normal animate-pulse pointer-events-none" style={{ animationDuration: '8s' }} />
-            <div className="absolute bottom-[-10%] left-[-5%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-blue-500/5 dark:bg-blue-955/2 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply dark:mix-blend-normal animate-pulse pointer-events-none" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-            <div className="absolute top-[20%] left-[20%] w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] bg-purple-500/10 dark:bg-purple-955/4 rounded-full blur-[80px] md:blur-[100px] mix-blend-multiply dark:mix-blend-normal animate-pulse pointer-events-none" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+            <div className="absolute bottom-[-10%] left-[-5%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-blue-500/5 dark:bg-blue-900/10 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply dark:mix-blend-normal animate-pulse pointer-events-none" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+            <div className="absolute top-[20%] left-[20%] w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] bg-purple-500/10 dark:bg-purple-900/10 rounded-full blur-[80px] md:blur-[100px] mix-blend-multiply dark:mix-blend-normal animate-pulse pointer-events-none" style={{ animationDuration: '12s', animationDelay: '4s' }} />
 
             <AppSidebar />
 

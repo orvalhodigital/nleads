@@ -15,6 +15,7 @@ import AutocompleteInput from './ui/AutocompleteInput';
 
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
+import { getMatchingInsights } from '../services/geminiService';
 
 
 interface InventoryProps {
@@ -105,6 +106,15 @@ const Inventory: React.FC<InventoryProps> = ({
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [selectorSearch, setSelectorSearch] = useState('');
   const [selectorSelectedIds, setSelectorSelectedIds] = useState<string[]>([]);
+  const [iaMatches, setIaMatches] = useState<Array<{ leadId: string; reason: string; whatsappPitch: string }>>([]);
+  const [loadingIa, setLoadingIa] = useState(false);
+
+  const prepareIaMessageModal = (lead: Lead, pitch: string) => {
+    setMessageTarget('single');
+    setTargetLeadsList([lead]);
+    setMessageTemplate(pitch);
+    setIsMessageModalOpen(true);
+  };
   const location = useLocation();
     useEffect(() => {
         if (location.state?.selectedVehicleId && vehicles.length > 0) {
@@ -150,6 +160,32 @@ const Inventory: React.FC<InventoryProps> = ({
       fetchComms();
     }
   }, [selectedVehicle]);
+
+  // Fetch AI matching recommendations
+  useEffect(() => {
+    if (selectedVehicle && selectedVehicle !== 'new') {
+      const fetchIaMatches = async () => {
+        setLoadingIa(true);
+        setIaMatches([]);
+        try {
+          const activeLeads = leads.filter(l => l.phase !== LeadPhase.COMPLETED && l.phase !== LeadPhase.DISQUALIFIED);
+          if (activeLeads.length > 0) {
+            const res = await getMatchingInsights(selectedVehicle as Vehicle, activeLeads);
+            if (res && res.matches) {
+              setIaMatches(res.matches);
+            }
+          }
+        } catch (err) {
+          console.error("Erro ao carregar matching de IA:", err);
+        } finally {
+          setLoadingIa(false);
+        }
+      };
+      fetchIaMatches();
+    } else {
+      setIaMatches([]);
+    }
+  }, [selectedVehicle, leads]);
 
   const handleSelectVehicle = useCallback((v: Vehicle) => setSelectedVehicle(v), []);
 
@@ -691,6 +727,71 @@ const Inventory: React.FC<InventoryProps> = ({
                 <div className="text-center py-10 opacity-50">
                   <Users size={48} className="mx-auto text-slate-300 mb-4" />
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nenhum lead compatível</p>
+                </div>
+              )}
+            </div>
+
+            {/* IA Recommendations Section */}
+            <div className="bg-gradient-to-br from-indigo-50/50 to-brand-50/30 dark:from-slate-900/60 dark:to-slate-800/40 rounded-[2.5rem] p-8 border border-indigo-100/70 dark:border-slate-800 shadow-sm relative overflow-hidden">
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                  <Zap size={24} className="text-indigo-600 dark:text-brand-400 animate-pulse" />
+                  <h3 className="text-lg font-extrabold tracking-tight text-indigo-950 dark:text-foreground">Recomendações por IA ✨</h3>
+                </div>
+                <p className="text-indigo-900/60 dark:text-muted-foreground text-sm font-medium leading-relaxed mb-4">
+                  O Gemini analisou o perfil dos leads ativos e gerou argumentos e pitches personalizados.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {loadingIa ? (
+                <div className="flex items-center justify-center p-8 bg-white dark:bg-slate-900/40 rounded-[2rem] border border-slate-100 dark:border-border/80 shadow-sm">
+                  <Loader2 className="animate-spin text-indigo-500 mr-2.5" size={20} />
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Processando...</span>
+                </div>
+              ) : (
+                iaMatches.map(match => {
+                  const lead = leads.find(l => l.id === match.leadId);
+                  if (!lead) return null;
+                  const hasReceived = communications.some(c => c.lead_id === lead.id);
+                  
+                  return (
+                    <div key={match.leadId} className="bg-white dark:bg-card p-6 rounded-[2rem] border border-indigo-100/50 dark:border-border shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-primary/50 transition-all group cursor-pointer relative">
+                      {hasReceived && (
+                        <div className="absolute top-6 right-6 w-8 h-8 bg-indigo-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-indigo-600 dark:text-brand-400" title="Mensagem já enviada">
+                          <Check size={16} strokeWidth={3} />
+                        </div>
+                      )}
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-indigo-50/50 dark:bg-slate-800 flex items-center justify-center font-black text-lg text-indigo-600 dark:text-brand-400 group-hover:bg-indigo-600 group-hover:text-white dark:group-hover:bg-brand-500 transition-colors">
+                            {lead.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-extrabold text-indigo-950 dark:text-foreground uppercase leading-none">{lead.name}</p>
+                            <p className="text-[9px] font-bold text-indigo-500 dark:text-brand-400 uppercase tracking-widest mt-1">Sugerido por IA</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mb-4 p-3 bg-indigo-50/30 dark:bg-slate-800/40 rounded-xl border border-indigo-100/30 dark:border-border/60 text-xs text-indigo-950 dark:text-muted-foreground leading-relaxed font-semibold">
+                        {match.reason}
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => prepareIaMessageModal(lead, match.whatsappPitch)} className="flex-1 py-3 bg-indigo-600 dark:bg-primary text-white rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-primary/95 transition-colors flex items-center justify-center gap-2 shadow-md shadow-indigo-600/10 dark:shadow-none">
+                          <Send size={14} /> Abordagem de IA
+                        </button>
+                        <button onClick={() => onViewLead(lead.id)} className="flex-1 py-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-border text-slate-400 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                          Detalhes
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              {!loadingIa && iaMatches.length === 0 && (
+                <div className="text-center py-6 bg-white dark:bg-card rounded-[2rem] border border-slate-100 dark:border-border border-dashed opacity-50">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nenhuma recomendação de IA</p>
                 </div>
               )}
             </div>

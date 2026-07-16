@@ -76,6 +76,142 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     }
   }, [focusedLeadId, leads, onClearFocus]);
 
+  // Estados para modais locais integrados no Kanban
+  const [actionLead, setActionLead] = useState<Lead | null>(null);
+  const [pendingPhase, setPendingPhase] = useState<LeadPhase | null>(null);
+  const [activeModal, setActiveModal] = useState<'disqualify' | 'visit' | 'simulation' | 'followup' | 'sale' | null>(null);
+
+  const handleConfirmDisqualify = async (reasons: string[], notes: string) => {
+    if (!actionLead || !pendingPhase) return;
+    try {
+      const oldPhase = actionLead.phase;
+      await onUpdateLead({
+        ...actionLead,
+        phase: pendingPhase,
+        disqualificationReasons: reasons,
+        disqualificationNotes: notes,
+      });
+      await notificationService.notifyLeadPhaseChange(actionLead.name, oldPhase, pendingPhase, impersonatedUserId);
+      showToast('success', 'Lead desqualificado com sucesso!');
+      onRefresh?.();
+      onDataChange?.();
+    } catch (e) {
+      showToast('error', 'Erro ao desqualificar o lead.');
+    } finally {
+      setActiveModal(null);
+      setActionLead(null);
+      setPendingPhase(null);
+    }
+  };
+
+  const handleConfirmScheduling = async (data?: { date: string; time: string; vehicleOfInterest: string; notes: string }) => {
+    if (!actionLead || !pendingPhase || !data) {
+      setActiveModal(null);
+      setActionLead(null);
+      setPendingPhase(null);
+      return;
+    }
+    try {
+      const oldPhase = actionLead.phase;
+      const visitDateTime = new Date(`${data.date}T${data.time}`).toISOString();
+      
+      const existingAppointments = actionLead.scheduling_data?.appointments || [];
+      const newAppointment = {
+        id: crypto.randomUUID(),
+        date: visitDateTime,
+        status: 'pending' as const,
+        vehicleOfInterest: data.vehicleOfInterest,
+        notes: data.notes
+      };
+      const updatedAppointments = [...existingAppointments, newAppointment];
+
+      await onUpdateLead({
+        ...actionLead,
+        phase: pendingPhase,
+        visit_date: visitDateTime,
+        visit_status: 'pending',
+        scheduling_data: {
+          ...(actionLead.scheduling_data || {}),
+          appointments: updatedAppointments
+        }
+      });
+      await notificationService.notifyLeadPhaseChange(actionLead.name, oldPhase, pendingPhase, impersonatedUserId);
+      showToast('success', 'Visita agendada com sucesso!');
+      onRefresh?.();
+      onDataChange?.();
+    } catch (e) {
+      showToast('error', 'Erro ao agendar visita.');
+    } finally {
+      setActiveModal(null);
+      setActionLead(null);
+      setPendingPhase(null);
+    }
+  };
+
+  const handleConfirmSimulation = async (data?: { cpf: string; cnh: string; downPayment: number; installments: number; notes: string }) => {
+    if (!actionLead || !pendingPhase || !data) {
+      setActiveModal(null);
+      setActionLead(null);
+      setPendingPhase(null);
+      return;
+    }
+    try {
+      const oldPhase = actionLead.phase;
+      await onUpdateLead({
+        ...actionLead,
+        phase: pendingPhase,
+        simulation_data: data
+      });
+      await notificationService.notifyLeadPhaseChange(actionLead.name, oldPhase, pendingPhase, impersonatedUserId);
+      showToast('success', 'Simulação salva com sucesso!');
+      onRefresh?.();
+      onDataChange?.();
+    } catch (e) {
+      showToast('error', 'Erro ao salvar simulação.');
+    } finally {
+      setActiveModal(null);
+      setActionLead(null);
+      setPendingPhase(null);
+    }
+  };
+
+  const handleConfirmFollowUp = async (data?: { nextContactDate: string; notes: string }) => {
+    if (!actionLead || !pendingPhase || !data) {
+      setActiveModal(null);
+      setActionLead(null);
+      setPendingPhase(null);
+      return;
+    }
+    try {
+      const oldPhase = actionLead.phase;
+      await onUpdateLead({
+        ...actionLead,
+        phase: pendingPhase,
+        follow_up_data: data
+      });
+      await notificationService.notifyLeadPhaseChange(actionLead.name, oldPhase, pendingPhase, impersonatedUserId);
+      showToast('success', 'Follow-up salvo com sucesso!');
+      onRefresh?.();
+      onDataChange?.();
+    } catch (e) {
+      showToast('error', 'Erro ao salvar follow-up.');
+    } finally {
+      setActiveModal(null);
+      setActionLead(null);
+      setPendingPhase(null);
+    }
+  };
+
+  const handleSaleSuccess = () => {
+    showToast('success', 'Venda concluída com sucesso!');
+    onRefresh?.();
+    onDataChange?.();
+    setActiveModal(null);
+    setActionLead(null);
+    setPendingPhase(null);
+  };
+
+
   const phases = useMemo(() => {
     if (propPhases) return propPhases;
     if (type === 'leads') {
@@ -231,23 +367,33 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     if (!lead || lead.phase === newPhase) return;
 
     if (newPhase === LeadPhase.DISQUALIFIED) {
-      navigate(`/leads/${lead.id}/action/disqualify`);
+      setActionLead(lead);
+      setPendingPhase(newPhase);
+      setActiveModal('disqualify');
       return;
     }
     if (newPhase === LeadPhase.VISIT) {
-      navigate(`/leads/${lead.id}/action/visit`);
+      setActionLead(lead);
+      setPendingPhase(newPhase);
+      setActiveModal('visit');
       return;
     }
     if (newPhase === LeadPhase.SIMULATION) {
-      navigate(`/leads/${lead.id}/action/simulation`);
+      setActionLead(lead);
+      setPendingPhase(newPhase);
+      setActiveModal('simulation');
       return;
     }
     if (newPhase === LeadPhase.FOLLOW_UP) {
-      navigate(`/leads/${lead.id}/action/followup`);
+      setActionLead(lead);
+      setPendingPhase(newPhase);
+      setActiveModal('followup');
       return;
     }
     if (newPhase === LeadPhase.COMPLETED) {
-      navigate(`/leads/${lead.id}/action/sale`);
+      setActionLead(lead);
+      setPendingPhase(newPhase);
+      setActiveModal('sale');
       return;
     }
 
@@ -568,6 +714,53 @@ const LeadManager: React.FC<LeadManagerProps> = ({
       </div>
       <div className="flex-1 min-h-0">{viewMode === 'kanban' ? renderKanban() : renderList()}</div>
       <LeadImportModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} currentLeads={leads} />
+
+      {activeModal === 'disqualify' && actionLead && (
+        <DisqualificationModal
+          isOpen={true}
+          onClose={() => { setActiveModal(null); setActionLead(null); setPendingPhase(null); }}
+          onConfirm={handleConfirmDisqualify}
+          leadName={actionLead.name}
+        />
+      )}
+
+      {activeModal === 'visit' && actionLead && (
+        <LeadSchedulingModal
+          lead={actionLead}
+          isOpen={true}
+          onClose={() => { setActiveModal(null); setActionLead(null); setPendingPhase(null); }}
+          onConfirm={handleConfirmScheduling}
+        />
+      )}
+
+      {activeModal === 'simulation' && actionLead && (
+        <LeadSimulationModal
+          lead={actionLead}
+          isOpen={true}
+          onClose={() => { setActiveModal(null); setActionLead(null); setPendingPhase(null); }}
+          onConfirm={handleConfirmSimulation}
+        />
+      )}
+
+      {activeModal === 'followup' && actionLead && (
+        <LeadFollowUpModal
+          lead={actionLead}
+          isOpen={true}
+          onClose={() => { setActiveModal(null); setActionLead(null); setPendingPhase(null); }}
+          onConfirm={handleConfirmFollowUp}
+        />
+      )}
+
+      {activeModal === 'sale' && actionLead && (
+        <LeadSaleModal
+          isOpen={true}
+          onClose={() => { setActiveModal(null); setActionLead(null); setPendingPhase(null); }}
+          leadId={actionLead.id}
+          leads={leads}
+          vehicles={vehicles}
+          onSuccess={handleSaleSuccess}
+        />
+      )}
     </div>
   );
 };

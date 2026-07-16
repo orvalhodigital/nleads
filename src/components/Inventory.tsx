@@ -317,7 +317,8 @@ const Inventory: React.FC<InventoryProps> = ({
   const matchingLeads = useMemo(() => {
     if (!selectedVehicle || selectedVehicle === 'new') return [];
     const v = selectedVehicle as any;
-    const isMoto = !!v.category; // Motorcycle interface uses category, Vehicle uses type
+    const isMoto = v.vehicleCategory === 'moto' || (v.category && !v.vehicleCategory);
+    const isCaminhao = v.vehicleCategory === 'caminhao';
     
     return leads.filter(l => {
       // Ignore lost/completed leads
@@ -328,16 +329,24 @@ const Inventory: React.FC<InventoryProps> = ({
       if (isMoto) {
         if (!pref.interesse_moto) return false;
         
-        const matchesCategory = pref.tipos_moto?.length === 0 || pref.tipos_moto?.includes(v.category);
-        const matchesBrand = pref.marcas_moto?.length === 0 || pref.marcas_moto?.some(b => v.brand.toLowerCase().includes(b.toLowerCase()));
+        const matchesCategory = !pref.tipos_moto || pref.tipos_moto.length === 0 || pref.tipos_moto.includes(v.category);
+        const matchesBrand = !pref.marcas_moto || pref.marcas_moto.length === 0 || pref.marcas_moto.some(b => v.brand.toLowerCase().includes(b.toLowerCase()));
         const matchesPrice = !pref.moto_valor_max || v.price <= pref.moto_valor_max;
         
         return matchesCategory && matchesBrand && matchesPrice;
+      } else if (isCaminhao) {
+        if (!pref.interesse_caminhao) return false;
+        
+        const matchesType = !pref.tipos_caminhao || pref.tipos_caminhao.length === 0 || pref.tipos_caminhao.includes(v.type);
+        const matchesBrand = !pref.marcas_caminhao || pref.marcas_caminhao.length === 0 || pref.marcas_caminhao.some(b => v.brand.toLowerCase().includes(b.toLowerCase()));
+        const matchesPrice = !pref.caminhao_valor_max || v.price <= pref.caminhao_valor_max;
+        
+        return matchesType && matchesBrand && matchesPrice;
       } else {
         if (!pref.interesse_carro) return false;
         
-        const matchesType = pref.tipos_veiculo?.length === 0 || pref.tipos_veiculo?.includes(v.type);
-        const matchesBrand = pref.marcas?.length === 0 || pref.marcas?.some(b => v.brand.toLowerCase().includes(b.toLowerCase()));
+        const matchesType = !pref.tipos_veiculo || pref.tipos_veiculo.length === 0 || pref.tipos_veiculo.includes(v.type);
+        const matchesBrand = !pref.marcas || pref.marcas.length === 0 || pref.marcas.some(b => v.brand.toLowerCase().includes(b.toLowerCase()));
         const matchesPrice = !pref.carro_valor_max || v.price <= pref.carro_valor_max;
         
         return matchesType && matchesBrand && matchesPrice;

@@ -7,7 +7,7 @@ import {
   CalendarCheck, Clock, ExternalLink, Search, CheckSquare, Square, Upload,
   Briefcase, Users, User, MapPin, DollarSign, Calendar, Sliders, Settings,
   MessageSquare, MoreVertical, CreditCard, LayoutTemplate, Tag, Trash, FileText,
-  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Smartphone, Target, Info, Flame, Snowflake, Droplet
+  AlertTriangle, Menu, UserPlus, Zap, History, UserCheck, Smartphone, Target, Info, Flame, Snowflake, Droplet, Shield
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DraggableProvided, DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { Lead, LeadPhase, LeadTemperature, Tag as TagType, Vehicle, VehicleType, TransmissionType, EngineType, SaleDetails, Profile } from '../types';
@@ -22,7 +22,6 @@ import { CustomDatePicker } from './ui/CustomDatePicker';
 import { CustomTimePicker } from './ui/CustomTimePicker';
 import { LeadSimulationModal } from './LeadSimulationModal';
 import { LeadFollowUpModal } from './LeadFollowUpModal';
-const LeadImportModal = lazy(() => import('./LeadImportModal'));
 import { useToast } from '../contexts/ToastContext';
 import { formatCurrency } from '../utils/formatters';
 
@@ -63,7 +62,6 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const { showToast } = useToast();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isDisqualifiedExpanded, setIsDisqualifiedExpanded] = useState(false);
 
@@ -475,7 +473,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     indigo: { columnBg: 'bg-indigo-50/55 dark:bg-indigo-950/20', headerBg: 'bg-indigo-100/50 dark:bg-indigo-900/25', border: 'border-indigo-200 dark:border-indigo-900/40', bgIcon: 'bg-indigo-100 dark:bg-indigo-900/40', textStrong: 'text-foreground', btnBg: 'bg-indigo-600', bgSection: 'bg-indigo-50/50 dark:bg-indigo-950/20' },
     emerald: { columnBg: 'bg-emerald-50/55 dark:bg-emerald-950/20', headerBg: 'bg-emerald-100/50 dark:bg-emerald-900/25', border: 'border-emerald-200 dark:border-emerald-900/40', bgIcon: 'bg-emerald-100 dark:bg-emerald-900/40', textStrong: 'text-foreground', btnBg: 'bg-emerald-500', bgSection: 'bg-emerald-50/50 dark:bg-emerald-950/20' },
     violet: { columnBg: 'bg-violet-50/50 dark:bg-violet-950/20', headerBg: 'bg-violet-100/50 dark:bg-violet-900/25', border: 'border-violet-200 dark:border-violet-900/40', bgIcon: 'bg-violet-100 dark:bg-violet-900/40', textStrong: 'text-foreground', btnBg: 'bg-violet-500', bgSection: 'bg-violet-50/50 dark:bg-violet-950/20' },
-    green: { columnBg: 'bg-green-50/55 dark:bg-green-950/20', headerBg: 'bg-green-100/50 dark:bg-green-900/25', border: 'border-green-200 dark:border-green-900/40', bgIcon: 'bg-green-100 dark:bg-green-900/40', textStrong: 'text-foreground', btnBg: 'bg-green-600', bgSection: 'bg-green-50/50 dark:bg-green-950/20' },
+    green: { columnBg: 'bg-green-50/55 dark:bg-green-950/20', headerBg: 'bg-green-100/50 dark:bg-green-900/25', border: 'border-green-200 dark:bg-green-900/40', bgIcon: 'bg-green-100 dark:bg-green-900/40', textStrong: 'text-foreground', btnBg: 'bg-green-600', bgSection: 'bg-green-50/50 dark:bg-green-950/20' },
     rose: { columnBg: 'bg-rose-50/50 dark:bg-rose-950/20', headerBg: 'bg-rose-100/50 dark:bg-rose-900/25', border: 'border-rose-200 dark:border-rose-900/40', bgIcon: 'bg-rose-100 dark:bg-rose-900/40', textStrong: 'text-foreground', btnBg: 'bg-rose-500', bgSection: 'bg-rose-50/60 dark:bg-rose-950/20' },
     slate: { columnBg: 'bg-muted', headerBg: 'bg-muted/80', border: 'border-border', bgIcon: 'bg-secondary', textStrong: 'text-foreground', btnBg: 'bg-slate-600 dark:bg-slate-500', bgSection: 'bg-muted/60' },
   };
@@ -574,7 +572,16 @@ const LeadManager: React.FC<LeadManagerProps> = ({
                                             <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">R$ {formatCurrency(lead.preferences.moto_valor_max)}</span>
                                           </div>
                                         )}
-                                        {!lead.preferences.interesse_carro && !lead.preferences.interesse_moto && lead.preferences.valor_maximo && (
+                                        {lead.preferences.interesse_caminhao && lead.preferences.caminhao_valor_max && (
+                                          <div className="flex items-center justify-between px-3 py-1.5 bg-amber-500/5 dark:bg-amber-950/20 rounded-xl border border-amber-500/10 dark:border-amber-800/20">
+                                            <div className="flex items-center gap-1.5">
+                                              <Shield size={10} className="text-amber-500" />
+                                              <span className="text-[8px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">Caminhão</span>
+                                            </div>
+                                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">R$ {formatCurrency(lead.preferences.caminhao_valor_max)}</span>
+                                          </div>
+                                        )}
+                                        {!lead.preferences.interesse_carro && !lead.preferences.interesse_moto && !lead.preferences.interesse_caminhao && lead.preferences.valor_maximo && (
                                           <div className="flex items-center justify-between px-3 py-1.5 bg-muted rounded-xl border border-border">
                                             <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">Geral</span>
                                             <span className="text-[10px] font-bold text-foreground">R$ {formatCurrency(lead.preferences.valor_maximo)}</span>
@@ -747,13 +754,6 @@ const LeadManager: React.FC<LeadManagerProps> = ({
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => setIsImportModalOpen(true)}
-              className="flex items-center gap-1.5 px-5 py-3 bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-            >
-              <Upload size={14} />
-              Importar
-            </button>
-            <button
               onClick={() => navigate('/leads/new')}
               className="flex items-center gap-1.5 px-6 py-3 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-md hover:shadow-lg shadow-primary/20 hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
             >
@@ -883,7 +883,6 @@ const LeadManager: React.FC<LeadManagerProps> = ({
         )}
       </div>
       <div className="flex-1 min-h-0">{viewMode === 'kanban' ? renderKanban() : renderList()}</div>
-      <LeadImportModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} currentLeads={leads} />
 
       {activeModal === 'disqualify' && actionLead && (
         <DisqualificationModal

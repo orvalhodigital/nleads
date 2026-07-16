@@ -26,25 +26,94 @@ export const getMatchingInsights = async (vehicle: Vehicle, qualifiedLeads: Lead
   }
 };
 
+/**
+ * Gera SEO + preço sugerido via IA.
+ * IMPORTANTE: esta função LANÇA erro em caso de falha. Antes ela engolia a exceção e
+ * devolvia campos vazios, o que fazia a tela mostrar "gerado com sucesso" sem ter
+ * gerado nada (o clique em "Gerar com IA" parecia não fazer efeito). Não voltar a
+ * silenciar o erro — quem chama precisa saber que falhou.
+ */
 export const generateSeoDetails = async (vehicle: Partial<Vehicle>): Promise<{ seoHeadline: string; seoDescription: string; suggestedSalePrice: number }> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
+
+  let response: Response;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const response = await fetch('/api/gemini/generate-seo', {
+    response = await fetch('/api/gemini/generate-seo', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || ''}`
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ vehicle }),
     });
-
-    if (!response.ok) {
-      throw new Error(`SEO request failed with status ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Gemini SEO Generation Error:", error);
-    return { seoHeadline: '', seoDescription: '', suggestedSalePrice: 0 };
+  } catch (networkErr) {
+    console.error('Gemini SEO — falha de rede:', networkErr);
+    throw new Error('Não foi possível contatar o serviço de IA. Verifique sua conexão.');
   }
+
+  if (!response.ok) {
+    // Repassa a mensagem real do servidor (ex.: "Gemini API key is not configured.")
+    const detail = await response.json().catch(() => ({} as any));
+    const serverMsg = detail?.error;
+    console.error('Gemini SEO — erro do servidor:', response.status, serverMsg);
+    if (response.status === 401) throw new Error('Sessão expirada. Faça login novamente.');
+    if (response.status === 500 && /api key/i.test(serverMsg || '')) {
+      throw new Error('A chave da IA (GEMINI_API_KEY) não está configurada no servidor.');
+    }
+    throw new Error(serverMsg || `Falha ao gerar com IA (HTTP ${response.status}).`);
+  }
+
+  const data = await response.json();
+  if (!data?.seoHeadline && !data?.seoDescription) {
+    throw new Error('A IA não retornou conteúdo. Tente novamente.');
+  }
+  return data;
+};
+
+/**
+ * Gera as descrições comerciais (curta e completa) do veículo via IA.
+ * Assim como `generateSeoDetails`, LANÇA erro em caso de falha — nunca silenciar.
+ */
+export const generateVehicleDescriptions = async (
+  vehicle: Partial<Vehicle>
+): Promise<{ shortDescription: string; description: string }> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
+
+  let response: Response;
+  try {
+    response = await fetch('/api/gemini/generate-descriptions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ vehicle }),
+    });
+  } catch (networkErr) {
+    console.error('Gemini descrições — falha de rede:', networkErr);
+    throw new Error('Não foi possível contatar o serviço de IA. Verifique sua conexão.');
+  }
+
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({} as any));
+    const serverMsg = detail?.error;
+    console.error('Gemini descrições — erro do servidor:', response.status, serverMsg);
+    if (response.status === 401) throw new Error('Sessão expirada. Faça login novamente.');
+    if (response.status === 500 && /api key/i.test(serverMsg || '')) {
+      throw new Error('A chave da IA (GEMINI_API_KEY) não está configurada no servidor.');
+    }
+    throw new Error(serverMsg || `Falha ao gerar descrições (HTTP ${response.status}).`);
+  }
+
+  const data = await response.json();
+  if (!data?.shortDescription && !data?.description) {
+    throw new Error('A IA não retornou conteúdo. Tente novamente.');
+  }
+  return data;
 };

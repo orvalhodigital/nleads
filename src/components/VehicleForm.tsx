@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     X, Upload, Loader2, Check, Plus, DollarSign, Calendar, Gauge, Zap,
     ArrowLeft, Search, AlertCircle, Hash, Shield, ImagePlus, FileText,
-    Target, Settings, HelpCircle, Sparkles, PlusCircle, Trash2
+    Target, Settings, HelpCircle, Sparkles, PlusCircle, Trash2, ChevronDown
 } from 'lucide-react';
 import { Vehicle, VehicleType, TransmissionType, EngineType, FuelType, MotorcycleCategory, MotoStartType, MotoBrakeType, MotoFuelSystem, MotoCooling } from '../types';
 import { Switch } from './ui/switch';
@@ -14,7 +14,7 @@ import { carDatabase } from '../data/carDb';
 import AutocompleteInput from './ui/AutocompleteInput';
 import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
 import { useToast } from '../contexts/ToastContext';
-import { generateSeoDetails } from '../services/geminiService';
+import { generateSeoDetails, generateVehicleDescriptions } from '../services/geminiService';
 import { VehicleFormSeo } from './vehicle-form/VehicleFormSeo';
 import { VehicleFormCosts } from './vehicle-form/VehicleFormCosts';
 import { VehicleFormPricing } from './vehicle-form/VehicleFormPricing';
@@ -60,6 +60,9 @@ const BRAND_MAP: Record<string, string> = {
     'LEXUS': 'Lexus', 'TROLLER': 'Troller',
 };
 
+/** Máximo de fotos na galeria (além da foto principal) → 11 + 1 = 12 fotos do veículo. */
+const MAX_GALLERY_IMAGES = 11;
+
 function normalizeBrand(apiMarca: string): string {
     const upper = apiMarca.toUpperCase().trim();
     if (BRAND_MAP[upper]) return BRAND_MAP[upper];
@@ -83,6 +86,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     const [submitting, setSubmitting] = useState(false);
     const [lookupLoading, setLookupLoading] = useState(false);
     const [aiGenerating, setAiGenerating] = useState(false);
+    const [descGenerating, setDescGenerating] = useState(false);
+    // Seções recolhidas por padrão — o lojista abre se quiser preencher.
+    const [showCondicoes, setShowCondicoes] = useState(false);
+    const [showOpcionais, setShowOpcionais] = useState(false);
     const [plateError, setPlateError] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -94,7 +101,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     const [formData, setFormData] = useState<Omit<Vehicle, 'id' | 'status'>>({
         brand: '', model: '', year: new Date().getFullYear(), modelYear: new Date().getFullYear(), plate: '', fipePrice: 0, price: 0, type: 'Sedan',
         transmission: 'Automático', engine: '1.6', fuelType: 'Flex', doors: 4, mileage: 0, color: '',
-        isSingleOwner: false, isServiceHistoryComplete: false, isIpvaPaid: true, hasWarranty: false,
+        // Por padrão só "Garantia" vem marcada; o lojista marca as demais conforme o caso.
+        isSingleOwner: false, isServiceHistoryComplete: false, isIpvaPaid: false, hasWarranty: true,
         hasSpareKey: false, hasOwnerManual: false,
         shortDescription: '', description: '',
         optionals: [], imageUrl: '', galleryImages: [],
@@ -253,10 +261,25 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
     const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
+
+        // Limite real (antes só a UI escondia o botão; dava para estourar selecionando vários de uma vez)
+        const current = formData.galleryImages?.length || 0;
+        const slots = MAX_GALLERY_IMAGES - current;
+        if (slots <= 0) {
+            showToast('error', `Galeria cheia (máximo ${MAX_GALLERY_IMAGES} fotos além da principal).`);
+            e.target.value = '';
+            return;
+        }
+        const selected = Array.from(files);
+        const toUpload = selected.slice(0, slots);
+        if (selected.length > slots) {
+            showToast('error', `Só cabem mais ${slots} foto(s). As demais foram ignoradas.`);
+        }
+
         setGalleryUploading(true);
         try {
             const urls: string[] = [];
-            for (const file of Array.from(files)) {
+            for (const file of toUpload) {
                 const resizedBlob = await resizeImage(file, 1080, 1080);
                 const resizedFile = new File([resizedBlob], 'gallery.webp', { type: 'image/webp' });
                 const fileName = `gallery/${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
@@ -291,8 +314,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         }));
     };
 
-    // AI Generation
+    // AI Generation — SEO + preço sugerido
     const handleGenerateAI = async () => {
+        if (!formData.brand?.trim() || !formData.model?.trim()) {
+            showToast('error', 'Informe ao menos a marca e o modelo antes de gerar com IA.');
+            return;
+        }
         setAiGenerating(true);
         try {
             const response = await generateSeoDetails(formData);
@@ -302,13 +329,46 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 seoDescription: response.seoDescription || prev.seoDescription,
                 suggestedSalePrice: response.suggestedSalePrice || prev.suggestedSalePrice
             }));
-            showToast('success', 'SEO e precificação gerados com sucesso pela IA!');
-        } catch (err) {
-            showToast('error', 'Falha ao conectar com a IA do Gemini.');
+            showToast('success', 'SEO e precificação gerados pela IA!');
+        } catch (err: any) {
+            // Mostra o motivo real (antes o erro era engolido e exibia "sucesso").
+            showToast('error', err?.message || 'Falha ao gerar com a IA.');
         } finally {
             setAiGenerating(false);
         }
     };
+
+    // AI Generation — descrições comerciais (curta e completa)
+    const handleGenerateDescriptions = async () => {
+        if (!formData.brand?.trim() || !formData.model?.trim()) {
+            showToast('error', 'Informe ao menos a marca e o modelo antes de gerar com IA.');
+            return;
+        }
+        setDescGenerating(true);
+        try {
+            const response = await generateVehicleDescriptions(formData);
+            setFormData(prev => ({
+                ...prev,
+                shortDescription: response.shortDescription || prev.shortDescription,
+                description: response.description || prev.description,
+            }));
+            showToast('success', 'Descrições geradas pela IA!');
+        } catch (err: any) {
+            showToast('error', err?.message || 'Falha ao gerar as descrições.');
+        } finally {
+            setDescGenerating(false);
+        }
+    };
+
+    // Quantos itens de "Condições e Chaves" estão marcados (mostrado no cabeçalho recolhido).
+    const condicoesCount = [
+        formData.isSingleOwner,
+        formData.isServiceHistoryComplete,
+        formData.isIpvaPaid,
+        formData.hasWarranty,
+        formData.hasSpareKey,
+        formData.hasOwnerManual,
+    ].filter(Boolean).length;
 
     // Financial calculations
     const totalCosts = (formData.operationalCosts || []).reduce((acc, item) => acc + item.amount, 0);
@@ -545,10 +605,26 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 {/* ── TAB 1: DADOS DO VEÍCULO ────────────────────────────────────── */}
                 {activeTab === 'dados' && (
                     <div className="bg-card rounded-[2.5rem] p-10 border border-border/80 shadow-sm space-y-10">
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3 mb-2">
+                        {/* Identificação Básica — bloco destacado, com a Placa em evidência */}
+                        <section className="space-y-6 rounded-3xl border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.07] p-6 md:p-8">
+                            <div className="flex items-center gap-3">
                                 <div className="w-1.5 h-4 bg-primary rounded-full" />
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Identificação Básica</h3>
+                                <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Identificação Básica</h3>
+                            </div>
+
+                            {/* PLACA — destaque principal */}
+                            <div className="space-y-2" id="field-plate">
+                                <label htmlFor="input-plate" className="text-[10px] font-bold text-primary uppercase tracking-widest px-1 flex items-center gap-1.5">
+                                    <Hash size={12} /> Placa do Veículo
+                                </label>
+                                <input
+                                    id="input-plate"
+                                    value={formData.plate}
+                                    onChange={e => setFormData({ ...formData, plate: e.target.value.toUpperCase() })}
+                                    placeholder="ABC1234"
+                                    maxLength={8}
+                                    className="w-full md:max-w-xs p-5 bg-card border-2 border-primary/40 rounded-2xl outline-none font-heading font-bold text-2xl md:text-3xl tracking-[0.2em] text-center uppercase text-foreground focus:border-primary focus:ring-4 focus:ring-ring transition-all"
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -578,18 +654,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                <div className="space-y-2" id="field-plate">
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Placa</label>
-                                    <input
-                                        value={formData.plate}
-                                        onChange={e => setFormData({ ...formData, plate: e.target.value.toUpperCase() })}
-                                        placeholder="ABC1234"
-                                        maxLength={8}
-                                        className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none font-semibold text-sm uppercase text-foreground focus:bg-card focus:border-primary/45 transition-all"
-                                    />
-                                </div>
-
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2" id="field-year">
                                     <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Ano Fab.</label>
                                     <input 
@@ -737,13 +802,27 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             </section>
                         )}
 
-                        {/* General options checklist */}
+                        {/* General options checklist — recolhível */}
                         <section className="space-y-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-4 bg-primary rounded-full" />
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><FileText size={13} /> Condições e Chaves</h3>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowCondicoes(v => !v)}
+                                aria-expanded={showCondicoes}
+                                className="w-full flex items-center gap-3 mb-2 group"
+                            >
+                                <div className="w-1.5 h-4 bg-primary rounded-full shrink-0" />
+                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 group-hover:text-foreground transition-colors"><FileText size={13} /> Condições e Chaves</h3>
+                                <span className="text-[9px] font-bold text-muted-foreground/60 normal-case tracking-normal">
+                                    {condicoesCount > 0 ? `${condicoesCount} marcado(s)` : 'opcional'}
+                                </span>
+                                <ChevronDown
+                                    size={16}
+                                    className={`ml-auto shrink-0 text-muted-foreground transition-transform duration-300 ${showCondicoes ? 'rotate-180' : ''}`}
+                                />
+                            </button>
 
+                            {showCondicoes && (
+                            <div className="space-y-6 animate-fadeUp">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                                 {[
                                     { label: 'Único Dono', key: 'isSingleOwner' },
@@ -792,13 +871,31 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     />
                                 </div>
                             </div>
+                            </div>
+                            )}
                         </section>
 
-                        {/* Opcionais checklist */}
+                        {/* Opcionais checklist — recolhível */}
                         <section className="space-y-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Shield size={13} /> Opcionais do Veículo</h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowOpcionais(v => !v)}
+                                aria-expanded={showOpcionais}
+                                className="w-full flex items-center gap-3 mb-2 group"
+                            >
+                                <div className="w-1.5 h-4 bg-amber-500 rounded-full shrink-0" />
+                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 group-hover:text-foreground transition-colors"><Shield size={13} /> Opcionais do Veículo</h3>
+                                <span className="text-[9px] font-bold text-muted-foreground/60 normal-case tracking-normal">
+                                    {(formData.optionals?.length || 0) > 0 ? `${formData.optionals!.length} selecionado(s)` : 'opcional'}
+                                </span>
+                                <ChevronDown
+                                    size={16}
+                                    className={`ml-auto shrink-0 text-muted-foreground transition-transform duration-300 ${showOpcionais ? 'rotate-180' : ''}`}
+                                />
+                            </button>
+                            <div className={showOpcionais ? 'space-y-6 animate-fadeUp' : 'hidden'}>
+                            <div className="flex items-center gap-3 mb-2 sr-only">
+                                <h3 className="text-[10px]">Opcionais</h3>
                             </div>
 
                             <div className="space-y-5">
@@ -873,6 +970,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                     <Plus size={20} />
                                 </button>
                             </div>
+                            </div>
                         </section>
 
                         {/* Media and Description */}
@@ -914,7 +1012,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between px-1">
                                         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Galeria</label>
-                                        <span className="text-[10px] font-bold text-muted-foreground/50">{formData.galleryImages?.length || 0}/6 fotos</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground/50">{formData.galleryImages?.length || 0}/{MAX_GALLERY_IMAGES} fotos</span>
                                     </div>
 
                                     {(formData.galleryImages?.length ?? 0) > 0 && (
@@ -934,7 +1032,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                         </div>
                                     )}
 
-                                    {(formData.galleryImages?.length || 0) < 6 && (
+                                    {(formData.galleryImages?.length || 0) < MAX_GALLERY_IMAGES && (
                                         <label className="block w-full cursor-pointer">
                                             <div className={`max-w-[280px] w-full py-3 px-4 rounded-2xl border text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-muted' : 'bg-card border-border/80 hover:border-primary hover:text-foreground'}`}>
                                                 {galleryUploading ? <Loader2 size={16} className="animate-spin text-primary" /> : <Upload size={16} />}
@@ -944,6 +1042,23 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                         </label>
                                     )}
                                 </div>
+                            </div>
+
+                            {/* Botão de IA para preencher as descrições */}
+                            <div className="flex items-center justify-between gap-3 pt-2">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+                                    Descrições do anúncio
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={handleGenerateDescriptions}
+                                    disabled={descGenerating}
+                                    title="Gera a descrição curta e a completa com base nos dados preenchidos"
+                                    className="px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-2 hover:bg-primary/90 disabled:opacity-50 shadow-sm shadow-primary/20"
+                                >
+                                    {descGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                                    {descGenerating ? 'Gerando...' : 'Gerar com IA'}
+                                </button>
                             </div>
 
                             <div className="space-y-2">

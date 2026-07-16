@@ -42,12 +42,16 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
                 preferences: {
                     interesse_carro: true,
                     interesse_moto: false,
+                    interesse_caminhao: false,
                     tipos_veiculo: [],
                     tipos_moto: [],
+                    tipos_caminhao: [],
                     marcas: [],
                     modelos: [],
                     marcas_moto: [],
                     modelos_moto: [],
+                    marcas_caminhao: [],
+                    modelos_caminhao: [],
                     carro_valor_min: 0,
                     carro_valor_max: 0,
                     carro_transmissao: [],
@@ -56,11 +60,29 @@ const QuickLeadModal: React.FC<QuickLeadModalProps> = ({ isOpen, onClose, onSucc
                     moto_valor_max: 0,
                     moto_transmissao: [],
                     moto_motorizacao: [],
+                    caminhao_valor_min: 0,
+                    caminhao_valor_max: 0,
+                    caminhao_transmissao: [],
+                    caminhao_motorizacao: [],
                     transmissao: [],
                     motorizacao: [],
                     observacoes_adicionais: '',
                     possui_entrada: false,
-                    possui_troca: false
+                    possui_troca: false,
+                    veiculo_troca: '',
+                    troca_data: {
+                        placa: '',
+                        categoria: 'carro',
+                        marca: '',
+                        modelo: '',
+                        ano: undefined,
+                        cor: '',
+                        quilometragem: undefined,
+                        valor_fipe: undefined,
+                        situacao_financeira: 'Quitado',
+                        valor_quitacao: undefined,
+                        observacoes: ''
+                    }
                 } as any
             } as any);
 

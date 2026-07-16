@@ -145,17 +145,41 @@ export interface LeadPreference {
   moto_transmissao: TransmissionType[];
   moto_motorizacao: EngineType[];
 
+  interesse_caminhao?: boolean;
+  tipos_caminhao?: string[];
+  marcas_caminhao?: string[];
+  modelos_caminhao?: string[];
+  caminhao_valor_min?: number;
+  caminhao_valor_max?: number;
+  caminhao_transmissao?: TransmissionType[];
+  caminhao_motorizacao?: string[];
+
   observacoes_adicionais: string;
   possui_entrada: boolean;
   valor_entrada?: number;
   possui_troca: boolean;
   veiculo_troca?: string;
+  troca_data?: TradeInVehicleData;
 
   // Legacy/fallback fields
   valor_minimo?: number;
   valor_maximo?: number;
   transmissao?: TransmissionType[];
   motorizacao?: EngineType[];
+}
+
+export interface TradeInVehicleData {
+  placa?: string;
+  categoria?: 'carro' | 'moto' | 'caminhao';
+  marca?: string;
+  modelo?: string;
+  ano?: number;
+  cor?: string;
+  quilometragem?: number;
+  valor_fipe?: number;
+  situacao_financeira?: 'Quitado' | 'Financiado';
+  valor_quitacao?: number;
+  observacoes?: string;
 }
 
 export interface Appointment {

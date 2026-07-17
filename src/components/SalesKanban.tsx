@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Lead, SalePhase } from '../types';
 import { salesFlowService } from '../services/salesFlowService';
@@ -6,7 +7,7 @@ import { guaranteeService } from '../services/guaranteeService';
 import { GuaranteeConfig } from '../types';
 import { format, parseISO, differenceInDays, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, AlertCircle, Clock } from 'lucide-react';
+import { Calendar, AlertCircle, Clock, Shield, X } from 'lucide-react';
 
 interface SalesKanbanProps {
   leads: Lead[];
@@ -25,6 +26,11 @@ const SalesKanban: React.FC<SalesKanbanProps> = ({ leads, userId, onUpdate }) =>
   const [guaranteeConfigs, setGuaranteeConfigs] = useState<GuaranteeConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Quando há mais de uma garantia configurada, pergunta qual aplicar em vez
+  // de sempre escolher a primeira (guaranteeConfigs[0]) silenciosamente —
+  // antes disso, mover um card para "Em Garantia" aplicava sempre a mesma
+  // garantia, mesmo que a loja tivesse várias opções configuradas.
+  const [pendingGuaranteeLeadId, setPendingGuaranteeLeadId] = useState<string | null>(null);
 
   useEffect(() => {
     loadGuaranteeConfigs();
@@ -74,7 +80,13 @@ const SalesKanban: React.FC<SalesKanbanProps> = ({ leads, userId, onUpdate }) =>
       if (nextPhase === 'entrega') {
         deliveryDate = new Date().toISOString();
       } else if (nextPhase === 'em_garantia') {
-        if (guaranteeConfigs.length > 0) {
+        if (guaranteeConfigs.length > 1) {
+          // Mais de uma garantia configurada: pergunta qual aplicar em vez de
+          // escolher a primeira silenciosamente.
+          setPendingGuaranteeLeadId(leadId);
+          return;
+        }
+        if (guaranteeConfigs.length === 1) {
           const defaultGuarantee = guaranteeConfigs[0];
           guaranteeId = defaultGuarantee.id;
           const lead = leads.find((l) => l.id === leadId);
@@ -88,6 +100,24 @@ const SalesKanban: React.FC<SalesKanbanProps> = ({ leads, userId, onUpdate }) =>
       }
 
       await salesFlowService.moveToNextPhase(leadId, nextPhase, deliveryDate, guaranteeId, guaranteeEndsAt);
+      onUpdate?.();
+    } catch (err) {
+      setError('Erro ao mover venda');
+      console.error(err);
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const confirmGuaranteeSelection = async (config: GuaranteeConfig) => {
+    const leadId = pendingGuaranteeLeadId;
+    if (!leadId) return;
+    setPendingGuaranteeLeadId(null);
+    try {
+      const lead = leads.find((l) => l.id === leadId);
+      const guaranteeEndsAt = lead?.saleDate
+        ? salesFlowService.calculateGuaranteeEndDate(lead.saleDate, config.days_warranty)
+        : undefined;
+      await salesFlowService.moveToNextPhase(leadId, 'em_garantia', undefined, config.id, guaranteeEndsAt);
       onUpdate?.();
     } catch (err) {
       setError('Erro ao mover venda');
@@ -165,6 +195,37 @@ const SalesKanban: React.FC<SalesKanbanProps> = ({ leads, userId, onUpdate }) =>
           })}
         </div>
       </DragDropContext>
+
+      {pendingGuaranteeLeadId && createPortal(
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[10000] flex items-center justify-center p-4" onClick={() => setPendingGuaranteeLeadId(null)}>
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center text-brand-600">
+                  <Shield size={20} />
+                </div>
+                <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Qual garantia aplicar?</h3>
+              </div>
+              <button onClick={() => setPendingGuaranteeLeadId(null)} className="p-2 text-slate-300 hover:text-slate-600 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+              {guaranteeConfigs.map((config) => (
+                <button
+                  key={config.id}
+                  onClick={() => confirmGuaranteeSelection(config)}
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 hover:border-brand-400 hover:bg-brand-50 text-left transition-all"
+                >
+                  <p className="font-black text-sm text-slate-800">{config.name}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{config.days_warranty} dias de cobertura</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

@@ -14,6 +14,19 @@ const LeadFormPage: React.FC = () => {
     const isEditing = !!id;
     const leadToEdit = isEditing ? leads.find(l => l.id === id) : undefined;
 
+    // Precisa rodar antes de qualquer `return` condicional abaixo — senão, ao
+    // atingir o limite do plano Free entre um render e outro, o número de
+    // hooks chamados muda e o React derruba a página ("Rendered more/fewer
+    // hooks than during the previous render").
+    React.useEffect(() => {
+        if (isEditing && !leadToEdit) {
+            // Wait a bit for initial data load if leads is empty
+            if (leads.length > 0) {
+                navigate('/leads');
+            }
+        }
+    }, [isEditing, leadToEdit, leads.length, navigate]);
+
     const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
     if (isFreePlan && !isEditing && leads.length >= 50) {
         return (
@@ -43,16 +56,6 @@ const LeadFormPage: React.FC = () => {
             </PageContainer>
         );
     }
-
-    // Redirect to leads if editing but lead not found
-    React.useEffect(() => {
-        if (isEditing && !leadToEdit) {
-            // Wait a bit for initial data load if leads is empty
-            if (leads.length > 0) {
-                navigate('/leads');
-            }
-        }
-    }, [isEditing, leadToEdit, leads.length, navigate]);
 
     return (
         <LeadForm

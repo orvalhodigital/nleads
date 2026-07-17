@@ -17,9 +17,22 @@ const VehicleFormPage: React.FC = () => {
     } = useData();
 
     const isEditing = !!id;
-    const vehicleToEdit = isEditing 
-        ? (vehicles.find(v => v.id === id) || motorcycles.find(m => m.id === id)) 
+    const vehicleToEdit = isEditing
+        ? (vehicles.find(v => v.id === id) || motorcycles.find(m => m.id === id))
         : undefined;
+
+    // Precisa rodar antes de qualquer `return` condicional abaixo — senão, ao
+    // atingir o limite do plano Free entre um render e outro, o número de
+    // hooks chamados muda e o React derruba a página ("Rendered more/fewer
+    // hooks than during the previous render").
+    React.useEffect(() => {
+        if (isEditing && !vehicleToEdit) {
+            // Wait a bit for initial data load if vehicles/motorcycles is empty
+            if (vehicles.length > 0 || motorcycles.length > 0) {
+                navigate('/inventory');
+            }
+        }
+    }, [isEditing, vehicleToEdit, vehicles.length, motorcycles.length, navigate]);
 
     const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
     if (isFreePlan && !isEditing && (vehicles.length + motorcycles.length) >= 10) {
@@ -50,18 +63,6 @@ const VehicleFormPage: React.FC = () => {
             </PageContainer>
         );
     }
-
-    console.log('VehicleFormPage:', { id, isEditing, vehiclesLength: vehicles.length, vehicleToEdit });
-
-    // Redirect to inventory if editing but vehicle not found
-    React.useEffect(() => {
-        if (isEditing && !vehicleToEdit) {
-            // Wait a bit for initial data load if vehicles/motorcycles is empty
-            if (vehicles.length > 0 || motorcycles.length > 0) {
-                navigate('/inventory');
-            }
-        }
-    }, [isEditing, vehicleToEdit, vehicles.length, motorcycles.length, navigate]);
 
     return (
         <VehicleForm

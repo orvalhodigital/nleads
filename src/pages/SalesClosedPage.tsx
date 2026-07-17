@@ -49,28 +49,13 @@ const SalesClosedPage: React.FC = () => {
     const { leads, vehicles, motorcycles, profile, loading } = useData();
     const navigate = useNavigate();
 
-    if (loading) {
-        return (
-            <div className="flex-1 flex items-center justify-center min-h-[400px]">
-                <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
-            </div>
-        );
-    }
-
-    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
-    if (isFreePlan) {
-        return (
-            <PageContainer>
-                <div className="max-w-2xl mx-auto mt-8">
-                    <PlanLimitAlert
-                        plan={profile?.plan || 'free'}
-                        featureName="Vendas Realizadas"
-                        email={profile?.email}
-                    />
-                </div>
-            </PageContainer>
-        );
-    }
+    // Todos os hooks precisam rodar sempre na mesma ordem em todo render — os
+    // `return` antecipados (loading / plano free) ficavam ANTES dos hooks
+    // abaixo, então na transição loading=true -> false o React chamava um
+    // número diferente de hooks entre renders e derrubava a página inteira
+    // com "Rendered more hooks than during the previous render" (mesmo bug
+    // encontrado e corrigido em SalesFlowPage.tsx). Por isso os `return`
+    // condicionais agora ficam depois de todos os hooks.
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
@@ -207,6 +192,29 @@ const SalesClosedPage: React.FC = () => {
         const y = 100 - (point.value / maxTrendValue) * 100;
         return `${index === 0 ? 'M' : 'L'} ${x},${y}`;
     }).join(' ');
+
+    if (loading) {
+        return (
+            <div className="flex-1 flex items-center justify-center min-h-[400px]">
+                <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+    if (isFreePlan) {
+        return (
+            <PageContainer>
+                <div className="max-w-2xl mx-auto mt-8">
+                    <PlanLimitAlert
+                        plan={profile?.plan || 'free'}
+                        featureName="Vendas Realizadas"
+                        email={profile?.email}
+                    />
+                </div>
+            </PageContainer>
+        );
+    }
 
     const exportCsv = () => {
         const rows = [

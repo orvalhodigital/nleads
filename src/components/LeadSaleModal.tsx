@@ -114,12 +114,17 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
 
             if (vError) throw vError;
 
-            // 3. Update Lead: mark as buyer (appears in "Compradores" on Leads page)
-            // and move to WAITING_PAYMENT (appears in Sales Closed kanban)
+            // 3. Update Lead: mark as buyer e mover para COMPLETED (Compradores).
+            // Antes ia para WAITING_PAYMENT, fase que nunca aparece em nenhum
+            // kanban real do app (o kanban WAITING_PAYMENT->DOCUMENTATION->
+            // DELIVERY nunca foi conectado a uma rota) — como o Fluxo de Vendas
+            // (SalesFlowPage) exige phase === COMPLETED, o lead nunca aparecia
+            // lá para vendas de leads já existentes (só funcionava por acaso
+            // para leads walk-in, criados já com phase COMPLETED).
             if (!isWalkIn && lead) {
                 await leadService.update({
                     ...lead,
-                    phase: LeadPhase.WAITING_PAYMENT,
+                    phase: LeadPhase.COMPLETED,
                     is_buyer: true
                 });
             }

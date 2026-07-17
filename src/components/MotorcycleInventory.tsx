@@ -86,6 +86,10 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [form, setForm] = useState<Omit<Motorcycle, 'id'>>(EMPTY_MOTO);
     const [walkInName, setWalkInName] = useState('');
     const [walkInPhone, setWalkInPhone] = useState('');
+    // Guarda o ID do lead selecionado (nunca o nome) — com dois leads
+    // homônimos, buscar de volta por nome podia atribuir a venda ao lead
+    // errado. Mesmo bug já corrigido em Inventory.tsx.
+    const [buyerSelectionId, setBuyerSelectionId] = useState('');
     const [sellData, setSellData] = useState<SaleDetails>({
         salePrice: 0, refurbishmentCosts: 0, saleDate: new Date().toISOString().split('T')[0],
         buyerName: '', buyerLeadId: '', isFollowUpSale: true
@@ -390,6 +394,7 @@ const MotorcycleInventory: React.FC<Props> = ({
     const handleOpenSell = () => {
         if (!selected || selected === 'new') return;
         setSellData({ salePrice: (selected as Motorcycle).price, refurbishmentCosts: 0, saleDate: new Date().toISOString().split('T')[0], buyerName: '', buyerLeadId: '', isFollowUpSale: true });
+        setBuyerSelectionId('');
         setWalkInName(''); setWalkInPhone('');
         setIsSellModalOpen(true);
     };
@@ -397,10 +402,12 @@ const MotorcycleInventory: React.FC<Props> = ({
     const handleSellSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selected || selected === 'new') return;
-        let finalBuyerLeadId = sellData.buyerLeadId;
-        let finalBuyerName = sellData.buyerName;
+        if (!buyerSelectionId) { alert('Selecione um comprador antes de confirmar a venda.'); return; }
 
-        if (sellData.buyerName === 'Venda Avulsa') {
+        let finalBuyerLeadId: string | undefined;
+        let finalBuyerName: string;
+
+        if (buyerSelectionId === 'Venda Avulsa') {
             if (!walkInName || !walkInPhone) { alert('Preencha nome e telefone.'); return; }
             const newLead = await onAddLead({
                 name: walkInName, phone: walkInPhone, email: '',
@@ -411,12 +418,16 @@ const MotorcycleInventory: React.FC<Props> = ({
             if (newLead) { finalBuyerLeadId = newLead.id; finalBuyerName = newLead.name; }
             else return;
         } else {
-            finalBuyerLeadId = leads.find(l => l.name === sellData.buyerName)?.id;
+            const selectedLead = leads.find(l => l.id === buyerSelectionId);
+            if (!selectedLead) { alert('Selecione um comprador válido.'); return; }
+            finalBuyerLeadId = selectedLead.id;
+            finalBuyerName = selectedLead.name;
         }
 
         await motorcycleService.sell((selected as Motorcycle).id, { ...sellData, buyerName: finalBuyerName, buyerLeadId: finalBuyerLeadId });
         onDataChange();
         setIsSellModalOpen(false);
+        setBuyerSelectionId('');
         setSelected(null);
     };
 
@@ -684,13 +695,13 @@ const MotorcycleInventory: React.FC<Props> = ({
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Comprador</label>
-                                        <select value={sellData.buyerName} onChange={e => setSellData({ ...sellData, buyerName: e.target.value })} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm">
+                                        <select value={buyerSelectionId} onChange={e => setBuyerSelectionId(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm">
                                             <option value="">Selecionar lead...</option>
                                             <option value="Venda Avulsa">Venda Avulsa (Novo Cliente)</option>
-                                            {leads.filter(l => l.phase !== LeadPhase.DISQUALIFIED).map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
+                                            {leads.filter(l => l.phase !== LeadPhase.DISQUALIFIED).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                                         </select>
                                     </div>
-                                    {sellData.buyerName === 'Venda Avulsa' && (
+                                    {buyerSelectionId === 'Venda Avulsa' && (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nome</label><input type="text" value={walkInName} onChange={e => setWalkInName(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700 outline-none text-sm" /></div>
                                             <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Telefone</label><input type="text" value={walkInPhone} onChange={e => setWalkInPhone(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700 outline-none text-sm" /></div>

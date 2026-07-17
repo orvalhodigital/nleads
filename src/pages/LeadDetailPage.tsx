@@ -79,31 +79,68 @@ const LeadDetailPage: React.FC = () => {
         );
     }
 
-    const matchingVehicles = useMemo(() => {
-        const list: any[] = [];
-        if (profile?.enable_cars !== false) {
-            // Usa o valor máximo/marcas segmentados de carro (com fallback aos campos
-            // gerais legados) — antes usava só `valor_maximo`, que os leads criados no
-            // formulário atual nunca preenchem, então o filtro de orçamento era inerte.
-            const maxPrice = lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 9999999;
-            list.push(...vehicles.filter(v =>
-                v.status === 'available' &&
-                v.price <= maxPrice &&
-                (lead.preferences.marcas.length === 0 || lead.preferences.marcas.includes(v.brand))
-            ));
-        }
-        if (profile?.enable_motorcycles) {
-            // Idem para motos — antes filtrava motos pela lista de marcas de CARRO
-            // (`marcas`), então quase nunca encontrava correspondência.
-            const maxMotoPrice = lead.preferences.moto_valor_max || lead.preferences.valor_maximo || 9999999;
-            const marcasMoto = lead.preferences.marcas_moto || [];
-            list.push(...motorcycles.filter(m =>
-                m.status === 'available' &&
-                m.price <= maxMotoPrice &&
-                (marcasMoto.length === 0 || marcasMoto.includes(m.brand))
-            ).map(m => ({ ...m, isMoto: true })));
-        }
-        return list;
+    // Sugestões de Inventário em duas camadas:
+    // 1. Match Completo — marca E modelo E tipo de carroceria precisam bater
+    //    (quando o lead preencheu esses campos). Antes cada critério preenchido
+    //    era tratado como "ou" com os demais (na prática só marca/preço eram
+    //    considerados), então um lead que queria especificamente um "Corolla"
+    //    via TODOS os Toyota do estoque, não só Corollas.
+    // 2. Outras Sugestões — veículos fora do Match Completo mas ainda
+    //    relevantes: mesma faixa de preço (±20% do orçamento declarado) ou
+    //    mesmo tipo de carroceria (quando o lead declarou um tipo).
+    const inventorySuggestions = useMemo(() => {
+        const buildPool = (items: any[], maxPrice: number, marcas: string[], modelos: string[], tipos: string[], isMoto: boolean) =>
+            items
+                .filter(item => item.status === 'available')
+                .map(item => ({ item: { ...item, isMoto }, maxPrice, marcas, modelos, tipos }));
+
+        const carPool = profile?.enable_cars !== false
+            ? buildPool(
+                vehicles,
+                lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 9999999,
+                lead.preferences.marcas || [],
+                lead.preferences.modelos || [],
+                lead.preferences.tipos_veiculo || [],
+                false
+            )
+            : [];
+
+        const motoPool = profile?.enable_motorcycles
+            ? buildPool(
+                motorcycles,
+                lead.preferences.moto_valor_max || lead.preferences.valor_maximo || 9999999,
+                lead.preferences.marcas_moto || [],
+                lead.preferences.modelos_moto || [],
+                lead.preferences.tipos_moto || [],
+                true
+            )
+            : [];
+
+        const matchCompleto: any[] = [];
+        const outrasSugestoes: any[] = [];
+
+        [...carPool, ...motoPool].forEach(({ item, maxPrice, marcas, modelos, tipos }) => {
+            const dentroDoOrcamento = item.price <= maxPrice;
+            const bateMarca = marcas.length === 0 || marcas.includes(item.brand);
+            const bateModelo = modelos.length === 0 || modelos.includes(item.model);
+            const bateTipo = tipos.length === 0 || tipos.includes(item.type);
+
+            if (dentroDoOrcamento && bateMarca && bateModelo && bateTipo) {
+                matchCompleto.push(item);
+                return;
+            }
+
+            const mesmaFaixaDePreco = item.price >= maxPrice * 0.8 && item.price <= maxPrice * 1.2;
+            const carroceriaSimilar = tipos.length > 0 && tipos.includes(item.type);
+            if (mesmaFaixaDePreco || carroceriaSimilar) {
+                const motivos: string[] = [];
+                if (mesmaFaixaDePreco) motivos.push('Faixa de preço');
+                if (carroceriaSimilar) motivos.push('Carroceria similar');
+                outrasSugestoes.push({ ...item, _motivos: motivos });
+            }
+        });
+
+        return { matchCompleto, outrasSugestoes };
     }, [vehicles, motorcycles, lead, profile]);
 
     const purchasedVehicles = useMemo(() => {
@@ -271,6 +308,41 @@ const LeadDetailPage: React.FC = () => {
             message: finalMsg
         });
     };
+
+    const renderSuggestionCard = (v: any) => (
+        <div key={v.id} className="bg-white p-5 rounded-3xl border border-slate-100 hover:border-brand-200 hover:shadow-md transition-all flex flex-col gap-4">
+            <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md uppercase tracking-widest w-fit">{v.year}</span>
+                    <h4 className="font-bold text-slate-900 text-sm mt-1">{v.brand} {v.model}</h4>
+                </div>
+                <Car size={16} className="text-slate-200" />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-xs font-bold text-brand-600">R$ {formatCurrency(v.price)}</p>
+                {v._motivos?.map((motivo: string) => (
+                    <span key={motivo} className="text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                        {motivo}
+                    </span>
+                ))}
+            </div>
+
+            <div className="w-full flex gap-2">
+                <button
+                    onClick={() => handleOpenSuggestion(v.id, v.brand, v.model, v.year, v.price)}
+                    className="flex-1 py-2.5 bg-green-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-green-600 transition-colors flex items-center justify-center gap-1.5 shadow-sm shadow-green-500/20"
+                >
+                    <MessageCircle size={14} /> Enviar Sugestão
+                </button>
+                <button
+                    onClick={() => navigate(v.isMoto ? `/motorcycles/details/${v.id}` : `/inventory/details/${v.id}`)}
+                    className="px-3 bg-slate-50 text-slate-500 rounded-xl hover:bg-slate-100 transition-colors border border-slate-200"
+                >
+                    <ExternalLink size={16} />
+                </button>
+            </div>
+        </div>
+    );
 
     const handleSubmitSuggestion = async () => {
         if (!lead || !profile) {
@@ -489,44 +561,26 @@ const LeadDetailPage: React.FC = () => {
                     <LeadSimulationData lead={lead} />
 
                     <div>
-                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Sugestões de Inventário</h3>
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Match Completo</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                            {matchingVehicles.length > 0 ? (
-                                matchingVehicles.slice(0, 4).map(v => (
-                                    <div key={v.id} className="bg-white p-5 rounded-3xl border border-slate-100 hover:border-brand-200 hover:shadow-md transition-all flex flex-col gap-4">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md uppercase tracking-widest w-fit">{v.year}</span>
-                                                <h4 className="font-bold text-slate-900 text-sm mt-1">{v.brand} {v.model}</h4>
-                                            </div>
-                                            <Car size={16} className="text-slate-200" />
-                                        </div>
-                                        <p className="text-xs font-bold text-brand-600">R$ {formatCurrency(v.price)}</p>
-
-                                        <div className="w-full flex gap-2">
-                                            <button
-                                                onClick={() => handleOpenSuggestion(v.id, v.brand, v.model, v.year, v.price)}
-                                                className="flex-1 py-2.5 bg-green-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-green-600 transition-colors flex items-center justify-center gap-1.5 shadow-sm shadow-green-500/20"
-                                            >
-                                                <MessageCircle size={14} /> Enviar Sugestão
-                                            </button>
-                                            <button
-                                                onClick={() => navigate(v.isMoto ? `/motorcycles/details/${v.id}` : `/inventory/details/${v.id}`)}
-                                                className="px-3 bg-slate-50 text-slate-500 rounded-xl hover:bg-slate-100 transition-colors border border-slate-200"
-                                            >
-                                                <ExternalLink size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
+                            {inventorySuggestions.matchCompleto.length > 0 ? (
+                                inventorySuggestions.matchCompleto.slice(0, 4).map(renderSuggestionCard)
                             ) : (
                                 <div className="col-span-2 py-10 text-center border-2 border-dashed border-slate-100 rounded-3xl">
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nenhum veículo no estoque atende ao perfil.</p>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nenhum veículo bate 100% com o perfil do lead.</p>
                                 </div>
                             )}
                         </div>
                     </div>
+
+                    {inventorySuggestions.outrasSugestoes.length > 0 && (
+                        <div>
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Outras Sugestões</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {inventorySuggestions.outrasSugestoes.slice(0, 4).map(renderSuggestionCard)}
+                            </div>
+                        </div>
+                    )}
                     {purchasedVehicles.length > 0 && (
                         <div>
                             <h3 className="text-[10px] font-bold text-brand-600 uppercase tracking-widest mb-6 px-1 flex items-center gap-2">

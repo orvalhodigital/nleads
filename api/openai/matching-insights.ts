@@ -1,0 +1,114 @@
+import { createClient } from '@supabase/supabase-js';
+
+const ALLOWED_ORIGINS = ['https://nleads.pro', 'https://nleads.com.br', 'https://www.nleads.pro', 'https://www.nleads.com.br'];
+
+// Do mais barato pro mais caro — só tenta o próximo se o anterior falhar
+// (erro de API ou resposta que não é um JSON válido).
+const MODEL_FALLBACK_CHAIN = ['gpt-5-nano', 'gpt-5-mini', 'gpt-5'];
+
+async function getVerifiedUserId(req: any): Promise<string | null> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) return null;
+
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+
+  const token = authHeader.slice(7);
+  const authClient = createClient(supabaseUrl, supabaseAnonKey);
+  const { data: { user }, error } = await authClient.auth.getUser(token);
+  if (error || !user) return null;
+  return user.id;
+}
+
+async function generateJson(prompt: string, apiKey: string): Promise<any> {
+  let lastError: any = null;
+  for (const model of MODEL_FALLBACK_CHAIN) {
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' },
+        }),
+      });
+
+      if (!res.ok) {
+        lastError = new Error(`OpenAI (${model}) falhou: HTTP ${res.status} — ${await res.text()}`);
+        continue;
+      }
+
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        lastError = new Error(`OpenAI (${model}) retornou resposta vazia.`);
+        continue;
+      }
+
+      return JSON.parse(content);
+    } catch (err: any) {
+      lastError = err;
+      continue;
+    }
+  }
+  throw lastError || new Error('Todos os modelos OpenAI falharam.');
+}
+
+export default async function handler(req: any, res: any) {
+  const origin = req.headers.origin || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+  }
+
+  const userId = await getVerifiedUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized.' });
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OpenAI API key is not configured.' });
+  }
+
+  try {
+    const { vehicle, qualifiedLeads } = req.body || {};
+
+    if (!vehicle || !Array.isArray(qualifiedLeads)) {
+      return res.status(400).json({ error: 'Missing required payload: vehicle and qualifiedLeads.' });
+    }
+
+    const prompt = `Analise o novo veículo em estoque: ${JSON.stringify(vehicle)}
+E os seguintes leads qualificados: ${JSON.stringify(qualifiedLeads)}
+
+Gere um resumo curto explicando por que esses leads combinam com esse carro e uma sugestão de mensagem personalizada para enviar a eles via WhatsApp.
+
+Responda APENAS com JSON válido, sem markdown, exatamente neste formato:
+{
+  "matches": [
+    { "leadId": "id do lead (string)", "reason": "por que esse lead combina com o veículo", "whatsappPitch": "mensagem pronta para enviar via WhatsApp" }
+  ]
+}
+Se nenhum lead combinar bem, responda {"matches": []}.`;
+
+    const parsed = await generateJson(prompt, process.env.OPENAI_API_KEY);
+    if (!Array.isArray(parsed?.matches)) {
+      return res.status(200).json({ matches: [] });
+    }
+    return res.status(200).json(parsed);
+  } catch (error: any) {
+    console.error('OpenAI Match API Error:', error);
+    return res.status(500).json({ error: 'Failed to generate matching insights.' });
+  }
+}

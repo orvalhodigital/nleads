@@ -14,7 +14,7 @@ import { carDatabase } from '../data/carDb';
 import AutocompleteInput from './ui/AutocompleteInput';
 import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
 import { useToast } from '../contexts/ToastContext';
-import { generateSeoDetails, generateVehicleDescriptions } from '../services/geminiService';
+import { generateSeoDetails, generateVehicleDescriptions } from '../services/openaiService';
 import { consultaPlaca } from '../services/plateService';
 import { VehicleFormSeo } from './vehicle-form/VehicleFormSeo';
 import { VehicleFormCosts } from './vehicle-form/VehicleFormCosts';

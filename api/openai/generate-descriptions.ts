@@ -1,7 +1,10 @@
-import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 
 const ALLOWED_ORIGINS = ['https://nleads.pro', 'https://nleads.com.br', 'https://www.nleads.pro', 'https://www.nleads.com.br'];
+
+// Do mais barato pro mais caro — só tenta o próximo se o anterior falhar
+// (erro de API ou resposta que não é um JSON válido).
+const MODEL_FALLBACK_CHAIN = ['gpt-5-nano', 'gpt-5-mini', 'gpt-5'];
 
 async function getVerifiedUserId(req: any): Promise<string | null> {
   const authHeader = req.headers.authorization;
@@ -16,6 +19,41 @@ async function getVerifiedUserId(req: any): Promise<string | null> {
   const { data: { user }, error } = await authClient.auth.getUser(token);
   if (error || !user) return null;
   return user.id;
+}
+
+async function generateJson(prompt: string, apiKey: string): Promise<any> {
+  let lastError: any = null;
+  for (const model of MODEL_FALLBACK_CHAIN) {
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' },
+        }),
+      });
+
+      if (!res.ok) {
+        lastError = new Error(`OpenAI (${model}) falhou: HTTP ${res.status} — ${await res.text()}`);
+        continue;
+      }
+
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        lastError = new Error(`OpenAI (${model}) retornou resposta vazia.`);
+        continue;
+      }
+
+      return JSON.parse(content);
+    } catch (err: any) {
+      lastError = err;
+      continue;
+    }
+  }
+  throw lastError || new Error('Todos os modelos OpenAI falharam.');
 }
 
 export default async function handler(req: any, res: any) {
@@ -33,8 +71,8 @@ export default async function handler(req: any, res: any) {
   const userId = await getVerifiedUserId(req);
   if (!userId) return res.status(401).json({ error: 'Unauthorized.' });
 
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'Gemini API key is not configured.' });
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OpenAI API key is not configured.' });
   }
 
   try {
@@ -51,10 +89,7 @@ export default async function handler(req: any, res: any) {
       vehicle.hasOwnerManual ? 'manual do proprietário' : '',
     ].filter(Boolean).join(', ');
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: `Você é um redator especialista em anúncios de veículos seminovos no Brasil.
+    const prompt = `Você é um redator especialista em anúncios de veículos seminovos no Brasil.
 Escreva em português do Brasil, tom comercial, honesto e direto. NÃO invente informação
 que não esteja nos dados abaixo (não invente quilometragem, opcionais nem estado de conservação).
 
@@ -74,11 +109,9 @@ Responda APENAS com JSON válido, sem markdown, exatamente neste formato:
 {
   "shortDescription": "uma frase de até 120 caracteres, chamativa, para listagem",
   "description": "descrição completa de 3 a 5 frases (400 a 700 caracteres) destacando os pontos fortes reais e terminando com um convite para agendar visita ou test drive"
-}`,
-      config: { responseMimeType: 'application/json' },
-    });
+}`;
 
-    const parsed = JSON.parse(response.text || '{}');
+    const parsed = await generateJson(prompt, process.env.OPENAI_API_KEY);
     return res.status(200).json({
       shortDescription: parsed.shortDescription || '',
       description: parsed.description || '',

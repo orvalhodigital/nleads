@@ -15,7 +15,7 @@ import AutocompleteInput from './ui/AutocompleteInput';
 
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
-import { getMatchingInsights } from '../services/geminiService';
+import { getMatchingInsights } from '../services/openaiService';
 
 
 interface InventoryProps {
@@ -768,7 +768,7 @@ const Inventory: React.FC<InventoryProps> = ({
                   <h3 className="text-lg font-extrabold tracking-tight text-indigo-950 dark:text-foreground">Recomendações por IA ✨</h3>
                 </div>
                 <p className="text-indigo-900/60 dark:text-muted-foreground text-sm font-medium leading-relaxed mb-4">
-                  O Gemini analisou o perfil dos leads ativos e gerou argumentos e pitches personalizados.
+                  A IA analisou o perfil dos leads ativos e gerou argumentos e pitches personalizados.
                 </p>
               </div>
             </div>

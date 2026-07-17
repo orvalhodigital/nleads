@@ -542,6 +542,11 @@ export interface Motorcycle {
   /** Data de criação do registro (mapeada de `created_at`). Usada em métricas
    * como "Tempo Médio de Venda" e "Veículos Parados". */
   createdAt?: string;
+
+  /** Motos ainda não têm rastreamento de preço de compra (sem coluna no banco
+   * nem campo no formulário). Declarado aqui só para compatibilidade de tipo
+   * com o "estoque unificado" (carros+motos tratados juntos nas métricas). */
+  purchasePrice?: number;
 }
 
 export type View = 'home' | 'dashboard' | 'inventory' | 'leads' | 'agenda' | 'sales-flow' | 'sales-closed' | 'plans' | 'settings' | 'motorcycles' | 'onboarding' | 'support' | 'admin-tickets' | 'website';

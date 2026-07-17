@@ -21,7 +21,12 @@ export const auditLogService = {
     changes?: Record<string, any>
   ) {
     try {
-      const { data: session } = await supabase.auth.getSession();
+      // `getSession()` resolve para `{ data: { session }, error }` -- o session
+      // real fica ANINHADO em `data.session`, nao em `data` diretamente. Antes o
+      // destructuring pegava `data` inteiro como "session", entao `session.user`
+      // nunca existia e o log de auditoria sempre saia pelo early-return abaixo,
+      // silenciosamente, mesmo com o admin autenticado.
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) {
         console.warn('No active session for audit log');
         return;

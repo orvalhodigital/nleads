@@ -81,11 +81,13 @@ const SalesClosedPage: React.FC = () => {
     });
 
     const soldAssets = useMemo(() => {
+        // Não sobrescrever `createdAt` aqui: motorcycleService já mapeia o valor real
+        // de `created_at`. Sobrescrever com a data de venda corrompia "Tempo Médio de
+        // Venda" para motos (mesmo bug corrigido em Dashboard.tsx).
         const normalizedMotorcycles = motorcycles.map((m: Motorcycle) => ({
             ...m,
             type: m.category,
             transmission: 'Manual',
-            createdAt: m.saleDetails?.saleDate || null,
             assetKind: 'motorcycle' as const,
         }));
 
@@ -114,7 +116,9 @@ const SalesClosedPage: React.FC = () => {
                     ? leads.find(l => l.id === vehicle.saleDetails!.buyerLeadId)
                     : null;
                 const refurbishmentCosts = vehicle.saleDetails?.refurbishmentCosts ?? 0;
-                const costBasis = vehicle.fipePrice ?? vehicle.price ?? 0;
+                // Prioriza o preço de COMPRA real (mesmo fix aplicado em Dashboard.tsx);
+                // fipePrice/price são preço de referência/anúncio, não o que foi pago.
+                const costBasis = vehicle.purchasePrice || vehicle.fipePrice || vehicle.price || 0;
                 const profit = vehicle.saleDetails!.salePrice - (costBasis + refurbishmentCosts);
                 const margin = vehicle.saleDetails!.salePrice > 0 ? (profit / vehicle.saleDetails!.salePrice) * 100 : 0;
                 const createdReference = vehicle.createdAt || vehicle.saleDetails?.saleDate;
@@ -212,7 +216,7 @@ const SalesClosedPage: React.FC = () => {
                 `${sale.vehicle.brand} ${sale.vehicle.model}`,
                 sale.buyerName,
                 sale.salePrice.toFixed(2).replace('.', ','),
-                sale.cost.toFixed(2).replace('.', ','),
+                sale.costBasis.toFixed(2).replace('.', ','),
                 sale.refurbishmentCosts.toFixed(2).replace('.', ','),
                 sale.profit.toFixed(2).replace('.', ',')
             ])

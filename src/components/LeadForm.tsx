@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, UserPlus, Check, Target, Building } from 'lucide-react';
+import { X, UserPlus, Check, Target, Building, Tag } from 'lucide-react';
 import { Lead, LeadPhase, LeadTemperature, VehicleType, TransmissionType, EngineType } from '../types';
 import TagInput from './TagInput';
 import MultiSelect from './MultiSelect';

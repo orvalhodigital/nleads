@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useBasePath } from '../hooks/useBasePath';
-import { Clock, Car, ExternalLink, Plus, MessageCircle, CheckCircle2, X } from 'lucide-react';
+import { Clock, Car, ExternalLink, Plus, MessageCircle, CheckCircle2, X, Edit2 } from 'lucide-react';
 
 import { LeadTemperature, LeadPhase } from '../types';
 import { supabase } from '../lib/supabaseClient';
@@ -10,6 +10,8 @@ import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 import { CustomTimePicker } from '../components/ui/CustomTimePicker';
 import { formatCurrency } from '../utils/formatters';
 import { DEFAULT_PRESET_MESSAGES } from '../utils/constants';
+import { deriveRootVisitFields } from '../utils/visits';
+import { useToast } from '../contexts/ToastContext';
 
 import { LeadHeader } from '../components/lead-detail/LeadHeader';
 import { LeadContactInfo } from '../components/lead-detail/LeadContactInfo';
@@ -20,7 +22,10 @@ const LeadDetailPage: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const basePath = useBasePath();
-    const { leads, vehicles, motorcycles, updateLead, showToast, profile } = useData();
+    const { leads, vehicles, motorcycles, updateLead, profile } = useData();
+    // showToast não existe em useData() — sempre foi `undefined` aqui (mascarado pelo
+    // `?.` nas chamadas), então agendar visita/enviar mensagem nunca mostrava toast.
+    const { showToast } = useToast();
     const safeLead = (found: any) => {
         if (!found) return null;
         return {
@@ -120,11 +125,12 @@ const LeadDetailPage: React.FC = () => {
             });
         }
 
-        // Keep root visit_date / status synced with the most recent/pending appointment if necessary,
-        // or just set what was just updated
+        // Deriva visit_date/visit_status do agendamento mais recente, em vez de
+        // sobrescrever incondicionalmente com o agendamento que acabou de ser editado
+        // (que pode ser um mais antigo sendo corrigido retroativamente). Ver utils/visits.ts.
         await updateLead({
             ...lead,
-            visit_status: status,
+            ...deriveRootVisitFields(updatedAppointments),
             scheduling_data: {
                 ...(lead.scheduling_data || {}),
                 appointments: updatedAppointments
@@ -216,10 +222,12 @@ const LeadDetailPage: React.FC = () => {
         }
 
         try {
+            // Deriva visit_date/visit_status do agendamento mais recente (por data),
+            // em vez de assumir que o agendamento recém-criado/editado é sempre "o mais
+            // novo" — evita corromper o resumo do lead ao editar um agendamento antigo.
             await updateLead({
                 ...lead,
-                visit_date: visitDateTime, // update latest
-                visit_status: 'pending',
+                ...deriveRootVisitFields(updatedAppointments),
                 phase: LeadPhase.VISIT,
                 scheduling_data: {
                     ...(lead.scheduling_data || {}),

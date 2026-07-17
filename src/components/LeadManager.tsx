@@ -24,6 +24,7 @@ import { LeadSimulationModal } from './LeadSimulationModal';
 import { LeadFollowUpModal } from './LeadFollowUpModal';
 import { useToast } from '../contexts/ToastContext';
 import { formatCurrency } from '../utils/formatters';
+import { deriveRootVisitFields } from '../utils/visits';
 
 
 
@@ -126,8 +127,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
       await onUpdateLead({
         ...actionLead,
         phase: pendingPhase,
-        visit_date: visitDateTime,
-        visit_status: 'pending',
+        ...deriveRootVisitFields(updatedAppointments),
         scheduling_data: {
           ...(actionLead.scheduling_data || {}),
           appointments: updatedAppointments

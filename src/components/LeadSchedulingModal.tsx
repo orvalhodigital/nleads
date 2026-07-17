@@ -94,14 +94,14 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white w-[80vw] max-w-5xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
-                <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[10000] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-card w-[80vw] max-w-5xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-fadeUp border border-border/80" onClick={e => e.stopPropagation()}>
+                <div className="p-8 border-b border-border/70 flex items-center justify-between bg-muted/40">
                     <div>
-                        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Agendar Visita/Test Drive</h2>
-                        <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Lead: {lead.name}</p>
+                        <h2 className="text-xl font-heading font-bold text-foreground tracking-tight">Agendar Visita/Test Drive</h2>
+                        <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase tracking-widest">Lead: {lead.name}</p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-300 hover:text-slate-600 hover:bg-white rounded-xl transition-all">
+                    <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground hover:bg-card rounded-xl transition-all cursor-pointer">
                         <X size={20} />
                     </button>
                 </div>
@@ -109,36 +109,36 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                 <div className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
                                 <Calendar size={12} /> Data da Visita
                             </label>
                             <CustomDatePicker
                                 value={date}
                                 onChange={(val) => setDate(val)}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm"
+                                className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none focus:ring-4 focus:ring-ring transition-all font-semibold text-sm text-foreground"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
                                 <Clock size={12} /> Horário
                             </label>
                             <CustomTimePicker
                                 value={time}
                                 onChange={(val) => setTime(val)}
-                                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm"
+                                className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none focus:ring-4 focus:ring-ring transition-all font-semibold text-sm text-foreground"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2 relative" ref={dropdownRef}>
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
                             <Car size={12} /> Veículo de Interesse (Opcional)
                         </label>
-                        <div className="w-full min-h-[56px] p-2 bg-slate-50 border border-slate-100 rounded-2xl focus-within:ring-4 focus-within:ring-brand-500/10 transition-all flex flex-wrap gap-2 items-center">
+                        <div className="w-full min-h-[56px] p-2 bg-muted/75 border border-border/85 rounded-2xl focus-within:ring-4 focus-within:ring-ring transition-all flex flex-wrap gap-2 items-center">
                             {selectedVehicles.map(v => (
-                                <span key={v.id} className="flex items-center gap-1 bg-brand-100 text-brand-800 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                                <span key={v.id} className="flex items-center gap-1 bg-primary/15 text-primary px-3 py-1.5 rounded-xl text-sm font-semibold">
                                     {v.brand} {v.model} {v.year}
-                                    <button onClick={() => removeVehicle(v.id)} className="ml-1 hover:text-brand-950 transition-colors">
+                                    <button onClick={() => removeVehicle(v.id)} className="ml-1 hover:opacity-70 transition-opacity cursor-pointer">
                                         <X size={14} />
                                     </button>
                                 </span>
@@ -152,29 +152,29 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                                     setIsDropdownOpen(true);
                                 }}
                                 onFocus={() => setIsDropdownOpen(true)}
-                                className="flex-1 bg-transparent border-none outline-none font-semibold text-sm min-w-[120px] px-2"
+                                className="flex-1 bg-transparent border-none outline-none font-semibold text-sm min-w-[120px] px-2 text-foreground"
                             />
                         </div>
                         {isDropdownOpen && (vehicleOfInterest.trim() !== '' || availableVehicles.length > 0) && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden z-[20000] max-h-60 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/80 rounded-2xl shadow-xl overflow-hidden z-[20000] max-h-60 overflow-y-auto">
                                 {filteredVehicles.length > 0 ? (
                                     filteredVehicles.map(v => (
                                         <div
                                             key={v.id}
                                             onClick={() => toggleVehicle(v)}
-                                            className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors border-b border-slate-50 last:border-0 group"
+                                            className="px-4 py-3 hover:bg-muted cursor-pointer flex items-center justify-between transition-colors border-b border-border/60 last:border-0 group"
                                         >
                                             <div>
-                                                <p className="font-semibold text-slate-800">{v.brand} {v.model}</p>
-                                                <p className="text-xs font-medium text-slate-400">{v.year}{v.plate ? ` • ${v.plate}` : ''}</p>
+                                                <p className="font-semibold text-foreground">{v.brand} {v.model}</p>
+                                                <p className="text-xs font-medium text-muted-foreground">{v.year}{v.plate ? ` • ${v.plate}` : ''}</p>
                                             </div>
-                                            <div className="text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Check size={18} />
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="px-4 py-3 text-sm text-slate-500 font-medium">
+                                    <div className="px-4 py-3 text-sm text-muted-foreground font-medium">
                                         {vehicleOfInterest ? "Nenhum veículo encontrado. Você ainda pode usar este texto." : "Nenhum veículo disponível"}
                                     </div>
                                 )}
@@ -183,36 +183,36 @@ export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, on
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
                             <FileText size={12} /> Observações para a visita
                         </label>
                         <textarea
                             placeholder="Detalhes adicionais..."
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
-                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/10 transition-all font-semibold text-sm resize-none custom-scrollbar"
+                            className="w-full p-4 bg-muted/75 border border-border/85 rounded-2xl outline-none focus:ring-4 focus:ring-ring transition-all font-semibold text-sm text-foreground resize-none custom-scrollbar"
                             rows={3}
                         />
                     </div>
                 </div>
 
-                <div className="p-8 border-t border-slate-100 bg-slate-50 flex gap-3">
+                <div className="p-8 border-t border-border/70 bg-muted/40 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="px-6 py-4 text-slate-400 hover:text-slate-600 font-bold text-xs uppercase tracking-widest transition-all"
+                        className="px-6 py-4 text-muted-foreground hover:text-foreground font-bold text-xs uppercase tracking-widest transition-all cursor-pointer"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={() => onConfirm()}
-                        className="flex-1 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                        className="flex-1 py-4 bg-card border border-border/80 text-muted-foreground rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-muted transition-all cursor-pointer"
                     >
                         Pular (Apenas Mover)
                     </button>
                     <button
                         onClick={handleConfirm}
                         disabled={!date}
-                        className="flex-1 py-4 bg-brand-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-brand-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-500/20"
+                        className="flex-1 py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 cursor-pointer"
                     >
                         Confirmar Agendamento
                     </button>

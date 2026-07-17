@@ -4,6 +4,7 @@ import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
 import { notificationService } from '../services/notificationService';
 import { LeadPhase } from '../types';
+import { deriveRootVisitFields } from '../utils/visits';
 
 import { LeadSchedulingModal } from '../components/LeadSchedulingModal';
 import { LeadSimulationModal } from '../components/LeadSimulationModal';
@@ -65,15 +66,33 @@ const LeadActionPage: React.FC = () => {
                 onClose={handleClose}
                 onConfirm={async (data) => {
                     const oldPhase = lead.phase;
-                    await updateLead({
-                        ...lead,
-                        phase: LeadPhase.VISIT,
-                        ...(data ? {
-                            scheduling_data: data,
-                            visit_date: new Date(`${data.date}T${data.time}`).toISOString(),
-                            visit_status: 'pending' as any
-                        } : {})
-                    });
+                    if (data) {
+                        // Acrescenta um novo agendamento preservando o histórico existente.
+                        // Antes: `scheduling_data: data` substituía o objeto inteiro, apagando
+                        // silenciosamente quaisquer visitas já agendadas em `.appointments`.
+                        const visitDateTime = new Date(`${data.date}T${data.time}`).toISOString();
+                        const existingAppointments = lead.scheduling_data?.appointments || [];
+                        const newAppointment = {
+                            id: crypto.randomUUID(),
+                            date: visitDateTime,
+                            status: 'pending' as const,
+                            vehicleOfInterest: data.vehicleOfInterest,
+                            notes: data.notes,
+                        };
+                        const updatedAppointments = [...existingAppointments, newAppointment];
+
+                        await updateLead({
+                            ...lead,
+                            phase: LeadPhase.VISIT,
+                            ...deriveRootVisitFields(updatedAppointments),
+                            scheduling_data: {
+                                ...(lead.scheduling_data || {}),
+                                appointments: updatedAppointments,
+                            },
+                        });
+                    } else {
+                        await updateLead({ ...lead, phase: LeadPhase.VISIT });
+                    }
                     await notificationService.notifyLeadPhaseChange(lead.name, oldPhase, LeadPhase.VISIT, 'system');
                     showToast('success', data ? 'Visita agendada e lead atualizado.' : 'Lead movido para Visita.');
                     handleClose();

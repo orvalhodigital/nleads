@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lead, LeadPhase, LeadTemperature, VisitStatus } from '../types';
 import ScheduleVisitModal, { ScheduleFormData } from './ScheduleVisitModal';
 import ScheduleFollowUpModal from './ScheduleFollowUpModal';
+import { deriveRootVisitFields } from '../utils/visits';
 import { AgendaStats } from './agenda/AgendaStats';
 import { AgendaFilters } from './agenda/AgendaFilters';
 import { AgendaVisitsList } from './agenda/AgendaVisitsList';
@@ -212,9 +213,12 @@ const Agenda: React.FC = () => {
         }
 
         try {
+            // Deriva visit_date/visit_status do agendamento mais recente, em vez de
+            // sobrescrever incondicionalmente com o agendamento que acabou de ser
+            // editado (que pode ser um mais antigo sendo corrigido retroativamente).
             await updateLead({
                 ...lead,
-                visit_status: status,
+                ...deriveRootVisitFields(updatedAppointments),
                 scheduling_data: {
                     ...(lead.scheduling_data || {}),
                     appointments: updatedAppointments
@@ -249,7 +253,7 @@ const Agenda: React.FC = () => {
         try {
             await updateLead({
                 ...lead,
-                visit_date: newDateIso,
+                ...deriveRootVisitFields(updatedAppointments),
                 scheduling_data: {
                     ...(lead.scheduling_data || {}),
                     appointments: updatedAppointments
@@ -341,16 +345,16 @@ const Agenda: React.FC = () => {
                     });
                 }
 
+                const allAppointments = [...existingAppointments, newAppointment];
                 await updateLead({
                     ...lead,
-                    visit_date: visitDateTime,
-                    visit_status: 'pending',
+                    ...deriveRootVisitFields(allAppointments),
                     phase: LeadPhase.VISIT,
                     presentedVehicles,
                     tags: lead.tags || [],
                     scheduling_data: {
                         ...(lead.scheduling_data || {}),
-                        appointments: [...existingAppointments, newAppointment]
+                        appointments: allAppointments
                     }
                 });
 

@@ -21,39 +21,89 @@ async function getVerifiedUserId(req: any): Promise<string | null> {
   return user.id;
 }
 
-async function generateJson(prompt: string, apiKey: string): Promise<any> {
+async function generateJson(prompt: string, openaiApiKey?: string, openrouterApiKey?: string): Promise<any> {
   let lastError: any = null;
-  for (const model of MODEL_FALLBACK_CHAIN) {
-    try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: prompt }],
-          response_format: { type: 'json_object' },
-        }),
-      });
 
-      if (!res.ok) {
-        lastError = new Error(`OpenAI (${model}) falhou: HTTP ${res.status} — ${await res.text()}`);
+  // 1. Tenta OpenAI primeiro, se a chave estiver configurada
+  if (openaiApiKey) {
+    for (const model of MODEL_FALLBACK_CHAIN) {
+      try {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+          }),
+        });
+
+        if (!res.ok) {
+          lastError = new Error(`OpenAI (${model}) falhou: HTTP ${res.status} — ${await res.text()}`);
+          continue;
+        }
+
+        const data = await res.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (!content) {
+          lastError = new Error(`OpenAI (${model}) retornou resposta vazia.`);
+          continue;
+        }
+
+        return JSON.parse(content);
+      } catch (err: any) {
+        lastError = err;
         continue;
       }
-
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content;
-      if (!content) {
-        lastError = new Error(`OpenAI (${model}) retornou resposta vazia.`);
-        continue;
-      }
-
-      return JSON.parse(content);
-    } catch (err: any) {
-      lastError = err;
-      continue;
     }
   }
-  throw lastError || new Error('Todos os modelos OpenAI falharam.');
+
+  // 2. Fallback para OpenRouter se a OpenAI falhar ou não estiver configurada
+  if (openrouterApiKey) {
+    const OPENROUTER_MODEL_FALLBACK_CHAIN = [
+      'google/gemini-2.5-flash',
+      'meta-llama/llama-3-8b-instruct',
+      'openai/gpt-4o-mini'
+    ];
+
+    for (const model of OPENROUTER_MODEL_FALLBACK_CHAIN) {
+      try {
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openrouterApiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://nleads.pro',
+            'X-Title': 'Orvalho Digital Leads'
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+          }),
+        });
+
+        if (!res.ok) {
+          lastError = new Error(`OpenRouter (${model}) falhou: HTTP ${res.status} — ${await res.text()}`);
+          continue;
+        }
+
+        const data = await res.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (!content) {
+          lastError = new Error(`OpenRouter (${model}) retornou resposta vazia.`);
+          continue;
+        }
+
+        return JSON.parse(content);
+      } catch (err: any) {
+        lastError = err;
+        continue;
+      }
+    }
+  }
+
+  throw lastError || new Error('Todos os modelos de IA falharam (OpenAI e OpenRouter).');
 }
 
 export default async function handler(req: any, res: any) {
@@ -78,8 +128,11 @@ export default async function handler(req: any, res: any) {
     return res.status(401).json({ error: 'Unauthorized.' });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: 'OpenAI API key is not configured.' });
+  const openaiApiKey = process.env.OPENAI_API_KEY;
+  const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+
+  if (!openaiApiKey && !openrouterApiKey) {
+    return res.status(500).json({ error: 'A chave da IA (OPENAI_API_KEY ou OPENROUTER_API_KEY) não está configurada no servidor.' });
   }
 
   try {
@@ -102,7 +155,7 @@ Responda APENAS com JSON válido, sem markdown, exatamente neste formato:
 }
 Se nenhum lead combinar bem, responda {"matches": []}.`;
 
-    const parsed = await generateJson(prompt, process.env.OPENAI_API_KEY);
+    const parsed = await generateJson(prompt, openaiApiKey, openrouterApiKey);
     if (!Array.isArray(parsed?.matches)) {
       return res.status(200).json({ matches: [] });
     }

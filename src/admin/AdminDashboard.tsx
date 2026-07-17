@@ -46,7 +46,11 @@ export default function AdminDashboard() {
         supabase.from('leads').select('id', { count: 'exact', head: true }),
         supabase.from('leads').select('id', { count: 'exact', head: true }).in('status', ['qualificado', 'em-contato']),
         supabase.from('vehicles').select('id', { count: 'exact', head: true }),
-        supabase.from('vehicles').select('id', { count: 'exact', head: true }).is('sold_date', null),
+        // `vehicles` não tem coluna `sold_date` (só `status`) -- a consulta
+        // antiga filtrava por uma coluna inexistente, o Supabase retornava
+        // erro silenciosamente (nunca checado aqui) e "Veículos em Estoque"
+        // sempre mostrava zero.
+        supabase.from('vehicles').select('id', { count: 'exact', head: true }).eq('status', 'available'),
         supabase.from('leads').select('id', { count: 'exact', head: true }).eq('phase', 'Compradores'),
         supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])
       ]);

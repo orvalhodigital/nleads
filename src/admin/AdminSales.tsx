@@ -63,11 +63,12 @@ export default function AdminSales() {
           .order('created_at', { ascending: false }),
         supabase
           .from('vehicles')
-          .select('sale_details, sold_date, created_at')
-          .not('sold_date', 'is', null)
+          .select('sale_details, created_at')
+          .eq('status', 'sold')
       ]);
 
       if (leadsRes.error) throw leadsRes.error;
+      if (soldRes.error) throw soldRes.error;
 
       const mapped = (leadsRes.data || []).map((lead: any) => ({
         ...lead,
@@ -79,6 +80,10 @@ export default function AdminSales() {
       setSales(mapped);
 
       // Estatísticas de venda baseadas em veículos vendidos
+      // A tabela `vehicles` não tem coluna `sold_date` (só `status` e o JSONB
+      // `sale_details`, que guarda `saleDate`) -- a consulta antiga filtrava
+      // por uma coluna inexistente, o Supabase retornava erro silenciosamente
+      // (nunca checado aqui) e todas as métricas abaixo sempre davam zero.
       const soldList: any[] = soldRes.data || [];
       const totalRevenue = soldList.reduce((sum, v) => sum + (v.sale_details?.salePrice || 0), 0);
       const unitsSold = soldList.length;
@@ -86,8 +91,8 @@ export default function AdminSales() {
 
       // Tempo médio de venda (dias entre entrada no estoque e a venda)
       const daysToSell = soldList
-        .filter(v => v.created_at && v.sold_date)
-        .map(v => (new Date(v.sold_date).getTime() - new Date(v.created_at).getTime()) / (1000 * 60 * 60 * 24))
+        .filter(v => v.created_at && v.sale_details?.saleDate)
+        .map(v => (new Date(v.sale_details.saleDate).getTime() - new Date(v.created_at).getTime()) / (1000 * 60 * 60 * 24))
         .filter(d => d >= 0);
       const avgDays = daysToSell.length > 0 ? daysToSell.reduce((a, b) => a + b, 0) / daysToSell.length : 0;
 

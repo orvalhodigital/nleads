@@ -2,10 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, Calendar, AlertTriangle, CheckCircle2, TrendingUp, Filter, Download } from 'lucide-react';
-import { Lead, LeadPhase } from '../types';
-import { salesFlowService } from '../services/salesFlowService';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format } from 'date-fns';
+import { Lead, LeadPhase, SalePhase } from '../types';
 import PageContainer from '../components/ui/PageContainer';
 import SalesKanban from '../components/SalesKanban';
 import { formatCurrency } from '../utils/formatters';
@@ -13,43 +11,28 @@ import PlanLimitAlert from '../components/PlanLimitAlert';
 
 type FilterTab = 'todas' | 'documentacao' | 'entrega' | 'em_garantia' | 'vencidas';
 
+const SALE_PHASE_LABELS: Record<SalePhase, string> = {
+  documentacao: 'Documentação',
+  entrega: 'Entrega',
+  em_garantia: 'Em Garantia',
+  apos_garantia: 'Pós-Venda',
+};
+
 const SalesFlowPage: React.FC = () => {
   const { leads, profile, refreshLeads, loading } = useData();
   const navigate = useNavigate();
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
-  if (isFreePlan) {
-    return (
-      <PageContainer className="pb-24">
-        <div className="max-w-2xl mx-auto mt-8">
-          <PlanLimitAlert
-            plan={profile?.plan || 'free'}
-            featureName="Fluxo de Vendas"
-            email={profile?.email}
-          />
-        </div>
-      </PageContainer>
-    );
-  }
-
+  // Hooks precisam rodar sempre na mesma ordem em todo render — os `return`
+  // antecipados abaixo (loading / plano free) ficavam ANTES destes hooks,
+  // então na transição loading=true -> false o React chamava um número
+  // diferente de hooks entre renders e derrubava a página inteira com
+  // "Rendered more hooks than during the previous render". Por isso todos os
+  // hooks agora ficam antes de qualquer `return` condicional.
   const [activeTab, setActiveTab] = useState<FilterTab>('todas');
-  const [timeRange, setTimeRange] = useState<'30d' | '60d' | '90d' | 'all'>('30d');
 
   const completedLeads = useMemo(() => {
     return leads.filter((l) => l.phase === LeadPhase.COMPLETED && l.saleStatus);
   }, [leads]);
-
-  const metrics = useMemo(() => {
-    return salesFlowService.getSalesFlowMetrics(profile?.id || '');
-  }, [leads, profile?.id]);
 
   const filteredLeads = useMemo(() => {
     let filtered = completedLeads;
@@ -91,11 +74,6 @@ const SalesFlowPage: React.FC = () => {
   }, [completedLeads]);
 
   const revenueMetrics = useMemo(() => {
-    const sales = completedLeads.filter((l) => l.phase === LeadPhase.COMPLETED);
-    const totalRevenue = sales.reduce((sum, l) => {
-      return sum + (l.presentedVehicles?.[0] ? Math.random() * 100000 : 0);
-    }, 0);
-
     const avgTimeToDeliver = completedLeads
       .filter((l) => l.saleDate && l.deliveryDate)
       .reduce((sum, l) => {
@@ -107,10 +85,59 @@ const SalesFlowPage: React.FC = () => {
 
     return {
       totalSales: completedLeads.length,
-      totalRevenue,
       avgTimeToDeliver: Math.round(avgTimeToDeliver),
     };
   }, [completedLeads]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+  if (isFreePlan) {
+    return (
+      <PageContainer className="pb-24">
+        <div className="max-w-2xl mx-auto mt-8">
+          <PlanLimitAlert
+            plan={profile?.plan || 'free'}
+            featureName="Fluxo de Vendas"
+            email={profile?.email}
+          />
+        </div>
+      </PageContainer>
+    );
+  }
+
+  const exportCsv = () => {
+    const rows = [
+      ['Cliente', 'Telefone', 'Fase', 'Data da Venda', 'Data de Entrega', 'Garantia Até', 'Notas de Pós-Venda'],
+      ...filteredLeads.map((l) => [
+        l.name,
+        l.phone || '',
+        l.saleStatus ? SALE_PHASE_LABELS[l.saleStatus] : '',
+        l.saleDate ? new Date(l.saleDate).toLocaleDateString('pt-BR') : '',
+        l.deliveryDate ? new Date(l.deliveryDate).toLocaleDateString('pt-BR') : '',
+        l.guaranteeEndsAt ? new Date(l.guaranteeEndsAt).toLocaleDateString('pt-BR') : '',
+        l.postSaleNotes || '',
+      ]),
+    ];
+
+    const csv = rows
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(';'))
+      .join('\n');
+
+    const blob = new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `fluxo-de-vendas-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <PageContainer className="space-y-8 pb-24">
@@ -185,7 +212,11 @@ const SalesFlowPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black text-slate-800">Kanban de Vendas</h2>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold transition-all">
+          <button
+            onClick={exportCsv}
+            disabled={filteredLeads.length === 0}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <Download size={14} />
             Exportar
           </button>

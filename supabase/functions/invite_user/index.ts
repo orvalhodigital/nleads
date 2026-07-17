@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     // AÇÃO: create — cria novo vendedor vinculado à empresa chamadora
     // ─────────────────────────────────────────────────────────────────────────
     if (action === 'create') {
-      const { email, password, full_name } = body
+      const { email, password, full_name, phone } = body
 
       if (!email || !password || !full_name) {
         return json({ error: 'Email, senha e nome completo são obrigatórios' }, 400)
@@ -90,6 +90,7 @@ Deno.serve(async (req) => {
           id: newUser.user.id,
           email,
           full_name,
+          phone: phone || null,
           role: 'vendedor',
           parent_id: callerProfile.id,
           plan: 'trial',
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
     // AÇÃO: update — atualiza nome, senha e/ou meta do vendedor
     // ─────────────────────────────────────────────────────────────────────────
     if (action === 'update') {
-      const { target_user_id, full_name, password, monthly_sales_goal } = body
+      const { target_user_id, full_name, phone, password, monthly_sales_goal } = body
 
       if (!target_user_id) {
         return json({ error: 'target_user_id é obrigatório' }, 400)
@@ -130,6 +131,7 @@ Deno.serve(async (req) => {
       // Atualiza os campos do perfil
       const profileUpdates: Record<string, any> = {}
       if (full_name !== undefined) profileUpdates.full_name = full_name
+      if (phone !== undefined) profileUpdates.phone = phone
       if (monthly_sales_goal !== undefined) profileUpdates.monthly_sales_goal = monthly_sales_goal
 
       if (Object.keys(profileUpdates).length > 0) {

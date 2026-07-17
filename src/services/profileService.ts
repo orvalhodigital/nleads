@@ -274,20 +274,21 @@ export const profileService = {
         return (data || []).map(row => buildProfile(row, null));
     },
 
-    async createTeamUser(email: string, password: string, fullName: string): Promise<void> {
+    async createTeamUser(email: string, password: string, fullName: string, phone?: string): Promise<void> {
         const { data, error } = await supabase.functions.invoke('invite_user', {
-            body: { action: 'create', email, password, full_name: fullName }
+            body: { action: 'create', email, password, full_name: fullName, phone: phone || undefined }
         });
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
     },
 
-    async updateTeamUser(targetUserId: string, fullName: string, newPassword?: string, monthlySalesGoal?: number): Promise<void> {
+    async updateTeamUser(targetUserId: string, fullName: string, newPassword?: string, monthlySalesGoal?: number, phone?: string): Promise<void> {
         const { data, error } = await supabase.functions.invoke('invite_user', {
             body: {
                 action: 'update',
                 target_user_id: targetUserId,
                 full_name: fullName,
+                phone: phone ?? '',
                 ...(newPassword ? { password: newPassword } : {}),
                 ...(monthlySalesGoal !== undefined ? { monthly_sales_goal: monthlySalesGoal } : {})
             }

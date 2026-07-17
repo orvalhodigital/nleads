@@ -24,7 +24,30 @@ export const ticketService = {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return data as SupportTicket[];
+        const tickets = (data || []) as SupportTicket[];
+        if (tickets.length === 0) return tickets;
+
+        // Busca só a última mensagem de cada ticket (sender_role) para o indicador
+        // "Nova Resposta!"/"Aguardando Cliente" da listagem — sem isso, `ticket.messages`
+        // nunca era carregado aqui e o indicador ficava sempre preso em "Nova Resposta!",
+        // mesmo em tickets onde o admin já tinha respondido por último.
+        const { data: lastMessages, error: mError } = await supabase
+            .from('ticket_messages')
+            .select('ticket_id, sender_role, created_at')
+            .in('ticket_id', tickets.map(t => t.id))
+            .order('created_at', { ascending: false });
+
+        if (mError) throw mError;
+
+        const lastByTicket = new Map<string, TicketMessage>();
+        (lastMessages || []).forEach((m: any) => {
+            if (!lastByTicket.has(m.ticket_id)) lastByTicket.set(m.ticket_id, m as TicketMessage);
+        });
+
+        return tickets.map(t => {
+            const last = lastByTicket.get(t.id);
+            return last ? { ...t, messages: [last] } : t;
+        });
     },
 
     async getTicketDetails(ticketId: string) {

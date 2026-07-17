@@ -413,9 +413,8 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                 <select value={website_typography} onChange={e => setWebsiteTypography(e.target.value)}
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs outline-none">
                                     <option value="inter">Inter (Moderna)</option>
-                                    <option value="playfair">Playfair (Luxuosa)</option>
+                                    <option value="serif">Playfair (Luxuosa)</option>
                                     <option value="oswald">Oswald (Impactante)</option>
-                                    <option value="fraunces">Fraunces (Elegante)</option>
                                 </select>
                             </div>
                             <div className="space-y-4">

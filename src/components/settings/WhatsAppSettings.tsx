@@ -16,7 +16,12 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
     const [sessionData, setSessionData] = useState<{ number?: string; name?: string } | null>(null);
 
     const handleConnectWhatsApp = () => {
-        const url = 'https://webhook.orvalhodigital.com.br/webhook/veiculos-criar-instancia';
+        if (!profile?.email) return;
+        // Sem esses parâmetros o webhook (n8n) não tem como saber para qual
+        // empresa/usuário criar a instância — precisa da mesma identificação
+        // usada em handleVerifyConnection (email + userId).
+        const params = new URLSearchParams({ email: profile.email, user_email: profile.email, userId: profile.id });
+        const url = `https://webhook.orvalhodigital.com.br/webhook/veiculos-criar-instancia?${params.toString()}`;
         const width = 600;
         const height = 700;
         const left = (window.screen.width - width) / 2;

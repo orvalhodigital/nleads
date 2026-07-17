@@ -442,6 +442,7 @@ const SalesClosedPage: React.FC = () => {
                 <button
                     onClick={() => {
                         setSearchQuery('');
+                        setQuickRange('custom');
                         setDateRange({
                             start: format(subMonths(new Date(), 3), 'yyyy-MM-dd'),
                             end: format(new Date(), 'yyyy-MM-dd')

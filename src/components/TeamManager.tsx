@@ -218,7 +218,7 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
         }
         setCreateLoading(true);
         try {
-            await profileService.createTeamUser(createEmail, createPassword, createName);
+            await profileService.createTeamUser(createEmail, createPassword, createName, createPhone);
             showToast('success', 'Vendedor criado com sucesso!');
             setIsCreateOpen(false);
             resetCreate();
@@ -249,7 +249,9 @@ const TeamManager: React.FC<TeamManagerProps> = ({ adminProfile }) => {
             await profileService.updateTeamUser(
                 editMember.id,
                 editName,
-                editPassword || undefined
+                editPassword || undefined,
+                undefined,
+                editPhone
             );
             showToast('success', 'Dados atualizados!');
             setMembers(prev => prev.map(m => m.id === editMember.id ? {

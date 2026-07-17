@@ -105,7 +105,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="text-sm font-bold text-slate-800 truncate">Foto de Perfil</h3>
                             <span className="px-2 py-0.5 bg-brand-50 text-brand-600 text-[9px] font-black uppercase tracking-widest rounded-md shrink-0">
-                                {profile.role === 'super_admin' ? 'Super Admin' : profile.role === 'admin' ? 'Proprietário' : 'Vendedor'}
+                                {profile.role === 'super_admin' ? 'Super Admin' : profile.role === 'admin' ? 'Proprietário' : profile.role === 'empresa' ? 'Empresa' : 'Vendedor'}
                             </span>
                         </div>
                         <p className="text-[11px] text-slate-500 leading-relaxed mb-2">
@@ -119,7 +119,7 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                 </div>
 
                 {/* Logo da Empresa */}
-                {profile.role !== 'user' && (
+                {profile.role !== 'vendedor' && (
                     <div className="bg-white rounded-3xl border border-slate-100 p-6 flex items-start gap-5 transition-all hover:shadow-sm">
                         <div className="relative shrink-0">
                             <div className="w-32 h-20 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center p-2 shadow-inner group">
@@ -195,15 +195,15 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
 
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block">
-                                Nome da Empresa {profile.role === 'user' && '(Inalterável)'}
+                                Nome da Empresa {profile.role === 'vendedor' && '(Inalterável)'}
                             </label>
                             <div className="relative">
-                                <Building2 className={`absolute left-4 top-1/2 -translate-y-1/2 ${profile.role === 'user' ? 'text-slate-200' : 'text-slate-300'}`} size={16} />
+                                <Building2 className={`absolute left-4 top-1/2 -translate-y-1/2 ${profile.role === 'vendedor' ? 'text-slate-200' : 'text-slate-300'}`} size={16} />
                                 <input
                                     type="text"
-                                    disabled={profile.role === 'user'}
+                                    disabled={profile.role === 'vendedor'}
                                     className={`w-full pl-10 pr-4 py-3 border border-slate-100 rounded-2xl text-sm font-semibold transition-all outline-none ${
-                                        profile.role === 'user'
+                                        profile.role === 'vendedor'
                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                             : 'bg-slate-50 text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5'
                                     }`}

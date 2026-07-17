@@ -15,7 +15,7 @@ import LeadSaleModal from '../components/LeadSaleModal';
 const LeadActionPage: React.FC = () => {
     const { id, actionType } = useParams<{ id: string, actionType: string }>();
     const navigate = useNavigate();
-    const { leads, vehicles, updateLead } = useData();
+    const { leads, vehicles, updateLead, addLead } = useData();
     const { showToast } = useToast();
 
     const [lead, setLead] = useState(leads.find(l => l.id === id) || null);
@@ -151,6 +151,7 @@ const LeadActionPage: React.FC = () => {
                 leads={leads}
                 vehicles={vehicles}
                 onClose={handleClose}
+                onAddLead={addLead}
                 onSuccess={() => {
                     showToast('success', 'Venda finalizada com sucesso!');
                     handleClose();

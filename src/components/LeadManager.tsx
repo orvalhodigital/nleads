@@ -928,6 +928,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
           leads={leads}
           vehicles={vehicles}
           onSuccess={handleSaleSuccess}
+          onAddLead={onAddLead}
         />
       )}
     </div>

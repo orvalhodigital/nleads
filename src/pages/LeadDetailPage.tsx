@@ -82,17 +82,25 @@ const LeadDetailPage: React.FC = () => {
     const matchingVehicles = useMemo(() => {
         const list: any[] = [];
         if (profile?.enable_cars !== false) {
+            // Usa o valor máximo/marcas segmentados de carro (com fallback aos campos
+            // gerais legados) — antes usava só `valor_maximo`, que os leads criados no
+            // formulário atual nunca preenchem, então o filtro de orçamento era inerte.
+            const maxPrice = lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 9999999;
             list.push(...vehicles.filter(v =>
                 v.status === 'available' &&
-                (v.price <= (lead.preferences.valor_maximo || 9999999)) &&
+                v.price <= maxPrice &&
                 (lead.preferences.marcas.length === 0 || lead.preferences.marcas.includes(v.brand))
             ));
         }
         if (profile?.enable_motorcycles) {
+            // Idem para motos — antes filtrava motos pela lista de marcas de CARRO
+            // (`marcas`), então quase nunca encontrava correspondência.
+            const maxMotoPrice = lead.preferences.moto_valor_max || lead.preferences.valor_maximo || 9999999;
+            const marcasMoto = lead.preferences.marcas_moto || [];
             list.push(...motorcycles.filter(m =>
                 m.status === 'available' &&
-                (m.price <= (lead.preferences.valor_maximo || 9999999)) &&
-                (lead.preferences.marcas.length === 0 || lead.preferences.marcas.includes(m.brand))
+                m.price <= maxMotoPrice &&
+                (marcasMoto.length === 0 || marcasMoto.includes(m.brand))
             ).map(m => ({ ...m, isMoto: true })));
         }
         return list;
@@ -372,11 +380,11 @@ const LeadDetailPage: React.FC = () => {
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <p className="text-sm font-black text-slate-900">
-                                                                {new Date(new Date(app.date).getTime() - new Date().getTimezoneOffset() * 60000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                                                {new Date(app.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                                             </p>
                                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                                                             <p className="text-sm font-black text-indigo-600">
-                                                                {new Date(new Date(app.date).getTime() - new Date().getTimezoneOffset() * 60000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                                {new Date(app.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                         </div>
                                                         <div className="flex items-center gap-2 mt-1">

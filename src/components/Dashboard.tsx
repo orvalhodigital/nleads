@@ -203,7 +203,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     // Funil
     const activeLeads = leads.filter(l => l.phase !== LeadPhase.COMPLETED && l.phase !== LeadPhase.DISQUALIFIED);
     const attentionLeads = activeLeads.filter(l => {
-      const lastUpdateStr = l.lastUpdate || l.updated_at || l.createdAt;
+      const lastUpdateStr = l.lastUpdate || l.createdAt;
       if (!lastUpdateStr) return false;
       try {
         const lastUpdate = safeParseISO(lastUpdateStr);
@@ -268,7 +268,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     ).length;
 
     const leadsEsquecidos = activeLeads.filter(l => {
-      const lastUpdateStr = l.lastUpdate || l.updated_at || l.createdAt;
+      const lastUpdateStr = l.lastUpdate || l.createdAt;
       if (!lastUpdateStr) return false;
       const lastUpdate = parseISO(lastUpdateStr);
       const diff = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24);

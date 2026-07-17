@@ -17,9 +17,10 @@ interface LeadSaleModalProps {
     leads: Lead[];
     vehicles: Vehicle[];
     onSuccess: () => void;
+    onAddLead: (lead: any) => Promise<Lead | null>;
 }
 
-const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, leads, vehicles, onSuccess }) => {
+const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, leads, vehicles, onSuccess, onAddLead }) => {
     const { showToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
@@ -66,9 +67,10 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
             let buyerLeadId = leadId;
             let buyerName = lead?.name || 'Cliente Otimizza';
 
-            // 1. Se é walk-in, criar lead on-the-fly
+            // 1. Se é walk-in, criar lead on-the-fly (via onAddLead para respeitar o
+            // limite de leads do plano Free — leadService.create() direto o ignorava)
             if (isWalkIn) {
-                const newLead = await leadService.create({
+                const newLead = await onAddLead({
                     name: walkInName,
                     phone: walkInPhone,
                     email: '',
@@ -77,17 +79,17 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                     source: 'Walk-in',
                     notes: 'Lead criado via venda walk-in',
                     preferences: {
-                        tipos_veiculo: [],
-                        marcas: [],
-                        modelos: [],
-                        transmissao: [],
-                        motorizacao: [],
+                        tipos_veiculo: [], marcas: [], modelos: [],
+                        transmissao: [], motorizacao: [],
+                        carro_transmissao: [], carro_motorizacao: [],
+                        moto_transmissao: [], moto_motorizacao: [],
                         observacoes_adicionais: '',
                         possui_entrada: false,
                         possui_troca: false
                     },
                     is_buyer: true
                 } as any);
+                if (!newLead) throw new Error('Falha ao criar lead do cliente walk-in.');
                 buyerLeadId = newLead.id;
                 buyerName = walkInName;
             }

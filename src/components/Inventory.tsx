@@ -61,6 +61,13 @@ const Inventory: React.FC<InventoryProps> = ({
   const [walkInLeadName, setWalkInLeadName] = useState('');
   const [walkInLeadPhone, setWalkInLeadPhone] = useState('');
 
+  // Seleção do comprador no modal de venda — guarda o ID do lead (ou 'Venda
+  // Avulsa'), nunca o nome. Antes o <select> usava o NOME como valor e o envio
+  // buscava o lead de volta por `l.name === buyerName`; com dois leads de mesmo
+  // nome (ex.: "Pedro Santos" cadastrado duas vezes), a venda podia ser
+  // atribuída ao lead errado.
+  const [buyerSelectionId, setBuyerSelectionId] = useState('');
+
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -359,10 +366,15 @@ const Inventory: React.FC<InventoryProps> = ({
   const handleSellSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedVehicle && selectedVehicle !== 'new') {
-      let finalBuyerLeadId = sellData.buyerLeadId;
-      let finalBuyerName = sellData.buyerName;
+      if (!buyerSelectionId) {
+        alert("Selecione um comprador antes de confirmar a venda.");
+        return;
+      }
 
-      if (sellData.buyerName === 'Venda Avulsa') {
+      let finalBuyerLeadId: string | undefined;
+      let finalBuyerName: string;
+
+      if (buyerSelectionId === 'Venda Avulsa') {
         if (!walkInLeadName || !walkInLeadPhone) {
           alert("Por favor, preencha o nome e telefone do cliente para a venda avulsa.");
           return;
@@ -393,8 +405,14 @@ const Inventory: React.FC<InventoryProps> = ({
           return; // Error handled in onAddLead
         }
       } else {
-        const selectedLead = leads.find(l => l.name === sellData.buyerName);
-        finalBuyerLeadId = selectedLead?.id;
+        // Busca por ID (não por nome) — nunca ambíguo, mesmo com leads homônimos.
+        const selectedLead = leads.find(l => l.id === buyerSelectionId);
+        if (!selectedLead) {
+          alert("Selecione um comprador válido.");
+          return;
+        }
+        finalBuyerLeadId = selectedLead.id;
+        finalBuyerName = selectedLead.name;
       }
 
       onSellVehicle(selectedVehicle.id, {
@@ -405,6 +423,7 @@ const Inventory: React.FC<InventoryProps> = ({
 
       setIsSellModalOpen(false);
       setSelectedVehicle(null);
+      setBuyerSelectionId('');
       setWalkInLeadName('');
       setWalkInLeadPhone('');
     }
@@ -426,6 +445,7 @@ const Inventory: React.FC<InventoryProps> = ({
         buyerLeadId: '',
         isFollowUpSale: true
       });
+      setBuyerSelectionId('');
       setWalkInLeadName('');
       setWalkInLeadPhone('');
       setIsSellModalOpen(true);
@@ -1023,17 +1043,17 @@ const Inventory: React.FC<InventoryProps> = ({
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Comprador (Selecione o Lead)</label>
                     <select
-                      value={sellData.buyerName}
-                      onChange={e => setSellData({ ...sellData, buyerName: e.target.value })}
+                      value={buyerSelectionId}
+                      onChange={e => setBuyerSelectionId(e.target.value)}
                       className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none text-sm"
                     >
                       <option value="">Selecione um comprador...</option>
                       <option value="Venda Avulsa">-- Venda Avulsa (Sem Lead) --</option>
-                      {leads.map(lead => <option key={lead.id} value={lead.name}>{lead.name}</option>)}
+                      {leads.map(lead => <option key={lead.id} value={lead.id}>{lead.name}</option>)}
                     </select>
                   </div>
 
-                  {sellData.buyerName === 'Venda Avulsa' && (
+                  {buyerSelectionId === 'Venda Avulsa' && (
                     <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-100 animate-fadeUp bg-slate-50 p-4 rounded-xl">
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nome do Cliente *</label>

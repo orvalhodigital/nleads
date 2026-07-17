@@ -34,6 +34,9 @@ const mapRowToMotorcycle = (row: any): Motorcycle => ({
     status: (row.status as 'available' | 'sold') ?? 'available',
     saleDetails: row.sale_details ? (row.sale_details as unknown as SaleDetails) : undefined,
     showOnWebsite: row.show_on_website !== false,
+    // Sem isto, "Tempo Médio de Venda" e "Veículos Parados" no Dashboard ficam
+    // sempre em zero (não havia como saber há quanto tempo a moto está em estoque).
+    createdAt: row.created_at || undefined,
 });
 
 // ─── Service ─────────────────────────────────────────────────────────────────

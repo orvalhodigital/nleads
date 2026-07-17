@@ -124,6 +124,10 @@ export interface Vehicle {
   operationalCosts?: OperationalCostItem[];
   purchasePrice?: number;
   suggestedSalePrice?: number;
+
+  /** Data de criação do registro (mapeada de `created_at`). Usada em métricas
+   * como "Tempo Médio de Venda" e "Veículos Parados". */
+  createdAt?: string;
 }
 
 export interface LeadPreference {
@@ -534,6 +538,10 @@ export interface Motorcycle {
   status: 'available' | 'sold';
   saleDetails?: SaleDetails;
   showOnWebsite?: boolean;
+
+  /** Data de criação do registro (mapeada de `created_at`). Usada em métricas
+   * como "Tempo Médio de Venda" e "Veículos Parados". */
+  createdAt?: string;
 }
 
 export type View = 'home' | 'dashboard' | 'inventory' | 'leads' | 'agenda' | 'sales-flow' | 'sales-closed' | 'plans' | 'settings' | 'motorcycles' | 'onboarding' | 'support' | 'admin-tickets' | 'website';

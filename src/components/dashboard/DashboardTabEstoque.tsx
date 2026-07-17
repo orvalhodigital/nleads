@@ -67,7 +67,7 @@ export const DashboardTabEstoque: React.FC<DashboardTabEstoqueProps> = ({
             )) : (
               <div className="flex flex-col items-center justify-center text-center py-16 border border-dashed border-rose-500/20 bg-rose-500/5 rounded-3xl">
                 <p className="text-6xl font-bold text-rose-600 dark:text-rose-400 mb-4">0</p>
-                <p className="text-sm font-semibold uppercase tracking-widest text-rose-500 dark:text-rose-455">veículos disponíveis para venda</p>
+                <p className="text-sm font-semibold uppercase tracking-widest text-rose-500 dark:text-rose-400">veículos disponíveis para venda</p>
               </div>
             )}
           </div>

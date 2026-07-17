@@ -36,12 +36,14 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       list.push(...vehicles);
     }
     if (profile?.enable_motorcycles) {
+      // Não sobrescrever `createdAt` aqui: motorcycleService já mapeia o valor real
+      // de `created_at`. Sobrescrever com a data de venda fazia "Tempo Médio de
+      // Venda" e "Veículos Parados" ficarem sempre errados/zerados para motos.
       list.push(...motorcycles.map(m => ({
         ...m,
         type: m.category as any,
         transmission: 'Manual' as TransmissionType,
         engine: m.engine as any,
-        createdAt: m.saleDetails?.saleDate || undefined,
       })));
     }
     return list;
@@ -183,12 +185,16 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
     const monthlyGrossProfit = filteredSales.reduce((acc, v) => {
       const salePrice = v.saleDetails?.salePrice || 0;
       const refurbishmentCosts = v.saleDetails?.refurbishmentCosts || 0;
-      const costBasis = v.fipePrice ?? v.price ?? 0;
+      // Prioriza o preço de COMPRA (o que a loja realmente pagou pelo veículo).
+      // Antes usava fipePrice/price (preço de referência/anúncio) como "custo",
+      // o que tornava o lucro bruto uma comparação sem sentido (preço de venda
+      // menos preço de anúncio, não menos o que foi efetivamente pago).
+      const costBasis = v.purchasePrice || v.fipePrice || v.price || 0;
       return acc + (salePrice - refurbishmentCosts - costBasis);
     }, 0);
     const averageDaysToSell = filteredSales.length > 0
       ? filteredSales.reduce((acc, v) => {
-        const createdReference = (v as any).createdAt || v.saleDetails?.saleDate;
+        const createdReference = v.createdAt;
         if (!createdReference || !v.saleDetails?.saleDate) return acc;
         return acc + Math.max(0, differenceInCalendarDays(safeParseISO(v.saleDetails.saleDate), safeParseISO(createdReference)));
       }, 0) / filteredSales.length
@@ -350,8 +356,8 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
 
     // Veículos parados há +60 dias
     const staleVehicles = availableVehicles.filter(v => {
-      if (!(v as any).createdAt) return false;
-      try { return differenceInCalendarDays(now, parseISO((v as any).createdAt)) > 60; } catch { return false; }
+      if (!v.createdAt) return false;
+      try { return differenceInCalendarDays(now, parseISO(v.createdAt)) > 60; } catch { return false; }
     }).length;
 
     return {

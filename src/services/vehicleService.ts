@@ -48,7 +48,10 @@ const mapRowToVehicle = (row: any): Vehicle => ({
     seoDescription: row.seo_description,
     operationalCosts: row.operational_costs || [],
     purchasePrice: Number(row.purchase_price) || 0,
-    suggestedSalePrice: Number(row.suggested_sale_price) || 0
+    suggestedSalePrice: Number(row.suggested_sale_price) || 0,
+    // Sem isto, "Tempo Médio de Venda" e "Veículos Parados" no Dashboard ficam
+    // sempre em zero (não havia como saber há quanto tempo o veículo está em estoque).
+    createdAt: row.created_at || undefined,
 });
 
 // Helper: delete a list of storage URLs from the 'vehicles' bucket

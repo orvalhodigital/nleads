@@ -11,6 +11,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { Lead, LeadPhase, LeadTemperature, VisitStatus } from '../types';
 import ScheduleVisitModal, { ScheduleFormData } from './ScheduleVisitModal';
+import ScheduleFollowUpModal from './ScheduleFollowUpModal';
 import { AgendaStats } from './agenda/AgendaStats';
 import { AgendaFilters } from './agenda/AgendaFilters';
 import { AgendaVisitsList } from './agenda/AgendaVisitsList';
@@ -34,6 +35,7 @@ const Agenda: React.FC = () => {
 
     // Modal State
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isFollowUpFormOpen, setIsFollowUpFormOpen] = useState(false);
 
     // Edit State
     const [editingVisitId, setEditingVisitId] = useState<string | null>(null);
@@ -361,6 +363,29 @@ const Agenda: React.FC = () => {
         }
     };
 
+    const handleScheduleFollowUp = async (data: { leadId: string; nextContactDate: string; notes: string }) => {
+        try {
+            const lead = leads.find(l => l.id === data.leadId);
+            if (!lead) return;
+
+            await updateLead({
+                ...lead,
+                phase: LeadPhase.FOLLOW_UP,
+                follow_up_data: {
+                    ...(lead.follow_up_data || {}),
+                    nextContactDate: data.nextContactDate,
+                    notes: data.notes,
+                },
+            });
+
+            showToast('success', 'Follow-up agendado!');
+            setIsFollowUpFormOpen(false);
+            loadData();
+        } catch (error) {
+            showToast('error', 'Erro ao agendar follow-up.');
+        }
+    };
+
     const handleMarkFollowUpDone = useCallback(async (lead: Lead) => {
         try {
             await updateLead({
@@ -459,9 +484,18 @@ const Agenda: React.FC = () => {
                     {agendaTab === 'visits' && (
                         <button
                             onClick={() => setIsFormOpen(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-primary/90 transition-all shadow-md shadow-primary/20 active:scale-95"
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-primary/90 transition-all shadow-md shadow-primary/20 active:scale-95 cursor-pointer"
                         >
                             <Plus size={15} strokeWidth={3} /> Novo Agendamento
+                        </button>
+                    )}
+
+                    {agendaTab === 'followups' && (
+                        <button
+                            onClick={() => setIsFollowUpFormOpen(true)}
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-primary/90 transition-all shadow-md shadow-primary/20 active:scale-95 cursor-pointer"
+                        >
+                            <Plus size={15} strokeWidth={3} /> Novo Follow-up
                         </button>
                     )}
                 </div>
@@ -533,12 +567,19 @@ const Agenda: React.FC = () => {
                 )}
             </div>
 
-            <ScheduleVisitModal 
+            <ScheduleVisitModal
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
                 leads={leads}
                 vehicles={vehicles}
                 onSchedule={handleScheduleVisit}
+            />
+
+            <ScheduleFollowUpModal
+                isOpen={isFollowUpFormOpen}
+                onClose={() => setIsFollowUpFormOpen(false)}
+                leads={leads}
+                onSchedule={handleScheduleFollowUp}
             />
         </div>
     );

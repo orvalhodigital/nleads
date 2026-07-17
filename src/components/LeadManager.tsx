@@ -13,6 +13,7 @@ import { DragDropContext, Droppable, Draggable, DraggableProvided, DraggableStat
 import { Lead, LeadPhase, LeadTemperature, Tag as TagType, Vehicle, VehicleType, TransmissionType, EngineType, SaleDetails, Profile } from '../types';
 import { leadService } from '../services/leadService';
 import { notificationService } from '../services/notificationService';
+import { generateUUID } from '../utils/uuid';
 import TagInput from './TagInput';
 import MultiSelect from './MultiSelect';
 import DisqualificationModal from './DisqualificationModal';
@@ -104,7 +105,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   };
 
   const handleConfirmScheduling = async (data?: { date: string; time: string; vehicleOfInterest: string; notes: string }) => {
-    if (!actionLead || !pendingPhase || !data) {
+    if (!actionLead || !pendingPhase) {
       setActiveModal(null);
       setActionLead(null);
       setPendingPhase(null);
@@ -112,29 +113,38 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     }
     try {
       const oldPhase = actionLead.phase;
-      const visitDateTime = new Date(`${data.date}T${data.time}`).toISOString();
-      
-      const existingAppointments = actionLead.scheduling_data?.appointments || [];
-      const newAppointment = {
-        id: crypto.randomUUID(),
-        date: visitDateTime,
-        status: 'pending' as const,
-        vehicleOfInterest: data.vehicleOfInterest,
-        notes: data.notes
-      };
-      const updatedAppointments = [...existingAppointments, newAppointment];
+      if (data) {
+        const timeString = data.time || '00:00';
+        const visitDateTime = new Date(`${data.date}T${timeString}`).toISOString();
+        
+        const existingAppointments = actionLead.scheduling_data?.appointments || [];
+        const newAppointment = {
+          id: generateUUID(),
+          date: visitDateTime,
+          status: 'pending' as const,
+          vehicleOfInterest: data.vehicleOfInterest,
+          notes: data.notes
+        };
+        const updatedAppointments = [...existingAppointments, newAppointment];
 
-      await onUpdateLead({
-        ...actionLead,
-        phase: pendingPhase,
-        ...deriveRootVisitFields(updatedAppointments),
-        scheduling_data: {
-          ...(actionLead.scheduling_data || {}),
-          appointments: updatedAppointments
-        }
-      });
+        await onUpdateLead({
+          ...actionLead,
+          phase: pendingPhase,
+          ...deriveRootVisitFields(updatedAppointments),
+          scheduling_data: {
+            ...(actionLead.scheduling_data || {}),
+            appointments: updatedAppointments
+          }
+        });
+        showToast('success', 'Visita agendada com sucesso!');
+      } else {
+        await onUpdateLead({
+          ...actionLead,
+          phase: pendingPhase
+        });
+        showToast('success', 'Lead movido com sucesso!');
+      }
       await notificationService.notifyLeadPhaseChange(actionLead.name, oldPhase, pendingPhase, impersonatedUserId);
-      showToast('success', 'Visita agendada com sucesso!');
       onRefresh?.();
       onDataChange?.();
     } catch (e) {
@@ -147,7 +157,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   };
 
   const handleConfirmSimulation = async (data?: { cpf: string; cnh: string; downPayment: number; installments: number; notes: string }) => {
-    if (!actionLead || !pendingPhase || !data) {
+    if (!actionLead || !pendingPhase) {
       setActiveModal(null);
       setActionLead(null);
       setPendingPhase(null);
@@ -155,13 +165,21 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     }
     try {
       const oldPhase = actionLead.phase;
-      await onUpdateLead({
-        ...actionLead,
-        phase: pendingPhase,
-        simulation_data: data
-      });
+      if (data) {
+        await onUpdateLead({
+          ...actionLead,
+          phase: pendingPhase,
+          simulation_data: data
+        });
+        showToast('success', 'Simulação salva com sucesso!');
+      } else {
+        await onUpdateLead({
+          ...actionLead,
+          phase: pendingPhase
+        });
+        showToast('success', 'Lead movido com sucesso!');
+      }
       await notificationService.notifyLeadPhaseChange(actionLead.name, oldPhase, pendingPhase, impersonatedUserId);
-      showToast('success', 'Simulação salva com sucesso!');
       onRefresh?.();
       onDataChange?.();
     } catch (e) {
@@ -174,7 +192,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   };
 
   const handleConfirmFollowUp = async (data?: { nextContactDate: string; notes: string }) => {
-    if (!actionLead || !pendingPhase || !data) {
+    if (!actionLead || !pendingPhase) {
       setActiveModal(null);
       setActionLead(null);
       setPendingPhase(null);
@@ -182,13 +200,21 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     }
     try {
       const oldPhase = actionLead.phase;
-      await onUpdateLead({
-        ...actionLead,
-        phase: pendingPhase,
-        follow_up_data: data
-      });
+      if (data) {
+        await onUpdateLead({
+          ...actionLead,
+          phase: pendingPhase,
+          follow_up_data: data
+        });
+        showToast('success', 'Follow-up salvo com sucesso!');
+      } else {
+        await onUpdateLead({
+          ...actionLead,
+          phase: pendingPhase
+        });
+        showToast('success', 'Lead movido com sucesso!');
+      }
       await notificationService.notifyLeadPhaseChange(actionLead.name, oldPhase, pendingPhase, impersonatedUserId);
-      showToast('success', 'Follow-up salvo com sucesso!');
       onRefresh?.();
       onDataChange?.();
     } catch (e) {

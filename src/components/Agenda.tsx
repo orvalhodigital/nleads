@@ -13,6 +13,7 @@ import { Lead, LeadPhase, LeadTemperature, VisitStatus } from '../types';
 import ScheduleVisitModal, { ScheduleFormData } from './ScheduleVisitModal';
 import ScheduleFollowUpModal from './ScheduleFollowUpModal';
 import { deriveRootVisitFields } from '../utils/visits';
+import { generateUUID } from '../utils/uuid';
 import { AgendaStats } from './agenda/AgendaStats';
 import { AgendaFilters } from './agenda/AgendaFilters';
 import { AgendaVisitsList } from './agenda/AgendaVisitsList';
@@ -204,7 +205,7 @@ const Agenda: React.FC = () => {
             updatedAppointments[appointmentIndex] = { ...updatedAppointments[appointmentIndex], status };
         } else if (lead.visit_date && appointmentId === 'legacy') {
             updatedAppointments.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 date: lead.visit_date,
                 status: status,
                 vehicleOfInterest: lead.scheduling_data?.vehicleOfInterest,
@@ -242,7 +243,7 @@ const Agenda: React.FC = () => {
             updatedAppointments[appointmentIndex] = { ...updatedAppointments[appointmentIndex], date: newDateIso };
         } else if (lead.visit_date && appointmentId === 'legacy') {
             updatedAppointments.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 date: newDateIso,
                 status: lead.visit_status || 'pending',
                 vehicleOfInterest: lead.scheduling_data?.vehicleOfInterest,
@@ -326,7 +327,7 @@ const Agenda: React.FC = () => {
                 }
 
                 const newAppointment = {
-                    id: crypto.randomUUID(),
+                    id: generateUUID(),
                     date: visitDateTime,
                     status: 'pending' as const,
                     vehicleOfInterest: vehicleIdToSave,
@@ -337,7 +338,7 @@ const Agenda: React.FC = () => {
 
                 if (existingAppointments.length === 0 && lead.visit_date) {
                     existingAppointments.push({
-                        id: crypto.randomUUID(),
+                        id: generateUUID(),
                         date: lead.visit_date,
                         status: lead.visit_status || 'pending',
                         vehicleOfInterest: lead.scheduling_data?.vehicleOfInterest,

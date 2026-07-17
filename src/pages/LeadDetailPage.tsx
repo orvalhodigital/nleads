@@ -12,6 +12,7 @@ import { formatCurrency } from '../utils/formatters';
 import { DEFAULT_PRESET_MESSAGES } from '../utils/constants';
 import { deriveRootVisitFields } from '../utils/visits';
 import { useToast } from '../contexts/ToastContext';
+import { generateUUID } from '../utils/uuid';
 
 import { LeadHeader } from '../components/lead-detail/LeadHeader';
 import { LeadContactInfo } from '../components/lead-detail/LeadContactInfo';
@@ -162,7 +163,7 @@ const LeadDetailPage: React.FC = () => {
             updatedAppointments[appointmentIndex] = { ...updatedAppointments[appointmentIndex], status };
         } else if (lead.visit_date && id === 'legacy') {
             updatedAppointments.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 date: lead.visit_date,
                 status: status,
                 vehicleOfInterest: lead.scheduling_data?.vehicleOfInterest,
@@ -193,7 +194,7 @@ const LeadDetailPage: React.FC = () => {
             updatedAppointments[appointmentIndex] = { ...updatedAppointments[appointmentIndex], notes: visitNoteEdit.draft };
         } else if (lead.visit_date && visitNoteEdit.id === 'legacy') {
             updatedAppointments.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 date: lead.visit_date,
                 status: lead.visit_status || 'pending',
                 vehicleOfInterest: lead.scheduling_data?.vehicleOfInterest,
@@ -227,7 +228,7 @@ const LeadDetailPage: React.FC = () => {
         // Se já existia uma data na raiz e a lista tava vazia, migra ela implicitamente
         if (existingAppointments.length === 0 && lead.visit_date && !newScheduleForm.id) {
             updatedAppointments.push({
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 date: lead.visit_date,
                 status: lead.visit_status || 'pending',
                 vehicleOfInterest: lead.scheduling_data?.vehicleOfInterest,
@@ -247,7 +248,7 @@ const LeadDetailPage: React.FC = () => {
                 };
             } else if (newScheduleForm.id === 'legacy') {
                 updatedAppointments.push({
-                    id: crypto.randomUUID(),
+                    id: generateUUID(),
                     date: visitDateTime,
                     status: lead.visit_status || 'pending',
                     vehicleOfInterest: newScheduleForm.vehicleOfInterest,
@@ -257,7 +258,7 @@ const LeadDetailPage: React.FC = () => {
         } else {
             // Creating new
             const newAppointment = {
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 date: visitDateTime,
                 status: 'pending' as const,
                 vehicleOfInterest: newScheduleForm.vehicleOfInterest,

@@ -130,7 +130,7 @@ const WhatsAppSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                             <div className="flex flex-col items-end gap-2">
                                 <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest px-1">Status Global</span>
                                 <div className={`px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2 ${
-                                    whatsappStatus === 'connected' ? 'bg-brand-500 text-white' :
+                                    whatsappStatus === 'connected' ? 'bg-emerald-500 text-white' :
                                     whatsappStatus === 'checking' ? 'bg-slate-700 text-slate-300 animate-pulse' :
                                     'bg-rose-500 text-white'
                                 }`}>

@@ -1,5 +1,7 @@
 import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
-import { Lead, LeadPhase, LeadTemperature, InteractionHistory, MarketingMetadata } from '../types';
+import { Lead, LeadPhase, LeadTemperature, MarketingMetadata, InteractionHistory } from '../types';
+import { Database } from '../lib/database.types';
+import { generateUUID } from '../utils/uuid';
 
 const mapRowToLead = (row: any): Lead => ({
     id: row.id,
@@ -292,7 +294,7 @@ export const leadService = {
     async addInteraction(leadId: string, interaction: Omit<InteractionHistory, 'id'>): Promise<Lead> {
         const newInteraction: InteractionHistory = {
             ...interaction,
-            id: crypto.randomUUID()
+            id: generateUUID()
         };
 
         const response = await supabase

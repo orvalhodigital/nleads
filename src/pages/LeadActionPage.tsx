@@ -5,6 +5,7 @@ import { useToast } from '../contexts/ToastContext';
 import { notificationService } from '../services/notificationService';
 import { LeadPhase } from '../types';
 import { deriveRootVisitFields } from '../utils/visits';
+import { generateUUID } from '../utils/uuid';
 
 import { LeadSchedulingModal } from '../components/LeadSchedulingModal';
 import { LeadSimulationModal } from '../components/LeadSimulationModal';
@@ -70,10 +71,11 @@ const LeadActionPage: React.FC = () => {
                         // Acrescenta um novo agendamento preservando o histórico existente.
                         // Antes: `scheduling_data: data` substituía o objeto inteiro, apagando
                         // silenciosamente quaisquer visitas já agendadas em `.appointments`.
-                        const visitDateTime = new Date(`${data.date}T${data.time}`).toISOString();
+                        const timeString = data.time || '00:00';
+                        const visitDateTime = new Date(`${data.date}T${timeString}`).toISOString();
                         const existingAppointments = lead.scheduling_data?.appointments || [];
                         const newAppointment = {
-                            id: crypto.randomUUID(),
+                            id: generateUUID(),
                             date: visitDateTime,
                             status: 'pending' as const,
                             vehicleOfInterest: data.vehicleOfInterest,

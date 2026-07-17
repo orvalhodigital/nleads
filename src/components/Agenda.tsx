@@ -388,10 +388,16 @@ const Agenda: React.FC = () => {
 
     const handleMarkFollowUpDone = useCallback(async (lead: Lead) => {
         try {
+            // Limpa nextContactDate para o card sair de Hoje/Atrasados/Próximos.
+            // Antes só se acrescentava uma nota e a data continuava a mesma — o card
+            // nunca saía da lista (e voltava como "Atrasado" depois), mesmo com o toast
+            // dizendo "realizado". O lead vai para "Sem data" e pode ser reagendado
+            // a qualquer momento pelo botão "Novo Follow-up".
+            const { nextContactDate, ...restFollowUpData } = lead.follow_up_data || {};
             await updateLead({
                 ...lead,
                 follow_up_data: {
-                    ...lead.follow_up_data,
+                    ...restFollowUpData,
                     notes: (lead.follow_up_data?.notes || '') + `\n✅ Contato realizado em ${format(new Date(), 'dd/MM/yyyy HH:mm')}`
                 }
             });

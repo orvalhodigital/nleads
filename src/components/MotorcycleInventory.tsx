@@ -19,10 +19,10 @@ import { motoDatabase } from '../data/motoDb';
 import AutocompleteInput from './ui/AutocompleteInput';
 import PlanLimitAlert from './PlanLimitAlert';
 import { useData } from '../contexts/DataContext';
+import { consultaPlaca } from '../services/plateService';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
-const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
 const MOTO_CATEGORIES: MotorcycleCategory[] = ['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'];
 const MOTO_ENGINES = ['110cc', '125cc', '150cc', '160cc', '190cc', '250cc', '300cc', '400cc', '600cc', '750cc', '1000cc', '1200cc+'];
 const MOTO_BRANDS = ['Honda', 'Yamaha', 'Kawasaki', 'Suzuki', 'BMW', 'Ducati', 'Harley-Davidson', 'KTM', 'Royal Enfield', 'Triumph', 'Dafra', 'Shineray', 'Haojue', 'Traxx'];
@@ -316,9 +316,7 @@ const MotorcycleInventory: React.FC<Props> = ({
         setLookupLoading(true);
         setPlateError(null);
         try {
-            const res = await fetch(`https://wdapi2.com.br/consulta/${rawPlate}/${APIPLACAS_TOKEN}`);
-            if (!res.ok) throw new Error('Erro na consulta.');
-            const data = await res.json();
+            const data = await consultaPlaca(rawPlate);
 
             const msg: string = data.mensagemRetorno || '';
             const isError = msg.toLowerCase().startsWith('erro') || msg.toLowerCase().includes('não encontrada') || msg.toLowerCase().includes('invalida');

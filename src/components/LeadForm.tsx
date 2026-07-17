@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, UserPlus, Check, Target, Building, Tag } from 'lucide-react';
+import { consultaPlaca } from '../services/plateService';
 import { Lead, LeadPhase, LeadTemperature, VehicleType, TransmissionType, EngineType } from '../types';
 import TagInput from './TagInput';
 import MultiSelect from './MultiSelect';
@@ -230,10 +231,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
         setPlateLoading(true);
         setPlateError(null);
         try {
-            const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
-            const res = await fetch(`https://wdapi2.com.br/consulta/${rawPlate}/${APIPLACAS_TOKEN}`);
-            if (!res.ok) throw new Error('Erro na consulta.');
-            const data = await res.json();
+            const data = await consultaPlaca(rawPlate);
 
             const msg: string = data.mensagemRetorno || '';
             const isError = msg.toLowerCase().startsWith('erro') || msg.toLowerCase().includes('não encontrada') || msg.toLowerCase().includes('invalida');

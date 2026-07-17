@@ -15,6 +15,7 @@ import AutocompleteInput from './ui/AutocompleteInput';
 import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
 import { useToast } from '../contexts/ToastContext';
 import { generateSeoDetails, generateVehicleDescriptions } from '../services/geminiService';
+import { consultaPlaca } from '../services/plateService';
 import { VehicleFormSeo } from './vehicle-form/VehicleFormSeo';
 import { VehicleFormCosts } from './vehicle-form/VehicleFormCosts';
 import { VehicleFormPricing } from './vehicle-form/VehicleFormPricing';
@@ -42,8 +43,6 @@ const CATEGORIZED_OPTIONS = [
     { label: 'Conforto', color: 'bg-amber-500', items: ['Ar Condicionado', 'Direção Hidráulica', 'Vidros Elétricos', 'Travas Elétricas', 'Som Multimídia', 'Bancos de Couro', 'Teto Solar', 'Piloto Automático', 'Computador de Bordo', 'Chave Presencial'] },
     { label: 'Exterior', color: 'bg-sky-500', items: ['Rodas de Liga Leve', 'Tração 4x4', 'Farol de Neblina'] }
 ] as const;
-
-const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
 
 const BRAND_MAP: Record<string, string> = {
     'VW': 'Volkswagen', 'VOLKSWAGEN': 'Volkswagen',
@@ -163,9 +162,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         setLookupLoading(true);
         setPlateError(null);
         try {
-            const res = await fetch(`https://wdapi2.com.br/consulta/${rawPlate}/${APIPLACAS_TOKEN}`);
-            if (!res.ok) throw new Error('Erro na consulta.');
-            const data = await res.json();
+            const data = await consultaPlaca(rawPlate);
 
             const msg: string = data.mensagemRetorno || '';
             const isError = msg.toLowerCase().startsWith('erro') || msg.toLowerCase().includes('não encontrada') || msg.toLowerCase().includes('invalida');

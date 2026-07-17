@@ -10,8 +10,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useData } from '../contexts/DataContext';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
-
-const APIPLACAS_TOKEN = 'd7c110609b272abfbf7e3d1d97fcefdf';
+import { consultaPlaca } from '../services/plateService';
 
 interface InventoryImportModalProps {
     isOpen: boolean;
@@ -375,12 +374,11 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                         // NOW we call the API for the selected vehicle
                         if (v.plate && v.plate.length >= 7) {
                             try {
-                                const res = await fetch(`https://wdapi2.com.br/consulta/${v.plate}/${APIPLACAS_TOKEN}`);
-                                if (res.ok) {
-                                    const apiData = await res.json();
+                                const apiData = await consultaPlaca(v.plate);
+                                {
                                     const msg: string = apiData.mensagemRetorno || '';
                                     const isError = msg.toLowerCase().startsWith('erro') || msg.toLowerCase().includes('não encontrada') || msg.toLowerCase().includes('invalida');
-                                    
+
                                     if (!isError) {
                                         // Enrich data from API
                                         // Check for various casing (some APIs return MARCA, others marca)

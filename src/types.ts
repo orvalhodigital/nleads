@@ -355,8 +355,8 @@ export interface Profile {
   id: string;
   email: string;
   full_name?: string;
-  plan: 'free' | 'pro';
-  planStatus: 'active' | 'expired';
+  plan: 'free' | 'pro' | 'trial';
+  planStatus: 'active' | 'expired' | 'overdue' | 'canceled';
   trialEndsAt: string;
   created_at?: string;
   webhook_url?: string;

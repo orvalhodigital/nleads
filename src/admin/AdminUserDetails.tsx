@@ -50,7 +50,7 @@ export default function AdminUserDetails() {
 
     // Form states
     const [plan, setPlan] = useState<'trial' | 'pro' | 'free'>('trial');
-    const [planStatus, setPlanStatus] = useState<'active' | 'expired'>('active');
+    const [planStatus, setPlanStatus] = useState<'active' | 'expired' | 'overdue' | 'canceled'>('active');
     const [trialEndsAt, setTrialEndsAt] = useState('');
     const [fullName, setFullName] = useState('');
 
@@ -357,7 +357,9 @@ export default function AdminUserDetails() {
                                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 font-medium capitalize"
                                 >
                                     <option value="active">Ativo</option>
-                                    <option value="expired">Expirado / Cancelado</option>
+                                    <option value="overdue">Pagamento Atrasado</option>
+                                    <option value="canceled">Cancelado</option>
+                                    <option value="expired">Expirado</option>
                                 </select>
                             </div>
                         </div>

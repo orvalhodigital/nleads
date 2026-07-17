@@ -46,21 +46,36 @@ export default async function handler(req: any, res: any) {
     const body = req.body || {};
     const { event, payment } = body;
 
-    console.log('Asaas Webhook received event:', event, 'Payment ID:', payment?.id);
+    console.log('Asaas Webhook received event:', event, 'Payment ID:', payment?.id, 'Subscription:', payment?.subscription);
 
-    // Processamos apenas eventos de pagamento efetivado
+    // Resolve o usuário dono do pagamento: primeiro pelo externalReference
+    // (enviado na criação da assinatura), com fallback para procurar pelo
+    // subscription id salvo no perfil — cobre o caso de o Asaas não propagar
+    // o externalReference da assinatura para os pagamentos gerados por ela.
+    async function resolveUserId(): Promise<string | null> {
+      if (payment?.externalReference) return payment.externalReference;
+      if (payment?.subscription) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('asaas_subscription_id', payment.subscription)
+          .single();
+        return data?.id || null;
+      }
+      return null;
+    }
+
+    // ─── Pagamento confirmado (primeira cobrança OU renovação mensal) ──────
     if (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED') {
-      const userId = payment?.externalReference; // O user_id enviado na criação da cobrança
-
+      const userId = await resolveUserId();
       if (!userId) {
-        console.error('No externalReference (userId) found in payment payload');
-        return res.status(400).json({ error: 'Missing externalReference' });
+        console.error('Não foi possível identificar o usuário (sem externalReference nem subscription conhecida)');
+        return res.status(400).json({ error: 'Missing externalReference/subscription' });
       }
 
-      // Buscar perfil para (a) validar valor e (b) idempotência
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, plan, plan_status')
+        .select('id, last_asaas_payment_id, asaas_subscription_id')
         .eq('id', userId)
         .single();
 
@@ -69,9 +84,12 @@ export default async function handler(req: any, res: any) {
         return res.status(404).json({ error: 'Profile not found' });
       }
 
-      // Idempotência: se já está PRO/ativo, não reprocessa (evita estender trial repetido)
-      if (profile.plan === 'pro' && profile.plan_status === 'active') {
-        console.log(`User ${userId} já é PRO/ativo — evento ignorado (idempotência).`);
+      // Idempotência POR PAGAMENTO (não mais por "já está pro/ativo" — isso
+      // fazia a renovação do 2º mês em diante ser sempre ignorada, porque o
+      // usuário já estava pro/ativo desde o 1º pagamento, e a data de acesso
+      // nunca era estendida).
+      if (payment?.id && profile.last_asaas_payment_id === payment.id) {
+        console.log(`Pagamento ${payment.id} já processado — evento ignorado (idempotência).`);
         return res.status(200).json({ success: true, message: 'Already processed', userId });
       }
 
@@ -88,14 +106,21 @@ export default async function handler(req: any, res: any) {
         }
       }
 
-      // Atualiza o perfil para PRO (colunas snake_case, conforme o schema)
+      // Estende o acesso por mais 1 ciclo (30 dias) a partir de agora — tanto
+      // para o primeiro pagamento quanto para cada renovação mensal.
+      const updatePayload: Record<string, any> = {
+        plan: 'pro',
+        plan_status: 'active',
+        trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+      if (payment?.id) updatePayload.last_asaas_payment_id = payment.id;
+      if (payment?.subscription && !profile.asaas_subscription_id) {
+        updatePayload.asaas_subscription_id = payment.subscription;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
-        .update({
-          plan: 'pro',
-          plan_status: 'active',
-          trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', userId)
         .select()
         .single();
@@ -105,8 +130,44 @@ export default async function handler(req: any, res: any) {
         throw error || new Error('Update returned no row');
       }
 
-      console.log(`Successfully upgraded user ${userId} to pro plan.`);
+      console.log(`Successfully upgraded/renewed user ${userId} to pro plan.`);
       return res.status(200).json({ success: true, message: 'User upgraded successfully', userId });
+    }
+
+    // ─── Pagamento atrasado — sinaliza o status, mas não bloqueia na hora.  ──
+    // O bloqueio real acontece sozinho quando `trial_ends_at` (a data até
+    // quando o acesso pago vale) expira — profileService.ts já trata isso na
+    // leitura do perfil, rebaixando `plan` para 'free' automaticamente.
+    if (event === 'PAYMENT_OVERDUE') {
+      const userId = await resolveUserId();
+      if (!userId) {
+        console.warn('PAYMENT_OVERDUE sem usuário identificável — ignorado.');
+        return res.status(200).json({ success: true, message: 'No user to flag' });
+      }
+      const { error } = await supabase
+        .from('profiles')
+        .update({ plan_status: 'overdue' })
+        .eq('id', userId);
+      if (error) console.error('Erro ao marcar plan_status=overdue:', error);
+      console.log(`User ${userId} marcado como pagamento atrasado.`);
+      return res.status(200).json({ success: true, message: 'Marked overdue', userId });
+    }
+
+    // ─── Estorno/exclusão do pagamento ou cancelamento da assinatura —      ──
+    // revoga o acesso imediatamente, independente da data de expiração.
+    if (event === 'PAYMENT_DELETED' || event === 'PAYMENT_REFUNDED' || event === 'SUBSCRIPTION_DELETED' || event === 'SUBSCRIPTION_INACTIVATED') {
+      const userId = await resolveUserId();
+      if (!userId) {
+        console.warn(`${event} sem usuário identificável — ignorado.`);
+        return res.status(200).json({ success: true, message: 'No user to revoke' });
+      }
+      const { error } = await supabase
+        .from('profiles')
+        .update({ plan: 'free', plan_status: 'canceled' })
+        .eq('id', userId);
+      if (error) console.error('Erro ao revogar acesso:', error);
+      console.log(`Acesso pro revogado para user ${userId} (evento ${event}).`);
+      return res.status(200).json({ success: true, message: 'Access revoked', userId });
     }
 
     // Resposta padrão para eventos não tratados

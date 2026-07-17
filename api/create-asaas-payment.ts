@@ -122,40 +122,88 @@ export default async function handler(req: any, res: any) {
       asaasCustomerId = customerData.id;
     }
 
-    // 3. Create Payment Billing in Asaas
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + 3); // 3 days from now
-    const formattedDueDate = dueDate.toISOString().split('T')[0];
+    // 3. Reaproveita assinatura existente e ATIVA no Asaas, se houver — evita
+    // criar uma segunda assinatura duplicada (cobrando o cliente duas vezes)
+    // quando ele clica em "Adquirir Plano" mais de uma vez.
+    let subscriptionId: string | null = profile.asaas_subscription_id || null;
+    let subscriptionIsActive = false;
 
-    const paymentRes = await fetch(`${ASAAS_API_URL}/payments`, {
-      method: 'POST',
-      headers: {
-        'access_token': ASAAS_API_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        customer: asaasCustomerId,
-        billingType: 'UNDEFINED', // Allows Credit Card, Pix, Boleto
-        value: plan.price,
-        dueDate: formattedDueDate,
-        description: `Upgrade de Plano: ${plan.name}`,
-        externalReference: userId,
-      }),
-    });
-
-    if (!paymentRes.ok) {
-      const errText = await paymentRes.text();
-      console.error('Error creating payment in Asaas:', errText);
-      throw new Error('Failed to create payment in Asaas');
+    if (subscriptionId) {
+      const existingRes = await fetch(`${ASAAS_API_URL}/subscriptions/${subscriptionId}`, {
+        headers: { 'access_token': ASAAS_API_KEY, 'Content-Type': 'application/json' },
+      });
+      if (existingRes.ok) {
+        const existing = await existingRes.json();
+        subscriptionIsActive = existing.status === 'ACTIVE';
+      } else {
+        subscriptionId = null; // assinatura não existe mais no Asaas (ex.: apagada manualmente)
+      }
     }
 
-    const paymentData = await paymentRes.json();
+    if (!subscriptionId || !subscriptionIsActive) {
+      const nextDueDate = new Date();
+      nextDueDate.setDate(nextDueDate.getDate() + 3); // 3 dias para o primeiro pagamento
+      const formattedDueDate = nextDueDate.toISOString().split('T')[0];
+
+      const subscriptionRes = await fetch(`${ASAAS_API_URL}/subscriptions`, {
+        method: 'POST',
+        headers: {
+          'access_token': ASAAS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer: asaasCustomerId,
+          billingType: 'UNDEFINED', // Cliente escolhe Cartão, Pix ou Boleto no checkout
+          value: plan.price,
+          nextDueDate: formattedDueDate,
+          cycle: 'MONTHLY',
+          description: `Assinatura ${plan.name}`,
+          externalReference: userId,
+        }),
+      });
+
+      if (!subscriptionRes.ok) {
+        const errText = await subscriptionRes.text();
+        console.error('Error creating subscription in Asaas:', errText);
+        throw new Error('Failed to create subscription in Asaas');
+      }
+
+      const subscriptionData = await subscriptionRes.json();
+      subscriptionId = subscriptionData.id;
+
+      // Salva a referência da assinatura no perfil ANTES de retornar o link de
+      // checkout — o webhook precisa disso para identificar o usuário mesmo
+      // que o Asaas não propague `externalReference` para o pagamento gerado.
+      await supabase
+        .from('profiles')
+        .update({ asaas_customer_id: asaasCustomerId, asaas_subscription_id: subscriptionId })
+        .eq('id', userId);
+    }
+
+    // 4. Busca o primeiro pagamento gerado pela assinatura para obter o link de checkout
+    const paymentsRes = await fetch(`${ASAAS_API_URL}/payments?subscription=${subscriptionId}&limit=1&order=asc`, {
+      headers: { 'access_token': ASAAS_API_KEY, 'Content-Type': 'application/json' },
+    });
+
+    if (!paymentsRes.ok) {
+      const errText = await paymentsRes.text();
+      console.error('Error fetching subscription payment in Asaas:', errText);
+      throw new Error('Failed to fetch subscription payment in Asaas');
+    }
+
+    const paymentsData = await paymentsRes.json();
+    const firstPayment = paymentsData?.data?.[0];
+
+    if (!firstPayment) {
+      throw new Error('Assinatura criada, mas nenhuma cobrança foi gerada ainda.');
+    }
 
     return res.status(200).json({
       success: true,
-      invoiceUrl: paymentData.invoiceUrl, // Link de checkout do Asaas
-      bankSlipUrl: paymentData.bankSlipUrl,
-      paymentId: paymentData.id,
+      invoiceUrl: firstPayment.invoiceUrl, // Link de checkout do Asaas
+      bankSlipUrl: firstPayment.bankSlipUrl,
+      paymentId: firstPayment.id,
+      subscriptionId,
     });
 
   } catch (error: any) {

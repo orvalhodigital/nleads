@@ -101,6 +101,20 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
 
     return (
         <div className="space-y-10 animate-fadeUp">
+            {profile.planStatus === 'overdue' && (
+                <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                        <ShieldAlert size={24} />
+                    </div>
+                    <div>
+                        <h4 className="font-black text-amber-800 text-sm uppercase tracking-wide">Pagamento em atraso</h4>
+                        <p className="text-amber-700 text-sm font-medium mt-0.5">
+                            Identificamos um pagamento pendente na sua assinatura. Regularize para não perder o acesso aos recursos do Plano Ilimitado.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Current Plan Dashboard Banner */}
             <div className="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group border-b-8 border-slate-950">
                 <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:scale-110 transition-transform">

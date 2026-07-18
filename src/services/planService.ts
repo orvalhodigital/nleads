@@ -81,4 +81,28 @@ export const planService = {
     const data = await response.json();
     return data.invoiceUrl;
   },
+
+  async getAsaasBillingPortalLink(): Promise<string> {
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+
+    const response = await fetch('/api/get-asaas-billing-portal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || 'Erro ao recuperar portal de faturamento.');
+    }
+
+    const data = await response.json();
+    return data.invoiceUrl;
+  },
 };

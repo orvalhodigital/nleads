@@ -3,6 +3,10 @@
    os utilitários são compilados. NÃO reintroduzir o CDN. Ver DESIGN_GUIDELINES.md. */
 @import "tailwindcss";
 
+/* Fontes do site público */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+
 /* 🔴 CRÍTICO — liga a variante `dark:` à CLASSE .dark (e não ao tema do sistema).
    No Tailwind v4 o `dark:` usa @media (prefers-color-scheme) por padrão; o v3 fazia isso
    via `darkMode: 'class'` no config, que o v4 não carrega. Sem esta linha, TODAS as ~115

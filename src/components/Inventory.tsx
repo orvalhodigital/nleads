@@ -16,6 +16,8 @@ import AutocompleteInput from './ui/AutocompleteInput';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
 import { getMatchingInsights } from '../services/openaiService';
+import { leadService } from '../services/leadService';
+import { salesFlowService } from '../services/salesFlowService';
 
 
 interface InventoryProps {
@@ -395,8 +397,9 @@ const Inventory: React.FC<InventoryProps> = ({
           },
           presentedVehicles: [selectedVehicle.id],
           source: 'Venda Avulsa',
-          notes: 'Lead criado automaticamente ao registrar venda avulsa.'
-        });
+          notes: 'Lead criado automaticamente ao registrar venda avulsa.',
+          is_buyer: true
+        } as any);
 
         if (newLead) {
           finalBuyerLeadId = newLead.id;
@@ -413,13 +416,34 @@ const Inventory: React.FC<InventoryProps> = ({
         }
         finalBuyerLeadId = selectedLead.id;
         finalBuyerName = selectedLead.name;
+
+        // Atualiza o lead existente para comprador/concluído no funil
+        try {
+          await leadService.update({
+            ...selectedLead,
+            phase: LeadPhase.COMPLETED,
+            is_buyer: true
+          });
+        } catch (err) {
+          console.error('Erro ao atualizar lead selecionado:', err);
+        }
       }
 
+      // Registra a venda no veículo
       onSellVehicle(selectedVehicle.id, {
         ...sellData,
         buyerName: finalBuyerName,
         buyerLeadId: finalBuyerLeadId
       });
+
+      // Alimenta o Fluxo de Vendas (Sales Flow)
+      if (finalBuyerLeadId) {
+        try {
+          await salesFlowService.initiateSaleFlow(finalBuyerLeadId, sellData.saleDate);
+        } catch (syncError) {
+          console.warn('Aviso: não foi possível sincronizar com o fluxo de vendas', syncError);
+        }
+      }
 
       setIsSellModalOpen(false);
       setSelectedVehicle(null);

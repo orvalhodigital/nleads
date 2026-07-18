@@ -260,27 +260,10 @@ export const vehicleService = {
     },
 
     async sell(id: string, saleDetails: SaleDetails): Promise<void> {
-        const responseSelect = await supabase
-            .from('vehicles')
-            .select('gallery_images')
-            .eq('id', id)
-            .single();
-
-        const vehicle = handleSupabaseResponse(responseSelect);
-
-        if (vehicle?.gallery_images?.length) {
-            try {
-                await deleteStorageUrls(vehicle.gallery_images);
-            } catch (err) {
-                console.error("Erro ao deletar galeria na venda:", err);
-            }
-        }
-
         const responseUpdate = await supabase
             .from('vehicles')
             .update({
                 status: 'sold',
-                gallery_images: [],
                 sale_details: saleDetails as unknown as any
             })
             .eq('id', id);

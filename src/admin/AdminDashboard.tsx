@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('plan_status', 'active'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('plan', 'pro'),
         supabase.from('leads').select('id', { count: 'exact', head: true }),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).in('status', ['qualificado', 'em-contato']),
+        supabase.from('leads').select('id', { count: 'exact', head: true }).not.in('phase', ['Novo Lead', 'Compradores', 'Desqualificados']),
         supabase.from('vehicles').select('id', { count: 'exact', head: true }),
         // `vehicles` não tem coluna `sold_date` (só `status`) -- a consulta
         // antiga filtrava por uma coluna inexistente, o Supabase retornava

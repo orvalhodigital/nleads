@@ -48,6 +48,9 @@ const PublicSiteHome = lazy(() => import('./pages/public/PublicSiteHome'));
 const PublicVehicleDetail = lazy(() => import('./pages/public/PublicVehicleDetail'));
 const CustomDomainRedirect = lazy(() => import('./pages/CustomDomainRedirect'));
 const CustomDomainVehicleDetail = lazy(() => import('./pages/CustomDomainVehicleDetail'));
+const LegalPrivacyPage = lazy(() => import('./pages/public/LegalPrivacyPage'));
+const LegalTermsPage = lazy(() => import('./pages/public/LegalTermsPage'));
+const LegalContractPage = lazy(() => import('./pages/public/LegalContractPage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -59,10 +62,13 @@ const App: React.FC = () => {
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* Rotas públicas — acessíveis em qualquer domínio */}
+                 {/* Rotas públicas — acessíveis em qualquer domínio */}
                 <Route path="/site/:slug" element={<PublicSiteHome />} />
                 <Route path="/site/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
                 <Route path="/paineldoadm/*" element={<AdminApp />} />
+                <Route path="/politica-de-privacidade" element={<LegalPrivacyPage />} />
+                <Route path="/termos-de-uso" element={<LegalTermsPage />} />
+                <Route path="/contrato-saas" element={<LegalContractPage />} />
 
                 {IS_SYSTEM_DOMAIN ? (
                   <>

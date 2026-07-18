@@ -34,6 +34,21 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
         }
     };
 
+    const [loadingBilling, setLoadingBilling] = useState(false);
+
+    const handleBillingPortalClick = async () => {
+        setLoadingBilling(true);
+        try {
+            const url = await planService.getAsaasBillingPortalLink();
+            window.open(url, '_blank');
+        } catch (err: any) {
+            console.error('Error opening billing portal:', err);
+            alert(err.message || 'Erro ao carregar o portal de faturamento. Verifique se possui cobranças ativas.');
+        } finally {
+            setLoadingBilling(false);
+        }
+    };
+
     useEffect(() => {
         const fetchPlans = async () => {
             try {
@@ -159,9 +174,14 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                                 {upgrading ? 'Redirecionando...' : 'Adquirir Plano Ilimitado'}
                             </button>
                         ) : (
-                            <button className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-violet-500 hover:text-white transition-all shadow-xl">
-                                Gerenciar Faturas
-                            </button>
+                             <button
+                                onClick={handleBillingPortalClick}
+                                disabled={loadingBilling}
+                                className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-violet-500 hover:text-white transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                             >
+                                {loadingBilling && <Loader2 size={16} className="animate-spin" />}
+                                {loadingBilling ? 'Carregando...' : 'Gerenciar Faturas'}
+                             </button>
                         )}
                     </div>
                 </div>

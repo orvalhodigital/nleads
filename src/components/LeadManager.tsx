@@ -26,6 +26,7 @@ import { LeadFollowUpModal } from './LeadFollowUpModal';
 import { useToast } from '../contexts/ToastContext';
 import { formatCurrency } from '../utils/formatters';
 import { deriveRootVisitFields } from '../utils/visits';
+import QuickLeadModal from './QuickLeadModal';
 
 
 
@@ -64,6 +65,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   const { showToast } = useToast();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isQuickLeadOpen, setIsQuickLeadOpen] = useState(false);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [isDisqualifiedExpanded, setIsDisqualifiedExpanded] = useState(false);
 
@@ -780,6 +782,13 @@ const LeadManager: React.FC<LeadManagerProps> = ({
           </div>
           <div className="flex gap-2">
             <button
+              onClick={() => setIsQuickLeadOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-3 bg-card border border-border/80 text-muted-foreground hover:bg-muted rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-sm active:scale-95 transition-all cursor-pointer"
+            >
+              <Zap size={14} className="text-amber-500" />
+              Cadastro Rápido
+            </button>
+            <button
               onClick={() => navigate('/leads/new')}
               className="flex items-center gap-1.5 px-6 py-3 bg-primary hover:bg-primary/95 text-primary-foreground rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-md hover:shadow-lg shadow-primary/20 hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
             >
@@ -957,6 +966,15 @@ const LeadManager: React.FC<LeadManagerProps> = ({
           onAddLead={onAddLead}
         />
       )}
+
+      <QuickLeadModal
+        isOpen={isQuickLeadOpen}
+        onClose={() => setIsQuickLeadOpen(false)}
+        onSuccess={() => {
+          onRefresh?.();
+          onDataChange?.();
+        }}
+      />
     </div>
   );
 };

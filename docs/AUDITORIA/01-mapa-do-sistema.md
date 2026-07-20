@@ -253,6 +253,6 @@ Reverificado em 2026-07-20.
 | A19 | `lead_communications` e `system_settings` com RLS ligado e zero políticas | 🟠 | ✅ resolvido — 4 e 5 políticas criadas | 3 |
 | A20 | **Webhook do Asaas grava colunas inexistentes — cliente paga e o plano não ativa** | 🔴 | ✅ resolvido — 3 colunas criadas | 3 |
 | A21 | Banco sem tabela de controle de migrações: `supabase/migrations/` nunca foi aplicado sistematicamente | 🔴 | aberto — CLI funciona via `supabase db --linked`, caminho viável | 3 |
-| A22 | **`SUPABASE_ACESS_TOKEN` exposto em texto plano em log de ferramenta** | 🔴 | aberto — exige rotação pelo dono | 3 |
+| A22 | **`SUPABASE_ACESS_TOKEN` exposto em texto plano em log de ferramenta** | 🔴 | adiado por decisão do dono — rotacionar antes da comercialização | — |
 
 **Linha de base para a Fase 3:** build ✅ · typecheck ✅ 0 erros (com `strictNullChecks`) · testes ❌ · CI ❌

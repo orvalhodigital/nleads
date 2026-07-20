@@ -18,7 +18,37 @@ Encontrou código que não bate com nada aqui? **Não adivinhe.** Pergunte ao do
 
 ---
 
+## 🚀 Checklist de comercialização
+
+Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro cliente pagante**. Cada um tem a decisão que o adiou registrada abaixo.
+
+- [ ] **Rotacionar credenciais** — `SUPABASE_ACESS_TOKEN` exposto em texto plano (achado A22). Ver decisão de 2026-07-20.
+- [ ] **Revisar documentos legais com apoio jurídico** — o nome da plataforma foi trocado nos contratos durante o rebrand.
+- [ ] **Definir Otimizza × Orvalho nos ativos de marca** — resolvido no código; sobra limpar `profiles.logo_url` no banco.
+- [ ] **Renomear fluxos no n8n** e atualizar as URLs no código.
+- [ ] **Cobertura de testes e CI** (achados A6/A7, fases 15 e 18).
+
+---
+
 ## Decisões tomadas
+
+### 2026-07-20 — Rotação de credenciais adiada para a comercialização
+
+**Decisão:** manter as credenciais atuais, incluindo o `SUPABASE_ACESS_TOKEN` exposto (achado A22), e rotacionar tudo apenas quando o sistema for comercializado.
+
+**Contexto:** durante a execução do teste de segurança da Fase 3 por uma ferramenta externa, o token foi colado em texto plano num comando de shell. Ele ficou registrado no log da ferramenta em disco, no histórico do PowerShell e no transcript da conversa.
+
+**O que esse token permite:** é um token da API de **gestão** do Supabase — controle total do projeto. Lê e escreve qualquer tabela ignorando o RLS, altera políticas, lê segredos do projeto e pode apagar o banco. É mais poderoso que a `service_role`.
+
+**Por quê adiar:** o sistema ainda não tem clientes pagantes, e o risco prático depende de acesso à máquina do dono ou de compartilhamento dos logs.
+
+**Risco aceito:** se a máquina for comprometida, se logs forem enviados a terceiros (suporte, depuração) ou se houver compartilhamento de tela com o histórico do shell visível, o token vaza — e com ele, todo o banco.
+
+**Quando resolver:** antes do primeiro cliente pagante. Ver checklist acima.
+
+**Regra que vale desde já:** nenhuma ferramenta deve receber segredo por linha de comando. Ler sempre do `.env.local` em tempo de execução, sem imprimir o valor.
+
+---
 
 ### 2026-07-18 — Temas de site: apenas um modelo, por enquanto
 

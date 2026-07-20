@@ -95,6 +95,31 @@ Esse script compacta **todo o diretório do projeto** excluindo apenas `node_mod
 
 ---
 
+## 5.1 Fluxo de commit e publicação
+
+**Ao fim de cada fase da auditoria, commite e faça push no branch de trabalho.**
+Combinado com o dono do projeto em 2026-07-20.
+
+```sh
+git add -A
+git commit          # mensagem descrevendo os achados corrigidos, não os arquivos
+git push origin <branch-de-trabalho>
+```
+
+A mensagem de commit deve dizer **o que estava quebrado e o que mudou**, com os
+códigos dos achados (`A17`, `A20`…) — não uma lista de arquivos.
+
+> 🔴 **`main` é a branch de produção da Vercel.** Fazer merge em `main` publica
+> para os clientes. **Nunca faça esse merge por conta própria** — nem quando o
+> pedido for "faça o deploy" ou "suba tudo". Só com pedido explícito de publicar
+> em produção.
+
+Deploys de preview saem automaticamente a cada push no branch de trabalho, e o
+projeto tem proteção de SSO ativa (`all_except_custom_domains`) — só quem está
+logado na Vercel acessa.
+
+---
+
 ## 6. Verificação antes de encerrar
 
 ```sh

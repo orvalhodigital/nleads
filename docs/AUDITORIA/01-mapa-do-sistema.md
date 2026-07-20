@@ -248,10 +248,11 @@ Reverificado em 2026-07-20.
 | A15 | RLS: políticas do site público limitadas ao papel `anon` | 🟠 | ✅ resolvido — políticas agora {anon,authenticated} | 3 |
 | A16 | `createPublicLead` é código morto que falharia (sem política INSERT para `anon`) | 🟡 | aberto | 14 |
 
-| A17 | **Escalonamento de privilégio: qualquer lojista pode se tornar admin** | 🔴 | ✅ resolvido — trigger `protect_profile_privileged_columns_trg` ativo | 3 |
-| A18 | Upgrade de plano gratuito: `plan`/`plan_status` editáveis pelo próprio usuário | 🔴 | ✅ resolvido — mesmo trigger | 3 |
+| A17 | **Escalonamento de privilégio: qualquer lojista pode se tornar admin** | 🔴 | ✅ **resolvido e testado** — 4/4 cenários bloqueados em 2026-07-20 | 3 |
+| A18 | Upgrade de plano gratuito: `plan`/`plan_status` editáveis pelo próprio usuário | 🔴 | ✅ **resolvido e testado** | 3 |
 | A19 | `lead_communications` e `system_settings` com RLS ligado e zero políticas | 🟠 | ✅ resolvido — 4 e 5 políticas criadas | 3 |
 | A20 | **Webhook do Asaas grava colunas inexistentes — cliente paga e o plano não ativa** | 🔴 | ✅ resolvido — 3 colunas criadas | 3 |
-| A21 | Banco sem tabela de controle de migrações: `supabase/migrations/` nunca foi aplicado sistematicamente | 🔴 | aberto | 3 |
+| A21 | Banco sem tabela de controle de migrações: `supabase/migrations/` nunca foi aplicado sistematicamente | 🔴 | aberto — CLI funciona via `supabase db --linked`, caminho viável | 3 |
+| A22 | **`SUPABASE_ACESS_TOKEN` exposto em texto plano em log de ferramenta** | 🔴 | aberto — exige rotação pelo dono | 3 |
 
 **Linha de base para a Fase 3:** build ✅ · typecheck ✅ 0 erros (com `strictNullChecks`) · testes ❌ · CI ❌

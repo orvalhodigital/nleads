@@ -33,10 +33,19 @@ npx supabase migration list --linked
 npx supabase db push --linked
 ```
 
-O token de acesso é lido do ambiente:
+O token de acesso é lido do arquivo, **no terminal** — não no SQL Editor.
 
+PowerShell (Windows):
+```powershell
+$linha = Get-Content .env.local | Where-Object { $_ -like 'SUPABASE_ACESS_TOKEN=*' }
+$env:SUPABASE_ACCESS_TOKEN = $linha.Substring($linha.IndexOf('=') + 1).Trim()
+npx supabase db push --linked
+```
+
+Bash:
 ```sh
 export SUPABASE_ACCESS_TOKEN=$(grep -oP '(?<=^SUPABASE_ACESS_TOKEN=).*' .env.local | tr -d '\r')
+npx supabase db push --linked
 ```
 
 > 🔴 **Nunca cole o token direto na linha de comando.** Ele fica no histórico do shell e nos logs de ferramentas. Foi assim que o achado A22 aconteceu.

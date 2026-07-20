@@ -232,7 +232,7 @@ Reverificado em 2026-07-20.
 | # | Achado | Sev. | Status | Fase |
 |---|---|:---:|---|:---:|
 | A1 | 57% do acesso a dados ignora a camada de serviços (105 UI × 79 serviços) | 🟠 | aberto — confirmado | 14 |
-| A2 | Três sistemas de migração de banco em paralelo | 🔴 | aberto | 3 |
+| A2 | Três sistemas de migração de banco em paralelo | 🔴 | ✅ resolvido — só `supabase/migrations/`; histórico arquivado | 3 |
 | A3 | `InventoryContext` / `LeadContext` sem consumidores | 🟡 | aberto — confirmado | 14 |
 | A4 | `DataContext` é god context (506 linhas, 32 consumidores) | 🟡 | aberto | 12/14 |
 | A5 | 7 arquivos acima de 950 linhas | 🟡 | aberto — confirmado | 14 |
@@ -252,7 +252,8 @@ Reverificado em 2026-07-20.
 | A18 | Upgrade de plano gratuito: `plan`/`plan_status` editáveis pelo próprio usuário | 🔴 | ✅ **resolvido e testado** | 3 |
 | A19 | `lead_communications` e `system_settings` com RLS ligado e zero políticas | 🟠 | ✅ resolvido — 4 e 5 políticas criadas | 3 |
 | A20 | **Webhook do Asaas grava colunas inexistentes — cliente paga e o plano não ativa** | 🔴 | ✅ resolvido — 3 colunas criadas | 3 |
-| A21 | Banco sem tabela de controle de migrações: `supabase/migrations/` nunca foi aplicado sistematicamente | 🔴 | aberto — CLI funciona via `supabase db --linked`, caminho viável | 3 |
+| A21 | Banco sem tabela de controle de migrações | 🔴 | baseline pronto — aguarda aplicação | 3 |
+| A23 | **Limites de plano não existem no banco: migração `add_plan_limit_triggers` nunca aplicada** | 🔴 | aberto — só o cliente valida, contornável | 3 |
 | A22 | **`SUPABASE_ACESS_TOKEN` exposto em texto plano em log de ferramenta** | 🔴 | adiado por decisão do dono — rotacionar antes da comercialização | — |
 
 **Linha de base para a Fase 3:** build ✅ · typecheck ✅ 0 erros (com `strictNullChecks`) · testes ❌ · CI ❌

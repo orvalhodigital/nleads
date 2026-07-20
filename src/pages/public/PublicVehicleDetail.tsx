@@ -71,149 +71,10 @@ interface TC {
     inputField: string; textarea: string;
 }
 
-function getTC(theme: string): TC {
-    switch (theme) {
-        case 'glass': return {
-            wrapper: 'min-h-screen text-white relative before:content-[""] before:fixed before:inset-0 before:bg-gradient-to-br before:from-slate-950 before:via-indigo-950 before:to-slate-900 before:-z-10 after:content-[""] after:fixed after:inset-0 after:bg-[radial-gradient(ellipse_at_top_left,rgba(56,189,248,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.15),transparent_50%)] after:-z-10 selection:bg-cyan-500/30',
-            nav: 'sticky top-0 z-50 bg-white/[0.03] backdrop-blur-xl border-b border-white/[0.08]',
-            backBtn: 'text-white/40 hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all px-4 py-2.5 md:px-6 md:py-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10',
-            thumbActive: 'border-2 border-cyan-400 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.3)]',
-            thumbInactive: 'border border-white/10 rounded-2xl overflow-hidden cursor-pointer opacity-40 hover:opacity-100 transition duration-500',
-            card: 'bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-12 shadow-2xl',
-            title: 'text-white',
-            specLabel: 'text-white/20 text-[10px] font-black uppercase tracking-widest',
-            specValue: 'text-white font-bold',
-            divider: 'border-white/10',
-            ctaCard: 'bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-10 sticky top-24 shadow-2xl',
-            ctaTitle: 'text-white font-black uppercase tracking-tighter italic text-xl md:text-2xl',
-            ctaBtnOutline: 'w-full py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/10 bg-white/5 text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2',
-            badge: 'bg-white/10 border border-white/10',
-            badgeText: 'text-white/80 font-bold',
-            similarCard: 'bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-cyan-400/40 transition-all duration-500',
-            similarTitle: 'text-white font-bold text-sm',
-            similarBtn: 'mt-2 w-full text-center py-3 rounded-xl border border-white/10 bg-white/5 text-white/50 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all',
-            check: 'text-cyan-400', cross: 'text-white/20',
-            footer: 'mt-32 bg-white/[0.02] border-t border-white/5 py-20',
-            footerText: 'text-white/20 text-[10px] font-black uppercase tracking-widest',
-            formCard: 'bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl md:rounded-[40px] p-6 md:p-16',
-            formLabel: 'text-white/20 text-[10px] font-black uppercase tracking-widest',
-            formTitle: 'text-2xl md:text-4xl font-black text-white mb-2',
-            inputField: 'w-full bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-cyan-400/60 transition-all',
-            textarea: 'w-full bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-cyan-400/60 transition-all resize-none',
-        };
-        case 'premium': return {
-            wrapper: 'min-h-screen bg-[#050508] text-white selection:bg-amber-500/30',
-            nav: 'bg-[#050508]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50',
-            backBtn: 'text-slate-500 hover:text-amber-500 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] transition-all',
-            thumbActive: 'border-2 border-amber-500 rounded-none overflow-hidden cursor-pointer shadow-lg shadow-amber-500/20',
-            thumbInactive: 'border border-white/5 rounded-none overflow-hidden cursor-pointer opacity-30 hover:opacity-100 transition duration-700',
-            card: 'bg-[#0a0a0f] border border-white/5 rounded-none p-8 md:p-16 shadow-2xl',
-            title: 'text-white uppercase tracking-tighter italic font-black',
-            specLabel: 'text-slate-600 text-[10px] font-black uppercase tracking-[0.2em]',
-            specValue: 'text-white font-bold',
-            divider: 'border-white/5',
-            ctaCard: 'bg-[#0a0a0f] border border-white/5 rounded-none p-8 md:p-12 sticky top-24 shadow-2xl',
-            ctaTitle: 'text-white font-black uppercase tracking-tighter italic text-2xl md:text-3xl',
-            ctaBtnOutline: 'w-full py-4 md:py-5 rounded-none font-black uppercase tracking-[0.2em] text-[10px] border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2',
-            badge: 'bg-amber-500/10 border border-amber-500/20',
-            badgeText: 'text-amber-500 font-black uppercase text-[9px] tracking-widest',
-            similarCard: 'bg-[#0a0a0f] border border-white/5 rounded-none overflow-hidden hover:border-amber-500/30 transition-all duration-700',
-            similarTitle: 'text-white font-black uppercase tracking-tighter text-sm',
-            similarBtn: 'mt-2 w-full text-center py-4 rounded-none border border-white/10 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-all',
-            check: 'text-amber-500', cross: 'text-slate-800',
-            footer: 'mt-40 bg-black border-t border-white/5 py-24',
-            footerText: 'text-slate-700 text-[10px] font-black uppercase tracking-[0.4em]',
-            formCard: 'bg-[#0a0a0f] border border-white/5 rounded-none p-8 md:p-24 shadow-2xl',
-            formLabel: 'text-slate-700 text-[10px] font-black uppercase tracking-[0.3em]',
-            formTitle: 'text-3xl md:text-6xl font-black text-white mb-6 uppercase tracking-tighter italic leading-none',
-            inputField: 'w-full bg-black border border-white/10 text-white placeholder-slate-800 rounded-none px-6 py-5 text-sm focus:outline-none focus:border-amber-500/50 transition-all',
-            textarea: 'w-full bg-black border border-white/10 text-white placeholder-slate-800 rounded-none px-6 py-5 text-sm focus:outline-none focus:border-amber-500/50 transition-all resize-none',
-        };
-        case 'bold': return {
-            wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-brand-500/30',
-            nav: 'bg-slate-950 border-b-4 border-brand-500 sticky top-0 z-50 shadow-2xl',
-            backBtn: 'text-white hover:text-brand-500 flex items-center gap-3 text-sm font-black uppercase italic tracking-tighter transition-all',
-            thumbActive: 'border-4 border-brand-500 rounded-none overflow-hidden cursor-pointer',
-            thumbInactive: 'border-4 border-slate-900 rounded-none overflow-hidden cursor-pointer opacity-40 hover:opacity-100 transition duration-300',
-            card: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-8 md:p-20 shadow-2xl',
-            title: 'text-white font-black text-3xl md:text-5xl uppercase italic tracking-tighter leading-none',
-            specLabel: 'text-brand-500 text-xs font-black uppercase tracking-widest',
-            specValue: 'text-white font-black text-lg md:text-xl italic uppercase',
-            divider: 'border-slate-800',
-            ctaCard: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-8 md:p-14 sticky top-24 shadow-2xl',
-            ctaTitle: 'text-white font-black text-2xl md:text-4xl uppercase italic leading-none',
-            ctaBtnOutline: 'w-full py-4 md:py-5 rounded-none font-black uppercase tracking-tighter text-base border-4 border-slate-700 text-white hover:border-white transition-all flex items-center justify-center gap-3',
-            badge: 'bg-brand-500 text-slate-950',
-            badgeText: 'font-black uppercase text-[10px] tracking-widest',
-            similarCard: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-brand-500 transition-all duration-300',
-            similarTitle: 'text-white font-black uppercase italic text-base',
-            similarBtn: 'mt-2 w-full text-center py-4 rounded-none border-4 border-slate-700 text-white text-xs font-black uppercase hover:border-white transition-all',
-            check: 'text-brand-500', cross: 'text-slate-700',
-            footer: 'mt-40 bg-black border-t-8 border-brand-500 py-24',
-            footerText: 'text-slate-500 font-black uppercase tracking-[0.4em]',
-            formCard: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-12 md:p-32 shadow-2xl',
-            formLabel: 'text-brand-500 text-sm font-black uppercase tracking-widest',
-            formTitle: 'text-4xl md:text-8xl font-black text-white mb-10 uppercase italic leading-[0.85]',
-            inputField: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-brand-500 transition-all',
-            textarea: 'w-full bg-slate-950 border-4 border-slate-800 text-white placeholder-slate-800 rounded-none px-6 py-5 text-lg font-bold focus:outline-none focus:border-brand-500 transition-all resize-none',
-        };
-        case 'luxury': return {
-            wrapper: 'min-h-screen bg-[#0f0e0c] text-[#d4af37] font-serif selection:bg-[#d4af37]/20',
-            nav: 'bg-[#0f0e0c]/95 backdrop-blur-xl border-b border-[#d4af37]/10 sticky top-0 z-50',
-            backBtn: 'text-[#d4af37]/40 hover:text-[#d4af37] flex items-center gap-3 text-[10px] font-light uppercase tracking-[0.4em] transition-all',
-            thumbActive: 'border border-[#d4af37] rounded-none overflow-hidden cursor-pointer shadow-2xl',
-            thumbInactive: 'border border-[#d4af37]/5 rounded-none overflow-hidden cursor-pointer opacity-20 hover:opacity-100 transition duration-1000',
-            card: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-8 md:p-24 shadow-2xl',
-            title: 'text-[#d4af37] font-light text-3xl md:text-6xl uppercase tracking-[0.2em] md:tracking-[0.3em] leading-tight',
-            specLabel: 'text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.4em]',
-            specValue: 'text-[#d4af37] font-serif text-base md:text-lg tracking-widest uppercase',
-            divider: 'border-[#d4af37]/5',
-            ctaCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-8 md:p-20 sticky top-24 shadow-2xl',
-            ctaTitle: 'text-[#d4af37] font-extralight text-2xl md:text-4xl uppercase tracking-[0.2em] leading-relaxed',
-            ctaBtnOutline: 'w-full py-5 md:py-6 rounded-none font-bold uppercase tracking-[0.4em] text-[10px] border border-[#d4af37]/20 text-[#d4af37]/50 hover:bg-[#d4af37]/5 hover:text-[#d4af37] transition-all flex items-center justify-center gap-3',
-            badge: 'border border-[#d4af37]/10',
-            badgeText: 'text-[#d4af37]/60 font-bold uppercase text-[8px] tracking-[0.3em]',
-            similarCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none overflow-hidden hover:border-[#d4af37]/30 transition-all duration-1000',
-            similarTitle: 'text-[#d4af37] font-serif uppercase tracking-widest text-sm',
-            similarBtn: 'mt-4 w-full text-center py-5 rounded-none border border-[#d4af37]/10 text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.4em] hover:bg-[#d4af37]/5 transition-all',
-            check: 'text-[#d4af37]', cross: 'text-[#d4af37]/10',
-            footer: 'mt-40 bg-black border-t border-[#d4af37]/5 py-32',
-            footerText: 'text-[#d4af37]/20 text-[10px] uppercase tracking-[0.6em]',
-            formCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-10 md:p-40 shadow-2xl',
-            formLabel: 'text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.6em]',
-            formTitle: 'text-3xl md:text-6xl font-extralight text-[#d4af37] mb-12 uppercase tracking-[0.4em] leading-relaxed',
-            inputField: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-lg md:text-xl focus:outline-none focus:border-[#d4af37] transition-all',
-            textarea: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-lg md:text-xl focus:outline-none focus:border-[#d4af37] transition-all resize-none',
-        };
-        case 'modern': return {
-            wrapper: 'min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-500/10',
-            nav: 'bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm',
-            backBtn: 'text-slate-500 hover:text-slate-950 flex items-center gap-2 text-xs font-bold transition-all px-4 py-2 md:px-5 md:py-2.5 rounded-2xl bg-white border border-slate-200 hover:shadow-lg',
-            thumbActive: 'border-2 border-blue-600 rounded-[20px] overflow-hidden cursor-pointer shadow-xl shadow-blue-600/20',
-            thumbInactive: 'border border-slate-200 rounded-[20px] overflow-hidden cursor-pointer opacity-50 hover:opacity-100 transition duration-500',
-            card: 'bg-white border border-slate-100 rounded-[32px] md:rounded-[48px] p-8 md:p-20 shadow-[0_20px_50px_rgba(0,0,0,0.03)]',
-            title: 'text-slate-950 font-black text-2xl md:text-4xl tracking-tight leading-tight',
-            specLabel: 'text-slate-400 text-[10px] font-bold uppercase tracking-widest',
-            specValue: 'text-slate-900 font-bold',
-            divider: 'border-slate-100',
-            ctaCard: 'bg-white border border-slate-100 rounded-[32px] md:rounded-[40px] p-8 md:p-12 sticky top-24 shadow-2xl shadow-slate-900/5',
-            ctaTitle: 'text-slate-950 font-black text-2xl md:text-3xl tracking-tight leading-none',
-            ctaBtnOutline: 'w-full py-4 md:py-4.5 rounded-2xl font-bold text-sm border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2',
-            badge: 'bg-slate-100',
-            badgeText: 'text-slate-600 font-bold text-[10px] uppercase tracking-wider',
-            similarCard: 'bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500',
-            similarTitle: 'text-slate-950 font-bold text-sm tracking-tight',
-            similarBtn: 'mt-2 w-full text-center py-3.5 rounded-xl bg-slate-50 text-slate-500 text-[11px] font-bold hover:bg-slate-100 transition-all',
-            check: 'text-blue-600', cross: 'text-slate-300',
-            footer: 'mt-32 bg-white border-t border-slate-200 py-24',
-            footerText: 'text-slate-400 text-xs font-bold uppercase tracking-widest',
-            formCard: 'bg-white border border-slate-100 rounded-3xl md:rounded-[56px] p-8 md:p-32 shadow-2xl shadow-slate-900/5',
-            formLabel: 'text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2',
-            formTitle: 'text-3xl md:text-6xl font-black text-slate-950 mb-6 tracking-tight',
-            inputField: 'w-full bg-slate-50 border border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all',
-            textarea: 'w-full bg-slate-50 border border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all resize-none',
-        };
-        default: return { // classic
+// Classes visuais da página de veículo. Só existe o modelo 'classic'.
+function getTC(): TC {
+
+    return {
             wrapper: 'min-h-screen bg-[#f8fafc] text-slate-900',
             nav: 'bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50 shadow-sm',
             backBtn: 'text-slate-500 hover:text-slate-900 flex items-center gap-2 text-sm font-bold transition-all px-4 py-2 rounded-xl bg-white border border-slate-100',
@@ -241,7 +102,6 @@ function getTC(theme: string): TC {
             inputField: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-brand-500 transition-all',
             textarea: 'w-full bg-slate-50 border-2 border-slate-100 text-slate-900 placeholder-slate-400 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-brand-500 transition-all resize-none',
         };
-    }
 }
 
 // ─── Spec Item ─────────────────────────────────────────────────────────────────
@@ -538,7 +398,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
         })();
     }, [slug, vehicleParam]);
 
-    const tc = useMemo(() => getTC(profile?.website_theme || 'classic'), [profile?.website_theme]);
+    const tc = useMemo(() => getTC(), []);
     const primary = profile?.website_primary_color || '#10b981';
     const secondary = profile?.website_secondary_color || primary;
 
@@ -583,11 +443,9 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
     const theme = profile?.website_theme || 'classic';
 
     const ctaBtnPrimary = `w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors`;
-    const ctaBtnPrimaryStyle = profile?.website_theme === 'premium'
-        ? { backgroundColor: '#eab308', color: '#000' }
-        : { backgroundColor: primary, color: '#fff' };
+    const ctaBtnPrimaryStyle = { backgroundColor: primary, color: '#fff' };
 
-    const seoTitle = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${profile?.company_name}` : 'Veículo — Otimizza CRM';
+    const seoTitle = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year} — ${profile?.company_name}` : 'Veículo — Gestor de Pátio';
     const seoDesc = vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.year}, ${formatKm(vehicle.mileage)}, ${vehicle.transmission}. ${formatPrice(vehicle.price)} em ${profile?.company_name}.` : '';
     const fontStyle = { 
         fontFamily: profile?.website_typography === 'serif' ? 'Playfair Display, serif' : 
@@ -722,7 +580,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
                                 ))}
                             </div>
                             <h1 className={`text-2xl md:text-3xl font-extrabold ${tc.title}`}
-                                style={profile.website_theme === 'classic' ? { color: profile.website_title_color || '#111827' } : undefined}>
+                                style={{ color: profile.website_title_color || '#111827' }}>
                                 {vehicle.brand} {vehicle.model}
                             </h1>
                             <p className={`text-sm mt-1 ${tc.specLabel}`}>
@@ -780,7 +638,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
                     <div className="space-y-4">
                         <div className={tc.ctaCard}>
                             <p className="text-3xl font-extrabold mb-1"
-                                style={{ color: profile.website_theme === 'premium' ? '#eab308' : primary }}>
+                                style={{ color: primary }}>
                                 {formatPrice(vehicle.price)}
                             </p>
                             <p className={`text-xs mb-5 ${tc.specLabel}`}>Preço de tabela · sujeito a alterações</p>
@@ -842,7 +700,7 @@ const PublicVehicleDetail: React.FC<PublicVehicleDetailProps> = ({ forcedSlug, f
                                         <p className={tc.similarTitle}>{v.brand} {v.model}</p>
                                         <p className={`text-[10px] ${tc.specLabel}`}>{v.year} · {formatKm(v.mileage)}</p>
                                         <p className="mt-1 text-sm font-bold"
-                                            style={{ color: profile.website_theme === 'premium' ? '#eab308' : primary }}>
+                                            style={{ color: primary }}>
                                             {formatPrice(v.price)}
                                         </p>
                                     </div>

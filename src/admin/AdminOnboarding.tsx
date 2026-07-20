@@ -428,7 +428,7 @@ export default function AdminOnboarding() {
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Ações Rápidas</h4>
                                 {selectedSession.profiles?.phone && (
                                     <a
-                                        href={getWhatsAppLink(selectedSession.profiles.phone, `Olá ${selectedSession.profiles.full_name}, tudo bem? Sou da equipe de Sucesso do Cliente Otimizza!`)}
+                                        href={getWhatsAppLink(selectedSession.profiles.phone, `Olá ${selectedSession.profiles.full_name}, tudo bem? Sou da equipe de Sucesso do Cliente Orvalho!`)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center justify-center gap-3 w-full py-4 bg-brand-500 text-white rounded-2xl font-bold hover:bg-brand-600 transition-all shadow-lg shadow-brand-100"
@@ -619,7 +619,7 @@ export default function AdminOnboarding() {
                                                     </button>
                                                     {session.profiles?.phone && (
                                                         <a
-                                                            href={getWhatsAppLink(session.profiles.phone, `Olá ${session.profiles.full_name}, tudo bem? Sou da equipe de Onboarding do Otimizza!`)}
+                                                            href={getWhatsAppLink(session.profiles.phone, `Olá ${session.profiles.full_name}, tudo bem? Sou da equipe de Onboarding do Gestor de Pátio!`)}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="p-2 hover:bg-brand-50 border border-transparent hover:border-brand-200 rounded-lg transition-all text-slate-400 hover:text-brand-600"

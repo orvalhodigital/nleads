@@ -307,7 +307,7 @@ const SettingsPage: React.FC = () => {
                                 <Shield size={20} />
                             </div>
                             <div className="text-sm text-slate-600 leading-relaxed">
-                                Suas informações estão protegidas e criptografadas. O Otimizza utiliza as melhores práticas de segurança para garantir a integridade dos seus dados.
+                                Suas informações estão protegidas e criptografadas. O Gestor de Pátio utiliza as melhores práticas de segurança para garantir a integridade dos seus dados.
                             </div>
                         </div>
                     </div>

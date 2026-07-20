@@ -65,7 +65,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
             if (!vehicle) throw new Error("Veículo não encontrado");
 
             let buyerLeadId = leadId;
-            let buyerName = lead?.name || 'Cliente Otimizza';
+            let buyerName = lead?.name || 'Cliente Orvalho';
 
             // 1. Se é walk-in, criar lead on-the-fly (via onAddLead para respeitar o
             // limite de leads do plano Free — leadService.create() direto o ignorava)
@@ -132,7 +132,9 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
             // 4. Sync to Sales Flow: initiate post-sale process
             // Both walk-in and regular leads go through sales flow after purchase
             try {
-                await salesFlowService.initiateSaleFlow(buyerLeadId, saleDate);
+                if (buyerLeadId) {
+                    await salesFlowService.initiateSaleFlow(buyerLeadId, saleDate);
+                }
             } catch (syncError) {
                 console.warn('Aviso: não foi possível sincronizar com o fluxo de vendas', syncError);
                 // Don't fail the entire sale if sync fails — it's non-critical

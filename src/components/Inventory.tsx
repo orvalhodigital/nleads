@@ -460,7 +460,9 @@ const Inventory: React.FC<InventoryProps> = ({
 
 
   const handleOpenSellModal = () => {
-    if (selectedVehicle) {
+    // selectedVehicle também pode ser a string 'new' (cadastro novo), que não
+    // tem preço — vender só faz sentido para um veículo já existente.
+    if (selectedVehicle && typeof selectedVehicle === 'object') {
       setSellData({
         salePrice: selectedVehicle.price,
         refurbishmentCosts: 0,

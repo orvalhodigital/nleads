@@ -65,7 +65,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onChangeVa
             {/* Ghost Text Layer */}
             {suggestion && isFocused && (
                 <div
-                    className={`absolute inset-0 pointer-events-none flex items-center ${props.className?.includes('p-4') ? 'px-4' : 'px-3'}`}
+                    className={`absolute inset-0 pointer-events-none flex items-center ${className?.includes('p-4') ? 'px-4' : 'px-3'}`}
                     aria-hidden="true"
                 >
                     {/* Invisible text to push the ghost text to the right position */}

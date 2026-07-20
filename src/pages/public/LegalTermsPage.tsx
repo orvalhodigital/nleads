@@ -34,7 +34,7 @@ const LegalTermsPage: React.FC = () => {
             TERMOS DE USO
           </h1>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Condições Gerais de Uso da Plataforma nLeads CRM
+            Condições Gerais de Uso da Plataforma Gestor de Pátio
           </p>
         </div>
 
@@ -46,7 +46,7 @@ const LegalTermsPage: React.FC = () => {
               1. Aceitação dos Termos
             </h2>
             <p>
-              Ao criar uma conta ou utilizar o <strong>nLeads CRM</strong> ("Sistema"), você ("Cliente" ou "Usuário") concorda integralmente com estes Termos de Uso e com a nossa Política de Privacidade. Caso não concorde com alguma disposição, você não deve efetuar o cadastro ou fazer uso do Sistema.
+              Ao criar uma conta ou utilizar o <strong>Gestor de Pátio</strong> ("Sistema"), você ("Cliente" ou "Usuário") concorda integralmente com estes Termos de Uso e com a nossa Política de Privacidade. Caso não concorde com alguma disposição, você não deve efetuar o cadastro ou fazer uso do Sistema.
             </p>
           </section>
 
@@ -114,7 +114,7 @@ const LegalTermsPage: React.FC = () => {
               7. Propriedade Intelectual e Direitos Autorais
             </h2>
             <p>
-              Todos os direitos intelectuais sobre o software, marca nLeads CRM, layout do site, banco de dados estruturado e marca pertencem única e exclusivamente à Orvalho Digital. O Cliente retém a propriedade integral dos dados cadastrados de seus leads e estoque.
+              Todos os direitos intelectuais sobre o software, marca Gestor de Pátio, layout do site, banco de dados estruturado e marca pertencem única e exclusivamente à Orvalho Digital. O Cliente retém a propriedade integral dos dados cadastrados de seus leads e estoque.
             </p>
           </section>
 

@@ -174,9 +174,9 @@ const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = fa
                 ...initialData,
                 preferences: {
                     ...initialData.preferences,
-                    interesse_carro: initialData.preferences?.interesse_carro ?? (initialData.preferences?.marcas?.length > 0 || initialData.preferences?.tipos_veiculo?.some(t => CAR_VEHICLE_TYPES.includes(t))),
-                    interesse_moto: initialData.preferences?.interesse_moto ?? (initialData.preferences?.marcas_moto?.length > 0 || initialData.preferences?.tipos_moto?.length > 0 || initialData.preferences?.tipos_veiculo?.some(t => MOTO_VEHICLE_TYPES.includes(t))),
-                    interesse_caminhao: initialData.preferences?.interesse_caminhao ?? (initialData.preferences?.marcas_caminhao?.length > 0 || initialData.preferences?.tipos_caminhao?.length > 0),
+                    interesse_carro: initialData.preferences?.interesse_carro ?? ((initialData.preferences?.marcas?.length ?? 0) > 0 || initialData.preferences?.tipos_veiculo?.some(t => CAR_VEHICLE_TYPES.includes(t))),
+                    interesse_moto: initialData.preferences?.interesse_moto ?? ((initialData.preferences?.marcas_moto?.length ?? 0) > 0 || (initialData.preferences?.tipos_moto?.length ?? 0) > 0 || initialData.preferences?.tipos_veiculo?.some(t => MOTO_VEHICLE_TYPES.includes(t))),
+                    interesse_caminhao: initialData.preferences?.interesse_caminhao ?? ((initialData.preferences?.marcas_caminhao?.length ?? 0) > 0 || (initialData.preferences?.tipos_caminhao?.length ?? 0) > 0),
                     carro_valor_min: initialData.preferences?.carro_valor_min || 0,
                     carro_valor_max: initialData.preferences?.carro_valor_max || 0,
                     carro_transmissao: initialData.preferences?.carro_transmissao || [],

@@ -286,11 +286,11 @@ export default function AdminNotifications() {
         try {
             setLoading(true);
             const defaults = [
-                { category: 'system', title: 'Bem-vindo ao Otimizza! 🚀', message: 'Olá @nome, que bom ter você aqui! Comece agora adicionando seus primeiros leads e explore todas as nossas ferramentas de gestão.', trigger_event: 'signup', delay_minutes: 0, active: true },
+                { category: 'system', title: 'Bem-vindo ao Gestor de Pátio! 🚀', message: 'Olá @nome, que bom ter você aqui! Comece agora adicionando seus primeiros leads e explore todas as nossas ferramentas de gestão.', trigger_event: 'signup', delay_minutes: 0, active: true },
                 { category: 'plan', title: 'Seu período de teste está acabando! ⏳', message: 'Ei @nome, seu período trial expira em 2 dias. Não perca o acesso aos seus dados e ferramentas, faça o upgrade hoje mesmo!', trigger_event: 'trial_ending', delay_minutes: 2, active: true },
-                { category: 'plan', title: 'Atenção: Seu plano expirou! 🚨', message: 'Seu plano Otimizza expirou. Sua conta foi limitada. Renove agora para continuar gerindo suas vendas sem interrupções.', trigger_event: 'plan_expired', delay_minutes: 0, active: true },
+                { category: 'plan', title: 'Atenção: Seu plano expirou! 🚨', message: 'Seu plano Gestor de Pátio expirou. Sua conta foi limitada. Renove agora para continuar gerindo suas vendas sem interrupções.', trigger_event: 'plan_expired', delay_minutes: 0, active: true },
                 { category: 'system', title: 'Seu estoque está parado? 📦', message: 'Você está há mais de 24h sem carros/motos ativos no sistema. Lembre-se: estoque atualizado gera mais leads!', trigger_event: 'no_stock_24h', delay_minutes: 1440, active: true },
-                { category: 'system', title: 'Sentimos sua falta no Otimizza! 👋', message: 'Faz uma semana que você não acessa o painel. Temos novos leads aguardando seu contato. Vamos bater as metas de hoje?', trigger_event: 'inactivity_7d', delay_minutes: 10080, active: true }
+                { category: 'system', title: 'Sentimos sua falta no Gestor de Pátio! 👋', message: 'Faz uma semana que você não acessa o painel. Temos novos leads aguardando seu contato. Vamos bater as metas de hoje?', trigger_event: 'inactivity_7d', delay_minutes: 10080, active: true }
             ];
 
             const { error } = await supabase.from('notification_rules').insert(defaults);

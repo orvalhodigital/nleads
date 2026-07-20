@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const ALLOWED_ORIGINS = ['https://nleads.pro', 'https://nleads.com.br', 'https://www.nleads.pro', 'https://www.nleads.com.br'];
+const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
 
 // Do mais barato pro mais caro — só tenta o próximo se o anterior falhar
 // (erro de API ou resposta que não é um JSON válido).
@@ -73,7 +73,7 @@ async function generateJson(prompt: string, openaiApiKey?: string, openrouterApi
           headers: {
             'Authorization': `Bearer ${openrouterApiKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://nleads.pro',
+            'HTTP-Referer': 'https://orvalhodigital.com.br',
             'X-Title': 'Orvalho Digital Leads'
           },
           body: JSON.stringify({

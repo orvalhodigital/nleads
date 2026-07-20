@@ -20,11 +20,13 @@ import AutocompleteInput from './ui/AutocompleteInput';
 import PlanLimitAlert from './PlanLimitAlert';
 import { useData } from '../contexts/DataContext';
 import { consultaPlaca } from '../services/plateService';
+import { withPreferenceDefaults } from '../lib/leadPreferenceDefaults';
+import { MOTO_ENGINES, toEngineType } from '../lib/engineType';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
 const MOTO_CATEGORIES: MotorcycleCategory[] = ['Naked', 'Sport', 'Trail', 'Custom', 'Scooter', 'Touring', 'Elétrica', 'Street'];
-const MOTO_ENGINES = ['110cc', '125cc', '150cc', '160cc', '190cc', '250cc', '300cc', '400cc', '600cc', '750cc', '1000cc', '1200cc+'];
+// MOTO_ENGINES vem de lib/engineType para não divergir do tipo EngineType
 const MOTO_BRANDS = ['Honda', 'Yamaha', 'Kawasaki', 'Suzuki', 'BMW', 'Ducati', 'Harley-Davidson', 'KTM', 'Royal Enfield', 'Triumph', 'Dafra', 'Shineray', 'Haojue', 'Traxx'];
 
 const COMMON_OPTIONS = [
@@ -312,7 +314,7 @@ const MotorcycleInventory: React.FC<Props> = ({
     };
 
     const lookupPlate = async () => {
-        const rawPlate = form.plate.replace(/[-\s]/g, '').toUpperCase();
+        const rawPlate = (form.plate ?? '').replace(/[-\s]/g, '').toUpperCase();
         if (rawPlate.length < 7) {
             setPlateError('Digite uma placa válida (7 caracteres).');
             return;
@@ -354,7 +356,9 @@ const MotorcycleInventory: React.FC<Props> = ({
             let engine = form.engine;
             if (cilindradas > 0) {
                 const ccStr = cilindradas + 'cc';
-                engine = MOTO_ENGINES.find(e => e === ccStr) || (cilindradas >= 1200 ? '1200cc+' : ccStr);
+                // Cilindradas fora da tabela (ex.: 137cc) não viram EngineType:
+                // acima de 1200 caem em '1200cc+', o resto mantém o valor atual.
+                engine = toEngineType(ccStr, cilindradas >= 1200 ? '1200cc+' : engine);
             }
 
             const seg = ((data.segmento || extra.segmento || '') + ' ' + (data.sub_segmento || extra.sub_segmento || '')).toUpperCase();
@@ -412,7 +416,12 @@ const MotorcycleInventory: React.FC<Props> = ({
             const newLead = await onAddLead({
                 name: walkInName, phone: walkInPhone, email: '',
                 phase: LeadPhase.COMPLETED, temperature: LeadTemperature.HOT,
-                preferences: { tipos_veiculo: [], marcas: [], modelos: [], transmissao: ['Qualquer Um(a)'], motorizacao: ['Qualquer Um(a)'], observacoes_adicionais: 'Venda Avulsa de Moto', possui_entrada: false, possui_troca: false, veiculo_troca: '' },
+                preferences: withPreferenceDefaults({
+                    transmissao: ['Qualquer Um(a)'],
+                    motorizacao: ['Qualquer Um(a)'],
+                    observacoes_adicionais: 'Venda Avulsa de Moto',
+                    veiculo_troca: '',
+                }),
                 presentedVehicles: [(selected as Motorcycle).id], source: 'Venda Avulsa', notes: ''
             });
             if (newLead) { finalBuyerLeadId = newLead.id; finalBuyerName = newLead.name; }
@@ -858,7 +867,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                                             ...form,
                                             model: val,
                                             category: match.category as MotorcycleCategory,
-                                            engine: match.engine
+                                            engine: toEngineType(match.engine)
                                         });
                                     } else {
                                         setForm({ ...form, model: val });
@@ -878,9 +887,9 @@ const MotorcycleInventory: React.FC<Props> = ({
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Cilindrada</label>
-                            <select value={form.engine} onChange={e => setForm(p => ({ ...p, engine: e.target.value }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400">
+                            <select value={form.engine} onChange={e => setForm(p => ({ ...p, engine: toEngineType(e.target.value) }))} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm focus:border-brand-400">
                                 {MOTO_ENGINES.map(e => <option key={e}>{e}</option>)}
-                                {form.engine && !MOTO_ENGINES.includes(form.engine) && <option value={form.engine}>{form.engine}</option>}
+                                {form.engine && !(MOTO_ENGINES as readonly string[]).includes(form.engine) && <option value={form.engine}>{form.engine}</option>}
                             </select>
                         </div>
                         <div className="space-y-2">

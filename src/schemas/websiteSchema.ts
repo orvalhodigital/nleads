@@ -78,7 +78,7 @@ export const websiteSettingsSchema = z.object({
   custom_domain: z.string().url().optional().nullable(),
   
   // Tema e cores
-  website_theme: z.enum(['modern', 'classic', 'bold', 'luxury']).default('classic'),
+  website_theme: z.enum(['classic']).default('classic'),
   website_primary_color: z.string().regex(/^#[0-9A-F]{6}$/i).default('#088253'),
   website_secondary_color: z.string().regex(/^#[0-9A-F]{6}$/i).default('#4165E8'),
   website_text_color: z.string().regex(/^#[0-9A-F]{6}$/i).default('#374151'),

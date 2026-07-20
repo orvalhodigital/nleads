@@ -377,7 +377,7 @@ export interface Profile {
   preset_messages?: string[];
   // Website settings
   website_active?: boolean;
-  website_theme?: 'classic' | 'glass' | 'premium' | 'modern' | 'bold' | 'luxury';
+  website_theme?: 'classic';
   website_primary_color?: string;
   website_secondary_color?: string;
   website_text_color?: string;
@@ -615,7 +615,9 @@ export interface Plan {
   stripe_url?: string;
   style: {
     icon?: string;
-    color: string;
+    // Opcional como os demais campos: o formulário do admin edita `style`
+    // parcialmente, e os consumidores já leem com `style?.color` + fallback.
+    color?: string;
     highlight?: boolean;
     cta?: string;
   };

@@ -11,7 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
-.claude/
+
+# Claude Code
+# Skills e config de dev são versionados (a equipe e as IAs precisam deles).
+# Estado local de sessão e worktrees não são.
+.claude/*
+!.claude/skills/
+!.claude/launch.json
+.claude/settings.local.json
+.claude/worktrees/
 
 # Build cache
 *.tsbuildinfo
@@ -35,3 +43,12 @@ SistemaCelular/nLeads - Celular
 
 # Minutas e documentos legais locais
 docs/legal/
+
+# Backups locais — o Git já é o backup. Cópias obsoletas no repositório
+# fazem devs e IAs editarem o arquivo errado.
+_backup_*/
+scratch/
+
+# Skills de terceiros com scripts executáveis não entram neste repositório.
+# Ver CLAUDE.md §5.
+.kilo/skills/

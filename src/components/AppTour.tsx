@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Joyride, Step, CallBackProps, STATUS } from 'react-joyride';
+import { Joyride, Step, EventData, STATUS } from 'react-joyride';
 import { useData } from '../contexts/DataContext';
+import { readMigrated } from '../lib/storage';
 
 const AppTour: React.FC = () => {
   const { profile } = useData();
@@ -9,9 +10,9 @@ const AppTour: React.FC = () => {
   useEffect(() => {
     // Run the tour if onboarding is completed but the tour hasn't been shown yet.
     if (profile?.onboarding_completed) {
-      const hasSeenTour = localStorage.getItem('otimizza_tour_completed');
+      const hasSeenTour = readMigrated('orvalho_tour_completed', 'otimizza_tour_completed');
       if (!hasSeenTour) {
-        localStorage.setItem('otimizza_tour_completed', 'true');
+        localStorage.setItem('orvalho_tour_completed', 'true');
         setTimeout(() => setRun(true), 1500);
       }
     }
@@ -21,9 +22,9 @@ const AppTour: React.FC = () => {
     {
       target: 'body',
       placement: 'center',
-      title: 'Bem-vindo ao Otimizza CRM! 🎉',
+      title: 'Bem-vindo ao Gestor de Pátio! 🎉',
       content: 'Agora que seu painel está configurado, preparamos um guia passo a passo para te mostrar onde fica cada coisa. Vamos lá?',
-      disableBeacon: true,
+      skipBeacon: true,
     },
     {
       target: 'a[href="/dashboard"]',
@@ -52,12 +53,11 @@ const AppTour: React.FC = () => {
     }
   ];
 
-  const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status } = data;
+  const handleJoyrideEvent = (data: EventData) => {
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-    if (finishedStatuses.includes(status)) {
+    if (finishedStatuses.includes(data.status)) {
       setRun(false);
-      localStorage.setItem('otimizza_tour_completed', 'true');
+      localStorage.setItem('orvalho_tour_completed', 'true');
     }
   };
 
@@ -66,16 +66,16 @@ const AppTour: React.FC = () => {
       steps={steps}
       run={run}
       continuous={true}
-      showProgress={true}
-      showSkipButton={true}
-      callback={handleJoyrideCallback}
+      onEvent={handleJoyrideEvent}
+      options={{
+        primaryColor: '#5B46E5', // --primary da Orvalho
+        zIndex: 10000,
+        showProgress: true,
+        buttons: ['back', 'skip', 'primary'],
+      }}
       styles={{
-        options: {
-          primaryColor: '#4f46e5', // indigo-600
-          zIndex: 10000,
-        },
-        buttonNext: {
-          backgroundColor: '#4f46e5',
+        buttonPrimary: {
+          backgroundColor: '#5B46E5',
           borderRadius: '8px',
           padding: '8px 16px',
         },

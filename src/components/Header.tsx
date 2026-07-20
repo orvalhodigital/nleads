@@ -26,7 +26,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useData } from '../contexts/DataContext';
 import { motorcycleService } from '../services/motorcycleService';
 import { useSystemSettings } from '../hooks/useSystemSettings';
-import { LogoRenderer } from './OtimizzaLogo';
+import { LogoRenderer } from './OrvalhoLogo';
 
 interface HeaderProps {
     currentView: View;
@@ -207,7 +207,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `otimizza_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `orvalho_backup_${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

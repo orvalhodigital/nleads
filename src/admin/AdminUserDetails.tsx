@@ -98,10 +98,16 @@ export default function AdminUserDetails() {
         if (!userId) return;
         setSaving(true);
         try {
-            await profileService.updateProfile({
+            // Plano passa pela função admin do Postgres: o UPDATE direto dessas
+            // colunas foi revogado do papel `authenticated` na Fase 3 da auditoria.
+            await profileService.adminUpdateUserPlan(
+                userId,
                 plan,
                 planStatus,
-                trialEndsAt: trialEndsAt ? new Date(trialEndsAt).toISOString() : undefined,
+                trialEndsAt ? new Date(trialEndsAt).toISOString() : undefined,
+            );
+
+            await profileService.updateProfile({
                 full_name: fullName,
                 meta_pixel_id: metaPixelId,
                 meta_access_token: metaAccessToken,

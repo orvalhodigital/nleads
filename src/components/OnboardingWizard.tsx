@@ -13,7 +13,10 @@ interface OnboardingWizardProps {
 type Step = 'welcome' | 'company' | 'whatsapp' | 'complete';
 
 const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
-  const { profile, user, refreshProfile } = useData();
+  const { profile, session, refreshProfile } = useData();
+  // O contexto não expõe `user` diretamente; os metadados do cadastro
+  // (nome e avatar vindos do provedor de auth) ficam em session.user.
+  const user = session?.user;
   const [step, setStep] = useState<Step>('welcome');
   const [progress, setProgress] = useState(0);
 

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { readMigrated } from '../lib/storage';
 
 export type Theme = 'dia' | 'noite';
 
@@ -12,7 +13,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('otimizza_theme') as Theme;
+    const saved = readMigrated('orvalho_theme', 'otimizza_theme') as Theme;
     if (saved === 'dia' || saved === 'noite') {
       return saved;
     }
@@ -27,7 +28,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('otimizza_theme', theme);
+    localStorage.setItem('orvalho_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

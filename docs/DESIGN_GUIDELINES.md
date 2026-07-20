@@ -163,6 +163,32 @@ Este projeto trata mobile como **primeira classe**, não como adaptação.
 
 ## 8. Componentes
 
+### PageContainer — largura e padding de página
+
+Toda página deve usar `PageContainer` (`src/components/ui/PageContainer.tsx`) em vez de repetir `max-w`, `mx-auto` e padding à mão.
+
+| Propriedade | Valor |
+|---|---|
+| Largura máxima | `max-w-7xl` (~1280px) |
+| Padding | `px-4` → `sm:px-6` → `lg:px-8` |
+| Centralização | `mx-auto`, `w-full` |
+
+```tsx
+import PageContainer from './ui/PageContainer';
+
+export default function MyPage() {
+  return (
+    <PageContainer className="space-y-8 mt-6">
+      {/* conteúdo */}
+    </PageContainer>
+  );
+}
+```
+
+Passe espaçamento e animação via `className`. Em telas com grid próprio (ex.: `MotorcycleInventory`, que usa `max-w-[1400px]`), uma largura específica é aceitável — documente o porquê no componente.
+
+### Demais componentes
+
 - **Reuse antes de criar.** Base em `src/components/ui/` (`button`, `card`, `input`, `select`, `dialog`, `tabs`, `switch`, etc.).
 - Componha com `cn()` (`@/lib/utils`) para mesclar classes com segurança.
 - Um novo componente visual deve: aceitar `className`, respeitar tokens, funcionar nos dois temas e no mobile.

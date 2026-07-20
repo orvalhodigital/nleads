@@ -137,14 +137,16 @@ export const profileService = {
         // No profile row yet — create one and re-fetch so the DB row is source of truth
         if (error?.code === 'PGRST116' && !userId && user) {
             const resolvedName = resolveFullName(user);
+            // `plan`, `plan_status` e `trial_ends_at` são omitidos de propósito:
+            // os defaults da coluna já são 'trial' / 'active' / now()+7d, e o
+            // UPDATE dessas colunas foi revogado do papel `authenticated`
+            // (Fase 3 da auditoria). Se este upsert cair no caminho de UPDATE,
+            // informá-las faria a operação falhar.
             await supabase.from('profiles').upsert({
                 id: user.id,
                 email: user.email || '',
                 full_name: resolvedName,
                 company_name: user.user_metadata?.company_name || '',
-                plan: 'trial',
-                plan_status: 'active',
-                trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
             }, { onConflict: 'id' });
 
             // Re-fetch after creation
@@ -237,7 +239,10 @@ export const profileService = {
             'website_diff2_active', 'website_diff2_title', 'website_diff2_sub', 'website_diff2_icon',
             'website_diff3_active', 'website_diff3_title', 'website_diff3_sub', 'website_diff3_icon',
             'website_diff4_active', 'website_diff4_title', 'website_diff4_sub', 'website_diff4_icon',
-            'plan',
+            // `plan`, `plan_status` e `trial_ends_at` NÃO entram aqui: o UPDATE
+            // dessas colunas foi revogado do papel `authenticated` na Fase 3 da
+            // auditoria (evitava que o usuário se desse plano pago sozinho).
+            // Admin altera plano por `adminUpdateUserPlan()`, logo abaixo.
             'meta_pixel_id' as any, 'meta_access_token' as any, 'google_ads_client_id' as any, 'google_ads_developer_token' as any,
             'onboarding_completed' as any,
         ];
@@ -250,8 +255,8 @@ export const profileService = {
         }
 
         // Map camelCase para snake_case
-        if (updates.planStatus !== undefined) dbUpdates.plan_status = updates.planStatus;
-        if (updates.trialEndsAt !== undefined) dbUpdates.trial_ends_at = updates.trialEndsAt;
+        // planStatus/trialEndsAt não são mapeados aqui — ver comentário em
+        // ALLOWED_FIELDS. Use adminUpdateUserPlan().
 
         if (Object.keys(dbUpdates).length === 0) return;
 
@@ -261,6 +266,29 @@ export const profileService = {
             .eq('id', idToUpdate);
 
         handleSupabaseResponse(response);
+    },
+
+    /**
+     * Altera plano, status e fim do trial de um usuário.
+     *
+     * Passa pela função `admin_update_user_plan` do Postgres, que valida
+     * `is_current_user_admin()` no servidor. O UPDATE direto dessas colunas foi
+     * revogado do papel `authenticated` na Fase 3 da auditoria — sem isso,
+     * qualquer lojista se dava plano pago sozinho, sem passar pelo Asaas.
+     */
+    async adminUpdateUserPlan(
+        targetUserId: string,
+        plan?: string,
+        planStatus?: string,
+        trialEndsAt?: string,
+    ): Promise<void> {
+        const { error } = await supabase.rpc('admin_update_user_plan', {
+            target_user_id: targetUserId,
+            new_plan: plan ?? null,
+            new_plan_status: planStatus ?? null,
+            new_trial_ends_at: trialEndsAt ?? null,
+        });
+        if (error) throw error;
     },
 
     async getTeamMembers(adminId: string): Promise<Profile[]> {

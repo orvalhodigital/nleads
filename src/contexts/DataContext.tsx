@@ -6,6 +6,7 @@ import { leadService } from '../services/leadService';
 import { vehicleService } from '../services/vehicleService';
 import { motorcycleService } from '../services/motorcycleService';
 import { Profile, Lead, Vehicle, Motorcycle, SaleDetails } from '../types';
+import { withPreferenceDefaults } from '../lib/leadPreferenceDefaults';
 import { useToast } from './ToastContext';
 import { validateLeadInput } from '../schemas/leadSchema';
 import { validateVehicleInput } from '../schemas/vehicleSchema';
@@ -34,7 +35,7 @@ interface DataContextType {
     loadData: () => Promise<void>;
     refreshLeads: () => Promise<void>;
     loadMoreLeads: () => Promise<void>;
-    refreshProfile: () => Promise<void>;
+    refreshProfile: () => Promise<Profile | null>;
     refreshVehicles: () => Promise<void>;
     refreshMotorcycles: () => Promise<void>;
     addLead: (lead: Omit<Lead, 'id' | 'createdAt' | 'lastUpdate'>) => Promise<Lead>;
@@ -137,24 +138,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
                 ? await leadService.list(undefined, adminId, true, PAGE_SIZE, pageNum * PAGE_SIZE)
                 : await leadService.list(p?.id || impersonatedUserId, undefined, false, PAGE_SIZE, pageNum * PAGE_SIZE);
 
-            // Evitar telas brancas garantindo arrays mínimos em preferences
+            // Evitar telas brancas garantindo defaults em preferences
             data = data.map(lead => ({
                 ...lead,
-                preferences: {
-                    marcas: [],
-                    modelos: [],
-                    tipos_veiculo: [],
-                    carro_transmissao: [],
-                    carro_motorizacao: [],
-                    transmissao: [],
-                    motorizacao: [],
-                    marcas_moto: [],
-                    modelos_moto: [],
-                    tipos_moto: [],
-                    moto_transmissao: [],
-                    moto_motorizacao: [],
-                    ...(lead.preferences || {})
-                }
+                preferences: withPreferenceDefaults(lead.preferences)
             }));
 
             if (append) {
@@ -301,18 +288,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             const enriched = {
                 ...leadData,
                 user_id: leadData.user_id || p?.id,
-                admin_id: leadData.admin_id || adminId || null,
+                // `leadService.create` já converte para null na inserção; aqui o
+                // tipo Lead usa `string | undefined`.
+                admin_id: leadData.admin_id || adminId || undefined,
             };
             let newLead = await leadService.create(enriched);
             
             // Garantir os defaults antes de ir pro state
             newLead = {
                 ...newLead,
-                preferences: {
-                    marcas: [], modelos: [], tipos_veiculo: [], carro_transmissao: [], carro_motorizacao: [],
-                    transmissao: [], motorizacao: [], marcas_moto: [], modelos_moto: [], tipos_moto: [],
-                    moto_transmissao: [], moto_motorizacao: [], ...(newLead.preferences || {})
-                }
+                preferences: withPreferenceDefaults(newLead.preferences)
             };
             
             setLeads((prev: Lead[]) => [newLead, ...prev]);
@@ -331,11 +316,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             
             updated = {
                 ...updated,
-                preferences: {
-                    marcas: [], modelos: [], tipos_veiculo: [], carro_transmissao: [], carro_motorizacao: [],
-                    transmissao: [], motorizacao: [], marcas_moto: [], modelos_moto: [], tipos_moto: [],
-                    moto_transmissao: [], moto_motorizacao: [], ...(updated.preferences || {})
-                }
+                preferences: withPreferenceDefaults(updated.preferences)
             };
             
             setLeads((prev: Lead[]) => prev.map((l: Lead) => l.id === updated.id ? updated : l));

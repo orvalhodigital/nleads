@@ -11,6 +11,7 @@ import { useData } from '../contexts/DataContext';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
 import { consultaPlaca } from '../services/plateService';
+import { toEngineType } from '../lib/engineType';
 
 interface InventoryImportModalProps {
     isOpen: boolean;
@@ -429,7 +430,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
 
                                         // Engine
                                         const engineApi = (apiData.extra && (apiData.extra.cilindrada || apiData.extra.potencia)) || apiData.potencia || apiData.motor;
-                                        if (engineApi) finalData.engine = String(engineApi);
+                                        if (engineApi) finalData.engine = toEngineType(engineApi);
                                     }
 
                                 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Check, RefreshCw, AlertTriangle, Play, Sparkles, CheckCircle2, ListFilter, Trash2, MessageCircle, ArrowRight } from 'lucide-react';
+import { readMigrated } from '../lib/storage';
 
 interface PlaybookItem {
   id: string;
@@ -49,7 +50,7 @@ export default function DiagnosticsPage() {
   // Carregar dados salvos no localStorage ao montar o componente
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('otimizza_ficha_diagnostico');
+      const saved = readMigrated('orvalho_ficha_diagnostico', 'otimizza_ficha_diagnostico');
       if (saved) {
         setAnswers(JSON.parse(saved));
       }
@@ -63,7 +64,7 @@ export default function DiagnosticsPage() {
     setAnswers(prev => {
       const updated = { ...prev, [id]: !prev[id] };
       try {
-        localStorage.setItem('otimizza_ficha_diagnostico', JSON.stringify(updated));
+        localStorage.setItem('orvalho_ficha_diagnostico', JSON.stringify(updated));
       } catch (error) {
         console.error('Erro ao salvar no localStorage:', error);
       }
@@ -75,7 +76,7 @@ export default function DiagnosticsPage() {
     if (window.confirm('Tem certeza de que deseja limpar todas as respostas digitadas?')) {
       setAnswers({});
       try {
-        localStorage.removeItem('otimizza_ficha_diagnostico');
+        localStorage.removeItem('orvalho_ficha_diagnostico');
       } catch (error) {
         console.error('Erro ao limpar localStorage:', error);
       }

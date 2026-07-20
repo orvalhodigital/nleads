@@ -34,7 +34,7 @@ const LegalContractPage: React.FC = () => {
             CONTRATO DE PRESTAÇÃO DE SERVIÇOS SAAS
           </h1>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Licenciamento de Uso da Plataforma nLeads CRM / Otimizza
+            Licenciamento de Uso da Plataforma Gestor de Pátio
           </p>
         </div>
 
@@ -52,7 +52,7 @@ const LegalContractPage: React.FC = () => {
               Cláusula 1ª — Objeto
             </h2>
             <p>
-              O presente Contrato tem por objeto a licença de uso, não exclusiva e intransferível, do software em nuvem <strong>nLeads CRM / Otimizza</strong>, para gestão de leads, estoque de veículos, processo comercial e pós-venda da operação do Contratante, conforme funcionalidades do plano contratado pelo lojista.
+              O presente Contrato tem por objeto a licença de uso, não exclusiva e intransferível, do software em nuvem <strong>Gestor de Pátio</strong>, para gestão de leads, estoque de veículos, processo comercial e pós-venda da operação do Contratante, conforme funcionalidades do plano contratado pelo lojista.
             </p>
           </section>
 

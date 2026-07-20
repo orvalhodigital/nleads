@@ -23,7 +23,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onStart }) =>
 
   useEffect(() => {
     // Show checklist if not all complete, regardless of onboarding_completed
-    const shouldShow = profile && completedCount < checklist.length;
+    const shouldShow = Boolean(profile) && completedCount < checklist.length;
     setIsVisible(shouldShow);
   }, [profile, completedCount]);
 

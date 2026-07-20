@@ -227,7 +227,7 @@ export default function SupportPage() {
                                         }`}>
                                         <div className="flex justify-between items-center mb-2 gap-4">
                                             <span className="text-[9px] font-black uppercase tracking-widest opacity-70">
-                                                {msg.sender_role === 'admin' ? 'Suporte Otimizza' : 'Você'}
+                                                {msg.sender_role === 'admin' ? 'Suporte Orvalho' : 'Você'}
                                             </span>
                                             <span className="text-[9px] font-bold opacity-50">
                                                 {format(new Date(msg.created_at), 'HH:mm')}

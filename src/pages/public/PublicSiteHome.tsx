@@ -138,135 +138,12 @@ interface TC {
     formCard: string; formLabel: string; formTitle: string;
 }
 
-function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
-    switch (theme) {
-        case 'glass': return {
-            wrapper: 'min-h-screen text-white relative before:content-[""] before:fixed before:inset-0 before:bg-gradient-to-br before:from-slate-950 before:via-indigo-950 before:to-slate-900 before:-z-10 after:content-[""] after:fixed after:inset-0 after:bg-[radial-gradient(ellipse_at_top_left,rgba(56,189,248,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.15),transparent_50%)] after:-z-10 selection:bg-cyan-500/30',
-            nav: 'sticky top-0 z-50 bg-white/[0.03] backdrop-blur-xl border-b border-white/[0.08]',
-            heroText: 'text-3xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[1.1] md:leading-[1.05]',
-            heroSubText: 'text-white/60 text-base md:text-xl font-light tracking-wide',
-            heroAlign: 'text-center items-center',
-            heroBtnOutline: 'border border-white/20 bg-white/5 backdrop-blur-xl text-white hover:bg-white/10 font-bold transition-all px-8 py-4 rounded-2xl shadow-2xl',
-            sectionTitle: 'text-white/30 font-black text-xs uppercase tracking-[0.4em]',
-            card: 'bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-cyan-400/40 hover:-translate-y-2 transition-all duration-500 shadow-2xl',
-            cardTitle: 'text-white font-bold text-xl tracking-tight',
-            cardSub: 'text-white/40 text-xs font-medium uppercase tracking-widest',
-            cardBadge: 'bg-white/10 backdrop-blur-md text-white/90 text-[10px] font-bold px-3 py-1 rounded-full border border-white/10 uppercase tracking-tighter',
-            cardBtnDetail: 'flex-1 bg-white/5 border border-white/10 text-white text-xs font-bold rounded-2xl py-3 hover:bg-white/10 transition-all text-center',
-            cardBtnWa: 'flex-1 bg-cyan-500 text-black text-xs font-black rounded-2xl py-3 hover:bg-cyan-400 transition-all text-center flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-500/20',
-            filterPill: 'px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/40 text-xs font-bold hover:bg-white/10 transition-all',
-            filterPillActive: 'px-5 py-2.5 rounded-full border border-cyan-400/50 bg-cyan-400/20 text-cyan-400 text-xs font-black shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all',
-            input: 'bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-cyan-400/60 transition-all',
-            inputField: 'w-full bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-cyan-400/60 transition-all',
-            textarea: 'w-full bg-white/[0.05] border border-white/10 text-white placeholder-white/20 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-cyan-400/60 transition-all resize-none',
-            footer: 'mt-24 border-t border-white/5 bg-white/[0.02] backdrop-blur-3xl',
-            footerText: 'text-white/20 text-[10px] font-bold uppercase tracking-widest',
-            formCard: 'bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-3xl md:rounded-[40px] p-6 md:p-16 shadow-2xl',
-            formLabel: 'text-white/20 text-[10px] font-black uppercase tracking-[0.2em]',
-            formTitle: 'text-2xl md:text-4xl font-black text-white mb-2',
-        };
-        case 'premium': return {
-            wrapper: 'min-h-screen bg-[#050508] text-white selection:bg-amber-500/30',
-            nav: 'bg-[#050508]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50',
-            heroText: 'text-white text-4xl sm:text-6xl md:text-8xl font-black tracking-tight leading-[1] md:leading-[0.9] italic uppercase',
-            heroSubText: 'text-slate-500 text-base md:text-xl font-light tracking-wide max-w-xl',
-            heroAlign: 'text-left items-start',
-            heroBtnOutline: 'border border-amber-500/50 text-amber-500 hover:bg-amber-500/10 font-black tracking-[0.2em] uppercase text-xs transition-all px-10 py-5 rounded-sm',
-            sectionTitle: 'text-white font-black text-2xl md:text-3xl tracking-tighter uppercase italic',
-            card: 'bg-[#0a0a0f] border border-white/5 rounded-none overflow-hidden hover:border-amber-500/30 transition-all duration-700 shadow-2xl',
-            cardTitle: 'text-white font-black text-xl uppercase tracking-tighter',
-            cardSub: 'text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em]',
-            cardBadge: 'bg-amber-500/10 text-amber-500 text-[10px] font-black px-3 py-1 border border-amber-500/20 uppercase tracking-tighter',
-            cardBtnDetail: 'flex-1 bg-white/5 text-white text-[10px] font-black uppercase tracking-widest py-4 hover:bg-white/10 transition-all border border-white/5',
-            cardBtnWa: 'flex-1 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest py-4 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20',
-            filterPill: 'px-6 py-2.5 rounded-none border border-white/10 bg-white/5 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-all',
-            filterPillActive: 'px-6 py-2.5 rounded-none bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-amber-500/20',
-            input: 'bg-[#0a0a0f] border border-white/10 text-white placeholder-slate-700 rounded-none px-6 py-4 text-sm focus:outline-none focus:border-amber-500/50 transition-all',
-            inputField: 'w-full bg-[#0a0a0f] border border-white/10 text-white placeholder-slate-700 rounded-none px-6 py-4 text-sm focus:outline-none focus:border-amber-500/50 transition-all',
-            textarea: 'w-full bg-[#0a0a0f] border border-white/10 text-white placeholder-slate-700 rounded-none px-6 py-4 text-sm focus:outline-none focus:border-amber-500/50 transition-all resize-none',
-            footer: 'mt-32 border-t border-white/5 bg-black',
-            footerText: 'text-slate-600 text-[10px] font-black uppercase tracking-[0.3em]',
-            formCard: 'bg-[#0a0a0f] border border-white/5 rounded-none p-8 md:p-24 shadow-2xl',
-            formLabel: 'text-slate-700 text-[10px] font-black uppercase tracking-[0.4em]',
-            formTitle: 'text-3xl md:text-6xl font-black text-white mb-4 uppercase tracking-tighter italic',
-        };
-        case 'bold': return {
-            wrapper: 'min-h-screen bg-slate-950 text-white font-sans selection:bg-brand-500/30',
-            nav: 'bg-slate-950 border-b-4 border-brand-500 sticky top-0 z-50 shadow-2xl',
-            heroText: 'text-white text-4xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-[1] md:leading-[0.85]',
-            heroSubText: 'text-slate-400 text-base md:text-xl font-medium mt-4',
-            heroAlign: 'text-left items-start',
-            heroBtnOutline: 'border-4 border-white text-white hover:bg-white hover:text-black font-black uppercase transition-all px-8 py-4 md:px-10 md:py-5 text-base md:text-lg',
-            sectionTitle: 'text-white font-black text-3xl md:text-6xl italic uppercase tracking-tighter',
-            card: 'bg-slate-900 border-4 border-slate-800 rounded-none overflow-hidden hover:border-brand-500 transition-all duration-300',
-            cardTitle: 'text-white font-black text-2xl uppercase tracking-tight italic',
-            cardSub: 'text-brand-500 text-xs font-black uppercase tracking-widest',
-            cardBadge: 'bg-slate-800 text-white text-[10px] font-black px-4 py-1 uppercase tracking-widest',
-            cardBtnDetail: 'flex-1 border-4 border-slate-700 text-white text-sm font-black uppercase py-4 hover:border-white transition-all text-center',
-            cardBtnWa: 'flex-1 bg-brand-500 text-slate-950 text-sm font-black uppercase py-4 hover:bg-brand-400 transition-all text-center shadow-[0_0_30px_rgba(139,92,246,0.25)]',
-            filterPill: 'px-6 md:px-8 py-3 md:py-4 rounded-none border-4 border-slate-800 bg-transparent text-white text-xs md:text-sm font-black uppercase hover:border-white transition-all',
-            filterPillActive: 'px-6 md:px-8 py-3 md:py-4 rounded-none bg-brand-500 text-slate-950 text-xs md:text-sm font-black uppercase transition-all',
-            input: 'bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-brand-500 transition-all',
-            inputField: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-brand-500 transition-all',
-            textarea: 'w-full bg-slate-900 border-4 border-slate-800 text-white placeholder-slate-700 rounded-none px-6 py-5 text-base font-bold focus:outline-none focus:border-brand-500 transition-all resize-none',
-            footer: 'mt-32 bg-black border-t-8 border-brand-500 py-16',
-            footerText: 'text-slate-500 font-black uppercase tracking-[0.4em]',
-            formCard: 'bg-slate-900 border-4 md:border-8 border-slate-800 rounded-none p-8 md:p-24 shadow-2xl',
-            formLabel: 'text-brand-500 text-sm font-black uppercase tracking-widest',
-            formTitle: 'text-4xl md:text-7xl font-black text-white mb-6 uppercase italic leading-none',
-        };
-        case 'luxury': return {
-            wrapper: 'min-h-screen bg-[#0f0e0c] text-[#d4af37] font-serif selection:bg-[#d4af37]/20',
-            nav: 'bg-[#0f0e0c]/95 backdrop-blur-xl border-b border-[#d4af37]/10 sticky top-0 z-50',
-            heroText: 'text-[#d4af37] text-4xl sm:text-6xl md:text-8xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em] leading-tight',
-            heroSubText: 'text-[#d4af37]/40 text-base md:text-2xl font-light tracking-[0.2em] md:tracking-[0.4em] mt-6 md:mt-8 italic',
-            heroAlign: 'text-center items-center',
-            heroBtnOutline: 'border border-[#d4af37]/40 text-[#d4af37] hover:bg-[#d4af37] hover:text-[#0f0e0c] uppercase tracking-[0.3em] md:tracking-[0.5em] text-[9px] md:text-[10px] transition-all px-8 py-4 md:px-12 md:py-6 rounded-none',
-            sectionTitle: 'text-[#d4af37] font-extralight text-3xl md:text-5xl uppercase tracking-[0.4em] md:tracking-[0.6em] text-center',
-            card: 'bg-[#1a1814] border border-[#d4af37]/5 overflow-hidden hover:border-[#d4af37]/30 transition-all duration-1000 shadow-2xl',
-            cardTitle: 'text-[#d4af37] font-serif text-2xl tracking-widest uppercase',
-            cardSub: 'text-[#d4af37]/30 text-[10px] uppercase tracking-[0.5em] italic',
-            cardBadge: 'border border-[#d4af37]/10 text-[#d4af37]/60 text-[9px] px-4 py-1.5 uppercase tracking-widest',
-            cardBtnDetail: 'flex-1 border border-[#d4af37]/10 text-[#d4af37]/50 text-[10px] uppercase tracking-[0.4em] py-5 hover:bg-[#d4af37]/5 transition-all text-center',
-            cardBtnWa: 'flex-1 bg-[#d4af37] text-[#0f0e0c] text-[10px] font-bold uppercase tracking-[0.4em] py-5 hover:bg-[#b8962d] transition-all text-center shadow-[0_10px_30px_rgba(212,175,55,0.15)]',
-            filterPill: 'px-6 md:px-10 py-3 md:py-4 bg-transparent border border-[#d4af37]/10 text-[#d4af37]/40 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] hover:border-[#d4af37]/40 transition-all',
-            filterPillActive: 'px-6 md:px-10 py-3 md:py-4 bg-[#d4af37] text-[#0f0e0c] text-[9px] md:text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] transition-all shadow-2xl',
-            input: 'bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-base md:text-lg focus:outline-none focus:border-[#d4af37] transition-all',
-            inputField: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-base md:text-lg focus:outline-none focus:border-[#d4af37] transition-all',
-            textarea: 'w-full bg-transparent border-b border-[#d4af37]/20 text-[#d4af37] placeholder-[#d4af37]/20 rounded-none px-2 py-4 md:py-6 text-base md:text-lg focus:outline-none focus:border-[#d4af37] transition-all resize-none',
-            footer: 'mt-40 bg-black border-t border-[#d4af37]/5 py-24',
-            footerText: 'text-[#d4af37]/20 text-[10px] uppercase tracking-[0.6em]',
-            formCard: 'bg-[#1a1814] border border-[#d4af37]/5 rounded-none p-8 md:p-32 shadow-2xl',
-            formLabel: 'text-[#d4af37]/30 text-[9px] font-bold uppercase tracking-[0.6em]',
-            formTitle: 'text-3xl md:text-5xl font-extralight text-[#d4af37] mb-8 md:mb-12 uppercase tracking-[0.3em] md:tracking-[0.4em] leading-relaxed',
-        };
-        case 'modern': return {
-            wrapper: 'min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-500/10',
-            nav: 'bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm',
-            heroText: 'text-slate-950 text-3xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[1.1] md:leading-[1.05]',
-            heroSubText: 'text-slate-600 text-base md:text-xl font-medium mt-4 md:mt-6 max-w-2xl',
-            heroAlign: 'text-center items-center',
-            heroBtnOutline: 'bg-slate-950 text-white hover:bg-slate-800 font-bold px-8 py-3.5 md:px-10 md:py-4.5 rounded-2xl transition-all shadow-xl shadow-slate-900/20',
-            sectionTitle: 'text-slate-900 font-black text-2xl md:text-4xl tracking-tight',
-            card: 'bg-white border border-slate-200 rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500',
-            cardTitle: 'text-slate-900 font-bold text-xl tracking-tight',
-            cardSub: 'text-slate-400 font-bold text-[10px] uppercase tracking-widest',
-            cardBadge: 'bg-slate-100 text-slate-600 text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider',
-            cardBtnDetail: 'flex-1 bg-white border border-slate-200 text-slate-900 text-sm font-bold rounded-2xl py-3.5 hover:bg-slate-50 transition-all text-center',
-            cardBtnWa: 'flex-1 bg-blue-600 text-white text-sm font-bold rounded-2xl py-3.5 hover:bg-blue-700 transition-all text-center shadow-lg shadow-blue-600/20',
-            filterPill: 'px-5 py-2.5 md:px-6 md:py-3 rounded-2xl bg-white border border-slate-200 text-slate-500 text-xs md:text-sm font-bold hover:bg-slate-100 transition-all',
-            filterPillActive: 'px-5 py-2.5 md:px-6 md:py-3 rounded-2xl bg-slate-950 text-white text-xs md:text-sm font-bold transition-all shadow-xl shadow-slate-950/20',
-            input: 'bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all',
-            inputField: 'w-full bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all',
-            textarea: 'w-full bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all resize-none',
-            footer: 'mt-32 bg-white border-t border-slate-200 py-16',
-            footerText: 'text-slate-400 text-xs font-bold uppercase tracking-widest',
-            formCard: 'bg-white border border-slate-100 rounded-3xl md:rounded-[48px] p-6 md:p-20 shadow-2xl',
-            formLabel: 'text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2',
-            formTitle: 'text-3xl md:text-5xl font-black text-slate-950 mb-4 tracking-tight',
-        };
-        default: return { // classic
-            wrapper: `min-h-screen ${profile?.website_card_style === 'square' ? 'rounded-none' : ''} ${profile?.website_theme === 'glass' ? '' : 'bg-[#f8fafc] text-slate-900'}`,
+// Classes visuais do site público. Hoje só existe o modelo 'classic';
+// ver docs/DECISOES-E-ROADMAP.md para o roadmap de múltiplos modelos.
+function getTC(primary: string, profile?: PublicProfile): TC {
+
+    return {
+            wrapper: `min-h-screen ${profile?.website_card_style === 'square' ? 'rounded-none' : ''} bg-[#f8fafc] text-slate-900`,
             nav: 'bg-white/80 backdrop-blur-2xl border-b border-slate-100/50 sticky top-0 z-50 shadow-sm transition-all',
             heroText: 'text-slate-900 text-3xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[1.1] md:leading-[1.05] text-center',
             heroSubText: 'text-slate-600 text-base md:text-xl font-medium mt-4 max-w-2xl text-center mx-auto',
@@ -290,7 +167,6 @@ function getTC(theme: string, primary: string, profile?: PublicProfile): TC {
             formLabel: 'text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5 block',
             formTitle: 'text-2xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight',
         };
-    }
 }
 
 // ─── Category Section ────────────────────────────────────────────────────────
@@ -312,7 +188,7 @@ const CategorySection: React.FC<{
     return (
         <div className="space-y-6">
             <div>
-                <h3 className={`text-2xl font-bold mb-1 ${theme === 'classic' ? 'text-stone-900 pb-3 border-b-4' : theme === 'glass' ? 'text-white' : 'text-white uppercase tracking-widest'}`}
+                <h3 className={`text-2xl font-bold mb-1 ${theme === 'classic' ? 'text-stone-900 pb-3 border-b-4' : 'text-white uppercase tracking-widest'}`}
                     style={theme === 'classic' ? { borderColor: primary, fontFamily: "'Fraunces', Georgia, serif" } : {}}>
                     {title}
                 </h3>
@@ -341,7 +217,6 @@ const CategorySection: React.FC<{
                     <button onClick={onViewMore}
                         className={`px-8 py-4 rounded font-bold text-sm transition-all ${
                             theme === 'classic' ? `bg-white text-slate-900 border-2 hover:shadow-lg` :
-                            theme === 'glass' ? 'bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 text-white' :
                             'bg-slate-800 hover:bg-slate-700 text-white'
                         }`}
                         style={theme === 'classic' ? { borderColor: primary, color: primary } : {}}>
@@ -511,7 +386,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle; slug: string; tc: TC; profile: P
                     <div className="mt-auto pt-4 border-t border-white/5 flex items-end justify-between">
                         <div>
                             <p className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 md:mb-1">Preço</p>
-                            <p className="text-base md:text-2xl font-black tracking-tight" style={profile.website_theme === 'classic' ? { color: profile.website_primary_color } : undefined}>
+                            <p className="text-base md:text-2xl font-black tracking-tight" style={{ color: profile.website_primary_color }}>
                                 {formatPrice(vehicle.price)}
                             </p>
                         </div>
@@ -568,7 +443,7 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
         })();
     }, [slug]);
 
-    const tc = useMemo(() => getTC(profile?.website_theme || 'classic', profile?.website_primary_color || '#10b981', profile || undefined), [profile?.website_theme, profile?.website_primary_color, profile]);
+    const tc = useMemo(() => getTC(profile?.website_primary_color || '#10b981', profile || undefined), [profile?.website_theme, profile?.website_primary_color, profile]);
     const theme = profile?.website_theme || 'classic';
     const primary = profile?.website_primary_color || '#10b981';
     const secondary = profile?.website_secondary_color || '#0891b2';
@@ -661,10 +536,10 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                 <h2 className="text-lg font-bold text-slate-900">Site não encontrado</h2>
                 <p className="text-slate-600 text-sm leading-relaxed">O endereço que você acessou não existe ou o site está desativado.</p>
                 <a
-                    href="https://otimizzacrm.com.br"
+                    href="https://painel.orvalhodigital.com.br"
                     className="inline-block mt-4 px-6 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-900 transition"
                 >
-                    Ir para Otimizza CRM
+                    Ir para o Gestor de Pátio
                 </a>
             </div>
         </div>
@@ -714,123 +589,11 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
             />
 
             {/* Hero */}
-            {profile.website_theme === 'glass' ? (
-                <section className="relative overflow-hidden pb-32" style={{ minHeight: '520px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9))' }}>
-                    {profile.website_hero_image && (
-                        <>
-                            <img src={profile.website_hero_image} alt="Hero" className="absolute inset-0 w-full h-full object-cover opacity-20" />
-                            <div className="absolute inset-0 backdrop-blur-3xl" />
-                        </>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-purple-500/5" />
-                    <div className="relative z-10 max-w-[1250px] mx-auto px-4 h-full flex items-center justify-center">
-                        <div className="text-center max-w-2xl">
-                            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 drop-shadow-lg">
-                                {profile.website_hero_text || `Explore nossa coleção`}
-                            </h1>
-                            {profile.website_hero_subtitle && (
-                                <p className="text-xl text-white/80 drop-shadow mb-8">
-                                    {profile.website_hero_subtitle}
-                                </p>
-                            )}
-                            <p className="text-white/60 text-sm mb-8">
-                                {filtered.length > 0 ? `${filtered.length} veículo${filtered.length > 1 ? 's' : ''} disponível${filtered.length > 1 ? 's' : ''}` : 'Confira nosso estoque'}
-                            </p>
-                        </div>
-                    </div>
-                    {/* Floating Glass Search Panel */}
-                    <div className="absolute -bottom-16 left-0 right-0 z-20 max-w-4xl mx-auto px-4 w-full">
-                        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-6 shadow-2xl">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <div className="lg:col-span-2">
-                                    <label className="text-xs font-bold text-white/70 uppercase mb-2 block">Buscar</label>
-                                    <div className="relative">
-                                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-                                        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Marca ou modelo..."
-                                            className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30 backdrop-blur-sm" />
-                                    </div>
-                                </div>
-                                {types.length > 1 && (
-                                    <div>
-                                        <label className="text-xs font-bold text-white/70 uppercase mb-2 block">Tipo</label>
-                                        <select value={activeType} onChange={e => setActiveType(e.target.value)} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm">
-                                            {types.map(t => <option key={t} value={t} className="bg-slate-900">{t}</option>)}
-                                        </select>
-                                    </div>
-                                )}
-                                <div>
-                                    <label className="text-xs font-bold text-white/70 uppercase mb-2 block">Ordenar</label>
-                                    <select value={sortOrder} onChange={e => setSortOrder(e.target.value as 'asc' | 'desc')} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm">
-                                        <option value="asc" className="bg-slate-900">Menor preço</option>
-                                        <option value="desc" className="bg-slate-900">Maior preço</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            ) : profile.website_theme === 'premium' ? (
-                <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-[#050508]">
-                    <div className="absolute inset-0 flex flex-col lg:flex-row">
-                        <div className="w-full lg:w-1/2 h-full bg-[#050508] relative z-10 flex flex-col justify-center px-8 md:px-20 py-24 lg:py-0">
-                            <motion.div
-                                initial={{ opacity: 0, x: -50 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.8, ease: "easeOut" }}
-                            >
-                                <p className="text-amber-500 font-black text-[10px] uppercase tracking-[0.4em] mb-6">
-                                    {profile.website_city || 'Coleção Privada'}
-                                </p>
-                                <h1 className="text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-8">
-                                    {profile.website_hero_text || 'O Padrão Ouro em Veículos'}
-                                </h1>
-                                {profile.website_hero_subtitle && (
-                                    <p className="text-slate-400 text-lg md:text-xl font-light leading-relaxed max-w-md mb-10">
-                                        {profile.website_hero_subtitle}
-                                    </p>
-                                )}
-                                <div className="flex flex-wrap gap-4">
-                                    <a href="#estoque" 
-                                        className="bg-amber-500 text-black px-10 py-5 rounded-sm font-black text-xs uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-[0_0_50px_rgba(245,158,11,0.2)]">
-                                        Ver Coleção
-                                    </a>
-                                    {profile.website_whatsapp && (
-                                        <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                            className="border border-white/10 text-white px-10 py-5 rounded-sm font-black text-xs uppercase tracking-[0.2em] hover:bg-white/5 transition-all">
-                                            Agendar Visita
-                                        </a>
-                                    )}
-                                </div>
-                            </motion.div>
-                        </div>
-                        <div className="w-full lg:w-1/2 h-[50vh] lg:h-full relative overflow-hidden">
-                            {profile.website_hero_image ? (
-                                <motion.img 
-                                    initial={{ scale: 1.2, opacity: 0 }}
-                                    whileInView={{ scale: 1, opacity: 1 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 1.5, ease: "easeOut" }}
-                                    src={profile.website_hero_image} 
-                                    alt="Hero" 
-                                    className="w-full h-full object-cover" 
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-slate-900 flex items-center justify-center">
-                                    <Car size={120} className="text-slate-800 opacity-20" />
-                                </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#050508] via-transparent to-transparent hidden lg:block" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-transparent to-transparent lg:hidden" />
-                        </div>
-                    </div>
-                </section>
-            ) : profile.website_theme === 'classic' ? (
                 <>
                 <section className="relative z-20 pb-24"
                     style={{
                         minHeight: '500px',
-                        backgroundColor: profile?.website_branding?.dark_mode ? '#0f172a' : '#0f172a' // Always dark background for the hero mask
+                        backgroundColor: '#0f172a' // fundo sempre escuro, para a máscara do hero
                     }}>
                     {/* Hero image with dark overlay */}
                     {profile.website_hero_image ? (
@@ -942,7 +705,7 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                     </div>
                 </section>
 
-                <div className={`${profile.website_theme === 'premium' ? 'bg-[#0a0a0f] border-y border-white/5' : 'bg-white border-y border-slate-100'}`}>
+                <div className={`bg-white border-y border-slate-100`}>
                     <div className="max-w-[1250px] mx-auto px-4 pt-16 pb-8 grid grid-cols-2 md:grid-cols-4 gap-6">
                         {[
                             { active: profile.website_diff1_active ?? true, icon: profile.website_diff1_icon || 'Shield', label: profile.website_diff1_title || 'Veículos Revisados', sub: profile.website_diff1_sub || 'Inspeção completa' },
@@ -952,13 +715,13 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                         ].filter(item => item.active).map((item, idx) => {
                             return (
                                 <div key={idx} className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${profile.website_theme === 'premium' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-slate-100 text-slate-900 border border-slate-200'}`}
-                                        style={profile.website_theme === 'classic' ? { backgroundColor: primary + '15', color: primary, borderColor: primary + '30' } : {}}>
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-slate-100 text-slate-900 border border-slate-200`}
+                                        style={{ backgroundColor: primary + '15', color: primary, borderColor: primary + '30' }}>
                                         <DynamicIcon name={item.icon} size={22} />
                                     </div>
                                     <div>
-                                        <p className={`text-sm font-black tracking-tight ${profile.website_theme === 'premium' ? 'text-white' : 'text-slate-900'}`}>{item.label}</p>
-                                        <p className={`text-[11px] font-medium ${profile.website_theme === 'premium' ? 'text-slate-500' : 'text-slate-500'}`}>{item.sub}</p>
+                                        <p className={`text-sm font-black tracking-tight text-slate-900`}>{item.label}</p>
+                                        <p className={`text-[11px] font-medium text-slate-500`}>{item.sub}</p>
                                     </div>
                                 </div>
                             );
@@ -966,66 +729,31 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                     </div>
                 </div>
                 </>
-            ) : (
-                <section className="relative flex items-center justify-center overflow-hidden" style={{ minHeight: '500px' }}>
-                    {profile.website_hero_image ? (
-                        <>
-                            <img src={profile.website_hero_image} alt="Hero" className="absolute inset-0 w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/50" />
-                        </>
-                    ) : (
-                        <div className={`absolute inset-0 ${profile.website_theme === 'glass' ? 'bg-gradient-to-r from-indigo-900/80 to-purple-900/80' : profile.website_theme === 'premium' ? 'bg-gradient-to-r from-yellow-900/30 to-orange-900/20' : ''}`} style={!profile.website_hero_image ? heroStyle : undefined} />
-                    )}
-                    <div className={`relative z-10 max-w-[1250px] mx-auto px-4 py-16 space-y-4 w-full flex flex-col ${tc.heroAlign}`}>
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg">
-                            {profile.website_hero_text || `Bem-vindo à ${profile.company_name}`}
-                        </h1>
-                        {profile.website_hero_subtitle && (
-                            <p className="text-white/80 text-lg drop-shadow">
-                                {profile.website_hero_subtitle}
-                            </p>
-                        )}
-                        <p className="text-white/60 text-sm">
-                            {filtered.length > 0 ? `${filtered.length} veículo${filtered.length > 1 ? 's' : ''} disponíve${filtered.length > 1 ? 'is' : 'l'} agora` : 'Confira nosso estoque'}
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                            <a href="#estoque" className="px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-colors hover:opacity-90 shadow-lg" style={{ backgroundColor: profile.website_theme === 'premium' ? '#eab308' : (profile.website_theme === 'glass' ? 'rgba(255,255,255,0.25)' : primary) }}>
-                                Ver Estoque
-                            </a>
-                            {profile.website_whatsapp && (
-                                <a href={mainWaUrl} target="_blank" rel="noopener noreferrer" className="px-7 py-3.5 rounded-xl text-sm font-bold border-2 border-white text-white hover:bg-white/15 transition-colors shadow-lg">
-                                    Falar no WhatsApp
-                                </a>
-                            )}
-                        </div>
-                    </div>
-                </section>
-            )}
 
             {/* MISSÃO / VISÃO / VALORES */}
             {profile.website_sections?.show_mission_vision_values && (profile.website_sections.mission || profile.website_sections.vision || profile.website_sections.values) && (
                 <section className="max-w-[1250px] mx-auto px-4 py-16">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {profile.website_sections.mission && (
-                            <div className={`p-8 rounded-2xl ${profile.website_theme === 'classic' ? 'bg-white shadow-lg border border-slate-100' : profile.website_theme === 'glass' ? 'bg-white/10 backdrop-blur-lg border border-white/20' : 'bg-slate-800 border border-slate-700'}`}>
-                                <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${profile.website_theme === 'classic' ? 'text-slate-500' : 'text-white/60'}`} style={profile.website_theme === 'classic' ? { color: primary } : undefined}>Missão</p>
-                                <p className={profile.website_theme === 'classic' ? 'text-slate-900 text-lg font-bold leading-relaxed' : 'text-white text-lg font-bold'}>
+                            <div className={`p-8 rounded-2xl bg-white shadow-lg border border-slate-100`}>
+                                <p className={`text-xs font-bold uppercase tracking-wider mb-3 text-slate-500`} style={{ color: primary }}>Missão</p>
+                                <p className={'text-slate-900 text-lg font-bold leading-relaxed'}>
                                     {profile.website_sections.mission}
                                 </p>
                             </div>
                         )}
                         {profile.website_sections.vision && (
-                            <div className={`p-8 rounded-2xl ${profile.website_theme === 'classic' ? 'bg-white shadow-lg border border-slate-100' : profile.website_theme === 'glass' ? 'bg-white/10 backdrop-blur-lg border border-white/20' : 'bg-slate-800 border border-slate-700'}`}>
-                                <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${profile.website_theme === 'classic' ? 'text-slate-500' : 'text-white/60'}`} style={profile.website_theme === 'classic' ? { color: primary } : undefined}>Visão</p>
-                                <p className={profile.website_theme === 'classic' ? 'text-slate-900 text-lg font-bold leading-relaxed' : 'text-white text-lg font-bold'}>
+                            <div className={`p-8 rounded-2xl bg-white shadow-lg border border-slate-100`}>
+                                <p className={`text-xs font-bold uppercase tracking-wider mb-3 text-slate-500`} style={{ color: primary }}>Visão</p>
+                                <p className={'text-slate-900 text-lg font-bold leading-relaxed'}>
                                     {profile.website_sections.vision}
                                 </p>
                             </div>
                         )}
                         {profile.website_sections.values && (
-                            <div className={`p-8 rounded-2xl ${profile.website_theme === 'classic' ? 'bg-white shadow-lg border border-slate-100' : profile.website_theme === 'glass' ? 'bg-white/10 backdrop-blur-lg border border-white/20' : 'bg-slate-800 border border-slate-700'}`}>
-                                <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${profile.website_theme === 'classic' ? 'text-slate-500' : 'text-white/60'}`} style={profile.website_theme === 'classic' ? { color: primary } : undefined}>Valores</p>
-                                <p className={profile.website_theme === 'classic' ? 'text-slate-900 text-lg font-bold leading-relaxed' : 'text-white text-lg font-bold'}>
+                            <div className={`p-8 rounded-2xl bg-white shadow-lg border border-slate-100`}>
+                                <p className={`text-xs font-bold uppercase tracking-wider mb-3 text-slate-500`} style={{ color: primary }}>Valores</p>
+                                <p className={'text-slate-900 text-lg font-bold leading-relaxed'}>
                                     {profile.website_sections.values}
                                 </p>
                             </div>
@@ -1035,173 +763,7 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
             )}
 
             {/* Inventory */}
-            <section id="estoque" className={`max-w-[1250px] mx-auto px-4 py-16 ${profile.website_theme === 'classic' ? 'pt-20' : profile.website_theme === 'glass' ? 'pt-24' : ''}`}>
-                {/* Premium layout */}
-                {profile.website_theme === 'premium' ? (
-                    <div className="space-y-12">
-                        <div className="text-center max-w-2xl mx-auto">
-                            <p className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-4">Nossa Coleção</p>
-                            <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">Veículos Selecionados</h2>
-                            <p className="text-slate-400 text-lg">
-                                {filtered.length} opção{filtered.length !== 1 ? 's' : ''} disponível{filtered.length !== 1 ? 's' : ''}
-                            </p>
-                        </div>
-
-                        {filtered.length === 0 ? (
-                            <div className="text-center py-20 opacity-40">
-                                <Car size={48} className="mx-auto mb-3 opacity-20" />
-                                <p className="font-medium text-white">Nenhum veículo encontrado</p>
-                                <p className="text-sm text-slate-500 mt-1">Tente outros filtros.</p>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                                    {displayedVehicles.map((vehicle, i) => (
-                                        <motion.div 
-                                            key={vehicle.id}
-                                            initial={{ opacity: 0, y: 30 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            viewport={{ once: true, margin: "-50px" }}
-                                            transition={{ duration: 0.5, delay: (i % 8) * 0.1 }}
-                                        >
-                                            <VehicleCard vehicle={vehicle} slug={slug!} tc={tc} profile={profile} />
-                                        </motion.div>
-                                    ))}
-                                </div>
-                                {!showAll && filtered.length > 8 && (
-                                    <div className="text-center mt-16">
-                                        <button onClick={() => setShowAll(true)}
-                                            className="px-8 py-4 rounded text-white font-bold text-sm uppercase tracking-wider transition-all hover:opacity-80"
-                                            style={{ backgroundColor: primary || '#10b981' }}>
-                                            Ver todos os {filtered.length} veículos
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                ) : profile.website_theme === 'glass' ? (
-                    <div className="space-y-8">
-                        <div>
-                            <h2 className="text-3xl font-black text-white mb-2">Coleção Disponível</h2>
-                            <p className="text-white/60 text-sm">
-                                {filtered.length} veículo{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
-                            </p>
-                        </div>
-
-                        {filtered.length === 0 ? (
-                            <div className="text-center py-20 opacity-40">
-                                <Car size={48} className="mx-auto mb-3 opacity-20" />
-                                <p className="font-medium text-white">Nenhum veículo encontrado</p>
-                                <p className="text-sm text-white/50 mt-1">Tente outros filtros.</p>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-                                    {displayedVehicles.map((vehicle, i) => (
-                                        <motion.div
-                                            key={vehicle.id}
-                                            initial={{ opacity: 0, y: 30 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            viewport={{ once: true, margin: "-50px" }}
-                                            transition={{ duration: 0.5, delay: (i % 6) * 0.1 }}
-                                        >
-                                            <VehicleCard vehicle={vehicle} slug={slug!} tc={tc} profile={profile} />
-                                        </motion.div>
-                                    ))}
-                                </div>
-                                {!showAll && filtered.length > 8 && (
-                                    <div className="text-center mt-12">
-                                        <button onClick={() => setShowAll(true)}
-                                            className="px-8 py-4 rounded-lg font-bold text-white text-lg bg-white/10 hover:bg-white/20 backdrop-blur-lg border border-white/20 hover:border-white/40 transition-all">
-                                            Ver todos os {filtered.length} veículos
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                ) : profile.website_theme !== 'classic' ? (
-                    <div className="space-y-6">
-                        {/* Top Sticky Glass Filter Bar */}
-                        <div className={`sticky top-16 z-40 -mx-4 px-4 py-4 ${profile.website_theme === 'glass' ? 'bg-white/[0.05] backdrop-blur-[12px] backdrop-saturate-[180%] border-y border-white/[0.125] shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]' : 'bg-[#050508]/80 backdrop-blur-xl border-y border-white/5'}`}>
-                            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                                {/* Search */}
-                                <div className="relative flex-1 min-w-[240px]">
-                                    <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-50" />
-                                    <input value={search} onChange={e => setSearch(e.target.value)}
-                                        placeholder="Buscar marca ou modelo..."
-                                        className={`${tc.input} w-full pl-11`} />
-                                </div>
-
-                                {/* Type filter pills */}
-                                {types.length > 1 && (
-                                    <div className="flex flex-wrap gap-2">
-                                        {types.map(type => (
-                                            <button key={type} onClick={() => setActiveType(type)}
-                                                className={`whitespace-nowrap transition-all ${activeType === type ? tc.filterPillActive : tc.filterPill}`}>
-                                                {type}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Sort */}
-                                <div className="relative lg:ml-auto">
-                                    <select value={sortOrder} onChange={e => setSortOrder(e.target.value as 'asc' | 'desc')}
-                                        className={`${tc.input} pr-9 appearance-none cursor-pointer`}>
-                                        <option value="asc">Menor preço</option>
-                                        <option value="desc">Maior preço</option>
-                                    </select>
-                                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="px-2 pb-4">
-                            <p className={`text-sm mb-5 ${tc.sectionTitle}`}>
-                                {filtered.length} veículo{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
-                            </p>
-
-                            {filtered.length === 0 ? (
-                                <div className="text-center py-20 opacity-40">
-                                    <Car size={48} className="mx-auto mb-3 opacity-30" />
-                                    <p className="font-medium">Nenhum veículo encontrado</p>
-                                    <p className="text-sm mt-1">Tente outros filtros ou entre em contato.</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-                                        {displayedVehicles.map((vehicle, i) => (
-                                            <motion.div 
-                                                key={vehicle.id}
-                                                initial={{ opacity: 0, y: 30 }}
-                                                whileInView={{ opacity: 1, y: 0 }}
-                                                viewport={{ once: true, margin: "-50px" }}
-                                                transition={{ duration: 0.5, delay: (i % 6) * 0.1 }}
-                                            >
-                                                <Link to={`/site/${slug}/veiculo/${toVehicleSlug(vehicle)}`}>
-                                                    <VehicleCard vehicle={vehicle} slug={slug!} tc={tc} profile={profile} />
-                                                </Link>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                    {!showAll && filtered.length > 8 && (
-                                        <div className="text-center mt-8">
-                                            <button onClick={() => setShowAll(true)}
-                                                className={`px-8 py-3 rounded-xl font-semibold text-sm transition-colors ${tc.filterPillActive}`}
-                                                style={{ backgroundColor: primary }}>
-                                                Ver todos os {filtered.length} veículos
-                                            </button>
-                                        </div>
-                                    )}
-                                 </>
-                            )}
-                        </div>
-                    </div>
-                ) : (
-                    // Redesigned Classic layout
+            <section id="estoque" className="max-w-[1250px] mx-auto px-4 py-16 pt-20">
                     <div className="space-y-12">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-100">
                             <div>
@@ -1257,14 +819,12 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                             </>
                         )}
                     </div>
-                )}
             </section>
 
 
 
             {/* CTA Banner */}
             {profile.website_whatsapp && (
-                profile.website_theme === 'classic' ? (
                     <section className="py-2 px-4">
                         <div className="max-w-[1250px] mx-auto">
                             <div className="relative overflow-hidden rounded-2xl p-10 md:p-14 text-white"
@@ -1287,21 +847,6 @@ const PublicSiteHome: React.FC<{ forcedSlug?: string }> = ({ forcedSlug }) => {
                             </div>
                         </div>
                     </section>
-                ) : (
-                    <section className="max-w-[1250px] mx-auto px-4 pb-8">
-                        <div className="rounded-2xl p-8 text-center text-white"
-                            style={{ background: profile.website_use_gradient ? `linear-gradient(135deg, ${primary}, ${secondary})` : `linear-gradient(135deg, ${primary}dd, ${primary}99)` }}>
-                            <h2 className="text-2xl font-extrabold mb-2">Não encontrou o que procurava?</h2>
-                            <p className="text-white/80 mb-5">Fale com nossa equipe e encontre o veículo ideal para você.</p>
-                            <a href={mainWaUrl} target="_blank" rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 bg-white font-bold px-7 py-3.5 rounded-xl hover:bg-white/90 transition-colors"
-                                style={{ color: primary }}>
-                                <MessageCircle size={18} />
-                                Chamar no WhatsApp
-                            </a>
-                        </div>
-                    </section>
-                )
             )}
 
             {/* Contact Form + Google Maps (Lazy Loaded) */}

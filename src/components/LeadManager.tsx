@@ -35,7 +35,9 @@ interface LeadManagerProps {
   leads: Lead[];
   phases?: LeadPhase[];
   onAddLead: (lead: any) => Promise<Lead | null>;
-  onUpdateLead: (lead: Lead) => Promise<void>;
+  // O retorno é ignorado aqui; aceita tanto quem devolve o lead atualizado
+  // (DataContext.updateLead) quanto quem não devolve nada.
+  onUpdateLead: (lead: Lead) => Promise<Lead | void>;
   onDeleteLead: (id: string) => Promise<void>;
   onViewLead?: (id: string) => void;
   focusedLeadId?: string | null;

@@ -38,7 +38,12 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       }
     },
-    esbuild: isProd ? { drop: ['console', 'debugger'] } : {},
+    // `drop: ['console']` apagava os 154 `console.error` e 18 `console.warn` do
+    // sistema, zerando a capacidade de diagnóstico em produção. Agora só o log
+    // de depuração é removido; erros e avisos continuam chegando ao console.
+    esbuild: isProd
+      ? { drop: ['debugger'], pure: ['console.log', 'console.debug', 'console.trace'] }
+      : {},
     build: {
       reportCompressedSize: true,
       chunkSizeWarningLimit: 1000,

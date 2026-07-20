@@ -44,7 +44,10 @@ export default function AdminDashboard() {
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('plan_status', 'active'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('plan', 'pro'),
         supabase.from('leads').select('id', { count: 'exact', head: true }),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).not.in('phase', ['Novo Lead', 'Compradores', 'Desqualificados']),
+        // `.not.in(...)` não existe no supabase-js e lançava TypeError ao montar
+        // este array, derrubando todo o carregamento de métricas do painel.
+        // A forma correta é `.not(coluna, 'in', '("a","b")')`.
+        supabase.from('leads').select('id', { count: 'exact', head: true }).not('phase', 'in', '("Novo Lead","Compradores","Desqualificados")'),
         supabase.from('vehicles').select('id', { count: 'exact', head: true }),
         // `vehicles` não tem coluna `sold_date` (só `status`) -- a consulta
         // antiga filtrava por uma coluna inexistente, o Supabase retornava

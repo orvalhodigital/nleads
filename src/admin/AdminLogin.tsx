@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogoRenderer } from '../components/OtimizzaLogo';
+import { LogoRenderer } from '../components/OrvalhoLogo';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
@@ -132,7 +132,7 @@ export default function AdminLogin() {
             </div>
             {/* Footer / Copyright */}
             <div className="absolute bottom-6 text-neutral-600 text-xs text-center w-full">
-                &copy; {new Date().getFullYear()} Otimizza Security. Acesso Monitorado.
+                &copy; {new Date().getFullYear()} Orvalho Security. Acesso Monitorado.
             </div>
         </div>
     );

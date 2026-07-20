@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-// Domains that belong to Otimizza / nLeads itself — everything else is a customer custom domain
-const NLEADS_HOSTS = ['localhost', '127.0.0.1', 'painel.orvalhodigital.com.br', 'orvalhodigital.com.br', 'veiculos.otimizza.com.br', 'otimizza.com.br', 'nleads.pro', 'nleads.com.br', 'otimizza.pro', 'otimizzacrm.pro', 'otimizzacrm.com.br', 'vercel.app'];
+// Domínios da própria Orvalho — qualquer outro host é domínio customizado de lojista
+const SYSTEM_HOSTS = ['localhost', '127.0.0.1', 'painel.orvalhodigital.com.br', 'orvalhodigital.com.br', 'vercel.app'];
 
-function isNleadsHost(hostname: string): boolean {
-    return NLEADS_HOSTS.some(h => hostname === h || hostname.endsWith(`.${h}`));
+function isSystemHost(hostname: string): boolean {
+    return SYSTEM_HOSTS.some(h => hostname === h || hostname.endsWith(`.${h}`));
 }
 
 interface Props {
-    children: React.ReactNode; // the normal Otimizza app
+    children: React.ReactNode; // o app Gestor de Pátio
     PublicSite: React.ComponentType<{ slug: string }>; // public site renderer
 }
 
@@ -25,7 +25,7 @@ const RootGate: React.FC<Props> = ({ children, PublicSite }) => {
     useEffect(() => {
         const hostname = window.location.hostname;
 
-        if (isNleadsHost(hostname)) {
+        if (isSystemHost(hostname)) {
             setState({ phase: 'app' });
             return;
         }
@@ -76,7 +76,7 @@ const RootGate: React.FC<Props> = ({ children, PublicSite }) => {
                         href="https://painel.orvalhodigital.com.br"
                         className="inline-block mt-4 px-6 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-900 transition"
                     >
-                        Ir para n-Leads Veículos
+                        Ir para o Gestor de Pátio
                     </a>
                 </div>
             </div>

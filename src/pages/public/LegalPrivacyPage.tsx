@@ -46,7 +46,7 @@ const LegalPrivacyPage: React.FC = () => {
               1. Quem Somos
             </h2>
             <p>
-              Esta Política de Privacidade descreve como a <strong>Orvalho Digital Tecnologia Ltda</strong> ("Orvalho Digital", "nós"), operadora da plataforma SaaS de gestão de leads e vendas de veículos ("nLeads CRM" ou "Sistema"), coleta, usa, armazena e protege dados pessoais coletados no âmbito da prestação dos seus serviços.
+              Esta Política de Privacidade descreve como a <strong>Orvalho Digital Tecnologia Ltda</strong> ("Orvalho Digital", "nós"), operadora da plataforma SaaS de gestão de leads e vendas de veículos ("Gestor de Pátio" ou "Sistema"), coleta, usa, armazena e protege dados pessoais coletados no âmbito da prestação dos seus serviços.
             </p>
           </section>
 

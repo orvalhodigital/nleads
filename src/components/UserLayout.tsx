@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import ErrorBoundary from './ErrorBoundary';
-import OtimizzaLogo, { LogoRenderer } from './OtimizzaLogo';
+import OrvalhoLogo, { LogoRenderer } from './OrvalhoLogo';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import logoOrvalhoVertical from '../assets/branding/logos/logo-orvalho.png';
 import Header from './Header';

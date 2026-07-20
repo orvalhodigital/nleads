@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { LogoRenderer } from '../components/OtimizzaLogo';
+import { LogoRenderer } from '../components/OrvalhoLogo';
 
 export default function AdminSetup() {
     const [fullName, setFullName] = useState('');

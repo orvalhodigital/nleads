@@ -12,7 +12,7 @@ export interface PublicProfile {
     id: string;
     company_name: string;
     company_logo?: string;
-    website_theme: 'classic' | 'glass' | 'premium' | 'modern' | 'bold' | 'luxury';
+    website_theme: 'classic';
     website_primary_color: string;
     website_secondary_color: string;
     website_text_color: string;
@@ -37,6 +37,7 @@ export interface PublicProfile {
     website_instagram?: string;
     website_facebook?: string;
     website_youtube?: string;
+    website_tiktok?: string;
     website_hero_button_text?: string;
     website_show_sold?: boolean;
     website_show_filters?: boolean;

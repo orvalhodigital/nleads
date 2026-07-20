@@ -93,7 +93,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
         { text: 'Limite de até 50 Leads ativos', available: true },
         { text: 'Acesso completo ao Kanban e Listas', available: true },
         { text: 'Acesso à Agenda e Lembretes', available: true },
-        { text: 'Website de Vendas Otimizza básico', available: true },
+        { text: 'Website de Vendas Orvalho básico', available: true },
         { text: 'Multiusuários (Múltiplos Vendedores)', available: false },
         { text: 'Instância WhatsApp Integrada', available: false },
         { text: 'Website com Domínio Customizado', available: false },
@@ -144,7 +144,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                         <h2 className="text-4xl font-black">{isProActive ? 'Plano Ilimitado' : 'Plano Básico'}</h2>
                         <p className="text-slate-400 font-medium max-w-md leading-relaxed">
                             {isProActive
-                                ? 'Sua assinatura está em dia e todas as funcionalidades premium do Otimizza estão liberadas para você e sua equipe.'
+                                ? 'Sua assinatura está em dia e todas as funcionalidades premium do Gestor de Pátio estão liberadas para você e sua equipe.'
                                 : 'Você está no plano básico. Faça upgrade para o Plano Ilimitado para remover limites de cadastro e liberar todos os recursos avançados de WhatsApp, domínio e equipe.'}
                         </p>
                     </div>
@@ -268,7 +268,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
             <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl space-y-8">
                 <div className="text-center max-w-2xl mx-auto">
                     <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-full">Recursos Pro</span>
-                    <h3 className="text-3xl font-black text-slate-950 mt-4">Tudo o que o Otimizza Pro Entrega</h3>
+                    <h3 className="text-3xl font-black text-slate-950 mt-4">Tudo o que o Gestor de Pátio Pro Entrega</h3>
                     <p className="text-sm text-slate-400 mt-2 font-medium">Veja em detalhes como a versão Pro transforma o gerenciamento da sua concessionária.</p>
                 </div>
 

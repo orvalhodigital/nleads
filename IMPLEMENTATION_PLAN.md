@@ -192,7 +192,7 @@ Logo pela tela.
   - `getPrimaryColor()`, `getSecondaryColor()`, `getTertiaryColor()`
 
 ### 4. Documentação de Uso ✅
-- **Arquivo**: `BRANDING_USAGE_GUIDE.md`
+- **Arquivo**: `docs/BRANDING.md` *(consolidado em 2026-07-18; era `BRANDING_USAGE_GUIDE.md`)*
 - **Conteúdo**:
   - Exemplos de uso de componentes
   - Exemplos de uso de hooks

@@ -410,7 +410,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
                 <div className="lg:col-span-12 space-y-10">
                     <div className="text-center max-w-2xl mx-auto mb-4">
                         <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Gestão do Plano</h2>
-                        <p className="text-slate-500 font-bold text-lg leading-relaxed">Personalize sua experiência Otimizza e escale seu negócio.</p>
+                        <p className="text-slate-500 font-bold text-lg leading-relaxed">Personalize sua experiência Orvalho e escale seu negócio.</p>
                     </div>
 
                     {loadingPlans ? (

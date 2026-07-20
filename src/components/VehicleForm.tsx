@@ -154,7 +154,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
     // Plate lookup
     const lookupPlate = async () => {
-        const rawPlate = formData.plate.replace(/[-\s]/g, '').toUpperCase();
+        const rawPlate = (formData.plate ?? '').replace(/[-\s]/g, '').toUpperCase();
         if (rawPlate.length < 7) {
             setPlateError('Digite uma placa válida (7 caracteres).');
             return;

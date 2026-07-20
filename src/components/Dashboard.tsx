@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Package, Calendar, Award
 } from 'lucide-react';
-import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, Motorcycle, TransmissionType } from '../types';
+import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, Motorcycle, TransmissionType, VehicleType } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
 import { isToday, isTomorrow, isSameDay, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, differenceInCalendarDays } from 'date-fns';
@@ -41,9 +41,12 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
       // Venda" e "Veículos Parados" ficarem sempre errados/zerados para motos.
       list.push(...motorcycles.map(m => ({
         ...m,
-        type: m.category as any,
+        type: m.category as unknown as VehicleType,
         transmission: 'Manual' as TransmissionType,
-        engine: m.engine as any,
+        engine: m.engine,
+        // Campo obrigatório de Vehicle sem equivalente em Motorcycle. Só afeta
+        // a ficha do veículo, não as métricas calculadas aqui.
+        isServiceHistoryComplete: false,
       })));
     }
     return list;

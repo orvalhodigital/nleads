@@ -25,7 +25,7 @@ export const supabase: SupabaseClient = createClient(
     },
     global: {
       headers: {
-        'x-application-name': 'n-leads-veiculos',
+        'x-application-name': 'orvalho-gestor-de-patio',
       },
     },
   }

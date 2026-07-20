@@ -1,11 +1,13 @@
 {
-  "name": "n-leads-veiculos",
+  "name": "orvalho-gestor-de-patio",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
+    "build:only": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {

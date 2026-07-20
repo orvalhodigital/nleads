@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
-import { LogoRenderer } from './OtimizzaLogo';
+import { LogoRenderer } from './OrvalhoLogo';
 import { useData } from '../contexts/DataContext';
 
 interface MenuItem {

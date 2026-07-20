@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, User, Eye, EyeOff, Building } from 'lucide-react';
 import { useSystemSettings } from '../hooks/useSystemSettings';
-import { LogoRenderer } from './OtimizzaLogo';
+import { LogoRenderer } from './OrvalhoLogo';
 import { Link, Navigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 

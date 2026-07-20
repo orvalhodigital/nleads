@@ -7,7 +7,7 @@ export interface AuditLogEntry {
   resource_type: 'user' | 'lead' | 'vehicle' | 'sale' | 'plan';
   resource_id: string;
   resource_name?: string;
-  changes?: Record<string, any>;
+  changes?: Record<string, any> | null;
   ip_address?: string;
   created_at?: string;
 }

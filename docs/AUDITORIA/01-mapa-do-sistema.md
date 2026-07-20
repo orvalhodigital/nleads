@@ -256,4 +256,6 @@ Reverificado em 2026-07-20.
 | A23 | **Limites de plano não existiam no banco** — migração nunca aplicada | 🔴 | ✅ resolvido — 3 triggers ativos | 3 |
 | A22 | **`SUPABASE_ACESS_TOKEN` exposto em texto plano em log de ferramenta** | 🔴 | adiado por decisão do dono — rotacionar antes da comercialização | — |
 
+| A24 | **RPC `admin_update_user_password` sem verificação: qualquer anônimo assume qualquer conta** | 🔴 | migração pronta — aguarda aplicação | 4 |
+
 **Linha de base para a Fase 4:** build ✅ · typecheck ✅ 0 erros · RLS ✅ 21/21 tabelas · migrações ✅ 16 registradas · testes ❌ · CI ❌

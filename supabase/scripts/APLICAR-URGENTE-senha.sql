@@ -86,15 +86,15 @@ ON CONFLICT (version) DO NOTHING;
 
 
 -- ============================================================================
--- CONFERÊNCIA — esperado: anon_pode_executar = 0 e tem_verificacao_admin = 1
+-- CONFERÊNCIA — usa has_function_privilege (definitivo), não parsing de ACL.
+-- Esperado: anon_pode_executar = false, authenticated_pode = true,
+--           tem_verificacao_admin = 1, migracoes_registradas = 17
 -- ============================================================================
 SELECT 'anon_pode_executar' AS verificacao,
-       count(*) FILTER (WHERE array_to_string(proacl,',') LIKE '%anon=X%')::text AS resultado
-  FROM pg_proc WHERE proname = 'admin_update_user_password'
+       has_function_privilege('anon','public.admin_update_user_password(uuid,text)','EXECUTE')::text AS resultado
 UNION ALL
-SELECT 'public_pode_executar',
-       count(*) FILTER (WHERE array_to_string(proacl,',') LIKE '%=X/postgres,%' OR array_to_string(proacl,',') LIKE '=X/postgres%')::text
-  FROM pg_proc WHERE proname = 'admin_update_user_password'
+SELECT 'authenticated_pode_executar',
+       has_function_privilege('authenticated','public.admin_update_user_password(uuid,text)','EXECUTE')::text
 UNION ALL
 SELECT 'tem_verificacao_admin',
        count(*) FILTER (WHERE pg_get_functiondef(oid) LIKE '%is_current_user_admin%')::text

@@ -177,8 +177,9 @@ export default function AdminUsers() {
             return;
         }
 
-        if (newPassword.length < 6) {
-            showError('A senha deve ter no mínimo 6 caracteres.');
+        // 8 caracteres: alinha com a validação da RPC admin_update_user_password.
+        if (newPassword.length < 8) {
+            showError('A senha deve ter no mínimo 8 caracteres.');
             return;
         }
 

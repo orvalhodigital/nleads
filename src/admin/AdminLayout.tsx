@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { LogOut, Users, Settings, Bell, Tag, Quote, Rocket, CheckCircle2, LifeBuoy, TrendingUp, Shield, Menu, X } from 'lucide-react';
+import { LogOut, Users, Settings, Bell, Tag, Quote, Rocket, CheckCircle2, LifeBuoy, TrendingUp, Shield, Menu, X, BarChart3 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from '../components/OrvalhoLogo';
@@ -42,6 +42,7 @@ export default function AdminLayout() {
             title: 'Gestão',
             items: [
                 { label: 'Dashboard', path: '/paineldoadm', icon: <CheckCircle2 size={18} /> },
+                { label: 'Métricas', path: '/paineldoadm/metrics', icon: <BarChart3 size={18} /> },
                 { label: 'Usuários', path: '/paineldoadm/users', icon: <Users size={18} /> },
                 { label: 'Vendas', path: '/paineldoadm/sales', icon: <TrendingUp size={18} /> },
             ]

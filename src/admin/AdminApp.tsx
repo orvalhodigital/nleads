@@ -19,6 +19,7 @@ const AdminQuotes = lazy(() => import('./AdminQuotes'));
 const AdminOnboarding = lazy(() => import('./AdminOnboarding'));
 const AdminTickets = lazy(() => import('./AdminTickets'));
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
+const AdminMetrics = lazy(() => import('./AdminMetrics'));
 const AdminSales = lazy(() => import('./AdminSales'));
 const AdminAuditLog = lazy(() => import('./AdminAuditLog')); // Fase 4
 
@@ -149,6 +150,7 @@ export default function AdminApp() {
                     }
                 >
                     <Route index element={<AdminDashboard />} />
+                    <Route path="metrics" element={<AdminMetrics />} />
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="users/:userId" element={<AdminUserDetails />} />
                     <Route path="sales" element={<AdminSales />} />

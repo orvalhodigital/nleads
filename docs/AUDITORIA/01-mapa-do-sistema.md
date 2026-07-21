@@ -45,7 +45,7 @@ Cada lojista (tenant) gerencia estoque, leads/CRM, fluxo de vendas e um site pú
 \+ resolução por **domínio customizado** (`CustomDomainRedirect`, `CustomDomainVehicleDetail`)
 
 ### 3.4 Painel administrativo — `/paineldoadm/*`
-`setup` · `login` · index (dashboard) · `users` (+`/:userId`) · `sales` · `audit-log` · `settings` · `notifications` · `quotes` · `plans` · `onboarding` · `tickets` · `user/:userId/*` (impersonação — o admin navega o app do lojista)
+`setup` · `login` · index (dashboard) · `users` (+`/:userId`) · `sales` · `audit-log` · `settings` · `notifications` · `quotes` · `metrics` · `plans` · `onboarding` · `tickets` · `user/:userId/*` (impersonação — o admin navega o app do lojista)
 
 Todas as rotas usam `React.lazy` — code splitting já está aplicado.
 
@@ -266,7 +266,7 @@ Reverificado em 2026-07-20.
 | A28 | Webhook de leads falhava aberto (aceitava sem token se o secret sumisse) | 🔴 | resolvido — fail-closed | 6 |
 
 | A29 | Planos: slug `free` num plano pago + webhook achatava tudo em `plan:pro` (Básico ganhava ilimitado) | 🔴 | ✅ resolvido — slug `basico`, webhook grava plano real, helper único | 7 |
-| A30 | Sem teto de consumo de IA por usuário | 🟡 | avaliado — risco baixo (auth + modelo barato); rate-limit no checklist | 7 |
+| A30 | Sem teto de consumo de IA por usuário | 🟡 | rate-limit no checklist; **registro de consumo implementado** (feature nova) | 7 |
 | A31 | **Sem paywall de expiração**: TrialExpired importado mas nunca renderizado | 🔴 | ✅ resolvido — paywall ligado após 7 dias sem plano pago | 7 |
 
 **Linha de base para a Fase 8:** billing íntegro (A29/A31 resolvidos, migração 18 aplicada); A30 avaliado; testes ❌ · CI ❌

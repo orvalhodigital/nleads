@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { generateJson, logAiUsage } from '../_lib/aiUsage';
 
 const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
 
@@ -21,90 +22,6 @@ async function getVerifiedUserId(req: any): Promise<string | null> {
   return user.id;
 }
 
-async function generateJson(prompt: string, openaiApiKey?: string, openrouterApiKey?: string): Promise<any> {
-  let lastError: any = null;
-
-  // 1. Tenta OpenAI primeiro, se a chave estiver configurada
-  if (openaiApiKey) {
-    for (const model of MODEL_FALLBACK_CHAIN) {
-      try {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-          }),
-        });
-
-        if (!res.ok) {
-          lastError = new Error(`OpenAI (${model}) falhou: HTTP ${res.status} — ${await res.text()}`);
-          continue;
-        }
-
-        const data = await res.json();
-        const content = data.choices?.[0]?.message?.content;
-        if (!content) {
-          lastError = new Error(`OpenAI (${model}) retornou resposta vazia.`);
-          continue;
-        }
-
-        return JSON.parse(content);
-      } catch (err: any) {
-        lastError = err;
-        continue;
-      }
-    }
-  }
-
-  // 2. Fallback para OpenRouter se a OpenAI falhar ou não estiver configurada
-  if (openrouterApiKey) {
-    const OPENROUTER_MODEL_FALLBACK_CHAIN = [
-      'google/gemini-2.5-flash',
-      'meta-llama/llama-3-8b-instruct',
-      'openai/gpt-4o-mini'
-    ];
-
-    for (const model of OPENROUTER_MODEL_FALLBACK_CHAIN) {
-      try {
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openrouterApiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://orvalhodigital.com.br',
-            'X-Title': 'Orvalho Digital Leads'
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-          }),
-        });
-
-        if (!res.ok) {
-          lastError = new Error(`OpenRouter (${model}) falhou: HTTP ${res.status} — ${await res.text()}`);
-          continue;
-        }
-
-        const data = await res.json();
-        const content = data.choices?.[0]?.message?.content;
-        if (!content) {
-          lastError = new Error(`OpenRouter (${model}) retornou resposta vazia.`);
-          continue;
-        }
-
-        return JSON.parse(content);
-      } catch (err: any) {
-        lastError = err;
-        continue;
-      }
-    }
-  }
-
-  throw lastError || new Error('Todos os modelos de IA falharam (OpenAI e OpenRouter).');
-}
 
 export default async function handler(req: any, res: any) {
   const origin = req.headers.origin || '';
@@ -161,7 +78,8 @@ Gere uma resposta em JSON com o seguinte formato exato (sem formatação extra o
 Regra para o cálculo de preço de venda sugerido:
 Soma o Preço de Compra + Todos os Custos Operacionais + Margem de Lucro recomendada (geralmente entre 15% e 25% sobre o custo total de aquisição).`;
 
-    const parsed = await generateJson(prompt, openaiApiKey, openrouterApiKey);
+    const { result: parsed, meta: aiMeta } = await generateJson(prompt, openaiApiKey, openrouterApiKey);
+    await logAiUsage(userId, 'seo', aiMeta);
     return res.status(200).json(parsed);
   } catch (err: any) {
     console.error('Error generating AI SEO:', err);

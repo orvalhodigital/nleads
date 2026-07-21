@@ -231,7 +231,7 @@ Reverificado em 2026-07-20.
 
 | # | Achado | Sev. | Status | Fase |
 |---|---|:---:|---|:---:|
-| A1 | 57% do acesso a dados ignora a camada de serviços (105 UI × 79 serviços) | 🟠 | aberto — confirmado | 14 |
+| A1 | Acesso a dados fora da camada de serviços — 44 escritas diretas | 🟠 | quantificado; refatorar na Fase 14 | 14 |
 | A2 | Três sistemas de migração de banco em paralelo | 🔴 | ✅ resolvido — só `supabase/migrations/`; histórico arquivado | 3 |
 | A3 | `InventoryContext` / `LeadContext` sem consumidores | 🟡 | aberto — confirmado | 14 |
 | A4 | `DataContext` é god context (506 linhas, 32 consumidores) | 🟡 | aberto | 12/14 |
@@ -258,5 +258,9 @@ Reverificado em 2026-07-20.
 
 | A24 | **RPC `admin_update_user_password` sem verificação: qualquer anônimo assume qualquer conta** | 🔴 | ✅ resolvido e verificado — anon EXECUTE=false | 4 |
 | A25 | Senha mínima do provedor é 6 (Supabase Auth) | 🟡 | checklist de comercialização | — |
+
+| A26 | Três padrões de tratamento de erro nos services | 🟡 | padronizar na Fase 14 | 14 |
+
+**Linha de base para a Fase 5:** camada de serviços auditada — sem falha crítica
 
 **Linha de base para a Fase 4:** build ✅ · typecheck ✅ 0 erros · RLS ✅ 21/21 tabelas · migrações ✅ 16 registradas · testes ❌ · CI ❌

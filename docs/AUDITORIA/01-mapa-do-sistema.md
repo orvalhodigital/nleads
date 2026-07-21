@@ -267,7 +267,7 @@ Reverificado em 2026-07-20.
 
 | A29 | Planos: slug `free` num plano pago + webhook achatava tudo em `plan:pro` (Básico ganhava ilimitado) | 🔴 | ✅ resolvido — slug `basico`, webhook grava plano real, helper único | 7 |
 | A30 | Sem registro/controle de consumo de IA por usuário (custo OpenAI/OpenRouter) | 🟡 | aberto — Fase 7 continuação | 7 |
-| A31 | **Sem paywall de expiração**: TrialExpired importado mas nunca renderizado; downgrade só cobre `pro` | 🔴 | documentado — decisão de produto | futura |
+| A31 | **Sem paywall de expiração**: TrialExpired importado mas nunca renderizado | 🔴 | ✅ resolvido — paywall ligado após 7 dias sem plano pago | 7 |
 
 **Linha de base para a Fase 7 (em pausa):** billing auditado; A29 aguarda decisão do dono
 

@@ -25,16 +25,23 @@ Modelo confirmado pelo dono:
 
 Nenhum cliente atual afetado: não há assinante do Básico hoje (2 trials, 1 estrutura-ecv-plus).
 
-## 🔴 A31 — Não existe paywall de expiração (pré-existente)
+## ✅ A31 — Paywall de expiração ligado
 
-Descoberto ao validar a A29. `TrialExpired` foi construído (`src/components/TrialExpired.tsx`) e é importado em `UserLayout.tsx`, mas **nunca é renderizado** — não há `<TrialExpired>` em lugar nenhum. Nada bloqueia o acesso quando o trial ou a assinatura vence.
+Descoberto ao validar a A29: `TrialExpired` foi construído e importado em `UserLayout.tsx`, mas **nunca era renderizado** — nada bloqueava o acesso quando o trial vencia.
 
-Além disso, o downgrade por falta de pagamento em `profileService.ts:20` só rebaixa `'pro'` expirado para `'free'`. `estrutura-ecv` e `estrutura-ecv-plus` **mantêm acesso ilimitado para sempre** se o pagamento parar.
+**Regra confirmada pelo dono (2026-07-20):** o cliente tem 7 dias de teste gratuito; depois precisa escolher e contratar um plano. Não existe plano gratuito permanente — o "Básico" é pago.
 
-**Consequência:** hoje um trial expirado continua usando o sistema (limitado, mas sem paywall), e uma assinatura ECV que deixa de ser paga não perde acesso. Para comercializar, o "pague ou perca acesso" precisa ser aplicado.
+**Implementado:**
+- `src/lib/planAccess.ts` ganhou `hasPaidPlan()` e `needsToChoosePlan({ plan, trialEndsAt })`. Foi preciso separar "limitado" de "pago": o Básico é pago **e** limitado, então `isLimitedPlan` não serve para o paywall.
+- `UserLayout.tsx` renderiza `<TrialExpired>` quando `needsToChoosePlan` é verdadeiro — sem plano pago **e** trial vencido. O `onUpgrade` gera o link de pagamento Asaas (`planService.getAsaasUpgradeLink`) e redireciona.
 
-É decisão de produto (o que a expiração deve fazer — bloquear tudo? só limitar?). Não foi implementado nesta fase. Import de `TrialExpired` mantido como sinal da intenção original.
-→ Fase futura + checklist de comercialização.
+**Nunca bloqueia:** admin, modo de impersonação, trial dentro dos 7 dias, e qualquer plano pago (basico/pro/ecv/ecv-plus).
+
+**Verificado no banco** — nenhum dos 3 perfis atuais é bloqueado: admin (excluído), Gelson (trial válido até 2027), Neto (plano pago). Só cai no paywall um trial vencido sem contratação — o comportamento desejado.
+
+### Ainda em aberto: downgrade só cobre `pro`
+O downgrade client-side em `profileService.ts:20` rebaixa apenas `'pro'` expirado. Mas isso agora importa menos: o paywall usa `trialEndsAt` + ausência de plano pago, não o valor rebaixado. A revogação de acesso de um **pago que deixa de pagar** depende do webhook `PAYMENT_OVERDUE`/`SUBSCRIPTION_DELETED` setar `plan_status`/`plan` corretamente (já faz: overdue e canceled→free). Um `canceled` vira `plan='free'` e cai no paywall. Um `overdue` mantém o plano pago (período de graça) — decisão de produto se deve bloquear.
+→ Refinamento de `overdue` fica para o checklist de comercialização.
 
 ---
 

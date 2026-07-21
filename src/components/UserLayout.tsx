@@ -16,6 +16,9 @@ import AppTour from './AppTour';
 import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
+import { planService } from '../services/planService';
+import { needsToChoosePlan } from '../lib/planAccess';
+import type { Plan } from '../types';
 
 const UserLayout: React.FC = () => {
     const { session, loading, profile, impersonatedUserId, refreshProfile } = useData();
@@ -94,6 +97,24 @@ const UserLayout: React.FC = () => {
 
     if (!session) {
         return <Navigate to="/login" replace />
+    }
+
+    // Paywall (achado A31): terminado o teste de 7 dias sem plano contratado, o
+    // lojista precisa escolher um plano. Nunca bloqueia admin nem o modo de
+    // impersonação (o admin precisa ver a conta do lojista).
+    const isAdminViewing = !!impersonatedUserId || profile?.role === 'admin' || profile?.role === 'super_admin';
+    if (!isAdminViewing && needsToChoosePlan({ plan: profile?.plan, trialEndsAt: profile?.trialEndsAt })) {
+        const handleUpgrade = async (plan?: Plan) => {
+            if (!plan || !profile?.id) return;
+            try {
+                const url = await planService.getAsaasUpgradeLink(profile.id, plan.id);
+                window.location.href = url;
+            } catch (err: any) {
+                alert(err?.message || 'Erro ao gerar o pagamento. Tente novamente.');
+            }
+        };
+        const handleLogout = () => supabase.auth.signOut().then(() => { window.location.href = '/login'; });
+        return <TrialExpired onUpgrade={handleUpgrade} onLogout={handleLogout} />;
     }
 
     return (

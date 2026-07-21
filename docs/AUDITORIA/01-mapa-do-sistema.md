@@ -265,6 +265,9 @@ Reverificado em 2026-07-20.
 
 | A28 | Webhook de leads falhava aberto (aceitava sem token se o secret sumisse) | 🔴 | resolvido — fail-closed | 6 |
 
-**Linha de base para a Fase 7:** API/webhooks auditados; A28 corrigido; A8 (n8n) no checklist
+| A29 | Planos: slug `free` num plano pago de R$47 + webhook achata todo pagamento em `plan:pro` | 🔴 | **documentado — aguarda decisão de modelo de negócio; nenhum código alterado** | 7 |
+| A30 | Sem registro/controle de consumo de IA por usuário (custo OpenAI/OpenRouter) | 🟡 | aberto | 7 |
+
+**Linha de base para a Fase 7 (em pausa):** billing auditado; A29 aguarda decisão do dono
 
 **Linha de base para a Fase 4:** build ✅ · typecheck ✅ 0 erros · RLS ✅ 21/21 tabelas · migrações ✅ 16 registradas · testes ❌ · CI ❌

@@ -238,7 +238,7 @@ Reverificado em 2026-07-20.
 | A5 | 7 arquivos acima de 950 linhas | 🟡 | aberto — confirmado | 14 |
 | A6 | Cobertura de testes ~zero | 🔴 | aberto | 15 |
 | A7 | Sem CI | 🔴 | aberto | 18 |
-| A8 | Frontend chama n8n diretamente | 🟡 | aberto | 6 |
+| A8 | Frontend chama n8n diretamente | 🟡 | aceito — sem vazamento; rate-limit no n8n vai ao checklist | 6 |
 | A9 | 29 erros de TypeScript que o build não detecta | 🔴 | ✅ resolvido — 0 erros, build com portão | 2 |
 | A10 | Script versionado que exfiltraria segredos | 🔴 | ✅ resolvido | — |
 | A11 | Duas landing pages órfãs | 🟡 | ✅ resolvido | — |
@@ -263,6 +263,8 @@ Reverificado em 2026-07-20.
 
 | A27 | 5 escritas com erro silencioso (supabase-js nao lanca) — venda em massa mostrava sucesso ao falhar | 🔴 | resolvido | 5 |
 
-**Linha de base para a Fase 6:** A27 corrigido; A1/A26 adiados para a Fase 14
+| A28 | Webhook de leads falhava aberto (aceitava sem token se o secret sumisse) | 🔴 | resolvido — fail-closed | 6 |
+
+**Linha de base para a Fase 7:** API/webhooks auditados; A28 corrigido; A8 (n8n) no checklist
 
 **Linha de base para a Fase 4:** build ✅ · typecheck ✅ 0 erros · RLS ✅ 21/21 tabelas · migrações ✅ 16 registradas · testes ❌ · CI ❌

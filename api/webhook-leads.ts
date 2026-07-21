@@ -28,21 +28,23 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
-  // ─── Segurança: token do webhook ────────────────────────────────────────────
-  // Ativação em 2 passos, para não derrubar a entrada de leads do n8n:
-  //   1) defina WEBHOOK_SECRET no Vercel;
-  //   2) faça o n8n enviar o header `X-Webhook-Token` com o MESMO valor.
-  // Enquanto WEBHOOK_SECRET não existir, o endpoint segue aberto (comportamento atual)
-  // e apenas avisa. Assim que a env var for criada, a checagem passa a ser OBRIGATÓRIA.
-  // ⚠️ Endpoint aberto permite injeção anônima de leads — configure isso.
+  // ─── Segurança: token do webhook (fail-closed) ──────────────────────────────
+  // O chamador (n8n) precisa enviar o header `X-Webhook-Token` com o mesmo valor
+  // de WEBHOOK_SECRET. Sem a env var, o endpoint REJEITA — nunca aceita anônimo.
+  //
+  // Antes isto falhava aberto ("aceita se o secret não existir"), o que deixava
+  // o endpoint de injeção de leads exposto a qualquer um que soubesse um user_id
+  // — e user_id é descobrível pelo site público. WEBHOOK_SECRET já está
+  // configurado no Vercel (verificado na Fase 6), então o caminho de produção
+  // não é afetado por esta mudança.
   const webhookSecret = process.env.WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.warn('[SEGURANÇA] WEBHOOK_SECRET não configurado — endpoint de leads ACEITANDO requisições não autenticadas. Configure a env var + header no n8n.');
-  } else {
-    const tokenHeader = req.headers['x-webhook-token'];
-    if (tokenHeader !== webhookSecret) {
-      return res.status(401).json({ error: 'Unauthorized: invalid or missing webhook token.' });
-    }
+    console.error('[SEGURANÇA] WEBHOOK_SECRET não configurado — rejeitando por segurança.');
+    return res.status(500).json({ error: 'Webhook não configurado no servidor.' });
+  }
+  const tokenHeader = req.headers['x-webhook-token'];
+  if (tokenHeader !== webhookSecret) {
+    return res.status(401).json({ error: 'Unauthorized: invalid or missing webhook token.' });
   }
 
   try {

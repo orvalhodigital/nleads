@@ -27,6 +27,7 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 - [ ] **Definir Otimizza × Orvalho nos ativos de marca** — resolvido no código; sobra limpar `profiles.logo_url` no banco.
 - [ ] **Renomear fluxos no n8n** e atualizar as URLs no código.
 - [ ] **Elevar a senha mínima do Supabase Auth para 8** (hoje 6; painel Authentication → Policies) — achado da Fase 4.
+- [ ] **Validação e rate-limiting no n8n** para os webhooks chamados de páginas públicas (achado A8) — evita spam de WhatsApp disparado por bots.
 - [ ] **Cobertura de testes e CI** (achados A6/A7, fases 15 e 18).
 
 ---

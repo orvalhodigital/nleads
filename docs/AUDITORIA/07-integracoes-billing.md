@@ -81,10 +81,20 @@ Perguntado em 2026-07-20; o dono dispensou as perguntas para decidir depois. Dua
 
 **A correção depende dessas respostas** e não foi feita. Nenhum código de billing foi alterado nesta fase.
 
-## 🟡 A30 — Sem controle de custo de IA
-Não há tabela de registro de consumo de IA por usuário. As funções `api/openai/*` chamam OpenAI (com fallback OpenRouter) sem contabilizar tokens/custo por lojista nem impor limite. Num SaaS, um usuário pode gerar custo desproporcional de IA sem que o sistema perceba.
+## 🟡 A30 — Sem teto de consumo de IA (risco prático baixo)
 
-→ Investigar profundidade e mitigação numa continuação da Fase 7, quando o dono retomar.
+As funções `api/openai/*` não registram consumo por usuário nem impõem limite. Avaliada a exposição real:
+
+| Fator | Situação |
+|---|---|
+| Autenticação | ✅ exige Bearer token válido (401 sem) — sem abuso anônimo |
+| Modelo | ✅ barato — cadeia `gpt-5-nano` → `gpt-5-mini` → `gpt-5`; fallback OpenRouter `gpt-4o-mini` |
+| Disparo | ✅ por ação do usuário (gerar descrição/SEO/insight), não em loop no servidor |
+| Teto por usuário | ❌ inexistente |
+
+**Risco:** um usuário logado pode repetir chamadas e gerar custo, mas cada uma é barata e exige login. Não há runaway acidental. Risco prático **baixo**, não bloqueia comercialização.
+
+**Recomendação (checklist):** para escala, adicionar rate-limit por usuário nos endpoints de IA (ex.: N chamadas/dia) e, opcionalmente, uma tabela de registro de consumo. Requer um contador (KV ou tabela) — infra que não se justifica construir agora, dado o risco atual. Não implementado nesta fase.
 
 ## O que já foi verificado e está correto
 - **Valor da assinatura vem do banco** (`plan.price`), não do cliente — não dá para forjar preço na criação da cobrança.

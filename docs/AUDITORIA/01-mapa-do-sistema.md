@@ -266,9 +266,9 @@ Reverificado em 2026-07-20.
 | A28 | Webhook de leads falhava aberto (aceitava sem token se o secret sumisse) | 🔴 | resolvido — fail-closed | 6 |
 
 | A29 | Planos: slug `free` num plano pago + webhook achatava tudo em `plan:pro` (Básico ganhava ilimitado) | 🔴 | ✅ resolvido — slug `basico`, webhook grava plano real, helper único | 7 |
-| A30 | Sem registro/controle de consumo de IA por usuário (custo OpenAI/OpenRouter) | 🟡 | aberto — Fase 7 continuação | 7 |
+| A30 | Sem teto de consumo de IA por usuário | 🟡 | avaliado — risco baixo (auth + modelo barato); rate-limit no checklist | 7 |
 | A31 | **Sem paywall de expiração**: TrialExpired importado mas nunca renderizado | 🔴 | ✅ resolvido — paywall ligado após 7 dias sem plano pago | 7 |
 
-**Linha de base para a Fase 7 (em pausa):** billing auditado; A29 aguarda decisão do dono
+**Linha de base para a Fase 8:** billing íntegro (A29/A31 resolvidos, migração 18 aplicada); A30 avaliado; testes ❌ · CI ❌
 
 **Linha de base para a Fase 4:** build ✅ · typecheck ✅ 0 erros · RLS ✅ 21/21 tabelas · migrações ✅ 16 registradas · testes ❌ · CI ❌

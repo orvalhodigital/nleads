@@ -29,6 +29,7 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 - [ ] **Elevar a senha mínima do Supabase Auth para 8** (hoje 6; painel Authentication → Policies) — achado da Fase 4.
 - [ ] **Validação e rate-limiting no n8n** para os webhooks chamados de páginas públicas (achado A8) — evita spam de WhatsApp disparado por bots.
 - [ ] **Definir bloqueio de assinatura em atraso** (`plan_status=overdue`): hoje há período de graça sem bloqueio; decidir se/quando corta acesso (refinamento do A31).
+- [ ] **Rate-limit de IA por usuário** (achado A30): endpoints de IA sem teto; risco baixo hoje, mas necessário para escala.
 - [ ] **Cobertura de testes e CI** (achados A6/A7, fases 15 e 18).
 
 ---

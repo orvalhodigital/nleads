@@ -13,7 +13,7 @@ Modelo confirmado pelo dono:
 | Estrutura ECV | R$697 | `estrutura-ecv` | ilimitado + tráfego (Meta Ads, 5 anúncios) |
 | Estrutura ECV Plus | R$997 | `estrutura-ecv-plus` | ilimitado + tráfego (10 anúncios*) |
 
-\* O dono escreveu "10 veículos ativos"; o card do site diz "50 veículos anunciados". É limite do **serviço de tráfego**, fora do CRM — não afetou código. Fica registrado para o dono alinhar o texto.
+\* Limite do **serviço de tráfego** (Meta Ads), fora do CRM. O card dizia "50 veículos anunciados"; o dono corrigiu para **10** em 2026-07-20 (script `supabase/scripts/APLICAR-ecvplus-10-veiculos.sql`).
 
 ### O bug de receita (corrigido)
 `api/webhook-asaas.ts` gravava `plan: 'pro'` para qualquer pagamento. Assim, quem assinava o Básico (R$47) recebia acesso **ilimitado** — os benefícios do Ilimitado (R$97) pela metade do preço. Agora o webhook identifica o plano pelo valor pago (os 4 preços são únicos) e grava o slug real.

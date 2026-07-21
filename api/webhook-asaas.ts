@@ -118,6 +118,7 @@ export default async function handler(req: any, res: any) {
         plan: matchedPlanSlug || 'pro',
         plan_status: 'active',
         trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        overdue_since: null, // pagamento em dia: zera o relógio de atraso
       };
       if (payment?.id) updatePayload.last_asaas_payment_id = payment.id;
       if (payment?.subscription && !profile.asaas_subscription_id) {
@@ -150,9 +151,18 @@ export default async function handler(req: any, res: any) {
         console.warn('PAYMENT_OVERDUE sem usuário identificável — ignorado.');
         return res.status(200).json({ success: true, message: 'No user to flag' });
       }
+      // Marca o início do atraso só na primeira vez — não reinicia a graça de
+      // 3 dias se o Asaas reenviar PAYMENT_OVERDUE.
+      const { data: cur } = await supabase
+        .from('profiles')
+        .select('overdue_since')
+        .eq('id', userId)
+        .single();
+      const overduePayload: Record<string, any> = { plan_status: 'overdue' };
+      if (!cur?.overdue_since) overduePayload.overdue_since = new Date().toISOString();
       const { error } = await supabase
         .from('profiles')
-        .update({ plan_status: 'overdue' })
+        .update(overduePayload)
         .eq('id', userId);
       if (error) console.error('Erro ao marcar plan_status=overdue:', error);
       console.log(`User ${userId} marcado como pagamento atrasado.`);
@@ -169,7 +179,7 @@ export default async function handler(req: any, res: any) {
       }
       const { error } = await supabase
         .from('profiles')
-        .update({ plan: 'free', plan_status: 'canceled' })
+        .update({ plan: 'free', plan_status: 'canceled', overdue_since: null })
         .eq('id', userId);
       if (error) console.error('Erro ao revogar acesso:', error);
       console.log(`Acesso pro revogado para user ${userId} (evento ${event}).`);

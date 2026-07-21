@@ -358,6 +358,7 @@ export interface Profile {
   plan: 'free' | 'pro' | 'trial';
   planStatus: 'active' | 'expired' | 'overdue' | 'canceled';
   trialEndsAt: string;
+  overdueSince?: string | null; // quando o webhook marcou a assinatura em atraso
   created_at?: string;
   webhook_url?: string;
   avatar_url?: string;

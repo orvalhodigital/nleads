@@ -39,9 +39,20 @@ Descoberto ao validar a A29: `TrialExpired` foi construído e importado em `User
 
 **Verificado no banco** — nenhum dos 3 perfis atuais é bloqueado: admin (excluído), Gelson (trial válido até 2027), Neto (plano pago). Só cai no paywall um trial vencido sem contratação — o comportamento desejado.
 
-### Ainda em aberto: downgrade só cobre `pro`
-O downgrade client-side em `profileService.ts:20` rebaixa apenas `'pro'` expirado. Mas isso agora importa menos: o paywall usa `trialEndsAt` + ausência de plano pago, não o valor rebaixado. A revogação de acesso de um **pago que deixa de pagar** depende do webhook `PAYMENT_OVERDUE`/`SUBSCRIPTION_DELETED` setar `plan_status`/`plan` corretamente (já faz: overdue e canceled→free). Um `canceled` vira `plan='free'` e cai no paywall. Um `overdue` mantém o plano pago (período de graça) — decisão de produto se deve bloquear.
-→ Refinamento de `overdue` fica para o checklist de comercialização.
+### Fluxo de atraso implementado (2026-07-21)
+
+Regra do dono: vencimento +1 dia → "Pagamento Atrasado"; funciona por 3 dias com banner de renovação; depois bloqueia todas as telas exceto Configurações. Entrada de leads pelo Supabase (server-side) segue funcionando.
+
+- `profileService`: corrigidos dois bugs que impediam isso — `planStatus` vinha `active` hardcoded (o `overdue` do webhook nunca chegava ao front), e o plano pago expirado era rebaixado a `free` (clobberava o estado de atraso). Agora lê os valores reais.
+- `planAccess.getAccessState`: decide full / overdue_grace / overdue_blocked / must_choose_plan. O atraso é dirigido pelo **status do webhook + `overdue_since`**, não por data — assim uma conta paga com `trial_ends_at` antigo mas status `active` não é bloqueada.
+- `OverdueBanner` (faixa no topo, na graça) e `SubscriptionBlocked` (tela de bloqueio, só Configurações acessível), ligados no `UserLayout`.
+- Webhook do Asaas: grava `overdue_since` no PAYMENT_OVERDUE (sem reiniciar a graça em reenvios) e zera ao receber pagamento / cancelar.
+- Migração `20260721000000_add_overdue_since`.
+
+Verificado contra os 3 perfis reais: nenhum é bloqueado (admin excluído, Gelson trial válido, Neto pago/ativo). Simulação: overdue 1-3d → graça, 4d → bloqueio.
+
+### Nota: downgrade client-side removido
+O rebaixamento client-side (`pro` expirado → `free`) foi **removido** do `profileService` — conflitava com o novo fluxo de atraso. O acesso agora é decidido por `getAccessState` a partir de plano + status + `overdue_since`.
 
 ---
 

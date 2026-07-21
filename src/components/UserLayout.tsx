@@ -17,7 +17,9 @@ import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
 import { planService } from '../services/planService';
-import { needsToChoosePlan } from '../lib/planAccess';
+import { getAccessState } from '../lib/planAccess';
+import OverdueBanner from './OverdueBanner';
+import SubscriptionBlocked from './SubscriptionBlocked';
 import type { Plan } from '../types';
 
 const UserLayout: React.FC = () => {
@@ -99,11 +101,15 @@ const UserLayout: React.FC = () => {
         return <Navigate to="/login" replace />
     }
 
-    // Paywall (achado A31): terminado o teste de 7 dias sem plano contratado, o
-    // lojista precisa escolher um plano. Nunca bloqueia admin nem o modo de
-    // impersonação (o admin precisa ver a conta do lojista).
+    // Controle de assinatura (achado A31 + fluxo de atraso). Nunca afeta admin
+    // nem o modo de impersonação — o admin precisa ver a conta do lojista.
     const isAdminViewing = !!impersonatedUserId || profile?.role === 'admin' || profile?.role === 'super_admin';
-    if (!isAdminViewing && needsToChoosePlan({ plan: profile?.plan, trialEndsAt: profile?.trialEndsAt })) {
+    const accessState = isAdminViewing
+        ? 'full'
+        : getAccessState({ plan: profile?.plan, planStatus: profile?.planStatus, trialEndsAt: profile?.trialEndsAt, overdueSince: profile?.overdueSince });
+
+    // Trial vencido sem plano / assinatura cancelada → escolher plano.
+    if (accessState === 'must_choose_plan') {
         const handleUpgrade = async (plan?: Plan) => {
             if (!plan || !profile?.id) return;
             try {
@@ -117,6 +123,13 @@ const UserLayout: React.FC = () => {
         return <TrialExpired onUpgrade={handleUpgrade} onLogout={handleLogout} />;
     }
 
+    // Pagamento atrasado além da graça → bloqueia tudo, exceto Configurações
+    // (onde o lojista regulariza). Leads pelo Supabase seguem entrando.
+    const onSettings = location.pathname.startsWith('/settings');
+    if (accessState === 'overdue_blocked' && !onSettings) {
+        return <SubscriptionBlocked />;
+    }
+
     return (
         <div className="flex h-screen bg-background text-foreground relative overflow-hidden font-sans">
             {/* Ambient Animated Blobs for Liquid Glass Effect */}
@@ -127,6 +140,7 @@ const UserLayout: React.FC = () => {
             <AppSidebar />
 
             <main className="flex-1 flex flex-col min-w-0 relative z-10">
+                {accessState === 'overdue_grace' && <OverdueBanner />}
                 <Header
                     currentView={location.pathname === '/' ? 'home' : (location.pathname.split('/')[1] as any) || 'dashboard'}
                     impersonatedUserId={impersonatedUserId}

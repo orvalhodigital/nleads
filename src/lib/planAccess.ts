@@ -58,3 +58,50 @@ export function needsToChoosePlan(args: { plan?: string | null; trialEndsAt?: st
     if (!args.trialEndsAt) return false; // sem data de expiração conhecida: não bloqueia
     return new Date() > new Date(args.trialEndsAt);
 }
+
+// Graça do fluxo de assinatura paga (regra do dono, 2026-07-20):
+//   vencimento + 1 dia   → webhook do Asaas marca plan_status='overdue' + overdue_since
+//   graça de 3 dias      → ainda funciona, com banner no topo e botão de renovar
+//   após a graça         → bloqueio (só a tela de Configurações fica acessível)
+const GRACE_DAYS = 3;
+
+export type AccessState =
+    | 'full'              // acesso normal
+    | 'overdue_grace'     // atrasado, mas ainda funciona (mostra banner)
+    | 'overdue_blocked'   // atrasado além da graça — bloqueia tudo menos Configurações
+    | 'must_choose_plan'; // trial vencido sem plano, ou assinatura cancelada
+
+function daysSince(fromISO: string, toMs: number): number {
+    return (toMs - new Date(fromISO).getTime()) / (24 * 60 * 60 * 1000);
+}
+
+/**
+ * Estado de acesso do lojista.
+ *
+ * O atraso é dirigido pelo STATUS que o webhook do Asaas grava (não por uma
+ * data, que em contas ajustadas à mão pode estar desatualizada e bloquear quem
+ * está em dia):
+ *   - planStatus 'active'   → acesso total (mesmo com vencimento passado)
+ *   - planStatus 'overdue'  → graça de 3 dias a partir de `overdueSince`, depois bloqueia
+ *   - planStatus 'canceled' → precisa contratar de novo (o webhook já põe plan='free')
+ *
+ * Para trial/free (sem plano pago), o gate é o fim do teste de 7 dias.
+ */
+export function getAccessState(args: {
+    plan?: string | null;
+    planStatus?: string | null;
+    trialEndsAt?: string | null;
+    overdueSince?: string | null;
+}): AccessState {
+    if (args.planStatus === 'canceled') return 'must_choose_plan';
+
+    if (hasPaidPlan(args.plan)) {
+        if (args.planStatus !== 'overdue') return 'full';
+        // Atrasado: 3 dias de graça a partir de quando foi marcado.
+        if (!args.overdueSince) return 'overdue_grace'; // marcado agora, sem timestamp ainda
+        return daysSince(args.overdueSince, Date.now()) <= GRACE_DAYS ? 'overdue_grace' : 'overdue_blocked';
+    }
+
+    // Não é plano pago (trial/free): trial vencido → escolher plano.
+    return needsToChoosePlan(args) ? 'must_choose_plan' : 'full';
+}

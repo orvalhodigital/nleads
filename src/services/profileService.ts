@@ -17,9 +17,15 @@ function buildProfile(data: any, user: any): Profile {
         full_name: data.full_name || '',
         role: data.role || 'empresa',
         parent_id: data.parent_id || undefined,
-        plan: (data.plan === 'pro' && data.trial_ends_at && new Date() > new Date(data.trial_ends_at)) ? 'free' : (data.plan === 'trial' ? 'free' : data.plan),
-        planStatus: 'active',
+        // Mantém o plano real. O acesso na expiração é decidido por
+        // planAccess.getAccessState (plano + status + trial_ends_at), não por um
+        // rebaixamento aqui — que antes clobberava o estado de "pagamento atrasado".
+        plan: data.plan || 'trial',
+        // Lê o status real. Antes vinha 'active' hardcoded, então o frontend
+        // nunca enxergava o 'overdue' que o webhook do Asaas grava.
+        planStatus: data.plan_status || 'active',
         trialEndsAt: data.trial_ends_at,
+        overdueSince: data.overdue_since ?? null,
         created_at: data.created_at,
         webhook_url: data.webhook_url,
         whatsapp_webhook_url: data.whatsapp_webhook_url,
@@ -180,7 +186,7 @@ export const profileService = {
             if (profile.role === 'vendedor' && profile.parent_id) {
                 const { data: adminData } = await supabase
                     .from('profiles')
-                    .select('company_name, company_logo, plan, plan_status, trial_ends_at, webhook_url, whatsapp_webhook_url, preset_messages, phone')
+                    .select('company_name, company_logo, plan, plan_status, trial_ends_at, overdue_since, webhook_url, whatsapp_webhook_url, preset_messages, phone')
                     .eq('id', profile.parent_id)
                     .single();
 
@@ -190,6 +196,7 @@ export const profileService = {
                     profile.plan = adminData.plan;
                     profile.planStatus = adminData.plan_status;
                     profile.trialEndsAt = adminData.trial_ends_at;
+                    profile.overdueSince = adminData.overdue_since ?? null;
 
                     if (profile.use_company_number) {
                         profile.webhook_url = adminData.webhook_url;

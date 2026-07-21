@@ -269,6 +269,10 @@ Reverificado em 2026-07-20.
 | A30 | Sem teto de consumo de IA por usuário | 🟡 | rate-limit no checklist; **registro de consumo implementado** (feature nova) | 7 |
 | A31 | **Sem paywall de expiração**: TrialExpired importado mas nunca renderizado | 🔴 | ✅ resolvido — paywall ligado após 7 dias sem plano pago | 7 |
 
-**Linha de base para a Fase 8:** billing íntegro (A29/A31 resolvidos, migração 18 aplicada); A30 avaliado; testes ❌ · CI ❌
+| A32 | Histórico de funil não carimbado nas trocas de fase → lembrete "parado em Simulação" nunca disparava | 🟡 | ✅ resolvido | 8 |
+
+**Linha de base para a Fase 9:** Leads/CRM auditado — atribuição por id (homônimo ok), Kanban robusto; A32 corrigido
+
+<!-- **Linha de base para a Fase 8:** billing íntegro (A29/A31 resolvidos, migração 18 aplicada); A30 avaliado; testes ❌ · CI ❌
 
 **Linha de base para a Fase 4:** build ✅ · typecheck ✅ 0 erros · RLS ✅ 21/21 tabelas · migrações ✅ 16 registradas · testes ❌ · CI ❌

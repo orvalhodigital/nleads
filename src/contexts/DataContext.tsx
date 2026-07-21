@@ -313,8 +313,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const updateLead = useCallback(async (leadData: Lead) => {
         try {
-            let updated = await leadService.update(leadData);
-            
+            // Carimba o histórico de funil: quando o lead entra numa fase, grava
+            // o timestamp (uma vez por fase). Sem isso os lembretes de "parado há
+            // X dias" (ex.: em Simulação) nunca disparavam.
+            const prev = leads.find(l => l.id === leadData.id);
+            const phaseChanged = prev && prev.phase !== leadData.phase;
+            const stampedLead = phaseChanged
+                ? {
+                    ...leadData,
+                    funnelHistory: {
+                        ...(leadData.funnelHistory || {}),
+                        [leadData.phase]: (leadData.funnelHistory || {})[leadData.phase] || new Date().toISOString(),
+                    },
+                }
+                : leadData;
+
+            let updated = await leadService.update(stampedLead);
+
             updated = {
                 ...updated,
                 preferences: withPreferenceDefaults(updated.preferences)
@@ -328,7 +343,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             showToast('error', 'Erro ao atualizar lead.');
             throw err;
         }
-    }, [showToast]);
+    }, [showToast, leads]);
 
     const deleteLead = useCallback(async (id: string) => {
         try {

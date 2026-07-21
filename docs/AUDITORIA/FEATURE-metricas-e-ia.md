@@ -19,7 +19,7 @@ A maioria das métricas pedidas (leads, entrada de leads, veículos in/out, giro
 
 - **`src/services/metricsService.ts`**: agrega leads, veículos, vendas e IA. Filtro opcional por lojista (`ownerId`).
 - **`src/admin/AdminMetrics.tsx`**: página com cards (leads, em estoque, vendidos, giro médio), tendência de 30 dias (entrada de leads e veículos), leads por origem e por fase, e o bloco de consumo de IA (chamadas, tokens, custo, por recurso).
-- Filtro **"Todos os lojistas" + por lojista** (dropdown), como pedido.
+- Filtro por lojista com **busca no servidor** (combobox): digita o nome, busca debounced com limite de 20 — escala para milhares de lojistas sem carregar todos. "Todos os lojistas" limpa o filtro.
 - Item "Métricas" adicionado à navegação do admin.
 
 ## Verificação

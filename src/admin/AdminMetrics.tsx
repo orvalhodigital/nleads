@@ -1,6 +1,98 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { metricsService, Metrics, LojistaOption } from '../services/metricsService';
-import { BarChart3, Users, Car, CheckCircle2, Clock, Sparkles, RefreshCw, AlertTriangle } from 'lucide-react';
+import { BarChart3, Users, Car, CheckCircle2, Clock, Sparkles, RefreshCw, AlertTriangle, Search, X } from 'lucide-react';
+
+/**
+ * Combobox de busca de lojista. Digita → busca no servidor (debounced) →
+ * escolhe. Escala para milhares de lojistas (não carrega todos de uma vez).
+ */
+const LojistaFilter: React.FC<{ onChange: (id: string, name: string) => void }> = ({ onChange }) => {
+    const [term, setTerm] = useState('');
+    const [results, setResults] = useState<LojistaOption[]>([]);
+    const [open, setOpen] = useState(false);
+    const [selectedName, setSelectedName] = useState<string>('');
+    const [searching, setSearching] = useState(false);
+    const boxRef = useRef<HTMLDivElement>(null);
+    const debounce = useRef<any>(null);
+
+    // Busca debounced sempre que o termo muda e o dropdown está aberto.
+    useEffect(() => {
+        if (!open) return;
+        setSearching(true);
+        clearTimeout(debounce.current);
+        debounce.current = setTimeout(async () => {
+            try {
+                setResults(await metricsService.searchLojistas(term));
+            } catch {
+                setResults([]);
+            } finally {
+                setSearching(false);
+            }
+        }, 250);
+        return () => clearTimeout(debounce.current);
+    }, [term, open]);
+
+    // Fecha ao clicar fora.
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const pick = (opt: LojistaOption) => {
+        setSelectedName(opt.name);
+        setTerm('');
+        setOpen(false);
+        onChange(opt.id, opt.name);
+    };
+
+    const clear = () => {
+        setSelectedName('');
+        setTerm('');
+        setResults([]);
+        onChange('', 'Todos os lojistas');
+    };
+
+    return (
+        <div className="relative w-64" ref={boxRef}>
+            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2.5 focus-within:border-indigo-400">
+                <Search size={16} className="text-slate-400 shrink-0" />
+                <input
+                    value={open ? term : (selectedName || term)}
+                    onChange={e => { setTerm(e.target.value); setOpen(true); }}
+                    onFocus={() => setOpen(true)}
+                    placeholder={selectedName ? selectedName : 'Buscar lojista...'}
+                    className="flex-1 min-w-0 text-sm font-semibold text-slate-700 outline-none placeholder:text-slate-400 bg-transparent"
+                />
+                {selectedName && (
+                    <button onClick={clear} title="Limpar (ver todos)" className="shrink-0 text-slate-400 hover:text-slate-700">
+                        <X size={15} />
+                    </button>
+                )}
+            </div>
+            {open && (
+                <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                    <button onClick={clear} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 border-b border-slate-100">
+                        Todos os lojistas
+                    </button>
+                    {searching ? (
+                        <div className="px-4 py-3 text-sm text-slate-400">Buscando...</div>
+                    ) : results.length === 0 ? (
+                        <div className="px-4 py-3 text-sm text-slate-400">{term ? 'Nenhum lojista encontrado.' : 'Digite para buscar.'}</div>
+                    ) : (
+                        results.map(l => (
+                            <button key={l.id} onClick={() => pick(l)} className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700">
+                                {l.name}
+                            </button>
+                        ))
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const StatCard: React.FC<{ label: string; value: string; sub?: string; icon: React.ReactNode; color: string }> = ({ label, value, sub, icon, color }) => (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -60,7 +152,6 @@ const MiniTrend: React.FC<{ title: string; data: { date: string; count: number }
 };
 
 const AdminMetrics: React.FC = () => {
-    const [lojistas, setLojistas] = useState<LojistaOption[]>([]);
     const [selected, setSelected] = useState<string>(''); // '' = todos
     const [metrics, setMetrics] = useState<Metrics | null>(null);
     const [loading, setLoading] = useState(true);
@@ -80,10 +171,6 @@ const AdminMetrics: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        metricsService.getLojistas().then(setLojistas).catch(() => {});
-    }, []);
-
-    useEffect(() => {
         load(selected);
     }, [selected, load]);
 
@@ -99,14 +186,7 @@ const AdminMetrics: React.FC = () => {
                     <p className="text-sm text-slate-400 font-medium">Números da plataforma — leads, estoque, vendas e consumo de IA.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <select
-                        value={selected}
-                        onChange={e => setSelected(e.target.value)}
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-indigo-400"
-                    >
-                        <option value="">Todos os lojistas</option>
-                        {lojistas.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                    </select>
+                    <LojistaFilter onChange={(id) => setSelected(id)} />
                     <button onClick={() => load(selected)} className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50" title="Atualizar">
                         <RefreshCw size={16} className={loading ? 'animate-spin text-indigo-500' : 'text-slate-500'} />
                     </button>

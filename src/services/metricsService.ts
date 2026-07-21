@@ -77,13 +77,27 @@ function countBy<T>(rows: T[], key: (r: T) => string | null | undefined): { [k: 
 }
 
 export const metricsService = {
-    /** Lista de lojistas (empresas) para o filtro. */
-    async getLojistas(): Promise<LojistaOption[]> {
-        const { data, error } = await supabase
+    /**
+     * Busca lojistas (empresas) pelo nome — no servidor, com limite. Feito para
+     * escalar: com milhares de lojistas, não carrega todos; filtra por termo.
+     * Termo vazio traz os primeiros N (para o dropdown já abrir com opções).
+     */
+    async searchLojistas(term: string, limit = 20): Promise<LojistaOption[]> {
+        let q = supabase
             .from('profiles')
             .select('id, company_name, full_name')
             .eq('role', 'empresa')
-            .order('company_name', { nullsFirst: false });
+            .limit(limit);
+
+        const t = term.trim();
+        if (t) {
+            // Casa por nome da empresa OU nome do responsável.
+            q = q.or(`company_name.ilike.%${t}%,full_name.ilike.%${t}%`);
+        } else {
+            q = q.order('company_name', { nullsFirst: false });
+        }
+
+        const { data, error } = await q;
         if (error) throw error;
         return (data || []).map((p: any) => ({ id: p.id, name: p.company_name || p.full_name || '(sem nome)' }));
     },

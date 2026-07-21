@@ -23,6 +23,7 @@ import {
 import { useData } from '../contexts/DataContext';
 import { formatCurrency } from '../utils/formatters';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { hasUnlimitedAccess } from '../lib/planAccess';
 
 // Simple Modal Component
 interface ModalProps {
@@ -107,7 +108,7 @@ const EstruturaECV: React.FC = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<GoogleCampaign | null>(null);
   const [campaignPeriodFilter, setCampaignPeriodFilter] = useState<'today' | '7d' | '30d' | 'month' | 'all'>('30d');
 
-  const isPro = profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial';
+  const isPro = hasUnlimitedAccess(profile?.plan);
 
   // Configured check
   const isMetaConfigured = !!profile?.meta_pixel_id;

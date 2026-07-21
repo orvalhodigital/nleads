@@ -28,6 +28,7 @@ import { formatCurrency } from '../utils/formatters';
 import { Motorcycle } from '../types';
 import PageContainer from '../components/ui/PageContainer';
 import PlanLimitAlert from '../components/PlanLimitAlert';
+import { isLimitedPlan } from '../lib/planAccess';
 
 type SaleDashboardItem = {
     vehicle: any;
@@ -201,7 +202,7 @@ const SalesClosedPage: React.FC = () => {
         );
     }
 
-    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+    const isFreePlan = isLimitedPlan(profile?.plan);
     if (isFreePlan) {
         return (
             <PageContainer>

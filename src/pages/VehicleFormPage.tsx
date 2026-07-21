@@ -6,6 +6,7 @@ import { useData } from '../contexts/DataContext';
 import PageContainer from '../components/ui/PageContainer';
 import PlanLimitAlert from '../components/PlanLimitAlert';
 import { ArrowLeft } from 'lucide-react';
+import { isLimitedPlan } from '../lib/planAccess';
 
 const VehicleFormPage: React.FC = () => {
     const { id } = useParams<{ id?: string }>();
@@ -34,7 +35,7 @@ const VehicleFormPage: React.FC = () => {
         }
     }, [isEditing, vehicleToEdit, vehicles.length, motorcycles.length, navigate]);
 
-    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+    const isFreePlan = isLimitedPlan(profile?.plan);
     if (isFreePlan && !isEditing && (vehicles.length + motorcycles.length) >= 10) {
         return (
             <PageContainer className="pb-32 animate-fadeUp">

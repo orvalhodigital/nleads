@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, Star, Zap } from 'lucide-react';
 import { Profile } from '../types';
 import { planService } from '../services/planService';
+import { hasUnlimitedAccess } from '../lib/planAccess';
 
 interface PlansProps {
     profile: Profile | null;
@@ -9,7 +10,7 @@ interface PlansProps {
 }
 
 const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
-    const isPro = profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial';
+    const isPro = hasUnlimitedAccess(profile?.plan);
 
     return (
         <div className="flex flex-col space-y-8 animate-fadeUp">
@@ -134,7 +135,7 @@ const Plans: React.FC<PlansProps> = ({ profile, onUpgrade }) => {
                     <div className="flex gap-8 text-sm text-muted-foreground">
                         <div>
                             <span className="block text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Plano</span>
-                            <span className="font-bold text-foreground">{profile.plan && profile.plan !== 'free' && profile.plan !== 'trial' ? 'PRO' : 'FREE'}</span>
+                            <span className="font-bold text-foreground">{hasUnlimitedAccess(profile.plan) ? 'PRO' : 'FREE'}</span>
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Status</span>

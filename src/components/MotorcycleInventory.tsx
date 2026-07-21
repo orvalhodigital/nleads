@@ -22,6 +22,7 @@ import { useData } from '../contexts/DataContext';
 import { consultaPlaca } from '../services/plateService';
 import { withPreferenceDefaults } from '../lib/leadPreferenceDefaults';
 import { MOTO_ENGINES, toEngineType } from '../lib/engineType';
+import { isLimitedPlan } from '../lib/planAccess';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -810,7 +811,7 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     // ── FORM VIEW (new / edit) ───────────────────────────────────────────────────
     if (selected) {
-        const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+        const isFreePlan = isLimitedPlan(profile?.plan);
         if (selected === 'new' && isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
             return (
                 <div className="animate-fadeUp max-w-4xl mx-auto w-full pb-20">

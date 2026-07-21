@@ -93,23 +93,29 @@ export default async function handler(req: any, res: any) {
         return res.status(200).json({ success: true, message: 'Already processed', userId });
       }
 
-      // Validação do valor pago contra o(s) plano(s) cadastrado(s)
+      // Identifica QUAL plano foi pago pelo valor. Antes o webhook gravava
+      // sempre 'pro', então quem assinava o Básico (R$47) ganhava acesso
+      // ilimitado — perda de receita. Os preços dos planos são únicos, então o
+      // valor pago identifica o plano com segurança.
       const paidValue = Number(payment?.value);
+      let matchedPlanSlug: string | null = null;
       if (Number.isFinite(paidValue) && paidValue > 0) {
-        const { data: plans } = await supabase.from('plans').select('price');
-        const validPrices = (plans || [])
-          .map((p: any) => Number(p.price))
-          .filter((n: number) => Number.isFinite(n) && n > 0);
-        if (validPrices.length > 0 && !validPrices.some((price) => Math.abs(price - paidValue) < 0.01)) {
-          console.warn(`Valor pago (${paidValue}) não corresponde a nenhum plano ${JSON.stringify(validPrices)} — user ${userId}.`);
+        const { data: plans } = await supabase.from('plans').select('slug, price');
+        const match = (plans || []).find(
+          (p: any) => Number.isFinite(Number(p.price)) && Math.abs(Number(p.price) - paidValue) < 0.01
+        );
+        if (!match) {
+          console.warn(`Valor pago (${paidValue}) não corresponde a nenhum plano — user ${userId}.`);
           return res.status(400).json({ error: 'Valor do pagamento não corresponde a nenhum plano.' });
         }
+        matchedPlanSlug = match.slug;
       }
 
       // Estende o acesso por mais 1 ciclo (30 dias) a partir de agora — tanto
       // para o primeiro pagamento quanto para cada renovação mensal.
+      // Fallback 'pro' só se o pagamento vier sem valor (não deveria acontecer).
       const updatePayload: Record<string, any> = {
-        plan: 'pro',
+        plan: matchedPlanSlug || 'pro',
         plan_status: 'active',
         trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       };

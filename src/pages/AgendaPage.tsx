@@ -3,6 +3,7 @@ import Agenda from '../components/Agenda';
 import PageContainer from '../components/ui/PageContainer';
 import { useData } from '../contexts/DataContext';
 import PlanLimitAlert from '../components/PlanLimitAlert';
+import { isLimitedPlan } from '../lib/planAccess';
 
 const AgendaPage: React.FC = () => {
     const { profile, loading } = useData();
@@ -15,7 +16,7 @@ const AgendaPage: React.FC = () => {
         );
     }
 
-    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+    const isFreePlan = isLimitedPlan(profile?.plan);
     if (isFreePlan) {
         return (
             <PageContainer>

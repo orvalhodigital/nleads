@@ -1,3 +1,4 @@
+import { isLimitedPlan } from '../lib/planAccess';
 import React from 'react';
 import { useData } from '../contexts/DataContext';
 import WebsiteSettings from '../components/settings/WebsiteSettings';
@@ -17,7 +18,7 @@ const WebsitePage: React.FC = () => {
         );
     }
 
-    if (!profile.plan || profile.plan === 'free' || profile.plan === 'trial') {
+    if (isLimitedPlan(profile.plan)) {
         return (
             <div className="flex-1 space-y-8 pb-20">
                 <div className="px-4 md:px-0 max-w-2xl mt-8">

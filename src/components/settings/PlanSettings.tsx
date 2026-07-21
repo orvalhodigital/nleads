@@ -4,6 +4,7 @@ import { Profile, Plan, Campaign } from '../../types';
 import { supabase } from '../../lib/supabaseClient';
 import { formatCurrency } from '../../utils/formatters';
 import { planService } from '../../services/planService';
+import { hasUnlimitedAccess } from '../../lib/planAccess';
 
 interface Props {
     profile: Profile;
@@ -86,7 +87,7 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
         );
     }
 
-    const isProActive = profile.plan && profile.plan !== 'free' && profile.plan !== 'trial';
+    const isProActive = hasUnlimitedAccess(profile.plan);
 
     const freeFeatures = [
         { text: 'Limite de até 10 Veículos cadastrados', available: true },

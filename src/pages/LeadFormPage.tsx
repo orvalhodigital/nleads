@@ -5,6 +5,7 @@ import { useData } from '../contexts/DataContext';
 import PageContainer from '../components/ui/PageContainer';
 import PlanLimitAlert from '../components/PlanLimitAlert';
 import { ArrowLeft } from 'lucide-react';
+import { isLimitedPlan } from '../lib/planAccess';
 
 const LeadFormPage: React.FC = () => {
     const { id } = useParams<{ id?: string }>();
@@ -27,7 +28,7 @@ const LeadFormPage: React.FC = () => {
         }
     }, [isEditing, leadToEdit, leads.length, navigate]);
 
-    const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+    const isFreePlan = isLimitedPlan(profile?.plan);
     if (isFreePlan && !isEditing && leads.length >= 50) {
         return (
             <PageContainer className="pb-32 animate-fadeUp">

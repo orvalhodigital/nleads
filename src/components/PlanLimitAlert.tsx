@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertCircle, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { planService } from '../services/planService';
+import { hasUnlimitedAccess } from '../lib/planAccess';
 
 interface PlanLimitAlertProps {
   plan: string;
@@ -22,7 +23,7 @@ const PlanLimitAlert: React.FC<PlanLimitAlertProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  if (plan && plan !== 'free' && plan !== 'trial') return null;
+  if (hasUnlimitedAccess(plan)) return null;
 
   const handleUpgrade = async () => {
     if (onUpgrade) {

@@ -28,6 +28,7 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 - [ ] **Renomear fluxos no n8n** e atualizar as URLs no código.
 - [ ] **Elevar a senha mínima do Supabase Auth para 8** (hoje 6; painel Authentication → Policies) — achado da Fase 4.
 - [ ] **Validação e rate-limiting no n8n** para os webhooks chamados de páginas públicas (achado A8) — evita spam de WhatsApp disparado por bots.
+- [ ] **Aplicar paywall de expiração** (achado A31): hoje trial/assinatura vencida não bloqueia acesso; TrialExpired existe mas não é renderizado.
 - [ ] **Cobertura de testes e CI** (achados A6/A7, fases 15 e 18).
 
 ---

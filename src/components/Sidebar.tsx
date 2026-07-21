@@ -11,6 +11,7 @@ import {
 import { View, Profile } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { hasUnlimitedAccess } from '../lib/planAccess';
 
 interface SidebarProps {
     currentView: View;
@@ -30,12 +31,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, profile }) =
     ];
 
     const getPlanLabel = (plan: string) => {
-        if (plan && plan !== 'free' && plan !== 'trial') return 'PRO';
+        if (hasUnlimitedAccess(plan)) return 'PRO';
         return 'FREE';
     };
 
     const getPlanStyle = (plan: string) => {
-        if (plan && plan !== 'free' && plan !== 'trial') return 'bg-slate-900 text-white border-slate-900';
+        if (hasUnlimitedAccess(plan)) return 'bg-slate-900 text-white border-slate-900';
         return 'bg-brand-100 text-brand-700 border-brand-200';
     };
 

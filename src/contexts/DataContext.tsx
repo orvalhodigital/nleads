@@ -10,6 +10,7 @@ import { withPreferenceDefaults } from '../lib/leadPreferenceDefaults';
 import { useToast } from './ToastContext';
 import { validateLeadInput } from '../schemas/leadSchema';
 import { validateVehicleInput } from '../schemas/vehicleSchema';
+import { isLimitedPlan } from '../lib/planAccess';
 
 const EMPRESA_ROLES = ['empresa', 'super_admin', 'admin'] as const;
 const isEmpresaRole = (role?: string): boolean => EMPRESA_ROLES.includes(role as any);
@@ -273,7 +274,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
     // Actions
     const addLead = useCallback(async (leadData: Lead) => {
         const p = profileRef.current;
-        const isFreePlan = !p?.plan || p.plan === 'free' || p.plan === 'trial';
+        const isFreePlan = isLimitedPlan(p?.plan);
         if (isFreePlan && leads.length >= 50) {
             showToast('error', 'Limite do plano Free atingido (máximo 50 leads). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
@@ -342,7 +343,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const addVehicle = useCallback(async (vehicleData: Omit<Vehicle, 'id'>) => {
         const p = profileRef.current;
-        const isFreePlan = !p?.plan || p.plan === 'free' || p.plan === 'trial';
+        const isFreePlan = isLimitedPlan(p?.plan);
         if (isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
             showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');
@@ -400,7 +401,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
 
     const addMotorcycle = useCallback(async (motoData: Omit<Motorcycle, 'id'>) => {
         const p = profileRef.current;
-        const isFreePlan = !p?.plan || p.plan === 'free' || p.plan === 'trial';
+        const isFreePlan = isLimitedPlan(p?.plan);
         if (isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
             showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
             throw new Error('PLAN_LIMIT_REACHED');

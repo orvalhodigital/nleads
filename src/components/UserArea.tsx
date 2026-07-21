@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
 import { resizeImage } from '../utils/imageProcessor';
+import { hasUnlimitedAccess } from '../lib/planAccess';
 
 interface UserAreaProps {
     profile: Profile | null;
@@ -30,7 +31,7 @@ const UserArea: React.FC<UserAreaProps> = ({ profile, onUpgrade, onProfileUpdate
     const [activeCampaigns, setActiveCampaigns] = useState<Campaign[]>([]);
     const [loadingPlans, setLoadingPlans] = useState(true);
 
-    const isPaid = profile?.plan && profile.plan !== 'free' && profile.plan !== 'trial';
+    const isPaid = hasUnlimitedAccess(profile?.plan);
 
     useEffect(() => {
         if (profile) {

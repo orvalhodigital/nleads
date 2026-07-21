@@ -23,6 +23,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from './OrvalhoLogo';
 import { useData } from '../contexts/DataContext';
+import { hasUnlimitedAccess } from '../lib/planAccess';
 
 interface MenuItem {
     id: string;
@@ -69,7 +70,7 @@ const AppSidebar: React.FC = () => {
 
     const handleSignOut = () => supabase.auth.signOut();
 
-    const isPro = !!profile?.plan && !['free', 'trial'].includes(profile.plan);
+    const isPro = hasUnlimitedAccess(profile?.plan);
 
     return (
         <>

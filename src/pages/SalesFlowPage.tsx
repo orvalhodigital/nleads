@@ -8,6 +8,7 @@ import PageContainer from '../components/ui/PageContainer';
 import SalesKanban from '../components/SalesKanban';
 import { formatCurrency } from '../utils/formatters';
 import PlanLimitAlert from '../components/PlanLimitAlert';
+import { isLimitedPlan } from '../lib/planAccess';
 
 type FilterTab = 'todas' | 'documentacao' | 'entrega' | 'em_garantia' | 'vencidas';
 
@@ -97,7 +98,7 @@ const SalesFlowPage: React.FC = () => {
     );
   }
 
-  const isFreePlan = !profile?.plan || profile.plan === 'free' || profile.plan === 'trial';
+  const isFreePlan = isLimitedPlan(profile?.plan);
   if (isFreePlan) {
     return (
       <PageContainer className="pb-24">

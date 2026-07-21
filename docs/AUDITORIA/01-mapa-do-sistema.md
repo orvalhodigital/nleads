@@ -261,6 +261,8 @@ Reverificado em 2026-07-20.
 
 | A26 | Três padrões de tratamento de erro nos services | 🟡 | padronizar na Fase 14 | 14 |
 
-**Linha de base para a Fase 5:** camada de serviços auditada — sem falha crítica
+| A27 | 5 escritas com erro silencioso (supabase-js nao lanca) — venda em massa mostrava sucesso ao falhar | 🔴 | resolvido | 5 |
+
+**Linha de base para a Fase 6:** A27 corrigido; A1/A26 adiados para a Fase 14
 
 **Linha de base para a Fase 4:** build ✅ · typecheck ✅ 0 erros · RLS ✅ 21/21 tabelas · migrações ✅ 16 registradas · testes ❌ · CI ❌

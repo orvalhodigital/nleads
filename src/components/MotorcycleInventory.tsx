@@ -474,11 +474,14 @@ const MotorcycleInventory: React.FC<Props> = ({
                     .replace(/{{modelo}}/g, m.model)
                     .replace(/{{ano}}/g, String(m.year))
                     .replace(/{{valor}}/g, m.price.toLocaleString());
-                const { data: inserted } = await supabase.from('lead_communications').insert({
+                const { data: inserted, error: insertError } = await supabase.from('lead_communications').insert({
                     lead_id: lead.id, vehicle_id: m.id,
                     contact_name: lead.name, contact_phone: lead.phone,
                     message_body: msg, is_sent: 'não', email_user: userEmail
                 }).select('id').single();
+                // Sem esta checagem, um insert falho passava batido e o webhook
+                // disparava com message_id undefined (o supabase-js não lança).
+                if (insertError) throw insertError;
                 try {
                     await fetch('https://webhook.orvalhodigital.com.br/webhook/puxa-mensagem', {
                         method: 'POST',

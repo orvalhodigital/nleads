@@ -202,10 +202,15 @@ export default function AdminNotifications() {
 
     const handleDelete = (id: string) => {
         showConfirm('Excluir Regra', 'Tem certeza que deseja excluir esta regra permanentemente?', async () => {
-            await supabase.from('notification_rules').delete().eq('id', id);
+            // Checar o erro antes de atualizar a UI: sem isso, a lista removia a
+            // regra na tela mesmo se o delete falhasse (o supabase-js não lança).
+            const { error } = await supabase.from('notification_rules').delete().eq('id', id);
+            if (error) {
+                showError('Erro ao excluir regra: ' + error.message);
+                return;
+            }
             setRules(prev => prev.filter(r => r.id !== id));
             closeModal();
-            // Optional: showSuccess('Removido', 'Regra removida.') - modal stack might be tricky if we close first.
         });
     };
 
@@ -249,13 +254,14 @@ export default function AdminNotifications() {
 
                 // 3. Log History
                 const { data: { user } } = await supabase.auth.getUser();
-                await supabase.from('broadcast_history').insert({
+                const { error: histError } = await supabase.from('broadcast_history').insert({
                     admin_id: user?.id,
                     title: broadcastData.title,
                     message: broadcastData.message,
                     target_filter: manualTarget === 'all' ? 'Todos' : manualFilterPlan,
                     sent_count: users.length
                 });
+                if (histError) throw histError;
 
                 showSuccess('Sucesso', `Enviado para ${users.length} usuários!`);
                 setBroadcastData({ title: '', message: '' });
@@ -303,7 +309,8 @@ export default function AdminNotifications() {
                     { category: 'Atualização', title: 'Novas Funcionalidades Chegaram! ✨', message: 'Temos novidades! Acabamos de liberar novos filtros e relatórios de desempenho. Confira agora no seu painel.' },
                     { category: 'Dica', title: 'Venda mais rápido com WebP ⚡', message: 'Sabia que fotos em WebP carregam 3x mais rápido? Já convertemos todas as suas fotos para você vender mais rápido!' }
                 ];
-                await supabase.from('notification_templates').insert(defaultTemplates);
+                const { error: tmplError } = await supabase.from('notification_templates').insert(defaultTemplates);
+                if (tmplError) throw tmplError;
                 fetchTemplates();
             }
 

@@ -25,6 +25,24 @@ Faz `throw` no erro (não engole), e ainda detecta JWT expirado (`PGRST301`) for
 - `vehicleService`/`motorcycleService` engolem erro na **limpeza de imagens do storage**: é best-effort, não deve travar a exclusão do veículo. Correto.
 - `response.json().catch(() => ({}))` em `openaiService`/`planService`: proteção contra corpo de erro não-JSON. Correto.
 
+## 🔴 A27 — Cinco escritas com erro silencioso (CORRIGIDO)
+
+Ao investigar se a inconsistência de A26 causava bug real, encontrei cinco pontos onde o erro de uma escrita era **ignorado**. Como o supabase-js **não lança** em erro de query (retorna `{ data, error }`), um `await supabase.from(...).update()` que falha não cai no `try/catch` ao redor — o código segue como se tivesse dado certo.
+
+| Local | Impacto |
+|---|---|
+| `InventoryImportModal.tsx:531` | Venda em massa: veículo marcado como vendido podia falhar e a tela mostrava sucesso |
+| `AdminNotifications.tsx:205` | Exclusão de regra: a UI removia a regra da lista mesmo se o `delete` falhasse |
+| `MotorcycleInventory.tsx:477` | Registro de comunicação falho disparava o webhook com `message_id` undefined |
+| `AdminNotifications.tsx:252` | Histórico de transmissão não gravado, mas "Enviado com sucesso" exibido |
+| `AdminNotifications.tsx:306` | Modelos padrão não criados, mas sucesso exibido |
+
+Corrigidos: os dois primeiros passam a checar `error` e avisar o usuário; os demais lançam para o `catch` já existente. `InventoryImportModal` usa `handleSupabaseResponse`.
+
+Estes eram bug de verdade, não estilo — é a diferença que separa A27 (corrigido agora) de A26 (débito de estilo, adiado).
+
+---
+
 ## 🟡 A26 — Três padrões de tratamento de erro convivendo
 
 | Padrão | Services |

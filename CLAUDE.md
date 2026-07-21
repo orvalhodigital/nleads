@@ -110,9 +110,13 @@ A mensagem de commit deve dizer **o que estava quebrado e o que mudou**, com os
 códigos dos achados (`A17`, `A20`…) — não uma lista de arquivos.
 
 > 🔴 **`main` é a branch de produção da Vercel.** Fazer merge em `main` publica
-> para os clientes. **Nunca faça esse merge por conta própria** — nem quando o
-> pedido for "faça o deploy" ou "suba tudo". Só com pedido explícito de publicar
-> em produção.
+> para os clientes.
+>
+> **Regra atual (definida pelo dono em 2026-07-20):** quando o dono disser
+> "suba no git", "faça deploy" ou equivalente, ele **quer publicar em produção**
+> — commite no branch de trabalho **e** faça merge em `main`. Essa autorização
+> vale só quando o dono pede; não faça merge em `main` por iniciativa própria
+> sem um pedido desses.
 
 Deploys de preview saem automaticamente a cada push no branch de trabalho, e o
 projeto tem proteção de SSO ativa (`all_except_custom_domains`) — só quem está

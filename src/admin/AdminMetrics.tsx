@@ -131,18 +131,18 @@ const BarList: React.FC<{ title: string; rows: { label: string; count: number }[
     );
 };
 
-const MiniTrend: React.FC<{ title: string; data: { date: string; count: number }[] }> = ({ title, data }) => {
+const MiniTrend: React.FC<{ title: string; data: { label: string; count: number }[] }> = ({ title, data }) => {
     const max = Math.max(1, ...data.map(d => d.count));
     const total = data.reduce((a, b) => a + b.count, 0);
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-500">{title}</h3>
-                <span className="text-xs font-bold text-slate-400">{total} nos últimos 30 dias</span>
+                <span className="text-xs font-bold text-slate-400">{total} no período</span>
             </div>
             <div className="flex items-end gap-[3px] h-24">
                 {data.map((d, i) => (
-                    <div key={i} className="flex-1 bg-indigo-100 rounded-sm relative group" style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count > 0 ? '4px' : '2px' }} title={`${d.date}: ${d.count}`}>
+                    <div key={i} className="flex-1 bg-indigo-100 rounded-sm relative group" style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count > 0 ? '4px' : '2px' }} title={`${d.label}: ${d.count}`}>
                         <div className="absolute inset-0 bg-indigo-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                 ))}
@@ -151,17 +151,28 @@ const MiniTrend: React.FC<{ title: string; data: { date: string; count: number }
     );
 };
 
+const PERIODS: { key: string; label: string; days: number | null }[] = [
+    { key: '7d', label: '7 dias', days: 7 },
+    { key: '30d', label: '30 dias', days: 30 },
+    { key: '90d', label: '90 dias', days: 90 },
+    { key: '12m', label: '12 meses', days: 365 },
+    { key: 'all', label: 'Tudo', days: null },
+];
+
 const AdminMetrics: React.FC = () => {
-    const [selected, setSelected] = useState<string>(''); // '' = todos
+    const [selected, setSelected] = useState<string>(''); // '' = todos os lojistas
+    const [period, setPeriod] = useState<string>('30d');
     const [metrics, setMetrics] = useState<Metrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const load = useCallback(async (ownerId: string) => {
+    const load = useCallback(async (ownerId: string, periodKey: string) => {
         setLoading(true);
         setError(null);
         try {
-            const m = await metricsService.getMetrics(ownerId || null);
+            const p = PERIODS.find(x => x.key === periodKey);
+            const fromISO = p?.days != null ? new Date(Date.now() - p.days * 24 * 60 * 60 * 1000).toISOString() : null;
+            const m = await metricsService.getMetrics(ownerId || null, fromISO);
             setMetrics(m);
         } catch (err: any) {
             setError(err?.message || 'Erro ao carregar métricas.');
@@ -171,8 +182,8 @@ const AdminMetrics: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        load(selected);
-    }, [selected, load]);
+        load(selected, period);
+    }, [selected, period, load]);
 
     const fmtUsd = (n: number) => `US$ ${n.toFixed(2)}`;
 
@@ -185,9 +196,20 @@ const AdminMetrics: React.FC = () => {
                     </h1>
                     <p className="text-sm text-slate-400 font-medium">Números da plataforma — leads, estoque, vendas e consumo de IA.</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
+                        {PERIODS.map(p => (
+                            <button
+                                key={p.key}
+                                onClick={() => setPeriod(p.key)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${period === p.key ? 'bg-indigo-500 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
                     <LojistaFilter onChange={(id) => setSelected(id)} />
-                    <button onClick={() => load(selected)} className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50" title="Atualizar">
+                    <button onClick={() => load(selected, period)} className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50" title="Atualizar">
                         <RefreshCw size={16} className={loading ? 'animate-spin text-indigo-500' : 'text-slate-500'} />
                     </button>
                 </div>
@@ -206,15 +228,15 @@ const AdminMetrics: React.FC = () => {
             ) : metrics ? (
                 <>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard label="Leads" value={String(metrics.leads.total)} sub="total capturados" icon={<Users size={18} className="text-white" />} color="bg-blue-500" />
-                        <StatCard label="Em estoque" value={String(metrics.vehicles.inStock)} sub={`${metrics.vehicles.totalRegistered} cadastrados`} icon={<Car size={18} className="text-white" />} color="bg-emerald-500" />
-                        <StatCard label="Vendidos" value={String(metrics.vehicles.sold)} sub="veículos" icon={<CheckCircle2 size={18} className="text-white" />} color="bg-violet-500" />
+                        <StatCard label="Leads" value={String(metrics.leads.total)} sub="capturados no período" icon={<Users size={18} className="text-white" />} color="bg-blue-500" />
+                        <StatCard label="Em estoque" value={String(metrics.vehicles.inStock)} sub={`${metrics.vehicles.entered} entraram no período`} icon={<Car size={18} className="text-white" />} color="bg-emerald-500" />
+                        <StatCard label="Vendidos" value={String(metrics.vehicles.sold)} sub="no período" icon={<CheckCircle2 size={18} className="text-white" />} color="bg-violet-500" />
                         <StatCard label="Giro médio" value={metrics.vehicles.avgTurnoverDays != null ? `${metrics.vehicles.avgTurnoverDays}d` : '—'} sub="cadastro → venda" icon={<Clock size={18} className="text-white" />} color="bg-amber-500" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <MiniTrend title="Entrada de leads" data={metrics.leads.last30Days} />
-                        <MiniTrend title="Entrada de veículos" data={metrics.vehicles.last30DaysEntries} />
+                        <MiniTrend title="Entrada de leads" data={metrics.leads.trend} />
+                        <MiniTrend title="Entrada de veículos" data={metrics.vehicles.trend} />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

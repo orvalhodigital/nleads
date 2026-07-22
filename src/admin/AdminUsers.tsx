@@ -318,7 +318,14 @@ export default function AdminUsers() {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
-                                                    onClick={() => navigate(`/paineldoadm/user/${user.id}`)}
+                                                    onClick={async () => {
+                                                        // Registra o acesso ao painel do lojista (impersonação) antes de entrar.
+                                                        // Best-effort: uma falha no log nunca bloqueia o acesso do admin.
+                                                        try {
+                                                            await auditLogService.logAction('impersonate', 'user', user.id, user.full_name || user.email);
+                                                        } catch { /* não bloqueia */ }
+                                                        navigate(`/paineldoadm/user/${user.id}`);
+                                                    }}
                                                     title="Acessar Painel (Impersonate)"
                                                     className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                 >

@@ -282,6 +282,11 @@ Reverificado em 2026-07-20.
 | A37 | **Qualquer anônimo inseria notificações para qualquer usuário** (`WITH CHECK (true)`/{public} + grant anon) → phishing/assédio no sino | 🟠 | ✅ resolvido e verificado — anon sem INSERT | 10 |
 | A38 | **Qualquer anônimo forjava entradas no log de auditoria do admin** (mesma classe) | 🟠 | ✅ resolvido e verificado — `admin_id = auth.uid()`, anon sem escrita | 10 |
 | A39 | Email do lojista na query string ao conectar WhatsApp (logs/proxy) | 🟢 | menor, aceito por ora | 10 |
+| A40 | `admin_update_user_plan` com EXECUTE para anon (não explorável — checa admin interno) | 🟢 | ✅ resolvido e verificado — anon sem EXECUTE | 11 |
+| A41 | 5 funções SECURITY DEFINER sem `search_path` fixo (linter Supabase) | 🟡 | ✅ resolvido e verificado — 0 sem search_path | 11 |
+| A42 | **Impersonação do admin não era registrada no log de auditoria** (lacuna LGPD/accountability) | 🟡 | ✅ resolvido — `logAction('impersonate')` no botão de acesso | 11 |
+
+**Linha de base para a Fase 11 (verificado):** autopromoção lojista→admin **bloqueada** por trigger; impersonação isolada pelo RLS (cliente é só UX); funções admin/tenant sólidas (`auth.uid()`, SECURITY DEFINER); `api/` verifica JWT de verdade (`auth.getUser`), sem IDOR; RPCs de admin checam admin internamente
 
 **Linha de base para a Fase 9:** Estoque/Veículos/Motos/Site auditados — limites de plano com defesa em profundidade (cliente + trigger), importação em massa capada pelo trigger, domínio custom sem sequestro; **A34 (vazamento crítico) corrigido e verificado em produção**
 

@@ -109,14 +109,18 @@ git push origin <branch-de-trabalho>
 A mensagem de commit deve dizer **o que estava quebrado e o que mudou**, com os
 códigos dos achados (`A17`, `A20`…) — não uma lista de arquivos.
 
-> 🔴 **`main` é a branch de produção da Vercel.** Fazer merge em `main` publica
-> para os clientes.
+> 🔴 **`main` é a branch de produção da Vercel.** Fazer merge/push em `main`
+> publica para os clientes.
 >
-> **Regra atual (definida pelo dono em 2026-07-20):** quando o dono disser
-> "suba no git", "faça deploy" ou equivalente, ele **quer publicar em produção**
-> — commite no branch de trabalho **e** faça merge em `main`. Essa autorização
-> vale só quando o dono pede; não faça merge em `main` por iniciativa própria
-> sem um pedido desses.
+> **Regra atual (definida pelo dono em 2026-07-22):** **suba direto em produção,
+> sem pedir autorização a cada vez.** Ao terminar uma correção com `tsc` e build
+> limpos, commite e faça push em `main` (ou merge do branch de trabalho em `main`)
+> por conta própria. O dono NÃO quer ser consultado antes de cada deploy.
+>
+> Isso substitui a regra anterior (2026-07-20), que exigia um pedido explícito
+> ("suba"/"deploy") a cada publicação. Continua valendo: **nunca** publique com
+> `tsc` ou build quebrado, e para mudanças de banco que o código depende, respeite
+> a ordem segura (deploy do código antes do SQL quando há fallback; senão, avise).
 
 Deploys de preview saem automaticamente a cada push no branch de trabalho, e o
 projeto tem proteção de SSO ativa (`all_except_custom_domains`) — só quem está

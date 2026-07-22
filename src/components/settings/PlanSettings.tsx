@@ -21,15 +21,13 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
         try {
             const url = await planService.getAsaasUpgradeLink(profile.id, selectedPlan.id);
             window.open(url, '_blank');
-        } catch (err) {
-            console.error('Error generating Asaas link, falling back to Stripe:', err);
-            if (profile.email) {
-                const url = await planService.getUpgradeLink(profile.email);
-                window.open(url, '_blank');
-            } else {
-                const url = planService.getUpgradeStripeUrl();
-                window.open(url, '_blank');
-            }
+        } catch (err: any) {
+            // NÃO cair para Stripe. Este sistema cobra exclusivamente via Asaas —
+            // um pagamento no Stripe iria para uma conta desintegrada e o plano
+            // NUNCA ativaria (só o webhook do Asaas ativa). Em erro, avisamos e
+            // paramos, em vez de mandar o cliente pagar no lugar errado.
+            console.error('Erro ao gerar pagamento no Asaas:', err);
+            alert(err?.message || 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes ou fale com o suporte.');
         } finally {
             setUpgrading(false);
         }

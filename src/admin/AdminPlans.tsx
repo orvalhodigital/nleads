@@ -78,7 +78,6 @@ export default function AdminPlans() {
                 features: editForm.features,
                 is_active: editForm.is_active,
                 style: editForm.style,
-                stripe_url: editForm.stripe_url
             }).eq('id', isEditing);
 
             if (error) throw error;
@@ -209,10 +208,6 @@ export default function AdminPlans() {
                                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Duração (Dias)</label>
                                                     <input type="number" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all" value={editForm.duration_days} onChange={e => setEditForm({ ...editForm, duration_days: Number(e.target.value) })} />
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Checkout Stripe (URL)</label>
-                                                <input className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all" value={editForm.stripe_url || ''} onChange={e => setEditForm({ ...editForm, stripe_url: e.target.value })} placeholder="https://buy.stripe.com/..." />
                                             </div>
                                             <div className="flex items-center gap-3 pt-4">
                                                 <button

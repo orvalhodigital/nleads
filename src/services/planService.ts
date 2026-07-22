@@ -47,14 +47,10 @@ export const planService = {
     return true;
   },
 
-  getUpgradeStripeUrl(): string {
-    return 'https://buy.stripe.com/dRm9AT0wEe5s93G0DY4ZG00';
-  },
-
-  async getUpgradeLink(email: string): Promise<string> {
-    const baseUrl = this.getUpgradeStripeUrl();
-    return `${baseUrl}?prefilled_email=${encodeURIComponent(email)}`;
-  },
+  // Removidos os métodos de upgrade via Stripe (link buy.stripe.com hardcoded):
+  // este sistema cobra exclusivamente pelo Asaas. Um pagamento no Stripe iria
+  // para uma conta desintegrada e o plano nunca ativaria (só o webhook do Asaas
+  // ativa). Ver getAsaasUpgradeLink abaixo. Achado A47 (Fase 13).
 
   async getAsaasUpgradeLink(userId: string, planId: string): Promise<string> {
     // Envia o token da sessão para o endpoint autenticar o chamador.

@@ -288,6 +288,9 @@ Reverificado em 2026-07-20.
 
 | A43 | **Anexos de suporte mundo-legíveis** — bucket `support_attachments` público + `getPublicUrl` → prints do painel (dados de clientes) acessíveis sem login | 🟡 | ✅ resolvido e verificado — bucket privado + URL assinada | 12 |
 | A44 | Políticas RLS duplicadas (EN+PT) em `support_tickets`/`ticket_messages` | 🟢 | redundância inócua; limpar na Fase 14 | 12 |
+| A45 | Dark mode ligado por padrão (segue o SO) mas só 16% das telas suportam → UI quebrada no escuro | 🟠 | ✅ resolvido — padrão=Dia + camada de compat p/ o Noite opt-in (branch, aguardando QA) | 13 |
+| A46 | Acessibilidade: inputs sem label/aria, botões-ícone sem nome, 10 imgs sem alt | 🟡 | roadmap (correções priorizadas) | 13 |
+| A47 | **Fluxo de upgrade caía para link Stripe hardcoded quando o Asaas falhava** — cliente pagaria numa conta desintegrada e o plano nunca ativaria (só o webhook Asaas ativa) | 🔴 | ✅ corrigido — fallback removido; erro mostrado em vez de Stripe; campo `stripe_url` some do admin | 13 |
 
 **Linha de base para a Fase 11 (verificado):** autopromoção lojista→admin **bloqueada** por trigger; impersonação isolada pelo RLS (cliente é só UX); funções admin/tenant sólidas (`auth.uid()`, SECURITY DEFINER); `api/` verifica JWT de verdade (`auth.getUser`), sem IDOR; RPCs de admin checam admin internamente
 

@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+// Este endpoint LÊ profiles ignorando RLS — precisa da service_role. NÃO cair
+// para a anon: depois do A34 a anon nem lê profiles, então o fallback só
+// mascarava o erro real como "Profile not found".
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
@@ -66,7 +69,14 @@ export default async function handler(req: any, res: any) {
     ]);
 
     if (profileRes.error || !profileRes.data) {
-      return res.status(404).json({ error: 'Profile not found' });
+      // Surfacing do erro real: "Profile not found" genérico escondia a causa
+      // (ex.: service_role inválida/expirada na Vercel → PostgREST recusa a query).
+      console.error('[create-asaas-payment] profile lookup falhou:', profileRes.error);
+      return res.status(404).json({
+        error: 'Profile not found',
+        detail: profileRes.error?.message || 'nenhuma linha para este id',
+        code: profileRes.error?.code || null,
+      });
     }
 
     if (planRes.error || !planRes.data) {

@@ -71,7 +71,8 @@ export const planService = {
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.error || 'Erro ao gerar pagamento no Asaas');
+      const msg = errData.detail ? `${errData.error} — ${errData.detail}` : (errData.error || 'Erro ao gerar pagamento no Asaas');
+      throw new Error(msg);
     }
 
     const data = await response.json();

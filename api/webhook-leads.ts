@@ -59,8 +59,37 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Missing required field: user_id' });
     }
 
+    // Resolve o dono da loja: se o user_id for de um vendedor, a loja é a
+    // empresa-mãe. `admin_id` = dono da loja — é por ele que a empresa lista os
+    // leads (leadService.list filtra por admin_id). Sem isso, o lead do webhook
+    // ficaria invisível para o dono.
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('role, parent_id')
+      .eq('id', user_id)
+      .single();
+    const ownerId = prof?.role === 'vendedor' ? (prof?.parent_id || user_id) : user_id;
+
+    // Deduplicação por LOJA: mesmo telefone na mesma loja = mesma oportunidade,
+    // não cria de novo. Lojas diferentes com o mesmo telefone são leads
+    // distintos (o filtro por admin_id garante o escopo da loja).
+    const phoneNormalized = String(phone).replace(/[^0-9]/g, '').slice(-11);
+    if (phoneNormalized) {
+      const { data: existing } = await supabase
+        .from('leads')
+        .select('id')
+        .eq('admin_id', ownerId)
+        .eq('phone_normalized', phoneNormalized)
+        .limit(1);
+      if (existing && existing.length > 0) {
+        console.log(`Lead ${phoneNormalized} já existe na loja ${ownerId} — não recriado (dedup).`);
+        return res.status(200).json({ success: true, deduped: true, message: 'Lead já existe nesta loja', leadId: existing[0].id });
+      }
+    }
+
     const newLead = {
       user_id,
+      admin_id: ownerId,
       name,
       phone,
       email: email || '',

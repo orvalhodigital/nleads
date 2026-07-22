@@ -271,6 +271,8 @@ Reverificado em 2026-07-20.
 
 | A32 | Histórico de funil não carimbado nas trocas de fase → lembrete "parado em Simulação" nunca disparava | 🟡 | ✅ resolvido | 8 |
 
+| A33 | Leads do webhook sem `admin_id` → invisíveis para a empresa; + dedup de lead por loja | 🔴 | ✅ resolvido | 8 |
+
 **Linha de base para a Fase 9:** Leads/CRM auditado — atribuição por id (homônimo ok), Kanban robusto; A32 corrigido
 
 <!-- **Linha de base para a Fase 8:** billing íntegro (A29/A31 resolvidos, migração 18 aplicada); A30 avaliado; testes ❌ · CI ❌

@@ -42,3 +42,22 @@ O histórico de comunicação usa a RPC `append_lead_interaction` (append atômi
 | Interações atômicas | ✅ |
 | A32 — funnelHistory nas trocas de fase | 🟡 → ✅ corrigido |
 | Dedup de leads por telefone | 🟡 decisão de produto |
+
+---
+
+## Adendo (2026-07-21) — lead único por loja + visibilidade
+
+Regra do dono: um lead é **único dentro da loja**. Se o mesmo telefone volta por outro canal, não recria (já é uma oportunidade). O mesmo telefone em **lojas diferentes** são leads distintos (isolados por RLS).
+
+### 🔴 A33 — Leads do webhook ficariam invisíveis para a empresa (corrigido)
+`leadService.list` lista, para a empresa, por `admin_id = dono`. Mas `webhook-leads.ts` gravava só `user_id`, **sem `admin_id`** — então um lead entrando pelo webhook teria `admin_id = null` e **não apareceria** para o dono. Bug latente (os leads atuais são do seed, com `admin_id` preenchido; nenhum lead real de webhook ainda). Corrigido: o webhook resolve o dono da loja e grava `admin_id`.
+
+### Deduplicação por loja (implementada)
+- **Migração** `20260721010000`: coluna gerada `phone_normalized` (últimos 11 dígitos, ignora máscara e código 55) + índice `(admin_id, phone_normalized)`.
+- **Webhook** (`webhook-leads.ts`): antes de inserir, checa se já existe lead com o mesmo telefone na loja (`admin_id`); se sim, retorna `deduped: true` sem recriar.
+- **Criação manual** (`DataContext.addLead` via `leadService.findDuplicateByPhone`): mesma checagem; avisa "já existe um lead com este telefone nesta loja".
+  - **Exceção:** venda avulsa (fase `COMPLETED`) não deduplica — registrar o comprador no ato da venda é intenção diferente de captar oportunidade.
+- Índice único no banco foi **descartado**: já há telefones repetidos na mesma loja (seed) e seria rígido demais. A dedup é no app, tolerante.
+- Resiliência: `findDuplicateByPhone` e o webhook não quebram se a coluna ainda não existir (dedup vira no-op até a migração ser aplicada).
+
+Aplicar: `supabase/scripts/APLICAR-leads-dedup.sql` (migração 21).

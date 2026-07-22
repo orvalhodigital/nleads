@@ -107,6 +107,30 @@ export const leadService = {
         return this.list(userId, adminId, isAdminContext, 200, 0);
     },
 
+    /**
+     * Procura um lead com o mesmo telefone DENTRO da loja (por `admin_id`).
+     * Serve à regra "lead único da empresa": o mesmo telefone é a mesma
+     * oportunidade. Retorna o id do lead existente, ou null.
+     * Best-effort: se a coluna `phone_normalized` ainda não existir, retorna
+     * null (não bloqueia a criação).
+     */
+    async findDuplicateByPhone(adminId: string | undefined, phone: string): Promise<string | null> {
+        const normalized = (phone || '').replace(/[^0-9]/g, '').slice(-11);
+        if (!adminId || !normalized) return null;
+        try {
+            const { data, error } = await supabase
+                .from('leads')
+                .select('id')
+                .eq('admin_id', adminId)
+                .eq('phone_normalized', normalized)
+                .limit(1);
+            if (error) return null; // coluna ausente ou erro: não bloqueia
+            return data && data.length > 0 ? data[0].id : null;
+        } catch {
+            return null;
+        }
+    },
+
     async search(query: string, userId?: string, adminId?: string, limit: number = 20): Promise<Lead[]> {
         const { data: { user } } = await supabase.auth.getUser();
 

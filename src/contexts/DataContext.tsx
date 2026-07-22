@@ -5,7 +5,7 @@ import { profileService } from '../services/profileService';
 import { leadService } from '../services/leadService';
 import { vehicleService } from '../services/vehicleService';
 import { motorcycleService } from '../services/motorcycleService';
-import { Profile, Lead, Vehicle, Motorcycle, SaleDetails } from '../types';
+import { Profile, Lead, Vehicle, Motorcycle, SaleDetails, LeadPhase } from '../types';
 import { withPreferenceDefaults } from '../lib/leadPreferenceDefaults';
 import { useToast } from './ToastContext';
 import { validateLeadInput } from '../schemas/leadSchema';
@@ -284,8 +284,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
             showToast('error', validationError);
             throw new Error('VALIDATION_ERROR');
         }
+        const { adminId } = getAdminContext(p);
+
+        // Lead único por loja: se o telefone já existe nesta loja, é a mesma
+        // oportunidade — não cria de novo. (Lojas diferentes com o mesmo
+        // telefone são leads distintos; a checagem é escopada por admin_id.)
+        // Exceção: venda avulsa (fase COMPLETED) registra o comprador no ato da
+        // venda — intenção diferente de captar oportunidade, não deduplica.
+        const storeOwner = adminId || p?.id;
+        if (leadData.phase !== LeadPhase.COMPLETED) {
+            const dupId = await leadService.findDuplicateByPhone(storeOwner, leadData.phone || '');
+            if (dupId) {
+                showToast('error', 'Já existe um lead com este telefone nesta loja.');
+                throw new Error('DUPLICATE_LEAD');
+            }
+        }
         try {
-            const { adminId } = getAdminContext(p);
             const enriched = {
                 ...leadData,
                 user_id: leadData.user_id || p?.id,

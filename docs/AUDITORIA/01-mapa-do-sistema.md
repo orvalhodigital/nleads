@@ -279,7 +279,13 @@ Reverificado em 2026-07-20.
 | A35 | Mensagens de limite citavam planos aposentados ("Free"/"Pro") | 🟢 | ✅ resolvido — texto alinhado ao modelo atual (Ilimitado) | 9 |
 | A36 | `websiteService.createPublicLead` é código morto (0 chamadas; site usa webhook n8n) | 🟢 | remover na Fase 14 | 14 |
 
-**Linha de base para a Fase 9:** Estoque/Veículos/Motos/Site auditados — limites de plano com defesa em profundidade (cliente + trigger), importação em massa capada pelo trigger, domínio custom sem sequestro; **A34 (vazamento crítico) corrigido no código, pendente aplicar SQL**
+| A37 | **Qualquer anônimo inseria notificações para qualquer usuário** (`WITH CHECK (true)`/{public} + grant anon) → phishing/assédio no sino | 🟠 | ✅ resolvido e verificado — anon sem INSERT | 10 |
+| A38 | **Qualquer anônimo forjava entradas no log de auditoria do admin** (mesma classe) | 🟠 | ✅ resolvido e verificado — `admin_id = auth.uid()`, anon sem escrita | 10 |
+| A39 | Email do lojista na query string ao conectar WhatsApp (logs/proxy) | 🟢 | menor, aceito por ora | 10 |
+
+**Linha de base para a Fase 9:** Estoque/Veículos/Motos/Site auditados — limites de plano com defesa em profundidade (cliente + trigger), importação em massa capada pelo trigger, domínio custom sem sequestro; **A34 (vazamento crítico) corrigido e verificado em produção**
+
+**Linha de base para a Fase 10:** Comunicação auditada — sino isolado por `user_id`, tabelas admin gated, audit log imutável/leitura-admin; varredura de escrita anônima em TODAS as tabelas achou só 2 buracos (A37/A38), ambos fechados; webhooks n8n públicos seguem dependendo de mitigação no n8n (A8)
 
 <!-- **Linha de base para a Fase 8:** billing íntegro (A29/A31 resolvidos, migração 18 aplicada); A30 avaliado; testes ❌ · CI ❌
 

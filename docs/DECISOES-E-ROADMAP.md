@@ -23,6 +23,7 @@ Encontrou código que não bate com nada aqui? **Não adivinhe.** Pergunte ao do
 Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro cliente pagante**. Cada um tem a decisão que o adiou registrada abaixo.
 
 - [x] **Rodar `APLICAR-public-profile-view.sql`** (migração 22, achado A34) — ✅ aplicado e verificado em 2026-07-22; o vazamento de `meta_access_token`/tokens/PII pelo site público está fechado no banco.
+- [x] **Rodar `APLICAR-notifications-insert.sql`** (migração `20260722020000`, achados A37/A38) — ✅ aplicado e verificado em 2026-07-22; anon não insere mais notificação falsa nem forja log de auditoria.
 - [ ] **Rotacionar credenciais** — `SUPABASE_ACESS_TOKEN` exposto em texto plano (achado A22). Ver decisão de 2026-07-20. **🔴 Rotacionar também `meta_access_token` (e tokens Google Ads) dos lojistas que já tinham site ativo** — esses tokens estiveram expostos publicamente antes do fix do A34; trocá-los é o único jeito de garantir que ninguém que os copiou ainda os use.
 - [ ] **Revisar documentos legais com apoio jurídico** — o nome da plataforma foi trocado nos contratos durante o rebrand.
 - [ ] **Definir Otimizza × Orvalho nos ativos de marca** — resolvido no código; sobra limpar `profiles.logo_url` no banco.

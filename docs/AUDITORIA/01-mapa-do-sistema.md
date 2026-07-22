@@ -297,6 +297,8 @@ Reverificado em 2026-07-20.
 
 **Linha de base para a Fase 12 (verificado):** tickets isolados por dono/admin; `ticket_messages` por participante-do-ticket; onboarding_sessions só-admin (não é fluxo do lojista); A43 (anexos) fechado no código, SQL a aplicar
 
+**Linha de base para a Fase 13:** dark mode padrão=Dia + Noite opt-in funcional (A45); a11y no roadmap (A46); fluxo de pagamento — fallback pro Stripe removido (A47) e 3 camadas de config do Asaas corrigidas (A48), com o erro real agora exposto em cada etapa; **conclusão do teste de pagamento adiada pelo dono para depois das auditorias**
+
 **Linha de base para a Fase 9:** Estoque/Veículos/Motos/Site auditados — limites de plano com defesa em profundidade (cliente + trigger), importação em massa capada pelo trigger, domínio custom sem sequestro; **A34 (vazamento crítico) corrigido e verificado em produção**
 
 **Linha de base para a Fase 10:** Comunicação auditada — sino isolado por `user_id`, tabelas admin gated, audit log imutável/leitura-admin; varredura de escrita anônima em TODAS as tabelas achou só 2 buracos (A37/A38), ambos fechados; webhooks n8n públicos seguem dependendo de mitigação no n8n (A8)

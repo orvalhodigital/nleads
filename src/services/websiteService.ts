@@ -1,5 +1,5 @@
 import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
-import { Vehicle, VehicleType, TransmissionType, EngineType, LeadPhase } from '../types';
+import { Vehicle, VehicleType, TransmissionType, EngineType } from '../types';
 
 export interface BusinessHourEntry {
     day: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=domingo, 1=segunda...
@@ -247,45 +247,7 @@ export const websiteService = {
         return mapRowToVehicle(data[0]);
     },
 
-    async createPublicLead(userId: string, leadData: {
-        name: string;
-        phone: string;
-        phase?: LeadPhase;
-        scheduling_data?: any;
-        simulation_data?: any;
-        possui_troca?: boolean;
-        veiculo_troca?: string;
-    }): Promise<{ success: boolean; error?: string }> {
-        try {
-            const response = await supabase
-                .from('leads')
-                .insert({
-                    user_id: userId,
-                    name: leadData.name,
-                    phone: leadData.phone,
-                    source: 'Site',
-                    phase: leadData.phase || LeadPhase.NEW,
-                    email: '',
-                    temperature: 'WARM',
-                    tipos_veiculo: [],
-                    marcas: [],
-                    modelos: [],
-                    transmissao: ['Qualquer Um(a)'],
-                    motorizacao: ['Qualquer Um(a)'],
-                    observacoes_adicionais: '',
-                    possui_entrada: false,
-                    possui_troca: leadData.possui_troca || false,
-                    veiculo_troca: leadData.veiculo_troca || '',
-                    presented_vehicles: [],
-                    scheduling_data: leadData.scheduling_data || null,
-                    simulation_data: leadData.simulation_data || null,
-                });
-
-            handleSupabaseResponse(response);
-            return { success: true };
-        } catch (err: any) {
-            console.error('[websiteService] Exception creating public lead:', err);
-            return { success: false, error: err.message };
-        }
-    },
+    // createPublicLead removido na Fase 14 (A36): era código morto (0 chamadas).
+    // O site público envia leads pelos webhooks n8n → api/webhook-leads.ts
+    // (service_role), não por insert direto do cliente anônimo.
 };

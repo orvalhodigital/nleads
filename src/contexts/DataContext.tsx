@@ -65,23 +65,9 @@ export const useAuth = () => {
     return { session, profile, loading, impersonatedUserId, refreshProfile, error: null };
 };
 
-export const useLeads = () => {
-    const { leads, loadingLeads, hasMoreLeads, refreshLeads, loadMoreLeads, addLead, updateLead, deleteLead } = useData();
-    return { leads, loadingLeads, hasMoreLeads, refreshLeads, loadMoreLeads, addLead, updateLead, deleteLead };
-};
-
-export const useInventory = () => {
-    const { 
-        vehicles, motorcycles, loading, refreshVehicles, refreshMotorcycles,
-        addVehicle, updateVehicle, deleteVehicle, handleSellVehicle,
-        addMotorcycle, updateMotorcycle, deleteMotorcycle 
-    } = useData();
-    return { 
-        vehicles, motorcycles, loadingInventory: loading, refreshVehicles, refreshMotorcycles,
-        addVehicle, updateVehicle, deleteVehicle, handleSellVehicle,
-        addMotorcycle, updateMotorcycle, deleteMotorcycle 
-    };
-};
+// useLeads e useInventory (hooks de compat) e os shims InventoryContext/
+// LeadContext foram removidos na Fase 14 (A3): tinham zero consumidores. Quem
+// precisa desses dados usa useData() diretamente.
 
 export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUserId?: string }> = ({
     children,

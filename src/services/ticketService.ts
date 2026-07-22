@@ -168,9 +168,16 @@ export const ticketService = {
     },
 
     async uploadAttachment(file: File): Promise<string> {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `tickets/${fileName}`;
+        // Anexos de suporte podem conter dados sensíveis (prints do painel do
+        // lojista). O bucket é privado (A43) e o path é escopado por usuário com
+        // nome não-adivinhável. Guardamos o PATH (não uma URL pública); a URL é
+        // assinada sob demanda em getAttachmentUrl.
+        const { data: { session } } = await supabase.auth.getSession();
+        const uid = session?.user?.id;
+        if (!uid) throw new Error('Sessão necessária para enviar anexo.');
+
+        const fileExt = (file.name.split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '');
+        const filePath = `tickets/${uid}/${crypto.randomUUID()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
             .from('support_attachments')
@@ -178,10 +185,17 @@ export const ticketService = {
 
         if (uploadError) throw uploadError;
 
-        const { data } = supabase.storage
-            .from('support_attachments')
-            .getPublicUrl(filePath);
+        return filePath;
+    },
 
-        return data.publicUrl;
+    // Resolve o valor guardado (path novo, ou URL http legada) numa URL utilizável.
+    // Para paths, gera URL assinada de 1h contra o bucket privado.
+    async getAttachmentUrl(pathOrUrl: string): Promise<string> {
+        if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl; // compat com valores antigos
+        const { data, error } = await supabase.storage
+            .from('support_attachments')
+            .createSignedUrl(pathOrUrl, 3600);
+        if (error || !data) return '#';
+        return data.signedUrl;
     }
 };

@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ticketService } from '../services/ticketService';
+import { AttachmentChip } from '../components/AttachmentChip';
 import { SupportTicket, TicketCategory, TicketPriority } from '../types';
 import {
     Plus,
@@ -210,9 +211,7 @@ export default function SupportPage() {
                                 {selectedTicket.attachments?.length > 0 && (
                                     <div className="mt-4 flex flex-wrap gap-2">
                                         {selectedTicket.attachments.map((url, i) => (
-                                            <a key={i} href={url} target="_blank" rel="noreferrer" className="p-2 bg-white border border-slate-200 rounded-xl flex items-center gap-2 text-[10px] font-bold text-indigo-600 hover:border-indigo-200 transition-all">
-                                                <Paperclip size={12} /> Anexo {i + 1}
-                                            </a>
+                                            <AttachmentChip key={i} value={url} index={i} className="p-2 bg-white border border-slate-200 rounded-xl flex items-center gap-2 text-[10px] font-bold text-indigo-600 hover:border-indigo-200 transition-all" />
                                         ))}
                                     </div>
                                 )}
@@ -237,9 +236,7 @@ export default function SupportPage() {
                                         {msg.attachments && msg.attachments.length > 0 && (
                                             <div className="mt-3 flex flex-wrap gap-2">
                                                 {msg.attachments.map((url, i) => (
-                                                    <a key={i} href={url} target="_blank" rel="noreferrer" className={`inline-flex p-2 rounded-xl items-center gap-2 text-[10px] font-bold transition-all ${msg.sender_role === 'admin' ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-slate-200/50 hover:bg-slate-200 text-indigo-600'}`}>
-                                                        <Paperclip size={12} /> Anexo {i + 1}
-                                                    </a>
+                                                    <AttachmentChip key={i} value={url} index={i} className={`inline-flex p-2 rounded-xl items-center gap-2 text-[10px] font-bold transition-all ${msg.sender_role === 'admin' ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-slate-200/50 hover:bg-slate-200 text-indigo-600'}`} />
                                                 ))}
                                             </div>
                                         )}

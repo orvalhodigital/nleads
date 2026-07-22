@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ticketService } from '../services/ticketService';
+import { AttachmentChip } from '../components/AttachmentChip';
 import { SupportTicket, TicketStatus, TicketMessage } from '../types';
 import {
     Search,
@@ -8,7 +9,6 @@ import {
     MessageCircle,
     CheckCircle2,
     AlertCircle,
-    Paperclip,
     Send,
     Loader2,
     ChevronRight,
@@ -175,9 +175,7 @@ export default function AdminTickets() {
                                 {selectedTicket.attachments?.length > 0 && (
                                     <div className="mt-4 flex flex-wrap gap-2">
                                         {selectedTicket.attachments.map((url, i) => (
-                                            <a key={i} href={url} target="_blank" rel="noreferrer" className="p-2 bg-white border border-slate-200 rounded-xl flex items-center gap-2 text-[10px] font-bold text-indigo-600 hover:border-indigo-200 transition-all">
-                                                <Paperclip size={12} /> Anexo {i + 1}
-                                            </a>
+                                            <AttachmentChip key={i} value={url} index={i} className="p-2 bg-white border border-slate-200 rounded-xl flex items-center gap-2 text-[10px] font-bold text-indigo-600 hover:border-indigo-200 transition-all" />
                                         ))}
                                     </div>
                                 )}

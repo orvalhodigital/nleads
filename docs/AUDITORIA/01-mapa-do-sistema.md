@@ -84,7 +84,7 @@ src/
 | Estoque | `vehicles`, `motorcycles` |
 | CRM | `leads`, `lead_communications`, `campaigns` |
 | Comercial | `plans`, `guarantee_configs` |
-| Suporte | `support_tickets`, `ticket_messages`, `support_attachments` |
+| Suporte | `support_tickets`, `ticket_messages` (anexos ficam no **bucket de storage** `support_attachments`, não numa tabela) |
 | Notificações | `notifications`, `notification_rules`, `notification_templates`, `broadcast_history` |
 | Onboarding | `onboarding_sessions` |
 | Sistema / admin | `system_settings`, `system_assets`, `admin_audit_logs`, `motivation_quotes` |
@@ -286,7 +286,12 @@ Reverificado em 2026-07-20.
 | A41 | 5 funções SECURITY DEFINER sem `search_path` fixo (linter Supabase) | 🟡 | ✅ resolvido e verificado — 0 sem search_path | 11 |
 | A42 | **Impersonação do admin não era registrada no log de auditoria** (lacuna LGPD/accountability) | 🟡 | ✅ resolvido — `logAction('impersonate')` no botão de acesso | 11 |
 
+| A43 | **Anexos de suporte mundo-legíveis** — bucket `support_attachments` público + `getPublicUrl` → prints do painel (dados de clientes) acessíveis sem login | 🟡 | corrigido (código: path+URL assinada); **aplicar `APLICAR-support-attachments-private.sql`** após o deploy | 12 |
+| A44 | Políticas RLS duplicadas (EN+PT) em `support_tickets`/`ticket_messages` | 🟢 | redundância inócua; limpar na Fase 14 | 12 |
+
 **Linha de base para a Fase 11 (verificado):** autopromoção lojista→admin **bloqueada** por trigger; impersonação isolada pelo RLS (cliente é só UX); funções admin/tenant sólidas (`auth.uid()`, SECURITY DEFINER); `api/` verifica JWT de verdade (`auth.getUser`), sem IDOR; RPCs de admin checam admin internamente
+
+**Linha de base para a Fase 12 (verificado):** tickets isolados por dono/admin; `ticket_messages` por participante-do-ticket; onboarding_sessions só-admin (não é fluxo do lojista); A43 (anexos) fechado no código, SQL a aplicar
 
 **Linha de base para a Fase 9:** Estoque/Veículos/Motos/Site auditados — limites de plano com defesa em profundidade (cliente + trigger), importação em massa capada pelo trigger, domínio custom sem sequestro; **A34 (vazamento crítico) corrigido e verificado em produção**
 

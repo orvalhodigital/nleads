@@ -276,7 +276,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         const p = profileRef.current;
         const isFreePlan = isLimitedPlan(p?.plan);
         if (isFreePlan && leads.length >= 50) {
-            showToast('error', 'Limite do plano Free atingido (máximo 50 leads). Faça upgrade para Pro!');
+            showToast('error', 'Limite de 50 leads do seu plano atingido. Faça upgrade para o Ilimitado!');
             throw new Error('PLAN_LIMIT_REACHED');
         }
         const validationError = validateLeadInput(leadData);
@@ -374,7 +374,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         const p = profileRef.current;
         const isFreePlan = isLimitedPlan(p?.plan);
         if (isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
-            showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
+            showToast('error', 'Limite de 10 veículos do seu plano atingido. Faça upgrade para o Ilimitado!');
             throw new Error('PLAN_LIMIT_REACHED');
         }
         const vehicleValidationError = validateVehicleInput(vehicleData);
@@ -432,7 +432,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode; impersonatedUse
         const p = profileRef.current;
         const isFreePlan = isLimitedPlan(p?.plan);
         if (isFreePlan && (vehicles.length + motorcycles.length) >= 10) {
-            showToast('error', 'Limite do plano Free atingido (máximo 10 veículos). Faça upgrade para Pro!');
+            showToast('error', 'Limite de 10 veículos do seu plano atingido. Faça upgrade para o Ilimitado!');
             throw new Error('PLAN_LIMIT_REACHED');
         }
         const motoValidationError = validateVehicleInput(motoData);

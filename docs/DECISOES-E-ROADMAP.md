@@ -22,7 +22,8 @@ Encontrou código que não bate com nada aqui? **Não adivinhe.** Pergunte ao do
 
 Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro cliente pagante**. Cada um tem a decisão que o adiou registrada abaixo.
 
-- [ ] **Rotacionar credenciais** — `SUPABASE_ACESS_TOKEN` exposto em texto plano (achado A22). Ver decisão de 2026-07-20.
+- [ ] **🔴 Rodar `supabase/scripts/APLICAR-public-profile-view.sql`** (migração 22, achado A34) — fecha no banco o vazamento de `meta_access_token`/tokens/PII pelo site público. O código já lê a view; **só está 100% protegido depois de rodar este SQL no SQL Editor.** Enquanto não roda, o fallback transitório mantém o vazamento atual (não piora, mas não fecha).
+- [ ] **Rotacionar credenciais** — `SUPABASE_ACESS_TOKEN` exposto em texto plano (achado A22). Ver decisão de 2026-07-20. **Rotacionar também `meta_access_token` dos lojistas que já tinham site ativo** — o token esteve exposto publicamente (A34).
 - [ ] **Revisar documentos legais com apoio jurídico** — o nome da plataforma foi trocado nos contratos durante o rebrand.
 - [ ] **Definir Otimizza × Orvalho nos ativos de marca** — resolvido no código; sobra limpar `profiles.logo_url` no banco.
 - [ ] **Renomear fluxos no n8n** e atualizar as URLs no código.

@@ -138,12 +138,28 @@ const mapRowToVehicle = (row: any): Vehicle => ({
 
 export const websiteService = {
     async getProfileBySlug(slug: string): Promise<{ profile: PublicProfile | null; reason: 'ok' | 'not_found' | 'inactive' | 'error'; errorMsg?: string }> {
+        // Lê a VIEW pública (`store_public_profile`), não a tabela `profiles`.
+        // A view expõe SOMENTE colunas de apresentação — segredos (meta_access_token,
+        // tokens Google/Asaas, email, telefone, plano) nunca chegam ao anon (A34).
         // First: check if slug exists at all (regardless of active status)
-        const { data: anyData, error: anyError } = await supabase
-            .from('profiles')
+        let { data: anyData, error: anyError } = await supabase
+            .from('store_public_profile')
             .select('*')
             .eq('website_slug', slug)
             .maybeSingle();
+
+        // Transição: se a view ainda não foi criada no banco (migração 22 pendente),
+        // cai na tabela base para o site não sair do ar. Assim que o SQL de A34 é
+        // aplicado, a view existe e este fallback nunca mais é acionado.
+        if (anyError && /store_public_profile|does not exist|relation/i.test(anyError.message)) {
+            const legacy = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('website_slug', slug)
+                .maybeSingle();
+            anyData = legacy.data;
+            anyError = legacy.error;
+        }
 
         if (anyError) {
             console.error('[websiteService] Error fetching profile:', anyError);

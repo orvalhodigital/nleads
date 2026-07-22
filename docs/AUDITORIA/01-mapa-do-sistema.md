@@ -89,9 +89,11 @@ src/
 | Onboarding | `onboarding_sessions` |
 | Sistema / admin | `system_settings`, `system_assets`, `admin_audit_logs`, `motivation_quotes` |
 
-**Funções RPC:** `claim_first_admin`, `check_has_admins`, `append_lead_interaction`, `admin_update_user_password`
+**Funções RPC:** `claim_first_admin`, `check_has_admins`, `append_lead_interaction`, `admin_update_user_password`, `is_store_website_active` (SECURITY DEFINER — usada pelas políticas públicas de `vehicles`/`motorcycles`, Fase 9/A34)
 
-**Isolamento multi-tenant:** RLS do Postgres por coluna `user_id` (documentado em `ARCHITECTURE.md`). Verificação efetiva das políticas → **Fase 3**.
+**View pública:** `store_public_profile` — projeção somente-leitura de `profiles` com **whitelist** de colunas de apresentação (sem segredos). É a única leitura de perfil disponível ao papel `anon`; o site público lê daqui (A34).
+
+**Isolamento multi-tenant:** RLS do Postgres por coluna `user_id` (documentado em `ARCHITECTURE.md`). Verificação efetiva das políticas → **Fase 3**. Leitura pública do perfil pela loja endurecida na **Fase 9** (A34).
 
 ## 6. Configuração e segredos
 
@@ -273,7 +275,11 @@ Reverificado em 2026-07-20.
 
 | A33 | Leads do webhook sem `admin_id` → invisíveis para a empresa; + dedup de lead por loja | 🔴 | ✅ resolvido | 8 |
 
-**Linha de base para a Fase 9:** Leads/CRM auditado — atribuição por id (homônimo ok), Kanban robusto; A32 corrigido
+| A34 | **Site público lia `profiles.select('*')` com chave anônima → `meta_access_token`, tokens Google/Asaas, email, telefone e plano de TODO lojista com site ativo expostos na internet** | 🔴 | corrigido no código (view `store_public_profile`); **falta rodar `APLICAR-public-profile-view.sql`** para fechar no banco | 9 |
+| A35 | Mensagens de limite citavam planos aposentados ("Free"/"Pro") | 🟢 | ✅ resolvido — texto alinhado ao modelo atual (Ilimitado) | 9 |
+| A36 | `websiteService.createPublicLead` é código morto (0 chamadas; site usa webhook n8n) | 🟢 | remover na Fase 14 | 14 |
+
+**Linha de base para a Fase 9:** Estoque/Veículos/Motos/Site auditados — limites de plano com defesa em profundidade (cliente + trigger), importação em massa capada pelo trigger, domínio custom sem sequestro; **A34 (vazamento crítico) corrigido no código, pendente aplicar SQL**
 
 <!-- **Linha de base para a Fase 8:** billing íntegro (A29/A31 resolvidos, migração 18 aplicada); A30 avaliado; testes ❌ · CI ❌
 

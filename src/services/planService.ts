@@ -52,7 +52,7 @@ export const planService = {
   // para uma conta desintegrada e o plano nunca ativaria (só o webhook do Asaas
   // ativa). Ver getAsaasUpgradeLink abaixo. Achado A47 (Fase 13).
 
-  async getAsaasUpgradeLink(userId: string, planId: string): Promise<string> {
+  async getAsaasUpgradeLink(userId: string, planId: string, cpfCnpj?: string): Promise<string> {
     // Envia o token da sessão para o endpoint autenticar o chamador.
     const { data: { session } } = await supabase.auth.getSession();
     const accessToken = session?.access_token;
@@ -66,11 +66,17 @@ export const planService = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ userId, planId }),
+      body: JSON.stringify({ userId, planId, cpfCnpj }),
     });
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
+      // Sinaliza para a UI pedir o CPF/CNPJ, em vez de só mostrar erro.
+      if (errData.needsCpfCnpj) {
+        const e: any = new Error(errData.detail || 'CPF/CNPJ obrigatório');
+        e.needsCpfCnpj = true;
+        throw e;
+      }
       const msg = errData.detail ? `${errData.error} — ${errData.detail}` : (errData.error || 'Erro ao gerar pagamento no Asaas');
       throw new Error(msg);
     }

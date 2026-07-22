@@ -16,22 +16,33 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
     const [loading, setLoading] = useState(true);
     const [upgrading, setUpgrading] = useState(false);
 
-    const handleUpgradeClick = async (selectedPlan: Plan) => {
+    const [cpfModalPlan, setCpfModalPlan] = useState<Plan | null>(null);
+    const [cpfInput, setCpfInput] = useState('');
+
+    const doUpgrade = async (selectedPlan: Plan, cpfCnpj?: string) => {
         setUpgrading(true);
         try {
-            const url = await planService.getAsaasUpgradeLink(profile.id, selectedPlan.id);
+            const url = await planService.getAsaasUpgradeLink(profile.id, selectedPlan.id, cpfCnpj ?? profile.cpf_cnpj);
             window.open(url, '_blank');
+            setCpfModalPlan(null);
         } catch (err: any) {
             // NÃO cair para Stripe. Este sistema cobra exclusivamente via Asaas —
             // um pagamento no Stripe iria para uma conta desintegrada e o plano
-            // NUNCA ativaria (só o webhook do Asaas ativa). Em erro, avisamos e
-            // paramos, em vez de mandar o cliente pagar no lugar errado.
-            console.error('Erro ao gerar pagamento no Asaas:', err);
-            alert(err?.message || 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes ou fale com o suporte.');
+            // NUNCA ativaria (só o webhook do Asaas ativa).
+            if (err?.needsCpfCnpj) {
+                // Falta o CPF/CNPJ — pede num modal e tenta de novo.
+                setCpfInput('');
+                setCpfModalPlan(selectedPlan);
+            } else {
+                console.error('Erro ao gerar pagamento no Asaas:', err);
+                alert(err?.message || 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes ou fale com o suporte.');
+            }
         } finally {
             setUpgrading(false);
         }
     };
+
+    const handleUpgradeClick = (selectedPlan: Plan) => { void doUpgrade(selectedPlan); };
 
     const [loadingBilling, setLoadingBilling] = useState(false);
 
@@ -316,6 +327,41 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
                     Dúvidas sobre os planos? Entre em contato com nosso <span className="text-brand-600 cursor-pointer hover:underline">suporte especializado</span>.
                 </p>
             </div>
+
+            {cpfModalPlan && (
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => !upgrading && setCpfModalPlan(null)}>
+                    <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full space-y-5 shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div>
+                            <h4 className="text-xl font-black text-slate-900">CPF ou CNPJ</h4>
+                            <p className="text-sm text-slate-500 font-medium mt-1">Precisamos do seu CPF ou CNPJ para emitir a cobrança da assinatura no Asaas.</p>
+                        </div>
+                        <input
+                            autoFocus
+                            value={cpfInput}
+                            onChange={e => setCpfInput(e.target.value.replace(/[^0-9./-]/g, ''))}
+                            placeholder="CPF (11 dígitos) ou CNPJ (14)"
+                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                        />
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setCpfModalPlan(null)}
+                                disabled={upgrading}
+                                className="flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all disabled:opacity-50"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => doUpgrade(cpfModalPlan, cpfInput)}
+                                disabled={upgrading || cpfInput.replace(/\D/g, '').length < 11}
+                                className="flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest bg-violet-600 text-white hover:bg-violet-700 transition-all shadow-lg shadow-violet-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {upgrading && <Loader2 size={14} className="animate-spin" />}
+                                {upgrading ? 'Gerando...' : 'Continuar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

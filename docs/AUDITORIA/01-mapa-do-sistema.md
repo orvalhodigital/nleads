@@ -291,6 +291,7 @@ Reverificado em 2026-07-20.
 | A45 | Dark mode ligado por padrão (segue o SO) mas só 16% das telas suportam → UI quebrada no escuro | 🟠 | ✅ resolvido — padrão=Dia + camada de compat p/ o Noite opt-in (branch, aguardando QA) | 13 |
 | A46 | Acessibilidade: inputs sem label/aria, botões-ícone sem nome, 10 imgs sem alt | 🟡 | roadmap (correções priorizadas) | 13 |
 | A47 | **Fluxo de upgrade caía para link Stripe hardcoded quando o Asaas falhava** — cliente pagaria numa conta desintegrada e o plano nunca ativaria (só o webhook Asaas ativa) | 🔴 | ✅ corrigido — fallback removido; erro mostrado em vez de Stripe; campo `stripe_url` some do admin | 13 |
+| A48 | **Upgrade Asaas quebrado**: (a) `SUPABASE_SERVICE_ROLE_KEY` desatualizada na Vercel → "Profile not found"; (b) `create-asaas-payment` criava cliente **sem `cpfCnpj`** → "Failed to create customer" | 🔴 | (a) ✅ chave atualizada pelo dono; (b) ✅ coleta CPF/CNPJ no checkout + persiste; **aplicar `APLICAR-profiles-cpf-cnpj.sql`** | 13 |
 
 **Linha de base para a Fase 11 (verificado):** autopromoção lojista→admin **bloqueada** por trigger; impersonação isolada pelo RLS (cliente é só UX); funções admin/tenant sólidas (`auth.uid()`, SECURITY DEFINER); `api/` verifica JWT de verdade (`auth.getUser`), sem IDOR; RPCs de admin checam admin internamente
 

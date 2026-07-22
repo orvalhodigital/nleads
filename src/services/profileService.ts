@@ -33,6 +33,7 @@ function buildProfile(data: any, user: any): Profile {
         company_name: data.company_name || '',
         company_logo: user?.user_metadata?.company_logo || data.company_logo || '',
         phone: data.phone || '',
+        cpf_cnpj: data.cpf_cnpj || undefined,
         use_company_number: data.use_company_number || false,
         monthly_sales_goal: data.monthly_sales_goal,
         monthly_leads_goal: data.monthly_leads_goal,

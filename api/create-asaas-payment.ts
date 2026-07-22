@@ -90,6 +90,18 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ error: 'Asaas API Key is not configured' });
     }
 
+    // O Asaas EXIGE cpfCnpj para criar um cliente que será cobrado. Vem do body
+    // (informado no checkout) ou do que já está salvo no perfil. Sem isso, a
+    // criação do cliente falha ("Failed to create customer in Asaas").
+    const cpfCnpj = String(req.body?.cpfCnpj || profile.cpf_cnpj || '').replace(/\D/g, '');
+    if (cpfCnpj.length !== 11 && cpfCnpj.length !== 14) {
+      return res.status(400).json({
+        error: 'CPF/CNPJ obrigatório',
+        detail: 'Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido para gerar a cobrança.',
+        needsCpfCnpj: true,
+      });
+    }
+
     // 2. Search or Create Customer in Asaas
     let asaasCustomerId = '';
     const searchUrl = `${ASAAS_API_URL}/customers?email=${encodeURIComponent(profile.email)}`;
@@ -118,18 +130,36 @@ export default async function handler(req: any, res: any) {
         body: JSON.stringify({
           name: profile.full_name || profile.company_name || 'Cliente Gestor de Pátio',
           email: profile.email,
-          phone: profile.phone || '',
+          phone: (profile.phone || '').replace(/\D/g, ''),
+          cpfCnpj,
         }),
       });
 
       if (!createCustomerRes.ok) {
         const errText = await createCustomerRes.text();
         console.error('Error creating customer in Asaas:', errText);
-        throw new Error('Failed to create customer in Asaas');
+        // Surfacing da mensagem real do Asaas (ex.: "CPF/CNPJ inválido").
+        let detail = errText;
+        try {
+          const parsed = JSON.parse(errText);
+          detail = parsed?.errors?.[0]?.description || errText;
+        } catch { /* mantém o texto cru */ }
+        return res.status(400).json({ error: 'Falha ao criar cliente no Asaas', detail });
       }
 
       const customerData = await createCustomerRes.json();
       asaasCustomerId = customerData.id;
+    }
+
+    // Persiste o cpfCnpj no perfil para os próximos checkouts não pedirem de novo.
+    // Best-effort: se a coluna ainda não existir (migração pendente), não quebra
+    // o fluxo de pagamento — só não guarda para a próxima vez.
+    if (!profile.cpf_cnpj) {
+      try {
+        await supabase.from('profiles').update({ cpf_cnpj: cpfCnpj }).eq('id', userId);
+      } catch (e) {
+        console.error('[create-asaas-payment] não foi possível salvar cpf_cnpj no perfil:', e);
+      }
     }
 
     // 3. Reaproveita assinatura existente e ATIVA no Asaas, se houver — evita

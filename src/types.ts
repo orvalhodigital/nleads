@@ -367,6 +367,7 @@ export interface Profile {
   role?: 'empresa' | 'vendedor' | 'super_admin' | 'admin';
   parent_id?: string;
   phone?: string;
+  cpf_cnpj?: string; // CPF/CNPJ do lojista — exigido pelo Asaas para cobrança (A48)
   // Vehicle Source Settings
   enable_manual_vehicles?: boolean;
   monthly_sales_goal?: number;

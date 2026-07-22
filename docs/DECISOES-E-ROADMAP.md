@@ -26,7 +26,7 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 - [x] **Rodar `APLICAR-notifications-insert.sql`** (migração `20260722020000`, achados A37/A38) — ✅ aplicado e verificado em 2026-07-22; anon não insere mais notificação falsa nem forja log de auditoria.
 - [x] **Rodar `APLICAR-secdef-hardening.sql`** (migração `20260722030000`, achados A40/A41) — ✅ aplicado e verificado em 2026-07-22; search_path fixo nas 5 funções e anon sem EXECUTE em `admin_update_user_plan`.
 - [x] **Rodar `APLICAR-support-attachments-private.sql`** (migração `20260722040000`, achado A43) — ✅ aplicado e verificado em 2026-07-22; bucket de anexos de suporte agora é privado (leitura só autenticado via URL assinada).
-- [ ] **🔴 Rodar `APLICAR-profiles-cpf-cnpj.sql`** (migração `20260722050000`, achado A48) — cria `profiles.cpf_cnpj`, para o checkout persistir o CPF/CNPJ (o Asaas exige). O código coleta o CPF/CNPJ num modal no checkout; sem a coluna, ele só não guarda para a próxima vez.
+- [x] **Rodar `APLICAR-profiles-cpf-cnpj.sql`** (migração `20260722050000`, achado A48) — ✅ aplicado e verificado em 2026-07-22; coluna `profiles.cpf_cnpj` criada. Falta só o teste end-to-end do checkout (abaixo).
 - [x] **Upgrade Asaas: chave service_role da Vercel** (achado A48a) — ✅ dono atualizou a `SUPABASE_SERVICE_ROLE_KEY` na Vercel (estava desatualizada → "Profile not found"). Depois disso o fluxo avançou até a criação do cliente.
 - [ ] **Confirmar o upgrade Asaas de ponta a ponta** (A48) — após aplicar a migração do CPF/CNPJ, clicar em "Adquirir", informar o CPF/CNPJ e confirmar que abre a fatura do Asaas.
 - [ ] **Remover a coluna `plans.stripe_url`** (migração) — resquício do Stripe; já removida do código (A47). Cleanup de banco.

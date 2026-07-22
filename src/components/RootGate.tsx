@@ -30,9 +30,10 @@ const RootGate: React.FC<Props> = ({ children, PublicSite }) => {
             return;
         }
 
-        // Custom domain — look up which profile owns it
+        // Custom domain — look up which profile owns it.
+        // View pública, não `profiles`: o anon não lê a tabela base (A34).
         supabase
-            .from('profiles')
+            .from('store_public_profile')
             .select('website_slug, website_active')
             .eq('custom_domain', hostname)
             .maybeSingle()

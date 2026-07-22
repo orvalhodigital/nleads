@@ -18,8 +18,9 @@ const CustomDomainVehicleDetail: React.FC = () => {
         const pureHostname = hostname.replace(/^www\./, '');
         console.log('[CustomDomainVehicleDetail] Hostname:', hostname);
 
+        // Lê a view pública (não `profiles`): o anon não tem acesso à tabela base (A34).
         supabase
-            .from('profiles')
+            .from('store_public_profile')
             .select('website_slug, website_active')
             .or(`custom_domain.eq.${hostname},custom_domain.eq.${pureHostname}`)
             .maybeSingle()

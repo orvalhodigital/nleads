@@ -15,6 +15,51 @@
    NÃO REMOVER. Ver DESIGN_GUIDELINES.md §4. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ────────────────────────────────────────────────────────────────────────
+   A45 — Camada de compatibilidade do tema Noite.
+   ~84% dos componentes usam cores FIXAS da paleta (bg-white, text-slate-900…)
+   em vez de tokens semânticos, então o modo escuro só funcionava em ~16% das
+   telas. Em vez de editar ~117 arquivos, remapeamos aqui as utilitárias neutras
+   mais comuns sob `.dark`, distinguindo o PAPEL (fundo vs texto): `bg-white`
+   vira superfície escura, mas `text-white` segue branco (variável --color-white
+   é compartilhada, então remapear a variável não daria — precisa ser por
+   utilitária). O seletor `.dark .x` tem specificity 0,2,0 e vence tanto a
+   utilitária base (0,1,0) quanto as variantes `dark:` (que usam :where(),
+   specificity 0), então cobre os hardcoded sem quebrar quem já fazia `dark:`.
+   Fix de longo prazo = migrar para tokens semânticos (DESIGN_GUIDELINES §3/§4).
+   ──────────────────────────────────────────────────────────────────────── */
+/* Superfícies claras → escuras */
+.dark .bg-white        { background-color: var(--color-slate-900); }
+.dark .bg-slate-50     { background-color: var(--color-slate-900); }
+.dark .bg-slate-100    { background-color: var(--color-slate-800); }
+.dark .bg-slate-200    { background-color: var(--color-slate-700); }
+.dark .bg-gray-50      { background-color: var(--color-slate-900); }
+.dark .bg-gray-100     { background-color: var(--color-slate-800); }
+/* Hover de superfície */
+.dark .hover\:bg-white:hover     { background-color: var(--color-slate-800); }
+.dark .hover\:bg-slate-50:hover  { background-color: var(--color-slate-800); }
+.dark .hover\:bg-slate-100:hover { background-color: var(--color-slate-800); }
+.dark .hover\:bg-slate-200:hover { background-color: var(--color-slate-700); }
+/* Texto escuro → claro */
+.dark .text-black      { color: var(--color-slate-50); }
+.dark .text-slate-900  { color: var(--color-slate-50); }
+.dark .text-slate-800  { color: var(--color-slate-100); }
+.dark .text-slate-700  { color: var(--color-slate-200); }
+.dark .text-slate-600  { color: var(--color-slate-300); }
+.dark .text-slate-500  { color: var(--color-slate-400); }
+.dark .text-gray-900   { color: var(--color-slate-50); }
+.dark .text-gray-700   { color: var(--color-slate-200); }
+/* Bordas claras → escuras */
+.dark .border-white    { border-color: var(--color-slate-800); }
+.dark .border-slate-100 { border-color: var(--color-slate-800); }
+.dark .border-slate-200 { border-color: var(--color-slate-800); }
+.dark .border-slate-300 { border-color: var(--color-slate-700); }
+.dark .border-gray-100 { border-color: var(--color-slate-800); }
+.dark .border-gray-200 { border-color: var(--color-slate-800); }
+/* Divisórias e anéis neutros */
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--color-slate-800); }
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--color-slate-800); }
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     height: 8px;

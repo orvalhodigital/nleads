@@ -17,8 +17,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (saved === 'dia' || saved === 'noite') {
       return saved;
     }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'noite' : 'dia';
+    // Padrão é sempre o tema Dia (claro) — decisão do dono (2026-07-22).
+    // Não seguir mais o `prefers-color-scheme` do SO: usuário com o SO no escuro
+    // não deve cair no Noite sem escolher. O Noite continua disponível no toggle.
+    return 'dia';
   });
 
   useEffect(() => {

@@ -31,9 +31,15 @@ O mesmo valia para **qualquer lojista logado** consultando outro lojista (a pol�
 - **View `store_public_profile`** — projeção de `profiles` com **whitelist** de 67 colunas de apresentação (sem nenhum segredo). Roda como dono (`security_invoker=false`), então não depende de o `anon` ter acesso à tabela base. Coluna nova só aparece se for adicionada de propósito (default-deny).
 - **Função `is_store_website_active(uuid)` (SECURITY DEFINER)** — as políticas públicas de `vehicles`/`motorcycles` referenciavam `profiles` inline (dependiam do acesso do `anon` à tabela). Passam a checar o flag pela função, sem exigir esse acesso.
 - **Política ampla removida** (`profiles_select_public_website`) e **`REVOKE SELECT ON profiles FROM anon`** — o `anon` deixa de tocar a tabela base.
-- **App** (`getProfileBySlug`) passa a ler a view. Tem fallback transitório para a tabela caso a view ainda não exista (o site não sai do ar antes do SQL rodar; depois de aplicado, o fallback nunca é acionado).
+- **App** — 4 pontos liam `profiles` como anon e passaram a ler a view:
+  - `websiteService.getProfileBySlug` (com fallback transitório à tabela caso a view não exista).
+  - `RootGate`, `CustomDomainRedirect`, `CustomDomainVehicleDetail` — resolvem **domínio custom → slug**. Foram esquecidos na primeira passada e derrubaram o site das lojas com domínio próprio (`permission denied for table profiles`) até serem corrigidos para a view.
 
-**Aplicar:** `supabase/scripts/APLICAR-public-profile-view.sql`. Conferência esperada: `anon_select_profiles_removido=0`, `politica_ampla_removida=0`, `view_publica_existe=1`, `anon_pode_ler_view=1`, `funcao_site_ativo=1`, `view_expoe_segredo=0`, `esta_migracao_registrada=1`.
+**Status: ✅ aplicado e verificado em produção (2026-07-22).** SQL rodado (`APLICAR-public-profile-view.sql`) com conferência verde (`view_expoe_segredo=0`, `anon_select_profiles_removido=0` etc.). Prova em produção:
+- Ataque com a chave anônima em `profiles?select=meta_access_token` → **HTTP 401 permission denied**.
+- Site público de loja com domínio custom (`gelsonveiculos.com.br`) carrega normalmente; as chamadas de rede vão só para `store_public_profile` e `vehicles` — **zero** leitura direta de `profiles`.
+
+> ⚠️ **Aprendizado operacional:** a ordem segura desse tipo de migração é **deploy do código primeiro, SQL depois**. Nesta vez o SQL rodou antes do deploy e o site das lojas ficou fora do ar na janela intermediária.
 
 ## 🟢 A35 — Mensagens de limite citavam planos aposentados (corrigido)
 Os toasts de limite diziam "plano Free" / "upgrade para Pro" — nomes que saíram no rebrand. Agora: *"Limite de N … do seu plano atingido. Faça upgrade para o Ilimitado!"* (`DataContext.tsx`).
@@ -64,7 +70,7 @@ O teto (10 veículos no trial/básico, 50 leads) é checado no **cliente** (`Dat
 
 | Item | Situação |
 |---|---|
-| A34 — vazamento de credenciais/PII pelo site público | 🔴 → código corrigido, **pendente aplicar SQL** |
+| A34 — vazamento de credenciais/PII pelo site público | 🔴 → ✅ resolvido e verificado em produção |
 | A35 — mensagens de limite com plano aposentado | 🟢 corrigido |
 | A36 — `createPublicLead` morto | 🟢 remover na Fase 14 |
 | Limites de plano (cliente + trigger) | ✅ defesa em profundidade |

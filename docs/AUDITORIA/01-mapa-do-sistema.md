@@ -275,7 +275,7 @@ Reverificado em 2026-07-20.
 
 | A33 | Leads do webhook sem `admin_id` → invisíveis para a empresa; + dedup de lead por loja | 🔴 | ✅ resolvido | 8 |
 
-| A34 | **Site público lia `profiles.select('*')` com chave anônima → `meta_access_token`, tokens Google/Asaas, email, telefone e plano de TODO lojista com site ativo expostos na internet** | 🔴 | corrigido no código (view `store_public_profile`); **falta rodar `APLICAR-public-profile-view.sql`** para fechar no banco | 9 |
+| A34 | **Site público lia `profiles.select('*')` com chave anônima → `meta_access_token`, tokens Google/Asaas, email, telefone e plano de TODO lojista com site ativo expostos na internet** | 🔴 | ✅ resolvido e **verificado em produção** — SQL aplicado (view `store_public_profile`, anon sem SELECT em `profiles`); front (getProfileBySlug + 3 roteadores de domínio custom) lê só a view; site das lojas confirmado no ar | 9 |
 | A35 | Mensagens de limite citavam planos aposentados ("Free"/"Pro") | 🟢 | ✅ resolvido — texto alinhado ao modelo atual (Ilimitado) | 9 |
 | A36 | `websiteService.createPublicLead` é código morto (0 chamadas; site usa webhook n8n) | 🟢 | remover na Fase 14 | 14 |
 

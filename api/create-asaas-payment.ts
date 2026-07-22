@@ -15,7 +15,14 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY || '';
-const ASAAS_API_URL = process.env.ASAAS_API_URL || 'https://api.asaas.com/v3';
+// O ambiente do Asaas é determinado pela CHAVE, não por uma env separada: chaves
+// de sandbox têm o marcador `_hmlg_` (homologação). Derivar a URL da chave evita
+// o erro "a chave de API não pertence a este ambiente" (mismatch entre
+// ASAAS_API_KEY e ASAAS_API_URL). Para produção real, basta trocar a chave por
+// uma de produção — a URL segue automaticamente.
+const ASAAS_API_URL = ASAAS_API_KEY.includes('_hmlg_')
+  ? 'https://api-sandbox.asaas.com/v3'
+  : 'https://api.asaas.com/v3';
 
 // Valida a sessão do chamador via Bearer token e retorna o user id autenticado.
 async function getVerifiedUserId(req: any): Promise<string | null> {

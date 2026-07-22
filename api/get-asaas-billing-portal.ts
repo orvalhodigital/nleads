@@ -12,7 +12,11 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY || '';
-const ASAAS_API_URL = process.env.ASAAS_API_URL || 'https://api.asaas.com/v3';
+// Ambiente derivado da chave (sandbox tem `_hmlg_`), evita mismatch key/URL. Ver
+// create-asaas-payment.ts.
+const ASAAS_API_URL = ASAAS_API_KEY.includes('_hmlg_')
+  ? 'https://api-sandbox.asaas.com/v3'
+  : 'https://api.asaas.com/v3';
 
 // Valida a sessão do chamador via Bearer token e retorna o user id autenticado.
 async function getVerifiedUserId(req: any): Promise<string | null> {

@@ -9,6 +9,32 @@ export const planService = {
     maxMotorcycles: 10,
   },
 
+  // --- Admin: edição dos planos (tabela `plans`). RLS restringe a admin. ---
+  async listPlans(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('plans')
+      .select('*')
+      .order('price', { ascending: true });
+    if (error) return [];
+    return data || [];
+  },
+
+  async updatePlan(id: string, payload: Record<string, any>): Promise<void> {
+    const { error } = await supabase.from('plans').update(payload).eq('id', id);
+    if (error) throw error;
+  },
+
+  // Planos ativos, ordenados por preço — para exibir ao lojista.
+  async listActivePlans(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('price', { ascending: true });
+    if (error) return [];
+    return data || [];
+  },
+
   async getUserStats(userId: string) {
     try {
       const [vehiclesRes, leadsRes, motorcyclesRes] = await Promise.all([

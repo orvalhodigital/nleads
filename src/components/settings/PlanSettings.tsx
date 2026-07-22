@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, Check, Crown, Star, Rocket, Zap, Clock, ShieldCheck, Loader2, Sparkles, TrendingUp, HelpCircle, X, MessageSquare, Globe, Users, Target, ShieldAlert } from 'lucide-react';
 import { Profile, Plan, Campaign } from '../../types';
-import { supabase } from '../../lib/supabaseClient';
 import { formatCurrency } from '../../utils/formatters';
 import { planService } from '../../services/planService';
+import { campaignService } from '../../services/campaignService';
 import { hasUnlimitedAccess } from '../../lib/planAccess';
 
 interface Props {
@@ -62,21 +62,8 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const { data: plansData } = await supabase
-                    .from('plans')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('price', { ascending: true });
-
-                const { data: campaignsData } = await supabase
-                    .from('campaigns')
-                    .select('*')
-                    .eq('is_active', true)
-                    .lte('start_date', new Date().toISOString())
-                    .gte('end_date', new Date().toISOString());
-
-                if (plansData) setPlans(plansData);
-                if (campaignsData) setCampaigns(campaignsData);
+                setPlans(await planService.listActivePlans());
+                setCampaigns(await campaignService.listActive());
             } catch (error) {
                 console.error('Error fetching plans:', error);
             } finally {

@@ -12,6 +12,7 @@ import { Lead, LeadPhase, SaleDetails, LeadTemperature, Motorcycle, MotorcycleCa
 import { Switch } from './ui/switch';
 import { motorcycleService } from '../services/motorcycleService';
 import { supabase } from '../lib/supabaseClient';
+import { leadCommunicationService } from '../services/leadCommunicationService';
 import { resizeImage } from '../utils/imageProcessor';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/formatters';
@@ -166,8 +167,8 @@ const MotorcycleInventory: React.FC<Props> = ({
     // ── Fetch communications ────────────────────────────────────────────────────
     React.useEffect(() => {
         if (selected && selected !== 'new') {
-            supabase.from('lead_communications').select('*').eq('vehicle_id', (selected as Motorcycle).id)
-                .then(({ data }) => { if (data) setCommunications(data); });
+            leadCommunicationService.listByVehicle((selected as Motorcycle).id)
+                .then(data => setCommunications(data));
         } else {
             setCommunications([]);
         }
@@ -475,14 +476,13 @@ const MotorcycleInventory: React.FC<Props> = ({
                     .replace(/{{modelo}}/g, m.model)
                     .replace(/{{ano}}/g, String(m.year))
                     .replace(/{{valor}}/g, m.price.toLocaleString());
-                const { data: inserted, error: insertError } = await supabase.from('lead_communications').insert({
+                // O create lança em erro — sem isso, um insert falho passava batido
+                // e o webhook disparava com message_id undefined.
+                const inserted = await leadCommunicationService.create({
                     lead_id: lead.id, vehicle_id: m.id,
                     contact_name: lead.name, contact_phone: lead.phone,
                     message_body: msg, is_sent: 'não', email_user: userEmail
-                }).select('id').single();
-                // Sem esta checagem, um insert falho passava batido e o webhook
-                // disparava com message_id undefined (o supabase-js não lança).
-                if (insertError) throw insertError;
+                });
                 try {
                     await fetch('https://webhook.orvalhodigital.com.br/webhook/puxa-mensagem', {
                         method: 'POST',
@@ -495,8 +495,7 @@ const MotorcycleInventory: React.FC<Props> = ({
                     });
                 } catch { /* webhook não bloqueia */ }
             }
-            const { data } = await supabase.from('lead_communications').select('*').eq('vehicle_id', m.id);
-            if (data) setCommunications(data);
+            setCommunications(await leadCommunicationService.listByVehicle(m.id));
             setIsMessageModalOpen(false);
             alert(`Mensagem registrada para ${msgTargets.length} lead(s)!`);
         } catch { alert('Erro ao registrar mensagens.'); }

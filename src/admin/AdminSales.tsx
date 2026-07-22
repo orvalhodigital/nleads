@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { adminService } from '../services/adminService';
 import { Lead } from '../types';
 import { TrendingUp, Clock, AlertCircle, DollarSign, Users } from 'lucide-react';
 
@@ -51,26 +51,12 @@ export default function AdminSales() {
 
       // Funil de leads por fase (para o pipeline visual e a tabela)
       // + Veículos efetivamente vendidos (fonte real de receita: sale_details.salePrice)
-      const [leadsRes, soldRes] = await Promise.all([
-        supabase
-          .from('leads')
-          .select(`
-            *,
-            profiles:user_id(full_name),
-            vehicles:vehicle_id(brand, model)
-          `)
-          .not('phase', 'is', null)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('vehicles')
-          .select('sale_details, created_at')
-          .eq('status', 'sold')
+      const [leadsData, soldData] = await Promise.all([
+        adminService.getSalesLeads(),
+        adminService.getSoldVehicles(),
       ]);
 
-      if (leadsRes.error) throw leadsRes.error;
-      if (soldRes.error) throw soldRes.error;
-
-      const mapped = (leadsRes.data || []).map((lead: any) => ({
+      const mapped = leadsData.map((lead: any) => ({
         ...lead,
         user_name: lead.profiles?.full_name,
         vehicle_brand: lead.vehicles?.brand,
@@ -84,7 +70,7 @@ export default function AdminSales() {
       // `sale_details`, que guarda `saleDate`) -- a consulta antiga filtrava
       // por uma coluna inexistente, o Supabase retornava erro silenciosamente
       // (nunca checado aqui) e todas as métricas abaixo sempre davam zero.
-      const soldList: any[] = soldRes.data || [];
+      const soldList: any[] = soldData;
       const totalRevenue = soldList.reduce((sum, v) => sum + (v.sale_details?.salePrice || 0), 0);
       const unitsSold = soldList.length;
       const avgTicket = unitsSold > 0 ? totalRevenue / unitsSold : 0;

@@ -110,13 +110,12 @@ src/
 
 ## 7. Achados estruturais desta fase
 
-### 🟠 A1 — 57% do acesso a dados ignora a camada de serviços
-105 chamadas `.from()` espalhadas em **34 componentes/páginas/telas admin**, contra 79 nos 13 serviços.
+### ✅ A1 — Acesso a dados fora da camada de serviços — **RESOLVIDO (Fase 14)**
+Eram 105 chamadas `.from()` de tabela espalhadas em ~34 componentes/telas. **Todas migradas para `services/`** na Fase 14. Não sobrou nenhum acesso direto a **tabela** fora de `services/` — só operações de `storage` (upload de avatar/imagem/logo, fora de escopo) e leituras intencionais da view `store_public_profile` (RootGate/CustomDomain, do fix A34).
 
-Concentração: `AdminNotifications` (12), `AdminOnboarding` (9), `AdminDashboard` (9), `UserArea` (8), `AdminPlans` (6), `VehicleForm` (5), `AdminUsers` (5), `AdminQuotes` (5).
+Serviços criados: `quoteService`, `onboardingService`, `campaignService`, `adminService`, `notificationAdminService`, `systemSettingsService`, `leadCommunicationService` (+ métodos em `planService`, `notificationService`, `vehicleService`, `leadService`). Cada método espelha a query original, preservando o comportamento (inclusive tratamentos de erro específicos).
 
-**Por que importa:** regra de tenant, tratamento de erro e validação ficam duplicados e inconsistentes. Cada ponto desses é um lugar onde o isolamento entre lojistas pode falhar.
-→ Auditado nas Fases 3, 5 e 11; refatorado na Fase 14.
+**Por que importava:** regra de tenant, tratamento de erro e validação ficavam duplicados e inconsistentes. Agora centralizados.
 
 ### 🟠 A2 — Três sistemas de migração de banco em paralelo
 - `supabase/migrations/` — 12 arquivos com timestamp (correto)
@@ -126,9 +125,8 @@ Concentração: `AdminNotifications` (12), `AdminOnboarding` (9), `AdminDashboar
 Não há como reconstruir o schema de forma determinística. **Bloqueador para comercialização.**
 → Fase 3.
 
-### 🟡 A3 — Código morto nos contextos
-`InventoryContext.tsx` e `LeadContext.tsx` são shims de 1 linha com zero consumidores. Os hooks `useInventory` e `useLeads` são definidos e re-exportados, mas nunca usados.
-→ Fase 14.
+### ✅ A3 — Código morto nos contextos — **RESOLVIDO (Fase 14)**
+`InventoryContext.tsx` e `LeadContext.tsx` (shims de 1 linha, 0 consumidores) **deletados**; os hooks `useInventory`/`useLeads` (0 usos) removidos do `DataContext`. Junto: `websiteService.createPublicLead` (código morto, A36) removido.
 
 ### 🟡 A4 — `DataContext` é um god context
 506 linhas concentrando sessão, perfil, leads, veículos, motos, equipe e paginação, consumido por 32 componentes. Qualquer mudança de estado propaga re-render amplo.
@@ -233,11 +231,11 @@ Reverificado em 2026-07-20.
 
 | # | Achado | Sev. | Status | Fase |
 |---|---|:---:|---|:---:|
-| A1 | Acesso a dados fora da camada de serviços — 44 escritas diretas | 🟠 | quantificado; refatorar na Fase 14 | 14 |
+| A1 | Acesso a dados fora da camada de serviços — 105 chamadas `.from()` em ~34 telas | 🟠 | ✅ resolvido — todas migradas p/ `services/`; 7 serviços novos; só sobrou storage e a view pública | 14 |
 | A2 | Três sistemas de migração de banco em paralelo | 🔴 | ✅ resolvido — só `supabase/migrations/`; histórico arquivado | 3 |
-| A3 | `InventoryContext` / `LeadContext` sem consumidores | 🟡 | aberto — confirmado | 14 |
+| A3 | `InventoryContext` / `LeadContext` sem consumidores | 🟡 | ✅ resolvido — deletados + hooks removidos | 14 |
 | A4 | `DataContext` é god context (506 linhas, 32 consumidores) | 🟡 | aberto | 12/14 |
-| A5 | 7 arquivos acima de 950 linhas | 🟡 | aberto — confirmado | 14 |
+| A5 | 7 arquivos acima de 950 linhas | 🟡 | aberto — recomendado fazer com QA visual | 14 |
 | A6 | Cobertura de testes ~zero | 🔴 | aberto | 15 |
 | A7 | Sem CI | 🔴 | aberto | 18 |
 | A8 | Frontend chama n8n diretamente | 🟡 | aceito — sem vazamento; rate-limit no n8n vai ao checklist | 6 |
@@ -277,7 +275,7 @@ Reverificado em 2026-07-20.
 
 | A34 | **Site público lia `profiles.select('*')` com chave anônima → `meta_access_token`, tokens Google/Asaas, email, telefone e plano de TODO lojista com site ativo expostos na internet** | 🔴 | ✅ resolvido e **verificado em produção** — SQL aplicado (view `store_public_profile`, anon sem SELECT em `profiles`); front (getProfileBySlug + 3 roteadores de domínio custom) lê só a view; site das lojas confirmado no ar | 9 |
 | A35 | Mensagens de limite citavam planos aposentados ("Free"/"Pro") | 🟢 | ✅ resolvido — texto alinhado ao modelo atual (Ilimitado) | 9 |
-| A36 | `websiteService.createPublicLead` é código morto (0 chamadas; site usa webhook n8n) | 🟢 | remover na Fase 14 | 14 |
+| A36 | `websiteService.createPublicLead` é código morto (0 chamadas; site usa webhook n8n) | 🟢 | ✅ resolvido — removido | 14 |
 
 | A37 | **Qualquer anônimo inseria notificações para qualquer usuário** (`WITH CHECK (true)`/{public} + grant anon) → phishing/assédio no sino | 🟠 | ✅ resolvido e verificado — anon sem INSERT | 10 |
 | A38 | **Qualquer anônimo forjava entradas no log de auditoria do admin** (mesma classe) | 🟠 | ✅ resolvido e verificado — `admin_id = auth.uid()`, anon sem escrita | 10 |

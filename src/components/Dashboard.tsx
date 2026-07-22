@@ -5,7 +5,7 @@ import {
   LayoutDashboard, TrendingUp, Package, Calendar, Award
 } from 'lucide-react';
 import { Lead, LeadPhase, Vehicle, Profile, LeadTemperature, Motorcycle, TransmissionType, VehicleType } from '../types';
-import { supabase } from '../lib/supabaseClient';
+import { quoteService } from '../services/quoteService';
 
 import { isToday, isTomorrow, isSameDay, parseISO, startOfMonth, subMonths, isAfter, isBefore, endOfMonth, subDays, startOfDay, endOfDay, format, differenceInCalendarDays } from 'date-fns';
 import { CustomDatePicker } from './ui/CustomDatePicker';
@@ -60,10 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
   useEffect(() => {
     async function fetchQuote() {
       try {
-        const { data } = await supabase
-          .from('motivation_quotes')
-          .select('quote, author')
-          .eq('is_active', true);
+        const data = await quoteService.getActive();
         if (data && data.length > 0) {
           const randomIndex = Math.floor(Math.random() * data.length);
           setQuote({ text: data[randomIndex].quote, author: data[randomIndex].author || 'Desconhecido' });

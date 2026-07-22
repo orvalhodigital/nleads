@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { adminService } from '../services/adminService';
 import { useNavigate } from 'react-router-dom';
 import { LogoRenderer } from '../components/OrvalhoLogo';
 
@@ -47,11 +48,7 @@ export default function AdminSetup() {
             // 1.5. Wait for profile creation (Trigger latency handle)
             let profileExists = false;
             for (let i = 0; i < 5; i++) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('id', authData.user.id)
-                    .single();
+                const profile = await adminService.getProfileRole(authData.user.id);
 
                 if (profile) {
                     profileExists = true;

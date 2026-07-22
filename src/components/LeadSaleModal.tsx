@@ -5,7 +5,7 @@ import { Lead, Vehicle, LeadPhase } from '../types';
 import { leadService } from '../services/leadService';
 import { salesFlowService } from '../services/salesFlowService';
 import { useToast } from '../contexts/ToastContext';
-import { supabase } from '../lib/supabaseClient';
+import { vehicleService } from '../services/vehicleService';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
 
@@ -104,15 +104,7 @@ const LeadSaleModal: React.FC<LeadSaleModalProps> = ({ isOpen, onClose, leadId, 
                 refurbishmentCosts
             };
 
-            const { error: vError } = await supabase
-                .from('vehicles')
-                .update({
-                    status: 'sold',
-                    sale_details: saleDetails as any
-                })
-                .eq('id', selectedVehicleId);
-
-            if (vError) throw vError;
+            await vehicleService.markAsSold(selectedVehicleId, saleDetails);
 
             // 3. Update Lead: mark as buyer e mover para COMPLETED (Compradores).
             // Antes ia para WAITING_PAYMENT, fase que nunca aparece em nenhum

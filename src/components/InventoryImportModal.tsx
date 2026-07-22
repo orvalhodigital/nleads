@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { X, Upload, FileSpreadsheet, AlertTriangle, Check, CheckCircle, Database } from 'lucide-react';
 import ExcelJS from 'exceljs';
-import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
+import { handleSupabaseResponse } from '../lib/supabaseClient';
 import { vehicleService } from '../services/vehicleService';
+import { leadService } from '../services/leadService';
 import { Vehicle, Lead, SaleDetails, LeadPhase, LeadTemperature } from '../types';
 import { carDatabase } from '../data/carDb';
 import { motoDatabase } from '../data/motoDb';
@@ -528,16 +529,13 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
                     // Let's look at `UserApp.tsx`? We don't have visibility, but usually it updates state.
                     // To be safe and atomic, we should do DB calls here and then reload/trigger success.
 
-                    // handleSupabaseResponse lança em erro — sem ele, o supabase-js
-                    // não lança e a venda falharia em silêncio, mostrando sucesso.
-                    handleSupabaseResponse(await supabase.from('vehicles').update({
-                        status: 'sold',
-                        sale_details: details
-                    }).eq('id', v.id));
+                    // markAsSold/updatePhase usam handleSupabaseResponse (lançam em
+                    // erro) — sem isso a venda falharia em silêncio, mostrando sucesso.
+                    await vehicleService.markAsSold(v.id, details);
 
                     // Also if we have a lead ID, update lead status?
                     if (details.buyerLeadId) {
-                        handleSupabaseResponse(await supabase.from('leads').update({ phase: LeadPhase.COMPLETED }).eq('id', details.buyerLeadId));
+                        await leadService.updatePhase(details.buyerLeadId, LeadPhase.COMPLETED);
                     }
                 }
 

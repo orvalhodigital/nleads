@@ -11,6 +11,12 @@ export interface Notification {
 }
 
 export const notificationService = {
+    // Cria uma notificação para um usuário (ex.: admin enviando aviso pontual).
+    async create(notification: { user_id: string; title: string; message: string }): Promise<void> {
+        const { error } = await supabase.from('notifications').insert(notification);
+        if (error) throw error;
+    },
+
     async getUnread(userId?: string): Promise<Notification[]> {
         // If userId is provided (impersonation), use it. Current user otherwise.
         // Actually, RLS handles "own" notifications. so userId param might just be for the query to be explicit

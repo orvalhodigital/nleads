@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { systemSettingsService } from '../services/systemSettingsService';
+import { adminService } from '../services/adminService';
 import { LogoRenderer } from '../components/OrvalhoLogo';
 
 export default function AdminLogin() {
@@ -16,7 +18,7 @@ export default function AdminLogin() {
 
     const fetchSettings = async () => {
         try {
-            const { data } = await supabase.from('system_settings').select('key, value').in('key', ['logo_url', 'temp_logo_url', 'temp_logo_start', 'temp_logo_end']);
+            const data = await systemSettingsService.getByKeys(['logo_url', 'temp_logo_url', 'temp_logo_start', 'temp_logo_end']);
 
             if (data) {
                 const settings = data.reduce((acc: any, curr) => {
@@ -54,13 +56,7 @@ export default function AdminLogin() {
             if (authError) throw authError;
 
             // Check if user is admin
-            const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', authData.user.id)
-                .single();
-
-            if (profileError) throw profileError;
+            const profile = await adminService.getProfileRole(authData.user.id);
 
             if (profile?.role !== 'admin') {
                 await supabase.auth.signOut();

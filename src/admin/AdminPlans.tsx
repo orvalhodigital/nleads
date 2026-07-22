@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { planService } from '../services/planService';
+import { campaignService } from '../services/campaignService';
 import { Plan, Campaign } from '../types';
 import {
     Rocket,
@@ -43,11 +44,8 @@ export default function AdminPlans() {
 
     const fetchData = async () => {
         setLoading(true);
-        const { data: plansData } = await supabase.from('plans').select('*').order('price', { ascending: true });
-        const { data: campaignsData } = await supabase.from('campaigns').select('*').order('created_at', { ascending: false });
-
-        if (plansData) setPlans(plansData);
-        if (campaignsData) setCampaigns(campaignsData);
+        setPlans(await planService.listPlans());
+        setCampaigns(await campaignService.list());
         setLoading(false);
     };
 
@@ -68,7 +66,7 @@ export default function AdminPlans() {
     const handleSavePlan = async () => {
         if (!isEditing) return;
         try {
-            const { error } = await supabase.from('plans').update({
+            await planService.updatePlan(isEditing, {
                 name: editForm.name,
                 slug: editForm.slug,
                 price: parseFloat(editForm.price as any),
@@ -78,9 +76,7 @@ export default function AdminPlans() {
                 features: editForm.features,
                 is_active: editForm.is_active,
                 style: editForm.style,
-            }).eq('id', isEditing);
-
-            if (error) throw error;
+            });
 
             showSuccess('Plano Atualizado', 'As alterações foram salvas com sucesso.');
             setIsEditing(null);
@@ -92,28 +88,19 @@ export default function AdminPlans() {
 
     const handleSaveCampaign = async () => {
         try {
+            const campaignPayload = {
+                name: editingCampaign.name,
+                plan_id: editingCampaign.plan_id,
+                start_date: editingCampaign.start_date,
+                end_date: editingCampaign.end_date,
+                promo_price: parseFloat(editingCampaign.promo_price as any),
+                promo_text: editingCampaign.promo_text,
+                is_active: editingCampaign.is_active,
+            };
             if (editingCampaign.id) {
-                const { error } = await supabase.from('campaigns').update({
-                    name: editingCampaign.name,
-                    plan_id: editingCampaign.plan_id,
-                    start_date: editingCampaign.start_date,
-                    end_date: editingCampaign.end_date,
-                    promo_price: parseFloat(editingCampaign.promo_price as any),
-                    promo_text: editingCampaign.promo_text,
-                    is_active: editingCampaign.is_active
-                }).eq('id', editingCampaign.id);
-                if (error) throw error;
+                await campaignService.update(editingCampaign.id, campaignPayload);
             } else {
-                const { error } = await supabase.from('campaigns').insert({
-                    name: editingCampaign.name,
-                    plan_id: editingCampaign.plan_id,
-                    start_date: editingCampaign.start_date,
-                    end_date: editingCampaign.end_date,
-                    promo_price: parseFloat(editingCampaign.promo_price as any),
-                    promo_text: editingCampaign.promo_text,
-                    is_active: editingCampaign.is_active
-                });
-                if (error) throw error;
+                await campaignService.create(campaignPayload);
             }
 
             showSuccess('Sucesso', 'Campanha salva com sucesso.');
@@ -131,11 +118,11 @@ export default function AdminPlans() {
             title: 'Excluir Campanha',
             message: 'Tem certeza que deseja excluir esta campanha?',
             onConfirm: async () => {
-                const { error } = await supabase.from('campaigns').delete().eq('id', id);
-                if (!error) {
+                try {
+                    await campaignService.remove(id);
                     showSuccess('Excluída', 'Campanha removida com sucesso.');
                     fetchData();
-                } else {
+                } catch {
                     showError('Erro ao excluir');
                 }
             }

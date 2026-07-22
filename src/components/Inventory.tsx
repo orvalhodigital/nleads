@@ -8,7 +8,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Vehicle, VehicleType, TransmissionType, EngineType, Lead, LeadPhase, SaleDetails, LeadTemperature, LeadCommunication } from '../types';
-import { supabase } from '../lib/supabaseClient';
+import { leadCommunicationService } from '../services/leadCommunicationService';
 import { resizeImage } from '../utils/imageProcessor';
 import { carDatabase } from '../data/carDb';
 import AutocompleteInput from './ui/AutocompleteInput';
@@ -160,11 +160,7 @@ const Inventory: React.FC<InventoryProps> = ({
   React.useEffect(() => {
     if (selectedVehicle && selectedVehicle !== 'new') {
       const fetchComms = async () => {
-        const { data, error } = await supabase
-          .from('lead_communications')
-          .select('*')
-          .eq('vehicle_id', selectedVehicle.id);
-        if (data) setCommunications(data);
+        setCommunications(await leadCommunicationService.listByVehicle(selectedVehicle.id));
       };
       fetchComms();
     }
@@ -243,17 +239,18 @@ const Inventory: React.FC<InventoryProps> = ({
         // Only saving to Supabase DB for external processing
 
         // Save to Supabase
-        const { data: insertedData, error: insertError } = await supabase.from('lead_communications').insert({
-          lead_id: lead.id,
-          vehicle_id: selectedVehicle.id,
-          contact_name: lead.name,
-          contact_phone: lead.phone,
-          message_body: msg,
-          is_sent: 'não',
-          email_user: userEmail
-        }).select('id').single();
-
-        if (insertError) {
+        let insertedData: { id: string };
+        try {
+          insertedData = await leadCommunicationService.create({
+            lead_id: lead.id,
+            vehicle_id: selectedVehicle.id,
+            contact_name: lead.name,
+            contact_phone: lead.phone,
+            message_body: msg,
+            is_sent: 'não',
+            email_user: userEmail
+          });
+        } catch (insertError) {
           console.error('Erro ao inserir comunicação:', insertError);
           continue;
         }
@@ -283,8 +280,7 @@ const Inventory: React.FC<InventoryProps> = ({
       }
 
       // Refresh communications
-      const { data } = await supabase.from('lead_communications').select('*').eq('vehicle_id', selectedVehicle.id);
-      if (data) setCommunications(data);
+      setCommunications(await leadCommunicationService.listByVehicle(selectedVehicle.id));
 
       setIsMessageModalOpen(false);
       alert(`Mensagem registrada para ${targetLeadsList.length} lead(s)!`);

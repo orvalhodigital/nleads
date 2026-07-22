@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { systemSettingsService } from '../services/systemSettingsService';
 
 const DEFAULT_LOGO_URL = '/branding/logos/logo-orvalho.png';
 
@@ -19,7 +19,7 @@ export const useSystemSettings = () => {
 
     const fetchSettings = async () => {
         try {
-            const { data } = await supabase.from('system_settings').select('key, value').in('key', ['logo_url', 'temp_logo_url', 'temp_logo_start', 'temp_logo_end']);
+            const data = await systemSettingsService.getByKeys(['logo_url', 'temp_logo_url', 'temp_logo_start', 'temp_logo_end']);
 
             if (data) {
                 const settings = data.reduce((acc: any, curr) => {

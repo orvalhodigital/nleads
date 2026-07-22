@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { systemSettingsService } from '../services/systemSettingsService';
 import { Upload, Save, Clock, Trash2, Calendar, AlertCircle } from 'lucide-react';
 import { resizeImage } from '../utils/imageProcessor';
 
@@ -23,8 +24,8 @@ export default function AdminSettings() {
     }, []);
 
     const fetchSettings = async () => {
-        const { data } = await supabase.from('system_settings').select('key, value');
-        if (data) {
+        const data = await systemSettingsService.getAll();
+        {
             const settingsMap = data.reduce((acc: any, curr) => {
                 acc[curr.key] = curr.value;
                 return acc;
@@ -86,9 +87,7 @@ export default function AdminSettings() {
                 { key: 'temp_logo_end', value: tempEnd },
             ];
 
-            const { error } = await supabase.from('system_settings').upsert(updates);
-
-            if (error) throw error;
+            await systemSettingsService.upsert(updates);
             alert('Configurações salvas com sucesso!');
         } catch (error: any) {
             alert('Erro ao salvar: ' + error.message);

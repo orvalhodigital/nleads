@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { notificationAdminService } from '../services/notificationAdminService';
+import { adminService } from '../services/adminService';
 import { Bell, Clock, Plus, Trash2, Send, Save, AlertCircle, FileText, History, RefreshCcw, AtSign } from 'lucide-react';
 import { format } from 'date-fns';
 import FeedbackModal from '../components/ui/FeedbackModal';
@@ -109,19 +110,16 @@ export default function AdminNotifications() {
 
     const fetchRules = async () => {
         setLoading(true);
-        const { data } = await supabase.from('notification_rules').select('*').order('created_at', { ascending: false });
-        if (data) setRules(data as any);
+        setRules(await notificationAdminService.listRules() as any);
         setLoading(false);
     };
 
     const fetchTemplates = async () => {
-        const { data } = await supabase.from('notification_templates').select('*').order('created_at', { ascending: false });
-        if (data) setTemplates(data);
+        setTemplates(await notificationAdminService.listTemplates());
     };
 
     const fetchBroadcastHistory = async () => {
-        const { data } = await supabase.from('broadcast_history').select('*').order('created_at', { ascending: false });
-        if (data) setBroadcastHistory(data);
+        setBroadcastHistory(await notificationAdminService.listBroadcasts());
     };
 
     const handleTemplateSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -180,15 +178,11 @@ export default function AdminNotifications() {
                 target_status: activeTab === 'plan' && formData.target_status !== 'all' ? formData.target_status : null,
             };
 
-            let error;
             if (editingId) {
-                const { error: err } = await supabase.from('notification_rules').update(payload).eq('id', editingId);
-                error = err;
+                await notificationAdminService.updateRule(editingId, payload);
             } else {
-                const { error: err } = await supabase.from('notification_rules').insert(payload);
-                error = err;
+                await notificationAdminService.createRule(payload);
             }
-            if (error) throw error;
 
             setIsEditing(false);
             setEditingId(null);
@@ -204,8 +198,9 @@ export default function AdminNotifications() {
         showConfirm('Excluir Regra', 'Tem certeza que deseja excluir esta regra permanentemente?', async () => {
             // Checar o erro antes de atualizar a UI: sem isso, a lista removia a
             // regra na tela mesmo se o delete falhasse (o supabase-js não lança).
-            const { error } = await supabase.from('notification_rules').delete().eq('id', id);
-            if (error) {
+            try {
+                await notificationAdminService.deleteRule(id);
+            } catch (error: any) {
                 showError('Erro ao excluir regra: ' + error.message);
                 return;
             }
@@ -221,12 +216,10 @@ export default function AdminNotifications() {
             setSending(true);
             closeModal();
             try {
-                // 1. Get Users
-                let query = supabase.from('profiles').select('id, full_name, email, plan, role');
-                if (manualTarget === 'filtered' && manualFilterPlan !== 'all') {
-                    query = query.eq('plan', manualFilterPlan);
-                }
-                const { data: users } = await query;
+                // 1. Destinatários
+                const users = await adminService.getBroadcastRecipients(
+                    manualTarget === 'filtered' ? manualFilterPlan : undefined
+                );
 
                 if (!users || users.length === 0) {
                     showError('Nenhum usuário encontrado com os filtros selecionados.');
@@ -234,7 +227,7 @@ export default function AdminNotifications() {
                     return;
                 }
 
-                // 2. Insert Notifications with Variable Substitution
+                // 2. Fan-out com substituição de variáveis
                 const notifications = users.map(u => {
                     let msg = broadcastData.message;
                     msg = msg.replace(/@nome/g, u.full_name || 'Usuário');
@@ -249,19 +242,15 @@ export default function AdminNotifications() {
                     };
                 });
 
-                const { error } = await supabase.from('notifications').insert(notifications);
-                if (error) throw error;
+                await notificationAdminService.sendNotifications(notifications);
 
-                // 3. Log History
-                const { data: { user } } = await supabase.auth.getUser();
-                const { error: histError } = await supabase.from('broadcast_history').insert({
-                    admin_id: user?.id,
+                // 3. Histórico
+                await notificationAdminService.logBroadcast({
                     title: broadcastData.title,
                     message: broadcastData.message,
                     target_filter: manualTarget === 'all' ? 'Todos' : manualFilterPlan,
-                    sent_count: users.length
+                    sent_count: users.length,
                 });
-                if (histError) throw histError;
 
                 showSuccess('Sucesso', `Enviado para ${users.length} usuários!`);
                 setBroadcastData({ title: '', message: '' });
@@ -277,8 +266,10 @@ export default function AdminNotifications() {
 
     const handleDeleteHistory = (id: string) => {
         showConfirm('Apagar Histórico', 'Remover este registro do histórico?', async () => {
-            const { error } = await supabase.from('broadcast_history').delete().eq('id', id);
-            if (!error) setBroadcastHistory(prev => prev.filter(h => h.id !== id));
+            try {
+                await notificationAdminService.deleteBroadcast(id);
+                setBroadcastHistory(prev => prev.filter(h => h.id !== id));
+            } catch { /* mantém na lista se falhar (comportamento original) */ }
             closeModal();
         });
     };
@@ -299,8 +290,7 @@ export default function AdminNotifications() {
                 { category: 'system', title: 'Sentimos sua falta no Gestor de Pátio! 👋', message: 'Faz uma semana que você não acessa o painel. Temos novos leads aguardando seu contato. Vamos bater as metas de hoje?', trigger_event: 'inactivity_7d', delay_minutes: 10080, active: true }
             ];
 
-            const { error } = await supabase.from('notification_rules').insert(defaults);
-            if (error) throw error;
+            await notificationAdminService.seedRules(defaults);
 
             // Also seed manual templates if empty
             if (templates.length === 0) {
@@ -309,8 +299,7 @@ export default function AdminNotifications() {
                     { category: 'Atualização', title: 'Novas Funcionalidades Chegaram! ✨', message: 'Temos novidades! Acabamos de liberar novos filtros e relatórios de desempenho. Confira agora no seu painel.' },
                     { category: 'Dica', title: 'Venda mais rápido com WebP ⚡', message: 'Sabia que fotos em WebP carregam 3x mais rápido? Já convertemos todas as suas fotos para você vender mais rápido!' }
                 ];
-                const { error: tmplError } = await supabase.from('notification_templates').insert(defaultTemplates);
-                if (tmplError) throw tmplError;
+                await notificationAdminService.seedTemplates(defaultTemplates);
                 fetchTemplates();
             }
 

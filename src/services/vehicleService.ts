@@ -281,5 +281,15 @@ export const vehicleService = {
             .eq('id', id);
 
         handleSupabaseResponse(response);
+    },
+
+    // Marca o veículo como vendido, gravando os detalhes da venda (usado na
+    // importação em massa com venda). handleSupabaseResponse lança em erro.
+    async markAsSold(id: string, saleDetails: any): Promise<void> {
+        const response = await supabase
+            .from('vehicles')
+            .update({ status: 'sold', sale_details: saleDetails })
+            .eq('id', id);
+        handleSupabaseResponse(response);
     }
 };

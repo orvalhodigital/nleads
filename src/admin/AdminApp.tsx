@@ -2,6 +2,7 @@
 import React, { useEffect, useState, lazy } from 'react';
 import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { adminService } from '../services/adminService';
 const UserLayout = lazy(() => import('../components/UserLayout'));
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const InventoryPage = lazy(() => import('../pages/InventoryPage'));
@@ -88,14 +89,10 @@ export default function AdminApp() {
             if (!session?.user) {
                 setIsAdmin(false);
             } else {
-                const { data, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single();
+                const data = await adminService.getProfileRole(session.user.id);
 
-                // If user exists in session but not in DB (profileError), clear session
-                if (profileError || !data) {
+                // If user exists in session but not in DB, clear session
+                if (!data) {
                     console.warn('AdminApp: Session exists but profile missing. Clearing session cache.');
                     await supabase.auth.signOut();
                     setIsAdmin(false);

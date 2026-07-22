@@ -230,6 +230,13 @@ export const leadService = {
         return mapRowToLead(data);
     },
 
+    // Atualiza só a fase do lead (ex.: marcar comprador como concluído numa
+    // importação com venda). handleSupabaseResponse lança em erro.
+    async updatePhase(id: string, phase: string): Promise<void> {
+        const response = await supabase.from('leads').update({ phase }).eq('id', id);
+        handleSupabaseResponse(response);
+    },
+
     async update(lead: Lead): Promise<Lead> {
         const response = await supabase
             .from('leads')

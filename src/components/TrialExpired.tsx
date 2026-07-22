@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Lock, LogOut, CheckCircle, Zap, Shield, Crown } from 'lucide-react';
 import { Plan } from '../types';
-import { supabase } from '../lib/supabaseClient';
+import { planService } from '../services/planService';
 
 interface TrialExpiredProps {
     onUpgrade: (plan?: Plan) => void;
@@ -15,8 +15,7 @@ const TrialExpired: React.FC<TrialExpiredProps> = ({ onUpgrade, onLogout }) => {
 
     useEffect(() => {
         const fetchPlans = async () => {
-            const { data } = await supabase.from('plans').select('*').eq('is_active', true).order('price', { ascending: true });
-            if (data) setPlans(data);
+            setPlans(await planService.listActivePlans());
             setLoading(false);
         };
         fetchPlans();

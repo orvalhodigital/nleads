@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { onboardingService } from '../services/onboardingService';
+import { adminService } from '../services/adminService';
 import { OnboardingSession, Profile } from '../types';
 import {
     Rocket,
@@ -41,20 +42,12 @@ export default function AdminOnboarding() {
             setLoading(true);
 
             // 1. Busca todos os usuários
-            const { data: profiles, error: pError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'user')
-                .order('created_at', { ascending: false });
+            const profiles = await adminService.listUsersByRole('user');
 
-            if (pError) throw pError;
+            // 2. Busca todos os registros de onboarding existentes (vazio se a
+            //    tabela não existir / der erro — o service já trata isso)
+            const onboardingData = await onboardingService.getSessions();
 
-            // 2. Busca todos os registros de onboarding existentes
-            const { data: onboardingData, error: oError } = await supabase
-                .from('onboarding_sessions')
-                .select('*');
-
-            // Se a tabela não existir ainda ou der erro, tratamos como vazio em vez de travar
             const sessionsMap = (onboardingData || []).reduce((acc, s) => {
                 acc[s.user_id] = s;
                 return acc;
@@ -94,32 +87,14 @@ export default function AdminOnboarding() {
 
     const toggleStep = async (session: any, field: string, currentValue: boolean) => {
         try {
-            let sessionId = session.id;
-            // Se não tem ID, é porque o registro na onboarding_sessions ainda não existe
-            if (!sessionId) {
-                const { data, error } = await supabase
-                    .from('onboarding_sessions')
-                    .insert({ user_id: session.user_id, [field]: !currentValue })
-                    .select()
-                    .single();
-                if (error) throw error;
-                sessionId = data.id;
-            } else {
-                const { error } = await supabase
-                    .from('onboarding_sessions')
-                    .update({ [field]: !currentValue, updated_at: new Date().toISOString() })
-                    .eq('id', sessionId);
-                if (error) throw error;
-            }
+            // Insere (se novo) ou atualiza; devolve o id da sessão.
+            const sessionId = await onboardingService.saveField(session.id, session.user_id, { [field]: !currentValue });
 
             // Lógica automática: Se marcou Setup Técnico como concluído, sugere Review em 30 dias
             if (field === 'step_technical_setup' && !currentValue && !session.review_30d_date) {
                 const thirtyDaysLater = new Date();
                 thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
-                await supabase
-                    .from('onboarding_sessions')
-                    .update({ review_30d_date: thirtyDaysLater.toISOString() })
-                    .eq('id', sessionId);
+                await onboardingService.updateById(sessionId, { review_30d_date: thirtyDaysLater.toISOString() });
             }
 
             // Atualiza localmente para ser instantâneo
@@ -135,22 +110,7 @@ export default function AdminOnboarding() {
 
     const updateDate = async (session: any, field: string, date: string) => {
         try {
-            let sessionId = session.id;
-            if (!sessionId) {
-                const { data, error } = await supabase
-                    .from('onboarding_sessions')
-                    .insert({ user_id: session.user_id, [field]: date })
-                    .select()
-                    .single();
-                if (error) throw error;
-                sessionId = data.id;
-            } else {
-                const { error } = await supabase
-                    .from('onboarding_sessions')
-                    .update({ [field]: date, updated_at: new Date().toISOString() })
-                    .eq('id', sessionId);
-                if (error) throw error;
-            }
+            const sessionId = await onboardingService.saveField(session.id, session.user_id, { [field]: date });
 
             if (selectedSession && selectedSession.user_id === session.user_id) {
                 setSelectedSession({ ...selectedSession, id: sessionId, [field]: date });
@@ -164,22 +124,7 @@ export default function AdminOnboarding() {
 
     const updateNotes = async (session: any, notes: string) => {
         try {
-            let sessionId = session.id;
-            if (!sessionId) {
-                const { data, error } = await supabase
-                    .from('onboarding_sessions')
-                    .insert({ user_id: session.user_id, notes })
-                    .select()
-                    .single();
-                if (error) throw error;
-                sessionId = data.id;
-            } else {
-                const { error } = await supabase
-                    .from('onboarding_sessions')
-                    .update({ notes, updated_at: new Date().toISOString() })
-                    .eq('id', sessionId);
-                if (error) throw error;
-            }
+            const sessionId = await onboardingService.saveField(session.id, session.user_id, { notes });
 
             if (selectedSession && selectedSession.user_id === session.user_id) {
                 setSelectedSession({ ...selectedSession, id: sessionId, notes });

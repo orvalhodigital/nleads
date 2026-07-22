@@ -5,7 +5,7 @@ import { useBasePath } from '../hooks/useBasePath';
 import { Clock, Car, ExternalLink, Plus, MessageCircle, CheckCircle2, X, Edit2 } from 'lucide-react';
 
 import { LeadTemperature, LeadPhase } from '../types';
-import { supabase } from '../lib/supabaseClient';
+import { leadCommunicationService } from '../services/leadCommunicationService';
 import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 import { CustomTimePicker } from '../components/ui/CustomTimePicker';
 import { formatCurrency } from '../utils/formatters';
@@ -353,7 +353,7 @@ const LeadDetailPage: React.FC = () => {
 
         setIsSendingSuggestion(true);
         try {
-            const { error } = await supabase.from('lead_communications').insert({
+            await leadCommunicationService.insert({
                 lead_id: lead.id,
                 vehicle_id: suggestionModal.vehicleId,
                 user_id: profile.id,
@@ -363,11 +363,6 @@ const LeadDetailPage: React.FC = () => {
                 is_sent: 'não',
                 email_user: profile.email
             });
-
-            if (error) {
-                console.error('Error inserting communication:', error);
-                throw error;
-            }
 
             showToast?.('success', 'Mensagem enviada com sucesso!');
             setSuggestionModal({ isOpen: false, message: '' });

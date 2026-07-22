@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import { Plus, Edit2, Trash2, Check, X, Quote as QuoteIcon } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
-
-interface MotivationQuote {
-    id: string;
-    quote: string;
-    author: string | null;
-    is_active: boolean;
-    created_at: string;
-}
+import { quoteService, MotivationQuote } from '../services/quoteService';
 
 export default function AdminQuotes() {
     const [quotes, setQuotes] = useState<MotivationQuote[]>([]);
@@ -30,14 +22,10 @@ export default function AdminQuotes() {
     const fetchQuotes = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase.from('motivation_quotes').select('*').order('created_at', { ascending: false });
-            if (error && error.code !== '42P01') {
-                showToast('error', 'Erro ao carregar frases.');
-            } else if (data) {
-                setQuotes(data);
-            }
+            setQuotes(await quoteService.list());
         } catch (err) {
             console.error(err);
+            showToast('error', 'Erro ao carregar frases.');
         }
         setLoading(false);
     };
@@ -49,20 +37,14 @@ export default function AdminQuotes() {
         }
         try {
             if (formState.id) {
-                const { error } = await supabase.from('motivation_quotes').update({
+                await quoteService.update(formState.id, {
                     quote: formState.quote,
                     author: formState.author,
-                    is_active: formState.is_active
-                }).eq('id', formState.id);
-                if (error) throw error;
+                    is_active: formState.is_active,
+                });
                 showToast('success', 'Frase atualizada com sucesso.');
             } else {
-                const { error } = await supabase.from('motivation_quotes').insert([{
-                    quote: formState.quote,
-                    author: formState.author,
-                    is_active: true
-                }]);
-                if (error) throw error;
+                await quoteService.create({ quote: formState.quote, author: formState.author });
                 showToast('success', 'Frase criada com sucesso.');
             }
             setIsModalOpen(false);
@@ -75,8 +57,7 @@ export default function AdminQuotes() {
     const handleDelete = async (id: string) => {
         if (!window.confirm('Excluir esta frase permanentemente?')) return;
         try {
-            const { error } = await supabase.from('motivation_quotes').delete().eq('id', id);
-            if (error) throw error;
+            await quoteService.remove(id);
             showToast('success', 'Excluído com sucesso.');
             fetchQuotes();
         } catch (e) {
@@ -86,8 +67,7 @@ export default function AdminQuotes() {
 
     const toggleStatus = async (quote: MotivationQuote) => {
         try {
-            const { error } = await supabase.from('motivation_quotes').update({ is_active: !quote.is_active }).eq('id', quote.id);
-            if (error) throw error;
+            await quoteService.setActive(quote.id, !quote.is_active);
             fetchQuotes();
         } catch (e) {
             showToast('error', 'Erro ao atualizar status.');

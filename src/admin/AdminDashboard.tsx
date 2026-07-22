@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { adminService } from '../services/adminService';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp, Users, MessageSquare, Package, DollarSign,
@@ -28,45 +28,11 @@ export default function AdminDashboard() {
       setLoading(true);
       setError(null);
 
-      // Fetch all metrics in parallel
-      const [
-        usersRes,
-        activeUsersRes,
-        proUsersRes,
-        leadsRes,
-        qualifiedLeadsRes,
-        vehiclesRes,
-        vehiclesInStockRes,
-        completedLeadsRes,
-        ticketsRes
-      ] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('plan_status', 'active'),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('plan', 'pro'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }),
-        // `.not.in(...)` não existe no supabase-js e lançava TypeError ao montar
-        // este array, derrubando todo o carregamento de métricas do painel.
-        // A forma correta é `.not(coluna, 'in', '("a","b")')`.
-        supabase.from('leads').select('id', { count: 'exact', head: true }).not('phase', 'in', '("Novo Lead","Compradores","Desqualificados")'),
-        supabase.from('vehicles').select('id', { count: 'exact', head: true }),
-        // `vehicles` não tem coluna `sold_date` (só `status`) -- a consulta
-        // antiga filtrava por uma coluna inexistente, o Supabase retornava
-        // erro silenciosamente (nunca checado aqui) e "Veículos em Estoque"
-        // sempre mostrava zero.
-        supabase.from('vehicles').select('id', { count: 'exact', head: true }).eq('status', 'available'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('phase', 'Compradores'),
-        supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])
-      ]);
-
-      const totalUsers = usersRes.count || 0;
-      const activeUsers = activeUsersRes.count || 0;
-      const proUsers = proUsersRes.count || 0;
-      const totalLeads = leadsRes.count || 0;
-      const qualifiedLeads = qualifiedLeadsRes.count || 0;
-      const totalVehicles = vehiclesRes.count || 0;
-      const vehiclesInStock = vehiclesInStockRes.count || 0;
-      const completedLeads = completedLeadsRes.count || 0;
-      const openTickets = ticketsRes.count || 0;
+      // Contagens do dashboard (centralizadas em adminService — A1).
+      const {
+        totalUsers, activeUsers, proUsers, totalLeads, qualifiedLeads,
+        vehiclesInStock, completedLeads, openTickets,
+      } = await adminService.getDashboardStats();
 
       // Métricas reais (sem variações percentuais simuladas — exibimos apenas o valor atual)
       const newMetrics: Metric[] = [

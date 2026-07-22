@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { adminService } from '../services/adminService';
+import { notificationService } from '../services/notificationService';
 import { Profile } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, Key, Bell, Search, Trash2, AlertCircle } from 'lucide-react';
@@ -98,8 +99,7 @@ export default function AdminUsers() {
 
         setDeleting(true);
         try {
-            const { error: err } = await supabase.from('profiles').delete().eq('id', id);
-            if (err) throw err;
+            await adminService.deleteUser(id);
 
             // Log audit
             await auditLogService.logAction('delete', 'user', id, name);
@@ -117,13 +117,11 @@ export default function AdminUsers() {
     const sendNotification = async () => {
         if (!showNotify) return;
         try {
-            const { error } = await supabase.from('notifications').insert({
+            await notificationService.create({
                 user_id: showNotify,
                 title: notifyTitle,
-                message: notifyMessage
+                message: notifyMessage,
             });
-
-            if (error) throw error;
             success('Notificação enviada com sucesso!');
             setShowNotify(null);
             setNotifyTitle('');
@@ -139,12 +137,7 @@ export default function AdminUsers() {
 
         setBulkDeleting(true);
         try {
-            const { error: err } = await supabase
-                .from('profiles')
-                .delete()
-                .in('id', Array.from(selectedUsers));
-
-            if (err) throw err;
+            await adminService.deleteUsers(Array.from(selectedUsers));
 
             // Log audit for each deleted user
             for (const userId of selectedUsers) {
@@ -185,12 +178,7 @@ export default function AdminUsers() {
 
         setChangingPassword(true);
         try {
-            const { error } = await supabase.rpc('admin_update_user_password', {
-                target_user_id: showPasswordEdit.id,
-                new_password: newPassword
-            });
-
-            if (error) throw error;
+            await adminService.updateUserPassword(showPasswordEdit.id, newPassword);
 
             // Log audit
             await auditLogService.logAction('update', 'user', showPasswordEdit.id, showPasswordEdit.name, {

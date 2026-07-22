@@ -32,6 +32,7 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 - [ ] **🔴 Trocar a chave do Asaas por uma de PRODUÇÃO antes do lançamento** (A48c) — hoje a `ASAAS_API_KEY` (na Vercel e no `.env.local`) é uma chave de **sandbox** (`$aact_hmlg_…`), então nenhuma cobrança é real. O código deriva a URL da chave automaticamente: ao colocar a chave de produção (`$aact_prod_…`), ele passa a usar `api.asaas.com` sozinho. Também revisar o webhook do Asaas apontando para o endpoint de produção.
 - [ ] **Remover a coluna `plans.stripe_url`** (migração) — resquício do Stripe; já removida do código (A47). Cleanup de banco.
 - [ ] **Rotacionar credenciais** — `SUPABASE_ACESS_TOKEN` exposto em texto plano (achado A22). Ver decisão de 2026-07-20. **🔴 Rotacionar também `meta_access_token` (e tokens Google Ads) dos lojistas que já tinham site ativo** — esses tokens estiveram expostos publicamente antes do fix do A34; trocá-los é o único jeito de garantir que ninguém que os copiou ainda os use.
+- [ ] **Rodar `APLICAR-dedup-ticket-policies.sql`** (migração `20260722060000`, achado A44) — remove políticas RLS duplicadas (EN+PT) em tickets. Não muda acesso; só limpeza.
 - [ ] **Revisar documentos legais com apoio jurídico** — o nome da plataforma foi trocado nos contratos durante o rebrand.
 - [ ] **Definir Otimizza × Orvalho nos ativos de marca** — resolvido no código; sobra limpar `profiles.logo_url` no banco.
 - [ ] **Renomear fluxos no n8n** e atualizar as URLs no código.

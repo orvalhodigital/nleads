@@ -40,6 +40,22 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 
 ## Decisões tomadas
 
+### 2026-07-22 — Tema padrão é Dia; Noite completado como opt-in (A45)
+
+**Decisão:** o tema padrão do app é **Dia** (claro). O **Noite** (escuro) continua disponível, mas só quando o usuário ativa no toggle.
+
+**Contexto:** o modo Noite existia (toggle + `.dark`) mas só ~16% das telas o suportavam — as outras usam cor fixa (`bg-white`, `text-slate-900`) em vez de token semântico. Pior: o padrão seguia o `prefers-color-scheme` do SO, então quem tem o SO no escuro caía numa UI quebrada sem escolher (achado A45, Fase 13).
+
+**O que mudou no código:**
+- `ThemeContext`: o padrão (sem preferência salva) passou de "seguir o SO" para **sempre `dia`**. Preferência salva pelo usuário é respeitada.
+- **Camada de compatibilidade de tema** no `src/index.css`: como toda cor da paleta vira `var(--color-*)` no Tailwind v4, as utilitárias neutras comuns (`bg-white`, `bg-slate-50/100/200`, `text-slate-500..900`, bordas) são remapeadas sob `.dark`, distinguindo papel (fundo vs texto) — então o Noite funciona nas ~84% de telas que usavam cor fixa, sem editar 117 arquivos. `text-white` (botões) segue branco.
+
+**Por quê:** com o padrão em Dia, ninguém é jogado no Noite sem querer; e o Noite, agora funcional, fica como opção. Menor risco para o lançamento.
+
+**Fix de longo prazo:** migrar os componentes para **tokens semânticos** (`bg-background`, `text-foreground`, `bg-card`…) conforme `DESIGN_GUIDELINES.md`, aposentando a camada de compatibilidade. Fica no roadmap.
+
+---
+
 ### 2026-07-20 — Rotação de credenciais adiada para a comercialização
 
 **Decisão:** manter as credenciais atuais, incluindo o `SUPABASE_ACESS_TOKEN` exposto (achado A22), e rotacionar tudo apenas quando o sistema for comercializado.

@@ -286,7 +286,7 @@ Reverificado em 2026-07-20.
 | A41 | 5 funções SECURITY DEFINER sem `search_path` fixo (linter Supabase) | 🟡 | ✅ resolvido e verificado — 0 sem search_path | 11 |
 | A42 | **Impersonação do admin não era registrada no log de auditoria** (lacuna LGPD/accountability) | 🟡 | ✅ resolvido — `logAction('impersonate')` no botão de acesso | 11 |
 
-| A43 | **Anexos de suporte mundo-legíveis** — bucket `support_attachments` público + `getPublicUrl` → prints do painel (dados de clientes) acessíveis sem login | 🟡 | corrigido (código: path+URL assinada); **aplicar `APLICAR-support-attachments-private.sql`** após o deploy | 12 |
+| A43 | **Anexos de suporte mundo-legíveis** — bucket `support_attachments` público + `getPublicUrl` → prints do painel (dados de clientes) acessíveis sem login | 🟡 | ✅ resolvido e verificado — bucket privado + URL assinada | 12 |
 | A44 | Políticas RLS duplicadas (EN+PT) em `support_tickets`/`ticket_messages` | 🟢 | redundância inócua; limpar na Fase 14 | 12 |
 
 **Linha de base para a Fase 11 (verificado):** autopromoção lojista→admin **bloqueada** por trigger; impersonação isolada pelo RLS (cliente é só UX); funções admin/tenant sólidas (`auth.uid()`, SECURITY DEFINER); `api/` verifica JWT de verdade (`auth.getUser`), sem IDOR; RPCs de admin checam admin internamente

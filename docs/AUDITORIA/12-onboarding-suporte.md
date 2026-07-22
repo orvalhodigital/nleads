@@ -38,7 +38,7 @@ O mapa §5 listava `support_attachments` como **tabela** — na verdade é um **
 
 | Item | Situação |
 |---|---|
-| A43 — anexos de suporte mundo-legíveis | 🟡 → ✅ corrigido (código + SQL a aplicar) |
+| A43 — anexos de suporte mundo-legíveis | 🟡 → ✅ resolvido e verificado (2026-07-22) |
 | Isolamento de tickets (owner/admin) | ✅ correto |
 | Onboarding (sessions só-admin, conclusão via profile) | ✅ correto |
 | A44 — políticas duplicadas em tickets | 🟢 cleanup (Fase 14) |

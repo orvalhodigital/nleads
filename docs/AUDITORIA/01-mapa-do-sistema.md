@@ -223,8 +223,8 @@ Reverificado em 2026-07-20.
 | A1 | Acesso a dados fora da camada de serviços — 105 chamadas `.from()` em ~34 telas | 🟠 | ✅ resolvido — todas migradas p/ `services/`; 7 serviços novos; só sobrou storage e a view pública | 14 |
 | A2 | Três sistemas de migração de banco em paralelo | 🔴 | ✅ resolvido — só `supabase/migrations/`; histórico arquivado | 3 |
 | A3 | `InventoryContext` / `LeadContext` sem consumidores | 🟡 | ✅ resolvido — deletados + hooks removidos | 14 |
-| A4 | `DataContext` é god context (506 linhas, 32 consumidores) | 🟡 | aberto | 12/14 |
-| A5 | 7 arquivos acima de 950 linhas | 🟡 | aberto — recomendado fazer com QA visual | 14 |
+| A4 | `DataContext` é god context (506 linhas, 32 consumidores) | 🟡 | ✅ resolvido — fatiado em AuthContext/InventoryContext/LeadContext | 12/14 |
+| A5 | 7 arquivos acima de 950 linhas | 🟡 | ✅ resolvido — modais e cabeçalhos de estoque desduplicados | 14 |
 | A6 | Harness de testes & cobertura (Vitest) | 🔴 | ✅ resolvido — Vitest + RTL configurado, 41/41 testes passando | 15 |
 | A7 | Sem CI (Integração Contínua) | 🔴 | ✅ resolvido — Workflow GitHub Actions (.github/workflows/ci.yml) ativo | 18 |
 | A8 | Frontend chama n8n diretamente | 🟡 | aceito — sem vazamento; rate-limit no n8n vai ao checklist | 6 |

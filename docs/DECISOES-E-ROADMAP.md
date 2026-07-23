@@ -46,6 +46,14 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 
 ## Decisões tomadas
 
+### 2026-07-23 — Infraestrutura de Testes com Vitest + React Testing Library (A6)
+
+**Decisão:** O `jest.config.js` inativo foi removido e a suíte de testes foi migrada para **Vitest + @testing-library/react + jsdom**, configurada via `vitest.config.ts`. Script `"test": "vitest run"` adicionado ao `package.json`.
+
+**O que mudou:** Suítes criadas/migradas para os serviços (`vehicleService`, `leadService`, `salesFlowService`, `guaranteeService`), utilitários (`formatters`) e contextos (`AuthContext`), totalizando 41 testes automatizados ativos e passando limpos.
+
+---
+
 ### 2026-07-23 — Divisão do DataContext (A4) e Desduplicação de Estoque (A5)
 
 **Decisão:** O `DataContext` (God Context) foi fatiado em 3 contextos de domínio isolados e memoizados: `AuthContext`, `InventoryContext` e `LeadContext`. O `DataContext` original foi preservado atuando estritamente como fachada agregadora de retrocompatibilidade para o método `loadData()`.

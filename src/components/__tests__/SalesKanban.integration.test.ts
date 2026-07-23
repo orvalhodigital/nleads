@@ -5,6 +5,7 @@
  * Lead → Sale Recorded → SalesFlow Entry → Kanban Phases → Warranty Tracking
  */
 
+import { describe, it, expect } from 'vitest';
 import { Lead, SalePhase } from '../../types';
 import { salesFlowService } from '../../services/salesFlowService';
 import { guaranteeService } from '../../services/guaranteeService';

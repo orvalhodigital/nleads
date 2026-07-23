@@ -136,9 +136,8 @@ Refatoração e desduplicação dos fluxos de estoque e modais:
 - Extraídos `SellVehicleModal.tsx`, `LeadInterestModal.tsx` e `InventoryHeader.tsx` (parametrizado para carros e motos).
 - Desduplicadas as lógicas repetidas entre `Inventory.tsx` e `MotorcycleInventory.tsx`, modularizando ações operacionais e modais.
 
-### 🔴 A6 — Cobertura de testes ~0
-3 arquivos de teste para 41.030 linhas. `jest.config.js` presente, mas o projeto usa Vite (esperado: Vitest) — o harness pode nem estar funcional.
-→ Fase 15.
+### ✅ A6 — Harness de Testes & Cobertura — **RESOLVIDO (Fase 15)**
+Infraestrutura de testes migrada para **Vitest + React Testing Library + jsdom**. Harness configurado em `vitest.config.ts`, script `"test": "vitest run"` integrado. 7 arquivos de suíte criados/migrados cobrindo serviços (`vehicleService`, `leadService`, `salesFlowService`, `guaranteeService`), utilitários (`formatters`) e contextos (`AuthContext`), com 41 testes passando limpos.
 
 ### 🔴 A7 — Sem CI
 Nenhum workflow. Nada valida build, tipos ou testes antes do deploy.
@@ -235,7 +234,7 @@ Reverificado em 2026-07-20.
 | A3 | `InventoryContext` / `LeadContext` sem consumidores | 🟡 | ✅ resolvido — deletados + hooks removidos | 14 |
 | A4 | `DataContext` é god context (506 linhas, 32 consumidores) | 🟡 | aberto | 12/14 |
 | A5 | 7 arquivos acima de 950 linhas | 🟡 | aberto — recomendado fazer com QA visual | 14 |
-| A6 | Cobertura de testes ~zero | 🔴 | aberto | 15 |
+| A6 | Harness de testes & cobertura (Vitest) | 🔴 | ✅ resolvido — Vitest + RTL configurado, 41/41 testes passando | 15 |
 | A7 | Sem CI | 🔴 | aberto | 18 |
 | A8 | Frontend chama n8n diretamente | 🟡 | aceito — sem vazamento; rate-limit no n8n vai ao checklist | 6 |
 | A9 | 29 erros de TypeScript que o build não detecta | 🔴 | ✅ resolvido — 0 erros, build com portão | 2 |

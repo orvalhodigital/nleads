@@ -46,6 +46,17 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 
 ## Decisões tomadas
 
+### 2026-07-23 — Integração Contínua (CI) com GitHub Actions (A7)
+
+**Decisão:** Adicionado o workflow de CI do GitHub Actions (`.github/workflows/ci.yml`) configurado para rodar em Node.js 22.x em todo `push` e `pull_request` para a branch `main`.
+
+**Portões de Qualidade:** O CI valida em sequência:
+1. `npm run typecheck` (`tsc --noEmit`)
+2. `npm run test` (`vitest run` com os 41 testes)
+3. `npm run build:only` (`vite build`)
+
+---
+
 ### 2026-07-23 — Infraestrutura de Testes com Vitest + React Testing Library (A6)
 
 **Decisão:** O `jest.config.js` inativo foi removido e a suíte de testes foi migrada para **Vitest + @testing-library/react + jsdom**, configurada via `vitest.config.ts`. Script `"test": "vitest run"` adicionado ao `package.json`.

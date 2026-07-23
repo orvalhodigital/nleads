@@ -139,9 +139,8 @@ Refatoração e desduplicação dos fluxos de estoque e modais:
 ### ✅ A6 — Harness de Testes & Cobertura — **RESOLVIDO (Fase 15)**
 Infraestrutura de testes migrada para **Vitest + React Testing Library + jsdom**. Harness configurado em `vitest.config.ts`, script `"test": "vitest run"` integrado. 7 arquivos de suíte criados/migrados cobrindo serviços (`vehicleService`, `leadService`, `salesFlowService`, `guaranteeService`), utilitários (`formatters`) e contextos (`AuthContext`), com 41 testes passando limpos.
 
-### 🔴 A7 — Sem CI
-Nenhum workflow. Nada valida build, tipos ou testes antes do deploy.
-→ Fase 18.
+### ✅ A7 — Integração Contínua (CI) — **RESOLVIDO (Fase 18)**
+Workflow do GitHub Actions configurado em `.github/workflows/ci.yml`. Disparado automaticamente em `push` e `pull_request` para a branch `main`, executando validação estrita de tipos (`tsc --noEmit`), testes automatizados (`vitest run`) e compilação do bundle (`vite build`).
 
 ### 🟡 A8 — Frontend chama n8n diretamente
 Webhooks de WhatsApp invocados do navegador, fora das funções serverless — sem autenticação server-side no caminho.
@@ -235,7 +234,7 @@ Reverificado em 2026-07-20.
 | A4 | `DataContext` é god context (506 linhas, 32 consumidores) | 🟡 | aberto | 12/14 |
 | A5 | 7 arquivos acima de 950 linhas | 🟡 | aberto — recomendado fazer com QA visual | 14 |
 | A6 | Harness de testes & cobertura (Vitest) | 🔴 | ✅ resolvido — Vitest + RTL configurado, 41/41 testes passando | 15 |
-| A7 | Sem CI | 🔴 | aberto | 18 |
+| A7 | Sem CI (Integração Contínua) | 🔴 | ✅ resolvido — Workflow GitHub Actions (.github/workflows/ci.yml) ativo | 18 |
 | A8 | Frontend chama n8n diretamente | 🟡 | aceito — sem vazamento; rate-limit no n8n vai ao checklist | 6 |
 | A9 | 29 erros de TypeScript que o build não detecta | 🔴 | ✅ resolvido — 0 erros, build com portão | 2 |
 | A10 | Script versionado que exfiltraria segredos | 🔴 | ✅ resolvido | — |

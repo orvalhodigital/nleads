@@ -1,5 +1,5 @@
 
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 import { SupportTicket, TicketMessage, TicketStatus, TicketPriority, TicketCategory } from '../types';
 
 export const ticketService = {
@@ -7,23 +7,22 @@ export const ticketService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('support_tickets')
             .select('*')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        return data as SupportTicket[];
+        return (handleSupabaseResponse(response) || []) as SupportTicket[];
     },
 
     async getAllTickets() {
-        const { data, error } = await supabase
+        const response = await supabase
             .from('support_tickets')
             .select('*, profiles(*)')
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
         const tickets = (data || []) as SupportTicket[];
         if (tickets.length === 0) return tickets;
 
@@ -31,13 +30,13 @@ export const ticketService = {
         // "Nova Resposta!"/"Aguardando Cliente" da listagem — sem isso, `ticket.messages`
         // nunca era carregado aqui e o indicador ficava sempre preso em "Nova Resposta!",
         // mesmo em tickets onde o admin já tinha respondido por último.
-        const { data: lastMessages, error: mError } = await supabase
+        const mResponse = await supabase
             .from('ticket_messages')
             .select('ticket_id, sender_role, created_at')
             .in('ticket_id', tickets.map(t => t.id))
             .order('created_at', { ascending: false });
 
-        if (mError) throw mError;
+        const lastMessages = handleSupabaseResponse(mResponse);
 
         const lastByTicket = new Map<string, TicketMessage>();
         (lastMessages || []).forEach((m: any) => {
@@ -51,25 +50,25 @@ export const ticketService = {
     },
 
     async getTicketDetails(ticketId: string) {
-        const { data: ticket, error: tError } = await supabase
+        const tResponse = await supabase
             .from('support_tickets')
             .select('*, profiles(*)')
             .eq('id', ticketId)
             .single();
 
-        if (tError) throw tError;
+        const ticket = handleSupabaseResponse(tResponse);
 
-        const { data: messages, error: mError } = await supabase
+        const mResponse = await supabase
             .from('ticket_messages')
             .select('*')
             .eq('ticket_id', ticketId)
             .order('created_at', { ascending: true });
 
-        if (mError) throw mError;
+        const messages = handleSupabaseResponse(mResponse);
 
         return {
             ...ticket,
-            messages: messages as TicketMessage[]
+            messages: (messages || []) as TicketMessage[]
         } as SupportTicket;
     },
 
@@ -83,7 +82,7 @@ export const ticketService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('support_tickets')
             .insert({
                 user_id: user.id,
@@ -93,8 +92,7 @@ export const ticketService = {
             .select()
             .single();
 
-        if (error) throw error;
-        return data as SupportTicket;
+        return handleSupabaseResponse(response) as SupportTicket;
     },
 
     async addMessage(ticketId: string, message: string, attachments: string[] = []) {
@@ -102,15 +100,16 @@ export const ticketService = {
         if (!user) throw new Error('Not authenticated');
 
         // Get user role to set sender_role
-        const { data: profile } = await supabase
+        const pResponse = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
+        const profile = handleSupabaseResponse(pResponse);
         const senderRole = profile?.role === 'admin' ? 'admin' : 'user';
 
-        const { data, error } = await supabase
+        const response = await supabase
             .from('ticket_messages')
             .insert({
                 ticket_id: ticketId,
@@ -122,27 +121,31 @@ export const ticketService = {
             .select()
             .single();
 
-        if (error) throw error;
+        const data = handleSupabaseResponse(response);
 
         // Notificar a outra parte
-        const { data: ticket } = await supabase.from('support_tickets').select('*').eq('id', ticketId).single();
+        const tResponse = await supabase.from('support_tickets').select('*').eq('id', ticketId).maybeSingle();
+        const ticket = handleSupabaseResponse(tResponse);
         if (ticket) {
             if (senderRole === 'admin') {
                 // Notificar usuário
-                await supabase.from('notifications').insert({
+                const nResponse = await supabase.from('notifications').insert({
                     user_id: ticket.user_id,
                     title: 'Nova Resposta no Suporte',
                     message: `O suporte respondeu ao seu ticket: "${ticket.subject}"`,
                     read: false
                 });
+                handleSupabaseResponse(nResponse);
             } else {
                 // Mudar status para 'open' se o usuário respondeu e estava 'in_progress'
                 if (ticket.status === 'in_progress') {
-                    await supabase.from('support_tickets').update({ status: 'open' }).eq('id', ticketId);
+                    const uResponse = await supabase.from('support_tickets').update({ status: 'open' }).eq('id', ticketId);
+                    handleSupabaseResponse(uResponse);
                 }
                 
                 // Notificar super admins
-                const { data: admins } = await supabase.from('profiles').select('id').eq('role', 'super_admin');
+                const aResponse = await supabase.from('profiles').select('id').eq('role', 'super_admin');
+                const admins = handleSupabaseResponse(aResponse);
                 if (admins && admins.length > 0) {
                     const adminNotifications = admins.map(admin => ({
                         user_id: admin.id,
@@ -150,7 +153,8 @@ export const ticketService = {
                         message: `O cliente enviou uma nova resposta no ticket: "${ticket.subject}"`,
                         read: false
                     }));
-                    await supabase.from('notifications').insert(adminNotifications);
+                    const nResponse = await supabase.from('notifications').insert(adminNotifications);
+                    handleSupabaseResponse(nResponse);
                 }
             }
         }
@@ -159,19 +163,15 @@ export const ticketService = {
     },
 
     async updateTicketStatus(ticketId: string, status: TicketStatus) {
-        const { error } = await supabase
+        const response = await supabase
             .from('support_tickets')
             .update({ status, updated_at: new Date().toISOString() })
             .eq('id', ticketId);
 
-        if (error) throw error;
+        handleSupabaseResponse(response);
     },
 
     async uploadAttachment(file: File): Promise<string> {
-        // Anexos de suporte podem conter dados sensíveis (prints do painel do
-        // lojista). O bucket é privado (A43) e o path é escopado por usuário com
-        // nome não-adivinhável. Guardamos o PATH (não uma URL pública); a URL é
-        // assinada sob demanda em getAttachmentUrl.
         const { data: { session } } = await supabase.auth.getSession();
         const uid = session?.user?.id;
         if (!uid) throw new Error('Sessão necessária para enviar anexo.');
@@ -179,11 +179,11 @@ export const ticketService = {
         const fileExt = (file.name.split('.').pop() || 'bin').replace(/[^a-zA-Z0-9]/g, '');
         const filePath = `tickets/${uid}/${crypto.randomUUID()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
+        const uploadRes = await supabase.storage
             .from('support_attachments')
             .upload(filePath, file);
 
-        if (uploadError) throw uploadError;
+        handleSupabaseResponse(uploadRes);
 
         return filePath;
     },
@@ -192,10 +192,11 @@ export const ticketService = {
     // Para paths, gera URL assinada de 1h contra o bucket privado.
     async getAttachmentUrl(pathOrUrl: string): Promise<string> {
         if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl; // compat com valores antigos
-        const { data, error } = await supabase.storage
+        const response = await supabase.storage
             .from('support_attachments')
             .createSignedUrl(pathOrUrl, 3600);
-        if (error || !data) return '#';
+        const data = handleSupabaseResponse(response);
+        if (!data) return '#';
         return data.signedUrl;
     }
 };

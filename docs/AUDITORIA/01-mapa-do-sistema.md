@@ -248,7 +248,7 @@ Reverificado em 2026-07-20.
 | A24 | **RPC `admin_update_user_password` sem verificação: qualquer anônimo assume qualquer conta** | 🔴 | ✅ resolvido e verificado — anon EXECUTE=false | 4 |
 | A25 | Senha mínima do provedor é 6 (Supabase Auth) | 🟡 | checklist de comercialização | — |
 
-| A26 | Três padrões de tratamento de erro nos services | 🟡 | padronizar na Fase 14 | 14 |
+| A26 | Três padrões de tratamento de erro nos services | 🟡 | ✅ resolvido — padronizado com `handleSupabaseResponse` em todos os 21 services | 14 |
 
 | A27 | 5 escritas com erro silencioso (supabase-js nao lanca) — venda em massa mostrava sucesso ao falhar | 🔴 | resolvido | 5 |
 

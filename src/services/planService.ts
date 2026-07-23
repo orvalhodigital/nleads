@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 import { Profile } from '../types';
 
 export const planService = {
@@ -11,47 +11,43 @@ export const planService = {
 
   // --- Admin: edição dos planos (tabela `plans`). RLS restringe a admin. ---
   async listPlans(): Promise<any[]> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('plans')
       .select('*')
       .order('price', { ascending: true });
-    if (error) return [];
-    return data || [];
+    return handleSupabaseResponse(response) || [];
   },
 
   async updatePlan(id: string, payload: Record<string, any>): Promise<void> {
-    const { error } = await supabase.from('plans').update(payload).eq('id', id);
-    if (error) throw error;
+    handleSupabaseResponse(await supabase.from('plans').update(payload).eq('id', id));
   },
 
   // Planos ativos, ordenados por preço — para exibir ao lojista.
   async listActivePlans(): Promise<any[]> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('plans')
       .select('*')
       .eq('is_active', true)
       .order('price', { ascending: true });
-    if (error) return [];
-    return data || [];
+    return handleSupabaseResponse(response) || [];
   },
 
   async getUserStats(userId: string) {
-    try {
-      const [vehiclesRes, leadsRes, motorcyclesRes] = await Promise.all([
-        supabase.from('vehicles').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('motorcycles').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-      ]);
+    const [vehiclesRes, leadsRes, motorcyclesRes] = await Promise.all([
+      supabase.from('vehicles').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      supabase.from('leads').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      supabase.from('motorcycles').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    ]);
 
-      return {
-        vehicleCount: vehiclesRes.count || 0,
-        leadCount: leadsRes.count || 0,
-        motorcycleCount: motorcyclesRes.count || 0,
-      };
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-      return { vehicleCount: 0, leadCount: 0, motorcycleCount: 0 };
-    }
+    handleSupabaseResponse(vehiclesRes);
+    handleSupabaseResponse(leadsRes);
+    handleSupabaseResponse(motorcyclesRes);
+
+    return {
+      vehicleCount: vehiclesRes.count || 0,
+      leadCount: leadsRes.count || 0,
+      motorcycleCount: motorcyclesRes.count || 0,
+    };
   },
 
   canAddVehicle(plan: string, currentCount: number): boolean {

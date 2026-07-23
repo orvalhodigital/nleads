@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 
 /**
  * Métricas globais para o painel do admin.
@@ -59,71 +59,94 @@ function buildTrend<T>(rows: T[], getIso: (r: T) => string | null | undefined, f
     const spanDays = Math.ceil((toMs - fromMs) / DAY);
     const monthly = spanDays > 92; // acima de ~3 meses agrupa por mês
 
-    const buckets = new Map<string, number>();
-    const keyOf = (t: number) => {
-        const d = new Date(t);
-        return monthly ? d.toISOString().slice(0, 7) : d.toISOString().slice(0, 10);
-    };
-
-    // Pré-popula os buckets vazios para o gráfico ter continuidade.
-    if (monthly) {
-        const d = new Date(fromMs); d.setUTCDate(1);
-        while (d.getTime() <= toMs) { buckets.set(d.toISOString().slice(0, 7), 0); d.setUTCMonth(d.getUTCMonth() + 1); }
-    } else {
-        for (let t = fromMs; t <= toMs; t += DAY) buckets.set(new Date(t).toISOString().slice(0, 10), 0);
-    }
-
+    const counts: { [k: string]: number } = {};
     for (const r of rows) {
         const iso = getIso(r);
         if (!iso) continue;
-        const t = new Date(iso).getTime();
-        if (t < fromMs || t > toMs) continue;
-        const k = keyOf(t);
-        if (buckets.has(k)) buckets.set(k, (buckets.get(k) || 0) + 1);
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) continue;
+        const k = d.toISOString().slice(0, monthly ? 7 : 10);
+        counts[k] = (counts[k] || 0) + 1;
     }
-    return Array.from(buckets.entries()).map(([label, count]) => ({ label, count }));
+
+    // Preenche todos os buckets do intervalo para a linha do gráfico não ter buracos.
+    const result: TrendPoint[] = [];
+    let cur = new Date(fromMs);
+
+    if (monthly) {
+        cur = new Date(cur.getFullYear(), cur.getMonth(), 1);
+        while (cur.getTime() <= toMs) {
+            const k = cur.toISOString().slice(0, 7);
+            const label = cur.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+            result.push({ label, count: counts[k] || 0 });
+            cur.setMonth(cur.getMonth() + 1);
+        }
+    } else {
+        while (cur.getTime() <= toMs) {
+            const k = cur.toISOString().slice(0, 10);
+            const label = cur.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            result.push({ label, count: counts[k] || 0 });
+            cur.setTime(cur.getTime() + DAY);
+        }
+    }
+    return result;
+}
+
+function countBy<T>(arr: T[], getKey: (r: T) => string | null | undefined): { [k: string]: number } {
+    const res: { [k: string]: number } = {};
+    for (const r of arr) {
+        const k = getKey(r) || '(não informado)';
+        res[k] = (res[k] || 0) + 1;
+    }
+    return res;
 }
 
 function inPeriod(iso: string | null | undefined, fromMs: number | null, toMs: number): boolean {
     if (!iso) return false;
     const t = new Date(iso).getTime();
-    if (fromMs != null && t < fromMs) return false;
+    if (isNaN(t)) return false;
+    if (fromMs !== null && t < fromMs) return false;
     return t <= toMs;
-}
-
-function countBy<T>(rows: T[], key: (r: T) => string | null | undefined): { [k: string]: number } {
-    const out: { [k: string]: number } = {};
-    for (const r of rows) {
-        const v = key(r) || '(sem)';
-        out[v] = (out[v] || 0) + 1;
-    }
-    return out;
 }
 
 export const metricsService = {
     /**
-     * Busca lojistas (empresas) pelo nome — no servidor, com limite. Feito para
-     * escalar: com milhares de lojistas, não carrega todos; filtra por termo.
-     * Termo vazio traz os primeiros N (para o dropdown já abrir com opções).
+     * Busca lojistas (empresas) pelo nome com limite.
      */
     async searchLojistas(term: string, limit = 20): Promise<LojistaOption[]> {
         let q = supabase
             .from('profiles')
-            .select('id, company_name, full_name')
-            .eq('role', 'empresa')
+            .select('id, company_name, full_name, email')
             .limit(limit);
 
         const t = term.trim();
         if (t) {
-            // Casa por nome da empresa OU nome do responsável.
-            q = q.or(`company_name.ilike.%${t}%,full_name.ilike.%${t}%`);
+            q = q.or(`company_name.ilike.%${t}%,full_name.ilike.%${t}%,email.ilike.%${t}%`);
         } else {
             q = q.order('company_name', { nullsFirst: false });
         }
 
-        const { data, error } = await q;
-        if (error) throw error;
-        return (data || []).map((p: any) => ({ id: p.id, name: p.company_name || p.full_name || '(sem nome)' }));
+        const data = handleSupabaseResponse(await q);
+        return (data || []).map((p: any) => ({
+            id: p.id,
+            name: p.company_name || p.full_name || p.email || p.id,
+        }));
+    },
+
+    /**
+     * Lista os lojistas disponíveis para o filtro do admin (apenas quem tem role 'user').
+     */
+    async listLojistas(): Promise<LojistaOption[]> {
+        const response = await supabase
+            .from('profiles')
+            .select('id, full_name, email')
+            .eq('role', 'user')
+            .order('full_name', { ascending: true });
+        const data = handleSupabaseResponse(response);
+        return (data || []).map((p: any) => ({
+            id: p.id,
+            name: p.full_name || p.email || p.id,
+        }));
     },
 
     /**
@@ -158,13 +181,10 @@ export const metricsService = {
         }
 
         const [leadsRes, vehRes, aiRes] = await Promise.all([leadsQuery, vehQuery, aiQuery]);
-        if (leadsRes.error) throw leadsRes.error;
-        if (vehRes.error) throw vehRes.error;
+        const leads = handleSupabaseResponse(leadsRes) || [];
+        const allVehicles = handleSupabaseResponse(vehRes) || [];
         // ai_usage_events pode não existir ainda em ambientes antigos: não quebra.
         const aiRows = aiRes.error ? [] : (aiRes.data || []);
-
-        const leads = leadsRes.data || []; // já filtrados por período no servidor
-        const allVehicles = vehRes.data || [];
 
         // Veículos cadastrados NO período.
         const enteredVehicles = allVehicles.filter((v: any) => inPeriod(v.created_at, fromMs, toMs));

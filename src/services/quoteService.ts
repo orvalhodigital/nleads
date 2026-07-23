@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 
 export interface MotivationQuote {
     id: string;
@@ -14,55 +14,46 @@ export interface MotivationQuote {
  */
 export const quoteService = {
     async list(): Promise<MotivationQuote[]> {
-        const { data, error } = await supabase
+        const response = await supabase
             .from('motivation_quotes')
             .select('*')
             .order('created_at', { ascending: false });
-        // 42P01 = tabela ainda não existe → trata como lista vazia (sem erro),
-        // preservando o comportamento original da tela.
-        if (error) {
-            if (error.code === '42P01') return [];
-            throw error;
-        }
-        return (data as MotivationQuote[]) || [];
+        if (response.error && response.error.code === '42P01') return [];
+        return (handleSupabaseResponse(response) as MotivationQuote[]) || [];
     },
 
     // Frases ativas (para sortear uma no dashboard do lojista).
     async getActive(): Promise<{ quote: string; author: string | null }[]> {
-        const { data } = await supabase
+        const response = await supabase
             .from('motivation_quotes')
             .select('quote, author')
             .eq('is_active', true);
-        return data || [];
+        return handleSupabaseResponse(response) || [];
     },
 
     async create(input: { quote: string; author: string; is_active?: boolean }): Promise<void> {
-        const { error } = await supabase.from('motivation_quotes').insert([{
+        handleSupabaseResponse(await supabase.from('motivation_quotes').insert([{
             quote: input.quote,
             author: input.author,
             is_active: input.is_active ?? true,
-        }]);
-        if (error) throw error;
+        }]));
     },
 
     async update(id: string, input: { quote: string; author: string; is_active: boolean }): Promise<void> {
-        const { error } = await supabase.from('motivation_quotes').update({
+        handleSupabaseResponse(await supabase.from('motivation_quotes').update({
             quote: input.quote,
             author: input.author,
             is_active: input.is_active,
-        }).eq('id', id);
-        if (error) throw error;
+        }).eq('id', id));
     },
 
     async setActive(id: string, isActive: boolean): Promise<void> {
-        const { error } = await supabase.from('motivation_quotes')
+        handleSupabaseResponse(await supabase.from('motivation_quotes')
             .update({ is_active: isActive })
-            .eq('id', id);
-        if (error) throw error;
+            .eq('id', id));
     },
 
     async remove(id: string): Promise<void> {
-        const { error } = await supabase.from('motivation_quotes').delete().eq('id', id);
-        if (error) throw error;
+        handleSupabaseResponse(await supabase.from('motivation_quotes').delete().eq('id', id));
     },
 };

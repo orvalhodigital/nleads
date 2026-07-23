@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 
 /**
  * Acesso à tabela `lead_communications` (registro de mensagens enviadas a leads).
@@ -8,26 +8,24 @@ import { supabase } from '../lib/supabaseClient';
 export const leadCommunicationService = {
     /** Insere sem retornar a linha (quando o chamador não precisa do id). */
     async insert(record: Record<string, any>): Promise<void> {
-        const { error } = await supabase.from('lead_communications').insert(record);
-        if (error) throw error;
+        handleSupabaseResponse(await supabase.from('lead_communications').insert(record));
     },
 
     /** Insere e retorna `{ id }` (para casos que usam o id no webhook n8n). */
     async create(record: Record<string, any>): Promise<{ id: string }> {
-        const { data, error } = await supabase
+        const response = await supabase
             .from('lead_communications')
             .insert(record)
             .select('id')
             .single();
-        if (error) throw error;
-        return data as { id: string };
+        return handleSupabaseResponse(response) as { id: string };
     },
 
     async listByVehicle(vehicleId: string): Promise<any[]> {
-        const { data } = await supabase
+        const response = await supabase
             .from('lead_communications')
             .select('*')
             .eq('vehicle_id', vehicleId);
-        return data || [];
+        return handleSupabaseResponse(response) || [];
     },
 };

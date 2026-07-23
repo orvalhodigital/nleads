@@ -46,6 +46,14 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 
 ## Decisões tomadas
 
+### 2026-07-23 — Padronização de Tratamento de Erros nos 21 Services (A26)
+
+**Decisão:** Todos os 21 arquivos de serviços da camada `src/services/` foram padronizados para utilizar exclusivamente o helper global `handleSupabaseResponse()`.
+
+**Benefício:** Interceptação automática de sessões/tokens JWT expirados (forçando logout limpo em vez de erro não capturado), logging centralizado `[Supabase Error]` e relançamento previsível de exceções em mutações e leituras.
+
+---
+
 ### 2026-07-23 — Centralização de CORS (`api/_lib/cors.ts`) e Consolidação da Documentação (A12/A14)
 
 **Decisão:** Criado o módulo compartilhado `api/_lib/cors.ts` consolidando `ALLOWED_ORIGINS`, `applyCors()` e `getVerifiedUserId()`. Refatoradas todas as serverless functions em `api/` e `api/openai/` para eliminar a duplicação de cabeçalhos CORS.

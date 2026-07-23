@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 
 /**
  * Acesso à tabela `onboarding_sessions` (acompanhamento de onboarding no admin).
@@ -6,10 +6,9 @@ import { supabase } from '../lib/supabaseClient';
  */
 export const onboardingService = {
     async getSessions(): Promise<any[]> {
-        const { data, error } = await supabase.from('onboarding_sessions').select('*');
-        // A tabela pode não existir ainda / dar erro → trata como vazio, como a tela fazia.
-        if (error) return [];
-        return data || [];
+        const response = await supabase.from('onboarding_sessions').select('*');
+        if (response.error && response.error.code === '42P01') return [];
+        return handleSupabaseResponse(response) || [];
     },
 
     /**
@@ -19,25 +18,24 @@ export const onboardingService = {
      */
     async saveField(sessionId: string | null | undefined, userId: string, patch: Record<string, any>): Promise<string> {
         if (!sessionId) {
-            const { data, error } = await supabase
+            const response = await supabase
                 .from('onboarding_sessions')
                 .insert({ user_id: userId, ...patch })
                 .select()
                 .single();
-            if (error) throw error;
+            const data = handleSupabaseResponse(response);
             return data.id;
         }
-        const { error } = await supabase
+        const response = await supabase
             .from('onboarding_sessions')
             .update({ ...patch, updated_at: new Date().toISOString() })
             .eq('id', sessionId);
-        if (error) throw error;
+        handleSupabaseResponse(response);
         return sessionId;
     },
 
     /** Update direto por id, sem carimbar updated_at (ex.: sugestão de review 30d). */
     async updateById(sessionId: string, patch: Record<string, any>): Promise<void> {
-        const { error } = await supabase.from('onboarding_sessions').update(patch).eq('id', sessionId);
-        if (error) throw error;
+        handleSupabaseResponse(await supabase.from('onboarding_sessions').update(patch).eq('id', sessionId));
     },
 };

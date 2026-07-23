@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 
 export interface AuditLogEntry {
   id?: string;
@@ -21,11 +21,6 @@ export const auditLogService = {
     changes?: Record<string, any>
   ) {
     try {
-      // `getSession()` resolve para `{ data: { session }, error }` -- o session
-      // real fica ANINHADO em `data.session`, nao em `data` diretamente. Antes o
-      // destructuring pegava `data` inteiro como "session", entao `session.user`
-      // nunca existia e o log de auditoria sempre saia pelo early-return abaixo,
-      // silenciosamente, mesmo com o admin autenticado.
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) {
         console.warn('No active session for audit log');
@@ -41,13 +36,11 @@ export const auditLogService = {
         changes: changes || null,
       };
 
-      const { error } = await supabase
+      const response = await supabase
         .from('admin_audit_logs')
         .insert([entry]);
 
-      if (error) {
-        console.error('Error logging action:', error);
-      }
+      handleSupabaseResponse(response);
     } catch (err) {
       console.error('Audit log service error:', err);
     }
@@ -62,56 +55,43 @@ export const auditLogService = {
       limit?: number;
     }
   ) {
-    try {
-      let query = supabase
-        .from('admin_audit_logs')
-        .select('*, admin:admin_id(full_name, email)')
-        .order('created_at', { ascending: false });
+    let query = supabase
+      .from('admin_audit_logs')
+      .select('*, admin:admin_id(full_name, email)')
+      .order('created_at', { ascending: false });
 
-      if (filters?.action) {
-        query = query.eq('action', filters.action);
-      }
-
-      if (filters?.resourceType) {
-        query = query.eq('resource_type', filters.resourceType);
-      }
-
-      if (filters?.startDate) {
-        query = query.gte('created_at', filters.startDate);
-      }
-
-      if (filters?.endDate) {
-        query = query.lte('created_at', filters.endDate);
-      }
-
-      const limit = filters?.limit || 100;
-      query = query.limit(limit);
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return data || [];
-    } catch (err) {
-      console.error('Error fetching audit logs:', err);
-      return [];
+    if (filters?.action) {
+      query = query.eq('action', filters.action);
     }
+
+    if (filters?.resourceType) {
+      query = query.eq('resource_type', filters.resourceType);
+    }
+
+    if (filters?.startDate) {
+      query = query.gte('created_at', filters.startDate);
+    }
+
+    if (filters?.endDate) {
+      query = query.lte('created_at', filters.endDate);
+    }
+
+    const limit = filters?.limit || 100;
+    query = query.limit(limit);
+
+    const response = await query;
+    return handleSupabaseResponse(response) || [];
   },
 
   async getUserAuditLogs(userId: string, limit = 50) {
-    try {
-      const { data, error } = await supabase
-        .from('admin_audit_logs')
-        .select('*')
-        .eq('resource_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
+    const response = await supabase
+      .from('admin_audit_logs')
+      .select('*')
+      .eq('resource_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-      if (error) throw error;
-      return data || [];
-    } catch (err) {
-      console.error('Error fetching user audit logs:', err);
-      return [];
-    }
+    return handleSupabaseResponse(response) || [];
   },
 
   getActionLabel(action: string): string {

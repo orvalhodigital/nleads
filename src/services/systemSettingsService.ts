@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 
 /**
  * Acesso à tabela `system_settings` (chave/valor de configurações globais:
@@ -7,17 +7,16 @@ import { supabase } from '../lib/supabaseClient';
  */
 export const systemSettingsService = {
     async getAll(): Promise<{ key: string; value: any }[]> {
-        const { data } = await supabase.from('system_settings').select('key, value');
-        return data || [];
+        const response = await supabase.from('system_settings').select('key, value');
+        return handleSupabaseResponse(response) || [];
     },
 
     async getByKeys(keys: string[]): Promise<{ key: string; value: any }[]> {
-        const { data } = await supabase.from('system_settings').select('key, value').in('key', keys);
-        return data || [];
+        const response = await supabase.from('system_settings').select('key, value').in('key', keys);
+        return handleSupabaseResponse(response) || [];
     },
 
     async upsert(updates: { key: string; value: any }[]): Promise<void> {
-        const { error } = await supabase.from('system_settings').upsert(updates);
-        if (error) throw error;
+        handleSupabaseResponse(await supabase.from('system_settings').upsert(updates));
     },
 };

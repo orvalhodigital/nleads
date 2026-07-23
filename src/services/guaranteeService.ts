@@ -1,35 +1,33 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase, handleSupabaseResponse } from '../lib/supabaseClient';
 import { GuaranteeConfig } from '../types';
 
 export const guaranteeService = {
   // Buscar todas as configs de garantia ativas de um usuário
   async getGuaranteeConfigs(userId: string): Promise<GuaranteeConfig[]> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('guarantee_configs')
       .select('*')
       .eq('user_id', userId)
       .eq('is_active', true)
       .order('type', { ascending: true });
 
-    if (error) throw error;
-    return data || [];
+    return (handleSupabaseResponse(response) || []) as GuaranteeConfig[];
   },
 
   // Buscar uma config específica
   async getGuaranteeConfig(id: string): Promise<GuaranteeConfig | null> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('guarantee_configs')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
-    return data || null;
+    return (handleSupabaseResponse(response) || null) as GuaranteeConfig | null;
   },
 
   // Criar nova config de garantia
   async createGuaranteeConfig(userId: string, config: Omit<GuaranteeConfig, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<GuaranteeConfig> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('guarantee_configs')
       .insert([
         {
@@ -45,13 +43,12 @@ export const guaranteeService = {
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    return handleSupabaseResponse(response) as GuaranteeConfig;
   },
 
   // Atualizar config existente
   async updateGuaranteeConfig(id: string, updates: Partial<GuaranteeConfig>): Promise<GuaranteeConfig> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('guarantee_configs')
       .update({
         ...(updates.name && { name: updates.name }),
@@ -65,18 +62,17 @@ export const guaranteeService = {
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    return handleSupabaseResponse(response) as GuaranteeConfig;
   },
 
   // Deletar config (soft delete — apenas desativar)
   async deleteGuaranteeConfig(id: string): Promise<void> {
-    const { error } = await supabase
+    const response = await supabase
       .from('guarantee_configs')
       .update({ is_active: false })
       .eq('id', id);
 
-    if (error) throw error;
+    handleSupabaseResponse(response);
   },
 
   // Helper: obter configs pré-definidas (termos legais)

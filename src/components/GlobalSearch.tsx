@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Search, Users, Car, Bike, X, ArrowRight, Command } from 'lucide-react';
-import { useData } from '../contexts/DataContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 
 interface SearchResult {
     id: string;
@@ -22,7 +23,8 @@ interface GlobalSearchProps {
 
 const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
-    const { leads, vehicles, motorcycles } = useData() as any;
+    const { vehicles, motorcycles } = useInventoryContext();
+    const { leads } = useLeadContext();
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);

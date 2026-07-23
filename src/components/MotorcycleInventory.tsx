@@ -8,6 +8,9 @@ import {
 } from 'lucide-react';
 import { MotoGridCard, MotoListCard } from './motorcycle-inventory/MotoCards';
 import { MotoFilters } from './motorcycle-inventory/MotoFilters';
+import { SellVehicleModal } from './inventory/SellVehicleModal';
+import { LeadInterestModal } from './inventory/LeadInterestModal';
+import { InventoryHeader } from './inventory/InventoryHeader';
 import { Lead, LeadPhase, SaleDetails, LeadTemperature, Motorcycle, MotorcycleCategory, MotoStartType, MotoFuelSystem, MotoCooling, MotoBrakeType, LeadCommunication } from '../types';
 import { Switch } from './ui/switch';
 import { motorcycleService } from '../services/motorcycleService';
@@ -19,7 +22,8 @@ import { formatCurrency, parseCurrency, formatKM, parseKM } from '../utils/forma
 import { motoDatabase } from '../data/motoDb';
 import AutocompleteInput from './ui/AutocompleteInput';
 import PlanLimitAlert from './PlanLimitAlert';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
 import { consultaPlaca } from '../services/plateService';
 import { withPreferenceDefaults } from '../lib/leadPreferenceDefaults';
 import { MOTO_ENGINES, toEngineType } from '../lib/engineType';
@@ -74,7 +78,8 @@ const MotorcycleInventory: React.FC<Props> = ({
     motorcycles, leads, userEmail, onDataChange, onAddLead, onViewLead
 }) => {
     const navigate = useNavigate();
-    const { profile, vehicles } = useData();
+    const { profile } = useAuthContext();
+    const { vehicles } = useInventoryContext();
 
     const [selected, setSelected] = useState<Motorcycle | 'new' | null>(null);
     const [inventoryView, setInventoryView] = useState<'available' | 'sold'>('available');
@@ -88,16 +93,6 @@ const MotorcycleInventory: React.FC<Props> = ({
     const [submitting, setSubmitting] = useState(false);
     const [isSellModalOpen, setIsSellModalOpen] = useState(false);
     const [form, setForm] = useState<Omit<Motorcycle, 'id'>>(EMPTY_MOTO);
-    const [walkInName, setWalkInName] = useState('');
-    const [walkInPhone, setWalkInPhone] = useState('');
-    // Guarda o ID do lead selecionado (nunca o nome) — com dois leads
-    // homônimos, buscar de volta por nome podia atribuir a venda ao lead
-    // errado. Mesmo bug já corrigido em Inventory.tsx.
-    const [buyerSelectionId, setBuyerSelectionId] = useState('');
-    const [sellData, setSellData] = useState<SaleDetails>({
-        salePrice: 0, refurbishmentCosts: 0, saleDate: new Date().toISOString().split('T')[0],
-        buyerName: '', buyerLeadId: '', isFollowUpSale: true
-    });
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [msgTemplate, setMsgTemplate] = useState('');
     const [msgTargets, setMsgTargets] = useState<Lead[]>([]);
@@ -399,47 +394,7 @@ const MotorcycleInventory: React.FC<Props> = ({
 
     const handleOpenSell = () => {
         if (!selected || selected === 'new') return;
-        setSellData({ salePrice: (selected as Motorcycle).price, refurbishmentCosts: 0, saleDate: new Date().toISOString().split('T')[0], buyerName: '', buyerLeadId: '', isFollowUpSale: true });
-        setBuyerSelectionId('');
-        setWalkInName(''); setWalkInPhone('');
         setIsSellModalOpen(true);
-    };
-
-    const handleSellSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selected || selected === 'new') return;
-        if (!buyerSelectionId) { alert('Selecione um comprador antes de confirmar a venda.'); return; }
-
-        let finalBuyerLeadId: string | undefined;
-        let finalBuyerName: string;
-
-        if (buyerSelectionId === 'Venda Avulsa') {
-            if (!walkInName || !walkInPhone) { alert('Preencha nome e telefone.'); return; }
-            const newLead = await onAddLead({
-                name: walkInName, phone: walkInPhone, email: '',
-                phase: LeadPhase.COMPLETED, temperature: LeadTemperature.HOT,
-                preferences: withPreferenceDefaults({
-                    transmissao: ['Qualquer Um(a)'],
-                    motorizacao: ['Qualquer Um(a)'],
-                    observacoes_adicionais: 'Venda Avulsa de Moto',
-                    veiculo_troca: '',
-                }),
-                presentedVehicles: [(selected as Motorcycle).id], source: 'Venda Avulsa', notes: ''
-            });
-            if (newLead) { finalBuyerLeadId = newLead.id; finalBuyerName = newLead.name; }
-            else return;
-        } else {
-            const selectedLead = leads.find(l => l.id === buyerSelectionId);
-            if (!selectedLead) { alert('Selecione um comprador válido.'); return; }
-            finalBuyerLeadId = selectedLead.id;
-            finalBuyerName = selectedLead.name;
-        }
-
-        await motorcycleService.sell((selected as Motorcycle).id, { ...sellData, buyerName: finalBuyerName, buyerLeadId: finalBuyerLeadId });
-        onDataChange();
-        setIsSellModalOpen(false);
-        setBuyerSelectionId('');
-        setSelected(null);
     };
 
     const handleToggleWebsite = (m: Motorcycle) => {
@@ -462,44 +417,6 @@ const MotorcycleInventory: React.FC<Props> = ({
         setMsgTargets(targets);
         setMsgTemplate('Olá {{nome}}, temos uma moto incrível: {{marca}} {{modelo}} {{ano}} por R$ {{valor}}. Quer saber mais?');
         setIsMessageModalOpen(true);
-    };
-
-    const handleSendMsg = async () => {
-        if (!selected || selected === 'new') return;
-        const m = selected as Motorcycle;
-        setUploading(true);
-        try {
-            for (const lead of msgTargets) {
-                const msg = msgTemplate
-                    .replace(/{{nome}}/g, lead.name)
-                    .replace(/{{marca}}/g, m.brand)
-                    .replace(/{{modelo}}/g, m.model)
-                    .replace(/{{ano}}/g, String(m.year))
-                    .replace(/{{valor}}/g, m.price.toLocaleString());
-                // O create lança em erro — sem isso, um insert falho passava batido
-                // e o webhook disparava com message_id undefined.
-                const inserted = await leadCommunicationService.create({
-                    lead_id: lead.id, vehicle_id: m.id,
-                    contact_name: lead.name, contact_phone: lead.phone,
-                    message_body: msg, is_sent: 'não', email_user: userEmail
-                });
-                try {
-                    await fetch('https://webhook.orvalhodigital.com.br/webhook/puxa-mensagem', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            message_id: inserted?.id, lead_id: lead.id,
-                            name: lead.name, phone: lead.phone, message: msg, user_email: userEmail,
-                            vehicle: { id: m.id, brand: m.brand, model: m.model }
-                        })
-                    });
-                } catch { /* webhook não bloqueia */ }
-            }
-            setCommunications(await leadCommunicationService.listByVehicle(m.id));
-            setIsMessageModalOpen(false);
-            alert(`Mensagem registrada para ${msgTargets.length} lead(s)!`);
-        } catch { alert('Erro ao registrar mensagens.'); }
-        finally { setUploading(false); }
     };
 
     const openEdit = (m: Motorcycle) => {
@@ -688,70 +605,35 @@ const MotorcycleInventory: React.FC<Props> = ({
                     </div>
                 </div>
 
-                {isSellModalOpen && (
-                    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSellModalOpen(false)}>
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
-                            <form onSubmit={handleSellSubmit}>
-                                <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                                    <div><h2 className="text-lg font-extrabold text-slate-900 uppercase">Registrar Venda</h2><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{m.brand} {m.model}</p></div>
-                                    <button type="button" onClick={() => setIsSellModalOpen(false)}><X size={24} className="text-slate-300" /></button>
-                                </div>
-                                <div className="p-10 space-y-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Preço Final</label>
-                                        <input type="text" required value={formatCurrency(sellData.salePrice)} onChange={e => setSellData({ ...sellData, salePrice: parseCurrency(e.target.value) })} className="w-full p-4 bg-brand-50 border border-brand-100 text-brand-700 rounded-2xl font-black outline-none text-lg" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Data da Venda</label>
-                                        <CustomDatePicker value={sellData.saleDate} onChange={date => setSellData({ ...sellData, saleDate: date })} className="w-full py-4 px-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none text-sm" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Comprador</label>
-                                        <select value={buyerSelectionId} onChange={e => setBuyerSelectionId(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 outline-none text-sm">
-                                            <option value="">Selecionar lead...</option>
-                                            <option value="Venda Avulsa">Venda Avulsa (Novo Cliente)</option>
-                                            {leads.filter(l => l.phase !== LeadPhase.DISQUALIFIED).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                                        </select>
-                                    </div>
-                                    {buyerSelectionId === 'Venda Avulsa' && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nome</label><input type="text" value={walkInName} onChange={e => setWalkInName(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700 outline-none text-sm" /></div>
-                                            <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Telefone</label><input type="text" value={walkInPhone} onChange={e => setWalkInPhone(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-700 outline-none text-sm" /></div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-                                    <button type="button" onClick={() => setIsSellModalOpen(false)} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Cancelar</button>
-                                    <button type="submit" className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-brand-600 transition-all shadow-xl shadow-brand-500/20">Confirmar Venda</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
+                <SellVehicleModal
+                    isOpen={isSellModalOpen}
+                    onClose={() => {
+                        setIsSellModalOpen(false);
+                        setSelected(null);
+                    }}
+                    item={selected && typeof selected === 'object' ? selected : null}
+                    leads={leads}
+                    onAddLead={onAddLead}
+                    onConfirmSell={async (itemId, details) => {
+                        await motorcycleService.sell(itemId, details);
+                        onDataChange();
+                        setSelected(null);
+                    }}
+                />
 
-                {isMessageModalOpen && (
-                    <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsMessageModalOpen(false)}>
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl animate-fadeUp overflow-hidden" onClick={e => e.stopPropagation()}>
-                            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                                <div><h2 className="text-lg font-extrabold text-slate-900 uppercase">Enviar Mensagem</h2><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Para: {msgTargets.length > 1 ? `${msgTargets.length} leads` : msgTargets[0]?.name}</p></div>
-                                <button onClick={() => setIsMessageModalOpen(false)}><X size={24} className="text-slate-300" /></button>
-                            </div>
-                            <div className="p-8 space-y-4">
-                                <textarea value={msgTemplate} onChange={e => setMsgTemplate(e.target.value)} className="w-full h-36 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-medium text-sm text-slate-700 resize-none leading-relaxed" />
-                                <div className="flex gap-2 flex-wrap">
-                                    {['{{nome}}', '{{marca}}', '{{modelo}}', '{{ano}}', '{{valor}}'].map(tag => (
-                                        <button key={tag} onClick={() => setMsgTemplate(p => p + ' ' + tag)} className="px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors">{tag}</button>
-                                    ))}
-                                </div>
-                                <p className="text-[10px] text-slate-400 font-medium italic">* Clique nas tags para adicionar ao texto.</p>
-                            </div>
-                            <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-                                <button onClick={() => setIsMessageModalOpen(false)} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Cancelar</button>
-                                <button onClick={handleSendMsg} disabled={uploading} className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-brand-600 flex items-center justify-center gap-2 shadow-xl shadow-brand-500/20 disabled:opacity-60"><Send size={16} /> {uploading ? 'Enviando...' : 'Registrar Envio'}</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <LeadInterestModal
+                    isOpen={isMessageModalOpen}
+                    onClose={() => setIsMessageModalOpen(false)}
+                    item={selected && typeof selected === 'object' ? selected : null}
+                    targetLeads={msgTargets}
+                    userEmail={userEmail}
+                    initialTemplate={msgTemplate}
+                    onSendComplete={async () => {
+                        if (selected && typeof selected === 'object') {
+                            setCommunications(await leadCommunicationService.listByVehicle(selected.id));
+                        }
+                    }}
+                />
 
                 {isSelectorOpen && (
                     <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSelectorOpen(false)}>
@@ -1198,45 +1080,22 @@ const MotorcycleInventory: React.FC<Props> = ({
             )}
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-wrap items-center justify-between gap-6 px-1">
-                    <div className="flex items-center gap-3">
-                        <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm">
-                            <button onClick={() => setInventoryView('available')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'available' ? 'bg-white text-brand-600 shadow-md font-black ring-1 ring-brand-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}>
-                                <div className={`w-2 h-2 rounded-full ${inventoryView === 'available' ? 'bg-brand-500 animate-pulse' : 'bg-slate-300'}`} />
-                                <span className="text-[11px] uppercase tracking-[0.1em]">Em Estoque</span>
-                                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'available' ? 'bg-brand-50 text-brand-600' : 'bg-slate-200 text-slate-500'}`}>{motorcycles.filter(m => m.status === 'available').length}</span>
-                            </button>
-                            <button onClick={() => setInventoryView('sold')} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'sold' ? 'bg-white text-rose-600 shadow-md font-black ring-1 ring-rose-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}>
-                                <div className={`w-2 h-2 rounded-full ${inventoryView === 'sold' ? 'bg-rose-500 animate-pulse' : 'bg-slate-300'}`} />
-                                <span className="text-[11px] uppercase tracking-[0.1em]">Vendidas</span>
-                                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'sold' ? 'bg-rose-50 text-rose-600' : 'bg-slate-200 text-slate-500'}`}>{motorcycles.filter(m => m.status === 'sold').length}</span>
-                            </button>
-                        </div>
-
-                        <div className="h-10 w-px bg-slate-200 mx-2 hidden md:block" />
-
-                        <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
-                            <button onClick={() => setViewMode('grid')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><LayoutGrid size={16} strokeWidth={2.5} /></button>
-                            <button onClick={() => setViewMode('list')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><List size={16} strokeWidth={2.5} /></button>
-                        </div>
-
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all shadow-sm ${isFilterOpen ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/10' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>
-                            <Filter size={15} strokeWidth={2.5} /> Filtrar
-                        </button>
-
-                        <select value={sortBy} onChange={e => setSortBy(e.target.value as 'brand' | 'a-z' | 'z-a')} className="px-5 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] hover:bg-slate-50 transition-all shadow-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10">
-                            <option value="brand">Ordenar: Marca</option>
-                            <option value="a-z">Ordenar: A-Z</option>
-                            <option value="z-a">Ordenar: Z-A</option>
-                        </select>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button onClick={() => { setSelected('new'); setForm(EMPTY_MOTO); }} className="flex items-center gap-2 px-7 py-3 bg-brand-500 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.12em] hover:bg-brand-600 transition-all shadow-xl shadow-brand-500/20 active:scale-95 ring-2 ring-brand-500/10 ring-offset-2 ring-offset-slate-50">
-                            <Plus size={16} strokeWidth={3} /> Nova Moto
-                        </button>
-                    </div>
-                </div>
+                <InventoryHeader
+                    inventoryView={inventoryView}
+                    onInventoryViewChange={setInventoryView}
+                    availableCount={motorcycles.filter(m => m.status === 'available').length}
+                    soldCount={motorcycles.filter(m => m.status === 'sold').length}
+                    availableLabel="Em Estoque"
+                    soldLabel="Vendidas"
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    isFilterOpen={isFilterOpen}
+                    onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+                    sortBy={sortBy}
+                    onSortByChange={setSortBy}
+                    onNewItem={() => { setSelected('new'); setForm(EMPTY_MOTO); }}
+                    newItemLabel="Nova Moto"
+                />
 
                 {isFilterOpen && (
                     <MotoFilters

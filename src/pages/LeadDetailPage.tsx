@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { useBasePath } from '../hooks/useBasePath';
 import { Clock, Car, ExternalLink, Plus, MessageCircle, CheckCircle2, X, Edit2 } from 'lucide-react';
 
@@ -23,7 +25,9 @@ const LeadDetailPage: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const basePath = useBasePath();
-    const { leads, vehicles, motorcycles, updateLead, profile } = useData();
+    const { profile } = useAuthContext();
+    const { vehicles, motorcycles } = useInventoryContext();
+    const { leads, updateLead } = useLeadContext();
     // showToast não existe em useData() — sempre foi `undefined` aqui (mascarado pelo
     // `?.` nas chamadas), então agendar visita/enviar mensagem nunca mostrava toast.
     const { showToast } = useToast();

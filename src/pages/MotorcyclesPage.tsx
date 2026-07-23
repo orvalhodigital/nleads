@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MotorcycleInventory from '../components/MotorcycleInventory';
-import { motorcycleService } from '../services/motorcycleService';
 import { Motorcycle } from '../types';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 
 const MotorcyclesPage: React.FC = () => {
     const navigate = useNavigate();
-    const { leads, profile, addLead, motorcycles, refreshMotorcycles } = useData();
+    const { profile } = useAuthContext();
+    const { motorcycles, refreshMotorcycles } = useInventoryContext();
+    const { leads, addLead } = useLeadContext();
 
     const loadMotorcycles = useCallback(async () => {
         await refreshMotorcycles();

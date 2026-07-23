@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { format, isToday, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Sparkles, Calendar as CalendarIcon, ArrowRight, TrendingUp, Users, Car, Target, Clock } from 'lucide-react';
@@ -14,7 +16,9 @@ const quotes = [
 ];
 
 const HomePage: React.FC = () => {
-    const { profile, leads, vehicles, motorcycles } = useData();
+    const { profile } = useAuthContext();
+    const { vehicles, motorcycles } = useInventoryContext();
+    const { leads } = useLeadContext();
     const navigate = useNavigate();
     const [quote, setQuote] = useState('');
 

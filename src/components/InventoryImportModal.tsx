@@ -13,11 +13,12 @@ import { CustomDatePicker } from './ui/CustomDatePicker';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
 import { consultaPlaca } from '../services/plateService';
 import { toEngineType } from '../lib/engineType';
+import { useAuthContext } from '../contexts/AuthContext';
 
 interface InventoryImportModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess?: () => void;
     currentVehicles: Vehicle[];
     leads: Lead[];
     onSellVehicle: (id: string, details: SaleDetails) => void;
@@ -146,7 +147,8 @@ const inferType = (model: string, enableCars: boolean, enableMotos: boolean): st
 
 export default function InventoryImportModal({ isOpen, onClose, onSuccess, currentVehicles, leads, onSellVehicle }: InventoryImportModalProps) {
     const { showToast } = useToast();
-    const { profile, loadData } = useData();
+    const { profile } = useAuthContext();
+    const { loadData } = useData();
     const [step, setStep] = useState<Step>('upload');
     const [importedVehicles, setImportedVehicles] = useState<ImportedVehicle[]>([]);
 
@@ -547,7 +549,7 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
             }
         }
 
-        onSuccess();
+        onSuccess?.();
         onClose();
         // Reset
         setStep('upload');

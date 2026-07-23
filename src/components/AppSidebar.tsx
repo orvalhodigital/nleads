@@ -22,7 +22,7 @@ import {
 import { supabase } from '../lib/supabaseClient';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from './OrvalhoLogo';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { hasUnlimitedAccess } from '../lib/planAccess';
 
 interface MenuItem {
@@ -34,7 +34,7 @@ interface MenuItem {
 
 const AppSidebar: React.FC = () => {
     const { logoUrl } = useSystemSettings();
-    const { profile } = useData();
+    const { profile } = useAuthContext();
     const navigate = useNavigate();
     const [isCollapsed, setIsCollapsed] = React.useState(false);
     const [isMoreOpen, setIsMoreOpen] = React.useState(false);

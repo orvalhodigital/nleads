@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { useNavigate } from 'react-router-dom';
 import {
     CheckCircle2,
@@ -47,7 +49,9 @@ type SaleDashboardItem = {
 type QuickRange = '7d' | '30d' | 'year' | 'custom';
 
 const SalesClosedPage: React.FC = () => {
-    const { leads, vehicles, motorcycles, profile, loading } = useData();
+    const { profile, loading } = useAuthContext();
+    const { vehicles, motorcycles } = useInventoryContext();
+    const { leads } = useLeadContext();
     const navigate = useNavigate();
 
     // Todos os hooks precisam rodar sempre na mesma ordem em todo render — os

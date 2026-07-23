@@ -128,14 +128,13 @@ Não há como reconstruir o schema de forma determinística. **Bloqueador para c
 ### ✅ A3 — Código morto nos contextos — **RESOLVIDO (Fase 14)**
 `InventoryContext.tsx` e `LeadContext.tsx` (shims de 1 linha, 0 consumidores) **deletados**; os hooks `useInventory`/`useLeads` (0 usos) removidos do `DataContext`. Junto: `websiteService.createPublicLead` (código morto, A36) removido.
 
-### 🟡 A4 — `DataContext` é um god context
-506 linhas concentrando sessão, perfil, leads, veículos, motos, equipe e paginação, consumido por 32 componentes. Qualquer mudança de estado propaga re-render amplo.
-→ Fases 12 e 14.
+### ✅ A4 — `DataContext` é um god context — **RESOLVIDO (Fase 14)**
+Dividido em 3 contextos de domínio desacoplados (`AuthContext`, `InventoryContext`, `LeadContext`), todos memoizados individualmente via `useMemo`. O `DataContext` foi mantido apenas como fachada agregadora de retrocompatibilidade para `loadData()`. Re-renders isolados por subdomínio.
 
-### 🟡 A5 — Componentes grandes demais
-7 arquivos acima de 950 linhas: `PublicSiteHome` (1.336), `Inventory` (1.275), `MotorcycleInventory` (1.271), `VehicleForm` (1.163), `LeadForm` (1.086), `LeadManager` (982), `PublicVehicleDetail` (957).
-`Inventory` e `MotorcycleInventory` são fortes candidatos a duplicação.
-→ Fase 14.
+### ✅ A5 — Componentes grandes demais & Duplicação de Código — **RESOLVIDO (Fase 14)**
+Refatoração e desduplicação dos fluxos de estoque e modais:
+- Extraídos `SellVehicleModal.tsx`, `LeadInterestModal.tsx` e `InventoryHeader.tsx` (parametrizado para carros e motos).
+- Desduplicadas as lógicas repetidas entre `Inventory.tsx` e `MotorcycleInventory.tsx`, modularizando ações operacionais e modais.
 
 ### 🔴 A6 — Cobertura de testes ~0
 3 arquivos de teste para 41.030 linhas. `jest.config.js` presente, mas o projeto usa Vite (esperado: Vitest) — o harness pode nem estar funcional.

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useData } from '../contexts/DataContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { useToast } from '../contexts/ToastContext';
 import { notificationService } from '../services/notificationService';
 import { LeadPhase } from '../types';
@@ -16,7 +17,8 @@ import LeadSaleModal from '../components/LeadSaleModal';
 const LeadActionPage: React.FC = () => {
     const { id, actionType } = useParams<{ id: string, actionType: string }>();
     const navigate = useNavigate();
-    const { leads, vehicles, updateLead, addLead } = useData();
+    const { vehicles } = useInventoryContext();
+    const { leads, updateLead, addLead } = useLeadContext();
     const { showToast } = useToast();
 
     const [lead, setLead] = useState(leads.find(l => l.id === id) || null);

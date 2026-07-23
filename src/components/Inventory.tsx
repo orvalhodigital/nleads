@@ -40,6 +40,9 @@ const ENGINE_TYPES: EngineType[] = ['1.0', '1.4', '1.6', '2.0+', 'Elétrico', 'H
 const InventoryImportModal = lazy(() => import('./InventoryImportModal'));
 import { VehicleGridCard, VehicleListCard } from './inventory/VehicleCards';
 import { VehicleFilters } from './inventory/VehicleFilters';
+import { SellVehicleModal } from './inventory/SellVehicleModal';
+import { LeadInterestModal } from './inventory/LeadInterestModal';
+import { InventoryHeader } from './inventory/InventoryHeader';
 
 interface VehicleCardProps { vehicle: Vehicle; onSelect: (v: Vehicle) => void; onToggleWebsite?: (v: Vehicle) => void; }
 
@@ -58,17 +61,6 @@ const Inventory: React.FC<InventoryProps> = ({
 
   // Import Modal State
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-
-  // Walk-in Sale State
-  const [walkInLeadName, setWalkInLeadName] = useState('');
-  const [walkInLeadPhone, setWalkInLeadPhone] = useState('');
-
-  // Seleção do comprador no modal de venda — guarda o ID do lead (ou 'Venda
-  // Avulsa'), nunca o nome. Antes o <select> usava o NOME como valor e o envio
-  // buscava o lead de volta por `l.name === buyerName`; com dois leads de mesmo
-  // nome (ex.: "Pedro Santos" cadastrado duas vezes), a venda podia ser
-  // atribuída ao lead errado.
-  const [buyerSelectionId, setBuyerSelectionId] = useState('');
 
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -93,16 +85,6 @@ const Inventory: React.FC<InventoryProps> = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({ query: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '' });
   const clearFilters = useCallback(() => setFilters({ query: '', yearMin: '', yearMax: '', priceMin: '', priceMax: '' }), []);
-
-  // Sell Form State
-  const [sellData, setSellData] = useState<SaleDetails>({
-    salePrice: 0,
-    refurbishmentCosts: 0,
-    saleDate: new Date().toISOString().split('T')[0],
-    buyerName: '',
-    buyerLeadId: '',
-    isFollowUpSale: true
-  });
 
   // Message Sending State
   const [communications, setCommunications] = useState<LeadCommunication[]>([]);
@@ -221,76 +203,6 @@ const Inventory: React.FC<InventoryProps> = ({
     setIsMessageModalOpen(true);
   };
 
-  const handleSendMessage = async () => {
-    if (!selectedVehicle || selectedVehicle === 'new') return;
-
-    setUploading(true); // Reusing uploading state for loading indicator
-    try {
-      for (const lead of targetLeadsList) {
-        // Construct message
-        let msg = messageTemplate
-          .replace(/{{nome}}/g, lead.name)
-          .replace(/{{marca}}/g, selectedVehicle.brand)
-          .replace(/{{modelo}}/g, selectedVehicle.model)
-          .replace(/{{ano}}/g, String(selectedVehicle.year))
-          .replace(/{{valor}}/g, selectedVehicle.price.toLocaleString());
-
-        // Simulate sending logic removed (as requested by user)
-        // Only saving to Supabase DB for external processing
-
-        // Save to Supabase
-        let insertedData: { id: string };
-        try {
-          insertedData = await leadCommunicationService.create({
-            lead_id: lead.id,
-            vehicle_id: selectedVehicle.id,
-            contact_name: lead.name,
-            contact_phone: lead.phone,
-            message_body: msg,
-            is_sent: 'não',
-            email_user: userEmail
-          });
-        } catch (insertError) {
-          console.error('Erro ao inserir comunicação:', insertError);
-          continue;
-        }
-
-        // Disparar Webhook para o n8n
-        try {
-          await fetch('https://webhook.orvalhodigital.com.br/webhook/puxa-mensagem', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message_id: insertedData?.id,
-              lead_id: lead.id,
-              name: lead.name,
-              phone: lead.phone,
-              message: msg,
-              user_email: userEmail,
-              vehicle: {
-                id: selectedVehicle.id,
-                brand: selectedVehicle.brand,
-                model: selectedVehicle.model
-              }
-            })
-          });
-        } catch (webhookError) {
-          console.error('Erro ao acionar webhook n8n:', webhookError);
-        }
-      }
-
-      // Refresh communications
-      setCommunications(await leadCommunicationService.listByVehicle(selectedVehicle.id));
-
-      setIsMessageModalOpen(false);
-      alert(`Mensagem registrada para ${targetLeadsList.length} lead(s)!`);
-    } catch (err) {
-      alert('Erro ao enviar mensagens.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   // Filtra os veículos baseado na aba selecionada e nos filtros ativos
   const displayedVehicles = useMemo(() => {
     const filtered = vehicles.filter(v => {
@@ -361,118 +273,15 @@ const Inventory: React.FC<InventoryProps> = ({
 
   // Manual Lead Selector Logic
 
-  const handleSellSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedVehicle && selectedVehicle !== 'new') {
-      if (!buyerSelectionId) {
-        alert("Selecione um comprador antes de confirmar a venda.");
-        return;
-      }
-
-      let finalBuyerLeadId: string | undefined;
-      let finalBuyerName: string;
-
-      if (buyerSelectionId === 'Venda Avulsa') {
-        if (!walkInLeadName || !walkInLeadPhone) {
-          alert("Por favor, preencha o nome e telefone do cliente para a venda avulsa.");
-          return;
-        }
-
-        // Create Lead Automatically
-        const newLead = await onAddLead({
-          name: walkInLeadName,
-          phone: walkInLeadPhone,
-          email: '',
-          phase: LeadPhase.COMPLETED,
-          temperature: LeadTemperature.HOT,
-          preferences: {
-            tipos_veiculo: [], marcas: [], modelos: [],
-            transmissao: ['Qualquer Um(a)'], motorizacao: ['Qualquer Um(a)'],
-            observacoes_adicionais: 'Criado automaticamente via Venda Avulsa',
-            possui_entrada: false, possui_troca: false, veiculo_troca: ''
-          },
-          presentedVehicles: [selectedVehicle.id],
-          source: 'Venda Avulsa',
-          notes: 'Lead criado automaticamente ao registrar venda avulsa.',
-          is_buyer: true
-        } as any);
-
-        if (newLead) {
-          finalBuyerLeadId = newLead.id;
-          finalBuyerName = newLead.name;
-        } else {
-          return; // Error handled in onAddLead
-        }
-      } else {
-        // Busca por ID (não por nome) — nunca ambíguo, mesmo com leads homônimos.
-        const selectedLead = leads.find(l => l.id === buyerSelectionId);
-        if (!selectedLead) {
-          alert("Selecione um comprador válido.");
-          return;
-        }
-        finalBuyerLeadId = selectedLead.id;
-        finalBuyerName = selectedLead.name;
-
-        // Atualiza o lead existente para comprador/concluído no funil
-        try {
-          await leadService.update({
-            ...selectedLead,
-            phase: LeadPhase.COMPLETED,
-            is_buyer: true
-          });
-        } catch (err) {
-          console.error('Erro ao atualizar lead selecionado:', err);
-        }
-      }
-
-      // Registra a venda no veículo
-      onSellVehicle(selectedVehicle.id, {
-        ...sellData,
-        buyerName: finalBuyerName,
-        buyerLeadId: finalBuyerLeadId
-      });
-
-      // Alimenta o Fluxo de Vendas (Sales Flow)
-      if (finalBuyerLeadId) {
-        try {
-          await salesFlowService.initiateSaleFlow(finalBuyerLeadId, sellData.saleDate);
-        } catch (syncError) {
-          console.warn('Aviso: não foi possível sincronizar com o fluxo de vendas', syncError);
-        }
-      }
-
-      setIsSellModalOpen(false);
-      setSelectedVehicle(null);
-      setBuyerSelectionId('');
-      setWalkInLeadName('');
-      setWalkInLeadPhone('');
+  const handleOpenSellModal = () => {
+    if (selectedVehicle && typeof selectedVehicle === 'object') {
+      setIsSellModalOpen(true);
     }
   };
-
 
   const handleEdit = (v: Vehicle) => {
     navigate(`/inventory/edit/${v.id}`);
   };
-
-
-  const handleOpenSellModal = () => {
-    // selectedVehicle também pode ser a string 'new' (cadastro novo), que não
-    // tem preço — vender só faz sentido para um veículo já existente.
-    if (selectedVehicle && typeof selectedVehicle === 'object') {
-      setSellData({
-        salePrice: selectedVehicle.price,
-        refurbishmentCosts: 0,
-        saleDate: new Date().toISOString().split('T')[0],
-        buyerName: '',
-        buyerLeadId: '',
-        isFollowUpSale: true
-      });
-      setBuyerSelectionId('');
-      setWalkInLeadName('');
-      setWalkInLeadPhone('');
-      setIsSellModalOpen(true);
-    }
-  }
 
   const handleDelete = (id: string) => {
     onDeleteVehicle(id);
@@ -987,127 +796,35 @@ const Inventory: React.FC<InventoryProps> = ({
         )}
 
         {/* Message Modal */}
-        {isMessageModalOpen && (
-          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsMessageModalOpen(false)}>
-            <div className="bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl animate-fadeUp overflow-hidden" onClick={e => e.stopPropagation()}>
-              <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                <div>
-                  <h2 className="text-lg font-extrabold text-slate-900 tracking-tight uppercase">Enviar Mensagem</h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    Para: {targetLeadsList.length > 1 ? `${targetLeadsList.length} leads selecionados` : targetLeadsList[0]?.name}
-                  </p>
-                </div>
-                <button onClick={() => setIsMessageModalOpen(false)} className="text-slate-300 hover:text-slate-900 transition-colors"><X size={24} /></button>
-              </div>
-
-              <div className="p-8 space-y-6">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mensagem do WhatsApp</label>
-                  <textarea
-                    value={messageTemplate}
-                    onChange={e => setMessageTemplate(e.target.value)}
-                    className="w-full h-40 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/5 transition-all font-medium text-sm text-slate-700 resize-none leading-relaxed"
-                  />
-                  <div className="flex gap-2 flex-wrap">
-                    {['{{nome}}', '{{marca}}', '{{modelo}}', '{{ano}}', '{{valor}}'].map(tag => (
-                      <button
-                        key={tag}
-                        onClick={() => setMessageTemplate(prev => prev + ' ' + tag)}
-                        className="px-3 py-1.5 bg-slate-100 rounded-lg text-xs font-bold text-slate-500 uppercase hover:bg-brand-50 hover:text-brand-600 transition-colors"
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-medium italic">* Clique nas tags para adicionar ao texto.</p>
-                </div>
-              </div>
-
-              <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-                <button onClick={() => setIsMessageModalOpen(false)} className="flex-1 py-4 bg-white border border-slate-200 rounded-2xl text-[11px] font-extrabold text-slate-500 uppercase tracking-widest hover:bg-slate-50 transition-all">Cancelar</button>
-                <button onClick={handleSendMessage} className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-brand-600 transition-all shadow-xl shadow-brand-500/20 flex items-center justify-center gap-2">
-                  <Send size={16} /> {uploading ? 'Enviando...' : (messageTarget === 'single' ? 'Enviar Mensagem' : 'Registrar Envios')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <LeadInterestModal
+          isOpen={isMessageModalOpen}
+          onClose={() => setIsMessageModalOpen(false)}
+          item={selectedVehicle && typeof selectedVehicle === 'object' ? selectedVehicle : null}
+          targetLeads={targetLeadsList}
+          userEmail={userEmail}
+          initialTemplate={messageTemplate}
+          onSendComplete={async () => {
+            if (selectedVehicle && typeof selectedVehicle === 'object') {
+              setCommunications(await leadCommunicationService.listByVehicle(selectedVehicle.id));
+            }
+          }}
+        />
 
         {/* Sell Vehicle Modal */}
-        {isSellModalOpen && (
-          <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[10000] flex items-center justify-center p-6" onClick={() => setIsSellModalOpen(false)}>
-            <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-fadeUp" onClick={e => e.stopPropagation()}>
-              <form onSubmit={handleSellSubmit}>
-                <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                  <div>
-                    <h2 className="text-lg font-extrabold text-slate-900 tracking-tight uppercase">Registrar Venda</h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedVehicle?.brand} {selectedVehicle?.model}</p>
-                  </div>
-                  <button type="button" onClick={() => setIsSellModalOpen(false)} className="text-slate-300 hover:text-slate-900 transition-colors"><X size={24} /></button>
-                </div>
-                <div className="p-10 space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Preço Final de Venda</label>
-                    <input
-                      type="text"
-                      required
-                      value={formatCurrency(sellData.salePrice)}
-                      onChange={e => setSellData({ ...sellData, salePrice: parseCurrency(e.target.value) })}
-                      className="w-full p-4 bg-brand-50 border border-brand-100 text-brand-700 rounded-2xl font-black outline-none focus:ring-4 focus:ring-brand-500/10 transition-all text-lg"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Data da Venda</label>
-                      <CustomDatePicker value={sellData.saleDate} onChange={date => setSellData({ ...sellData, saleDate: date })} className="w-full py-4 px-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none text-sm" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Comprador (Selecione o Lead)</label>
-                    <select
-                      value={buyerSelectionId}
-                      onChange={e => setBuyerSelectionId(e.target.value)}
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold outline-none text-sm"
-                    >
-                      <option value="">Selecione um comprador...</option>
-                      <option value="Venda Avulsa">-- Venda Avulsa (Sem Lead) --</option>
-                      {leads.map(lead => <option key={lead.id} value={lead.id}>{lead.name}</option>)}
-                    </select>
-                  </div>
-
-                  {buyerSelectionId === 'Venda Avulsa' && (
-                    <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-100 animate-fadeUp bg-slate-50 p-4 rounded-xl">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nome do Cliente *</label>
-                        <input
-                          required
-                          value={walkInLeadName}
-                          onChange={e => setWalkInLeadName(e.target.value)}
-                          className="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/5 transition-all text-sm font-semibold"
-                          placeholder="Nome completo"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Telefone *</label>
-                        <input
-                          required
-                          value={walkInLeadPhone}
-                          onChange={e => setWalkInLeadPhone(e.target.value)}
-                          className="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-brand-500/5 transition-all text-sm font-semibold"
-                          placeholder="(11) 99999-9999"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-                  <button type="button" onClick={() => setIsSellModalOpen(false)} className="flex-1 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Cancelar</button>
-                  <button type="submit" className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl text-[11px] font-extrabold uppercase tracking-widest hover:bg-brand-600 transition-all shadow-xl shadow-brand-500/20">Confirmar Venda</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        <SellVehicleModal
+          isOpen={isSellModalOpen}
+          onClose={() => {
+            setIsSellModalOpen(false);
+            setSelectedVehicle(null);
+          }}
+          item={selectedVehicle && typeof selectedVehicle === 'object' ? selectedVehicle : null}
+          leads={leads}
+          onAddLead={onAddLead}
+          onConfirmSell={async (itemId, details) => {
+            await onSellVehicle(itemId, details);
+            setSelectedVehicle(null);
+          }}
+        />
 
         {/* Existing Create/Edit Vehicle Modal */}
 
@@ -1131,67 +848,23 @@ const Inventory: React.FC<InventoryProps> = ({
       )}
 
       <div className="flex flex-col gap-6">
-        <div className="flex flex-wrap items-center justify-between gap-6 px-1">
-          <div className="flex items-center gap-3">
-            <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200/30 backdrop-blur-sm">
-              <button
-                onClick={() => setInventoryView('available')}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'available' ? 'bg-white text-brand-600 shadow-md font-black ring-1 ring-brand-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
-              >
-                <div className={`w-2 h-2 rounded-full ${inventoryView === 'available' ? 'bg-brand-500 animate-pulse' : 'bg-slate-300'}`} />
-                <span className="text-[11px] uppercase tracking-[0.1em]">Em Estoque</span>
-                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'available' ? 'bg-brand-50 text-brand-600' : 'bg-slate-200 text-slate-500'}`}>
-                  {vehicles.filter(v => v.status === 'available').length}
-                </span>
-              </button>
-              <button
-                onClick={() => setInventoryView('sold')}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 ${inventoryView === 'sold' ? 'bg-white text-rose-600 shadow-md font-black ring-1 ring-rose-500/10' : 'text-slate-500 hover:text-slate-700 font-bold'}`}
-              >
-                <div className={`w-2 h-2 rounded-full ${inventoryView === 'sold' ? 'bg-rose-500 animate-pulse' : 'bg-slate-300'}`} />
-                <span className="text-[11px] uppercase tracking-[0.1em]">Vendidos</span>
-                <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-md ${inventoryView === 'sold' ? 'bg-rose-50 text-rose-600' : 'bg-slate-200 text-slate-500'}`}>
-                  {vehicles.filter(v => v.status === 'sold').length}
-                </span>
-              </button>
-            </div>
-
-            <div className="h-10 w-px bg-slate-200 mx-2 hidden md:block" />
-
-            <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
-              <button onClick={() => setViewMode('grid')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}>
-                <LayoutGrid size={16} strokeWidth={2.5} />
-              </button>
-              <button onClick={() => setViewMode('list')} className={`p-2.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}>
-                <List size={16} strokeWidth={2.5} />
-              </button>
-            </div>
-
-            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-5 py-3 border rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all shadow-sm ${isFilterOpen ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/10' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>
-              <Filter size={15} strokeWidth={2.5} />
-              Filtrar
-            </button>
-
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as 'brand' | 'a-z' | 'z-a')}
-              className="px-5 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10"
-            >
-              <option value="brand">Ordenar: Marca</option>
-              <option value="a-z">Ordenar: A-Z</option>
-              <option value="z-a">Ordenar: Z-A</option>
-            </select>
-          </div>
-
-          <div className="flex gap-3">
-            <button onClick={() => setIsImportModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] hover:shadow-lg hover:shadow-slate-100 transition-all active:scale-95 shadow-sm">
-              <Upload size={16} strokeWidth={2.5} /> Importar
-            </button>
-            <button onClick={() => navigate('/inventory/new')} className="flex items-center gap-2 px-7 py-3 bg-brand-500 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.12em] hover:bg-brand-600 transition-all shadow-xl shadow-brand-500/20 active:scale-95 ring-2 ring-brand-500/10 ring-offset-2 ring-offset-slate-50">
-              <Plus size={16} strokeWidth={3} /> Novo Veículo
-            </button>
-          </div>
-        </div>
+        <InventoryHeader
+          inventoryView={inventoryView}
+          onInventoryViewChange={setInventoryView}
+          availableCount={vehicles.filter(v => v.status === 'available').length}
+          soldCount={vehicles.filter(v => v.status === 'sold').length}
+          availableLabel="Em Estoque"
+          soldLabel="Vendidos"
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          isFilterOpen={isFilterOpen}
+          onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          onOpenImport={() => setIsImportModalOpen(true)}
+          onNewItem={() => navigate('/inventory/new')}
+          newItemLabel="Novo Veículo"
+        />
 
         {/* Filter Panel */}
         {isFilterOpen && (

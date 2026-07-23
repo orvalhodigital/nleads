@@ -1,11 +1,11 @@
 import { isLimitedPlan } from '../lib/planAccess';
 import React from 'react';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import WebsiteSettings from '../components/settings/WebsiteSettings';
 import PlanLimitAlert from '../components/PlanLimitAlert';
 
 const WebsitePage: React.FC = () => {
-    const { profile, refreshProfile, loading } = useData();
+    const { profile, refreshProfile, loading } = useAuthContext();
 
     if (loading || !profile) {
         return (

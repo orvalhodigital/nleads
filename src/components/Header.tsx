@@ -23,7 +23,7 @@ import { vehicleService } from '../services/vehicleService';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '../contexts/ToastContext';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { motorcycleService } from '../services/motorcycleService';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from './OrvalhoLogo';
@@ -38,7 +38,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavigate, companyName }) => {
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
-    const { profile, isEmpresa } = useData();
+    const { profile, isEmpresa } = useAuthContext();
     const { logoUrl } = useSystemSettings();
     const adminId = isEmpresa ? profile?.id : profile?.parent_id;
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);

@@ -1,12 +1,12 @@
 import React from 'react';
 import Agenda from '../components/Agenda';
 import PageContainer from '../components/ui/PageContainer';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import PlanLimitAlert from '../components/PlanLimitAlert';
 import { isLimitedPlan } from '../lib/planAccess';
 
 const AgendaPage: React.FC = () => {
-    const { profile, loading } = useData();
+    const { profile, loading } = useAuthContext();
 
     if (loading) {
         return (

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { CheckCircle2, ChevronUp, ChevronDown, X } from 'lucide-react';
 
 interface OnboardingChecklistProps {
@@ -7,7 +9,9 @@ interface OnboardingChecklistProps {
 }
 
 const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onStart }) => {
-  const { profile, vehicles, leads } = useData();
+  const { profile } = useAuthContext();
+  const { vehicles } = useInventoryContext();
+  const { leads } = useLeadContext();
   const [isMinimized, setIsMinimized] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
 

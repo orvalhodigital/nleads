@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { Profile, Lead, Vehicle } from '../types';
 import { profileService } from '../services/profileService';
 import confetti from 'canvas-confetti';
@@ -13,7 +13,7 @@ interface OnboardingWizardProps {
 type Step = 'welcome' | 'company' | 'whatsapp' | 'complete';
 
 const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
-  const { profile, session, refreshProfile } = useData();
+  const { profile, session, refreshProfile } = useAuthContext();
   // O contexto não expõe `user` diretamente; os metadados do cadastro
   // (nome e avatar vindos do provedor de auth) ficam em session.user.
   const user = session?.user;

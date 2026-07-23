@@ -20,7 +20,7 @@ import {
   Sparkles,
   SlidersHorizontal
 } from 'lucide-react';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { formatCurrency } from '../utils/formatters';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { hasUnlimitedAccess } from '../lib/planAccess';
@@ -95,7 +95,7 @@ const mockDailyStats = [
 ];
 
 const EstruturaECV: React.FC = () => {
-  const { profile } = useData();
+  const { profile } = useAuthContext();
   const navigate = useNavigate();
 
   // Active Tab state

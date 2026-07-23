@@ -1,7 +1,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LeadForm from '../components/LeadForm';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import PageContainer from '../components/ui/PageContainer';
 import PlanLimitAlert from '../components/PlanLimitAlert';
 import { ArrowLeft } from 'lucide-react';
@@ -10,7 +11,8 @@ import { isLimitedPlan } from '../lib/planAccess';
 const LeadFormPage: React.FC = () => {
     const { id } = useParams<{ id?: string }>();
     const navigate = useNavigate();
-    const { leads, profile, addLead, updateLead } = useData();
+    const { profile } = useAuthContext();
+    const { leads, addLead, updateLead } = useLeadContext();
 
     const isEditing = !!id;
     const leadToEdit = isEditing ? leads.find(l => l.id === id) : undefined;

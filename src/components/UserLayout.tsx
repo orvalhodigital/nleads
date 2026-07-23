@@ -13,7 +13,7 @@ import GlobalSearch from './GlobalSearch';
 import OnboardingWizard from './OnboardingWizard';
 import OnboardingChecklist from './OnboardingChecklist';
 import AppTour from './AppTour';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
 import { planService } from '../services/planService';
@@ -23,7 +23,7 @@ import SubscriptionBlocked from './SubscriptionBlocked';
 import type { Plan } from '../types';
 
 const UserLayout: React.FC = () => {
-    const { session, loading, profile, impersonatedUserId, refreshProfile } = useData();
+    const { session, loading, profile, impersonatedUserId, refreshProfile } = useAuthContext();
     const { logoUrl } = useSystemSettings();
     const location = useLocation();
     const [isSearchOpen, setIsSearchOpen] = useState(false);

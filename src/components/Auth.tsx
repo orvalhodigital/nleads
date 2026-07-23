@@ -4,10 +4,10 @@ import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, User, Eye, EyeOff, Building
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LogoRenderer } from './OrvalhoLogo';
 import { Link, Navigate } from 'react-router-dom';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 
 export default function Auth({ mode = 'login' }: { mode?: 'login' | 'signup' }) {
-    const { session } = useData();
+    const { session } = useAuthContext();
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

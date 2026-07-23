@@ -4,7 +4,7 @@ import { X, Calendar, Clock, Car, FileText, Check } from 'lucide-react';
 import { Lead, Vehicle } from '../types';
 import { vehicleService } from '../services/vehicleService';
 import { motorcycleService } from '../services/motorcycleService';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { CustomDatePicker } from './ui/CustomDatePicker';
 import { CustomTimePicker } from './ui/CustomTimePicker';
 
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const LeadSchedulingModal: React.FC<Props> = ({ lead, isOpen, onClose, onConfirm }) => {
-    const { profile } = useData();
+    const { profile } = useAuthContext();
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [vehicleOfInterest, setVehicleOfInterest] = useState('');

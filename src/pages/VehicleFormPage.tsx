@@ -2,7 +2,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VehicleForm from '../components/VehicleForm';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
 import PageContainer from '../components/ui/PageContainer';
 import PlanLimitAlert from '../components/PlanLimitAlert';
 import { ArrowLeft } from 'lucide-react';
@@ -11,11 +12,12 @@ import { isLimitedPlan } from '../lib/planAccess';
 const VehicleFormPage: React.FC = () => {
     const { id } = useParams<{ id?: string }>();
     const navigate = useNavigate();
+    const { profile } = useAuthContext();
     const { 
-        vehicles, motorcycles, profile, 
+        vehicles, motorcycles, 
         addVehicle, updateVehicle, 
         addMotorcycle, updateMotorcycle 
-    } = useData();
+    } = useInventoryContext();
 
     const isEditing = !!id;
     const vehicleToEdit = isEditing

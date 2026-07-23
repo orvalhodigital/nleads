@@ -18,7 +18,7 @@ import {
     Globe,
     Award,
 } from 'lucide-react';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { supabase } from '../lib/supabaseClient';
 import { profileService } from '../services/profileService';
@@ -54,7 +54,7 @@ const TAB_ICONS: Record<Tab, React.ReactNode> = {
 };
 
 const SettingsPage: React.FC = () => {
-    const { profile, refreshProfile, isEmpresa } = useData();
+    const { profile, refreshProfile, isEmpresa } = useAuthContext();
     const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
     const tabParam = searchParams.get('tab') as Tab;

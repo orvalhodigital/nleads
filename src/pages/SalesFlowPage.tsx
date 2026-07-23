@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, Calendar, AlertTriangle, CheckCircle2, TrendingUp, Filter, Download } from 'lucide-react';
 import { format } from 'date-fns';
@@ -20,7 +21,8 @@ const SALE_PHASE_LABELS: Record<SalePhase, string> = {
 };
 
 const SalesFlowPage: React.FC = () => {
-  const { leads, profile, refreshLeads, loading } = useData();
+  const { profile, loading } = useAuthContext();
+  const { leads, refreshLeads } = useLeadContext();
   const navigate = useNavigate();
 
   // Hooks precisam rodar sempre na mesma ordem em todo render — os `return`

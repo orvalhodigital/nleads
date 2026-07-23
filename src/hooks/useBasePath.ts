@@ -1,6 +1,6 @@
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 
 export function useBasePath(): string {
-    const { impersonatedUserId } = useData();
+    const { impersonatedUserId } = useAuthContext();
     return impersonatedUserId ? `/paineldoadm/user/${impersonatedUserId}` : '';
 }

@@ -46,6 +46,19 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 
 ## Decisões tomadas
 
+### 2026-07-23 — Divisão do DataContext (A4) e Desduplicação de Estoque (A5)
+
+**Decisão:** O `DataContext` (God Context) foi fatiado em 3 contextos de domínio isolados e memoizados: `AuthContext`, `InventoryContext` e `LeadContext`. O `DataContext` original foi preservado atuando estritamente como fachada agregadora de retrocompatibilidade para o método `loadData()`.
+
+**Componentes Extraídos (A5):**
+- `src/components/inventory/SellVehicleModal.tsx`: modal unificado para venda avulsa e venda por lead para carros e motos.
+- `src/components/inventory/LeadInterestModal.tsx`: modal unificado de recomendação/oferta ao lead via WhatsApp, mantendo o encadeamento de `lead_communications` + webhook n8n.
+- `src/components/inventory/InventoryHeader.tsx`: componente de cabeçalho responsivo e reutilizável para listagem de carros e motos.
+
+**Por quê:** Elimina a re-renderização em cascata gerada pelo God Context em 32 telas e reduz a duplicação de lógica entre gestão de estoque de veículos e motocicletas.
+
+---
+
 ### 2026-07-22 — Tema padrão é Dia; Noite completado como opt-in (A45)
 
 **Decisão:** o tema padrão do app é **Dia** (claro). O **Noite** (escuro) continua disponível, mas só quando o usuário ativa no toggle.

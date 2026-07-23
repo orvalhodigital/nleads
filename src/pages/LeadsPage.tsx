@@ -2,17 +2,21 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import LeadManager from '../components/LeadManager';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { useData } from '../contexts/DataContext';
 import { LeadPhase } from '../types';
 
 const LeadsPage: React.FC = () => {
     const location = useLocation();
+    const { profile, isEmpresa, teamMembers } = useAuthContext();
+    const { vehicles } = useInventoryContext();
     const {
-        leads, vehicles, profile,
-        addLead, updateLead, deleteLead,
-        loadData, hasMoreLeads, loadMoreLeads, loadingLeads,
-        isEmpresa, teamMembers
-    } = useData();
+        leads, addLead, updateLead, deleteLead,
+        hasMoreLeads, loadMoreLeads, loadingLeads
+    } = useLeadContext();
+    const { loadData } = useData();
 
     // Manage local focus state from router state
     const [focusedLeadId, setFocusedLeadId] = useState<string | null>(null);

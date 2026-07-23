@@ -5,7 +5,8 @@ import { consultaPlaca } from '../services/plateService';
 import { Lead, LeadPhase, LeadTemperature, VehicleType, TransmissionType, EngineType } from '../types';
 import TagInput from './TagInput';
 import MultiSelect from './MultiSelect';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useInventoryContext } from '../contexts/InventoryContext';
 import { formatCurrency, parseCurrency } from '../utils/formatters';
 import { carDatabase } from '../data/carDb';
 import { motoDatabase } from '../data/motoDb';
@@ -53,7 +54,8 @@ function normalizeBrand(apiMarca: string): string {
 
 const LeadForm: React.FC<LeadFormProps> = ({ initialData, onSave, isEditing = false }) => {
     const navigate = useNavigate();
-    const { vehicles, motorcycles, profile } = useData();
+    const { profile } = useAuthContext();
+    const { vehicles, motorcycles } = useInventoryContext();
 
     const [leadForm, setLeadForm] = useState({
         name: '',

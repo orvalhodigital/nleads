@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Joyride, Step, EventData, STATUS } from 'react-joyride';
-import { useData } from '../contexts/DataContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { readMigrated } from '../lib/storage';
 
 const AppTour: React.FC = () => {
-  const { profile } = useData();
+  const { profile } = useAuthContext();
   const [run, setRun] = useState(false);
 
   useEffect(() => {

@@ -6,6 +6,8 @@ import {
     PhoneCall
 } from 'lucide-react';
 import { format, isToday, parseISO, startOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, addDays, isPast, isAfter } from 'date-fns';
+import { useInventoryContext } from '../contexts/InventoryContext';
+import { useLeadContext } from '../contexts/LeadContext';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +23,9 @@ import { AgendaFollowupsList } from './agenda/AgendaFollowupsList';
 import { AgendaCalendarView } from './agenda/AgendaCalendarView';
 
 const Agenda: React.FC = () => {
-    const { leads, vehicles, updateLead, addLead, loadData } = useData();
+    const { vehicles } = useInventoryContext();
+    const { leads, updateLead, addLead } = useLeadContext();
+    const { loadData } = useData();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const now = useMemo(() => new Date(), []);

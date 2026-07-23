@@ -46,6 +46,12 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 
 ## Decisões tomadas
 
+### 2026-07-23 — Melhorias de Acessibilidade (A11y) e Atributos Acessíveis nos Componentes (A46)
+
+**Decisão:** Adicionados atributos `aria-label`, `title`, `alt` e manipulação de fechamento via tecla `Escape` e foco em leitores de tela nos modais universais (`Modal.tsx`), botões do cabeçalho (`Header.tsx`), alternadores de visualização (`InventoryHeader.tsx`) e componentes de navegação.
+
+---
+
 ### 2026-07-23 — Padronização de Tratamento de Erros nos 21 Services (A26)
 
 **Decisão:** Todos os 21 arquivos de serviços da camada `src/services/` foram padronizados para utilizar exclusivamente o helper global `handleSupabaseResponse()`.

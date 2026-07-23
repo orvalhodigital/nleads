@@ -276,7 +276,7 @@ Reverificado em 2026-07-20.
 | A43 | **Anexos de suporte mundo-legíveis** — bucket `support_attachments` público + `getPublicUrl` → prints do painel (dados de clientes) acessíveis sem login | 🟡 | ✅ resolvido e verificado — bucket privado + URL assinada | 12 |
 | A44 | Políticas RLS duplicadas (EN+PT) em `support_tickets`/`ticket_messages` | 🟢 | ✅ resolvido — SQL `APLICAR-dedup-ticket-policies.sql` aplicado e verificado no Supabase em 2026-07-23 | 14 |
 | A45 | Dark mode ligado por padrão (segue o SO) mas só 16% das telas suportam → UI quebrada no escuro | 🟠 | ✅ resolvido — padrão=Dia + camada de compat p/ o Noite opt-in (branch, aguardando QA) | 13 |
-| A46 | Acessibilidade: inputs sem label/aria, botões-ícone sem nome, 10 imgs sem alt | 🟡 | roadmap (correções priorizadas) | 13 |
+| A46 | Acessibilidade: inputs sem label/aria, botões-ícone sem nome, 10 imgs sem alt | 🟡 | ✅ resolvido — adicionados `aria-label`, `title`, `alt` e navegação via teclado nos modais e componentes | 13 |
 | A47 | **Fluxo de upgrade caía para link Stripe hardcoded quando o Asaas falhava** — cliente pagaria numa conta desintegrada e o plano nunca ativaria (só o webhook Asaas ativa) | 🔴 | ✅ corrigido — fallback removido; erro mostrado em vez de Stripe; campo `stripe_url` some do admin | 13 |
 | A48 | **Upgrade Asaas quebrado** em 3 camadas: (a) `SUPABASE_SERVICE_ROLE_KEY` desatualizada na Vercel → "Profile not found"; (b) cliente criado **sem `cpfCnpj`** → "Failed to create customer"; (c) chave **sandbox** (`_hmlg_`) contra URL de **produção** → "chave não pertence a este ambiente" | 🔴 | (a) ✅ chave atualizada; (b) ✅ coleta CPF/CNPJ + migração aplicada; (c) ✅ URL do Asaas derivada da chave; **falta trocar p/ chave de produção antes do lançamento** | 13 |
 

@@ -99,6 +99,7 @@ const Modal: React.FC<ModalProps> = ({
                         <button
                             type="button"
                             onClick={onClose}
+                            aria-label="Fechar modal"
                             className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors"
                         >
                             <X size={16} />

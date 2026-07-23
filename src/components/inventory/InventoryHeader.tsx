@@ -112,6 +112,7 @@ export const InventoryHeader: React.FC<InventoryHeaderProps> = ({
                 : 'text-muted-foreground hover:text-foreground'
             }`}
             title="Visualização em Grade"
+            aria-label="Visualização em Grade"
           >
             <LayoutGrid size={16} strokeWidth={2.5} />
           </button>
@@ -124,6 +125,7 @@ export const InventoryHeader: React.FC<InventoryHeaderProps> = ({
                 : 'text-muted-foreground hover:text-foreground'
             }`}
             title="Visualização em Lista"
+            aria-label="Visualização em Lista"
           >
             <List size={16} strokeWidth={2.5} />
           </button>
@@ -133,11 +135,12 @@ export const InventoryHeader: React.FC<InventoryHeaderProps> = ({
         <button
           type="button"
           onClick={onToggleFilter}
-          className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
             isFilterOpen
-              ? 'bg-foreground text-background border-foreground shadow-md'
-              : 'bg-card border-border text-foreground hover:bg-muted'
+              ? 'bg-primary/10 border-primary/30 text-primary'
+              : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-accent'
           }`}
+          aria-label="Filtrar veículos"
         >
           <Filter size={15} strokeWidth={2.5} />
           Filtrar

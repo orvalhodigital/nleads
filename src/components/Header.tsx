@@ -447,13 +447,23 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                         </button>
 
                         <LogoRenderer src={logoUrl} variant="icon" className="h-5 w-auto opacity-50 hover:opacity-100 transition-all mr-2 hidden sm:flex" />
-                        <button onClick={() => { setIsNotificationsOpen(true); }} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all relative">
+                        <button
+                            onClick={() => { setIsNotificationsOpen(true); }}
+                            aria-label="Abrir notificações"
+                            title="Notificações"
+                            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all relative"
+                        >
                             <Bell size={18} />
                             {unreadCount > 0 && !showHistory && (
                                 <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full border border-card"></span>
                             )}
                         </button>
-                        <button onClick={() => navigate('/settings')} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all">
+                        <button
+                            onClick={() => navigate('/settings')}
+                            aria-label="Abrir Configurações"
+                            title="Configurações"
+                            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                        >
                             <Settings size={18} />
                         </button>
                     </div>
@@ -472,7 +482,11 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                                 </h2>
                                 <p className="text-xs text-muted-foreground font-semibold mt-1">Alertas e atualizações</p>
                             </div>
-                            <button onClick={() => setIsNotificationsOpen(false)} className="text-muted-foreground/60 hover:text-foreground transition-colors">
+                            <button
+                                onClick={() => setIsNotificationsOpen(false)}
+                                aria-label="Fechar painel de notificações"
+                                className="text-muted-foreground/60 hover:text-foreground transition-colors"
+                            >
                                 <X size={24} />
                             </button>
                         </div>

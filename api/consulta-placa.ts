@@ -1,21 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
-
-async function getVerifiedUserId(req: any): Promise<string | null> {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) return null;
-
-  const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) return null;
-
-  const token = authHeader.slice(7);
-  const authClient = createClient(supabaseUrl, supabaseAnonKey);
-  const { data: { user }, error } = await authClient.auth.getUser(token);
-  if (error || !user) return null;
-  return user.id;
-}
+import { applyCors, getVerifiedUserId } from './_lib/cors';
 
 /**
  * Proxy seguro para a API de consulta de placas (wdapi2.com.br).
@@ -29,15 +12,7 @@ async function getVerifiedUserId(req: any): Promise<string | null> {
  * autenticado no lugar da API externa.
  */
 export default async function handler(req: any, res: any) {
-  const origin = req.headers.origin || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (applyCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed. Use POST.' });
 
   const userId = await getVerifiedUserId(req);

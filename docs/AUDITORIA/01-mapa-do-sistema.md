@@ -187,24 +187,16 @@ Não há evidência de que tenha sido executado. Mas está no repositório, é e
 **Resolução (2026-07-18):** as duas foram removidas por decisão do dono do projeto. 18 arquivos. Design preservado no commit `d61f328` — instruções de recuperação em `docs/DECISOES-E-ROADMAP.md`.
 
 ### 🟡 A12 — Documentação proliferada e sem hierarquia
-21 arquivos `.md` na raiz + 10 em `docs/`, vários se contradizendo.
-
-**Parcialmente resolvido em 2026-07-18:** os 6 documentos de design foram consolidados em 2 (`docs/DESIGN_GUIDELINES.md` + `docs/BRANDING.md`), e `.agents/AGENTS.md` — que mandava usar a fonte Outfit e descrevia a cor primária como lavanda, ambos divergentes do código — virou ponteiro. Ver `docs/DECISOES-E-ROADMAP.md`.
-
-**Ainda pendente:** três versões de `analise-funcional-sistema` (`.md`, `-v2.md`, `-v3.md`) em `docs/plans/` sem indicação de qual vale; `TEST_CHECKLIST.md` + `TEST_SUITE.md`; `DEPLOYMENT.md` + `QUICK_DEPLOY.md`; `CUSTOM_DOMAIN_ROUTING.md` + `DOMAIN_ROUTING_FLOW.md`.
-→ Fase 19.
+### ✅ A12 — Documentação proliferada e contraditória — **RESOLVIDO (Fase 19)**
+- Documentos de design consolidados em `docs/DESIGN_GUIDELINES.md` e `docs/BRANDING.md`.
+- Documentos obsoletos e duplicados deletados (`QUICK_DEPLOY.md`, `TEST_SUITE.md`). `DEPLOYMENT.md` e `TEST_CHECKLIST.md` mantidos como fonte única de verdade.
 
 ### ✅ A13 — Duas identidades de marca em conflito — **RESOLVIDO**
 `Otimizza` (amarelo `#F79F1B`) e `Orvalho` (roxo `#5B46E5`) coexistiam na documentação, com o código usando exclusivamente o roxo.
-
 **Resolução (2026-07-20):** Orvalho Digital é a marca, **Gestor de Pátio** é o produto. 204 ocorrências de `Otimizza`/`nLeads` substituídas em 35 arquivos; `OtimizzaBrandLogo.tsx` e `useBrandTheme.ts` removidos; `OtimizzaLogo` → `OrvalhoLogo`. Ver `docs/DECISOES-E-ROADMAP.md`.
 
-### 🔴 A14 — CORS bloqueava o domínio Orvalho no backend — **CORRIGIDO**
-As 10 funções em `api/` listavam apenas `nleads.pro`/`nleads.com.br` em `ALLOWED_ORIGINS`, enquanto `SYSTEM_HOSTS` no frontend já aceitava `orvalhodigital.com.br`. Com o fallback silencioso `ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]`, todo acesso pelo domínio Orvalho recebia cabeçalho divergente e era **bloqueado pelo navegador**: cobrança Asaas, portal de faturas, consulta de placa, os 3 recursos de IA, domínios customizados e webhooks.
-
-Sintoma da migração de marca ter sido feita no frontend sem chegar ao backend. **Corrigido em 2026-07-20.**
-
-**Lição estrutural:** a lista `ALLOWED_ORIGINS` está **duplicada em 10 arquivos**. Foi por isso que divergiu. Consolidar em módulo compartilhado → Fase 6.
+### ✅ A14 — CORS centralizado nas Serverless Functions (`api/`) — **RESOLVIDO (Fase 6)**
+Criado o módulo compartilhado `api/_lib/cors.ts` (`ALLOWED_ORIGINS`, `applyCors` e `getVerifiedUserId`). Todas as serverless functions em `api/` e `api/openai/` foram refatoradas para utilizar o módulo único de CORS, eliminando a duplicação de cabeçalhos e garantindo segurança unificada.
 
 ### Estado da linha de base
 - `npm run build` — ✅ passa (saída correta em `dist/assets/`, com `.gz` e `.br`)

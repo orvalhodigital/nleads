@@ -1,49 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
+import { applyCors, getVerifiedUserId } from './_lib/cors';
 
 export default async function handler(req: any, res: any) {
-    const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
-    const origin = req.headers.origin || '';
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]);
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (applyCors(req, res)) return;
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
         // STEP 1: Verificar env vars
         const supabaseUrl = process.env.VITE_SUPABASE_URL;
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
         const vercelToken = process.env.VERCEL_API_TOKEN;
         const vercelProjectId = process.env.VERCEL_PROJECT_ID;
 
-        if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey) {
-            console.error('[remove] STEP 1 FAIL: env vars ausentes', {
-                supabaseUrl: !!supabaseUrl,
-                supabaseServiceKey: !!supabaseServiceKey,
-                supabaseAnonKey: !!supabaseAnonKey,
-            });
+        if (!supabaseUrl || !supabaseServiceKey) {
+            console.error('[remove] STEP 1 FAIL: env vars ausentes');
             return res.status(500).json({ error: 'Configuração do servidor incompleta (env vars)' });
         }
 
         // STEP 2: Autenticação JWT
-        const authHeader = req.headers.authorization;
-        if (!authHeader?.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'Token de autorização ausente' });
-        }
-
-        const token = authHeader.slice(7);
-        const authClient = createClient(supabaseUrl, supabaseAnonKey);
-        const { data: { user }, error: authError } = await authClient.auth.getUser(token);
-
-        if (authError || !user) {
-            console.error('[remove] STEP 2 FAIL: auth error', authError?.message);
+        const userId = await getVerifiedUserId(req);
+        if (!userId) {
             return res.status(401).json({ error: 'Sessão inválida ou expirada. Faça login novamente.' });
         }
 
-        const userId = user.id;
         console.log('[remove] STEP 2 OK: userId =', userId);
 
         // STEP 3: Validar body

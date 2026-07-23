@@ -1,22 +1,12 @@
+import { applyCors, getVerifiedUserId } from './_lib/cors';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY!;
 const VERCEL_API_TOKEN = process.env.VERCEL_API_TOKEN!;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-async function getVerifiedUserId(req: any): Promise<string | null> {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) return null;
-    const token = authHeader.slice(7);
-    const authClient = createClient(supabaseUrl, supabaseAnonKey);
-    const { data: { user }, error } = await authClient.auth.getUser(token);
-    if (error || !user) return null;
-    return user.id;
-}
 
 function isValidDomain(domain: string): boolean {
     const regex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i;
@@ -41,12 +31,12 @@ async function registerDomainWithVercel(domain: string): Promise<{ success: bool
         }
 
         return { success: true, data };
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (err: any) {
+        return { success: false, error: err.message || 'Erro ao conectar com Vercel API' };
     }
 }
 
-async function rollbackVercel(domain: string): Promise<void> {
+async function rollbackVercelDomain(domain: string): Promise<void> {
     try {
         await fetch(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains/${domain}`, {
             method: 'DELETE',
@@ -58,14 +48,7 @@ async function rollbackVercel(domain: string): Promise<void> {
 }
 
 export default async function handler(req: any, res: any) {
-    const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
-    const origin = req.headers.origin || '';
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]);
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (applyCors(req, res)) return;
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
@@ -119,7 +102,7 @@ export default async function handler(req: any, res: any) {
 
         if (updateError) {
             console.error('[register-custom-domain] Erro ao salvar no banco, fazendo rollback na Vercel:', updateError);
-            await rollbackVercel(normalizedDomain);
+            await rollbackVercelDomain(normalizedDomain);
             return res.status(500).json({ error: 'Erro ao salvar domínio no banco de dados', details: updateError.message });
         }
 

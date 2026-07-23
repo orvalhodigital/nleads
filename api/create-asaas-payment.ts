@@ -1,3 +1,4 @@
+import { applyCors, getVerifiedUserId } from './_lib/cors';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -5,7 +6,6 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 // para a anon: depois do A34 a anon nem lê profiles, então o fallback só
 // mascarava o erro real como "Profile not found".
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing required env vars: VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
@@ -13,7 +13,6 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const ALLOWED_ORIGINS = ['https://orvalhodigital.com.br', 'https://www.orvalhodigital.com.br', 'https://painel.orvalhodigital.com.br'];
 const ASAAS_API_KEY = process.env.ASAAS_API_KEY || '';
 // O ambiente do Asaas é determinado pela CHAVE, não por uma env separada: chaves
 // de sandbox têm o marcador `_hmlg_` (homologação). Derivar a URL da chave evita
@@ -24,29 +23,8 @@ const ASAAS_API_URL = ASAAS_API_KEY.includes('_hmlg_')
   ? 'https://api-sandbox.asaas.com/v3'
   : 'https://api.asaas.com/v3';
 
-// Valida a sessão do chamador via Bearer token e retorna o user id autenticado.
-async function getVerifiedUserId(req: any): Promise<string | null> {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ') || !supabaseAnonKey) return null;
-  const token = authHeader.slice(7);
-  const authClient = createClient(supabaseUrl as string, supabaseAnonKey);
-  const { data: { user }, error } = await authClient.auth.getUser(token);
-  if (error || !user) return null;
-  return user.id;
-}
-
 export default async function handler(req: any, res: any) {
-  const origin = req.headers.origin || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });

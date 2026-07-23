@@ -46,6 +46,13 @@ Itens conscientemente adiados que **precisam estar resolvidos antes do primeiro 
 
 ## Decisões tomadas
 
+### 2026-07-23 — Centralização de CORS (`api/_lib/cors.ts`) e Consolidação da Documentação (A12/A14)
+
+**Decisão:** Criado o módulo compartilhado `api/_lib/cors.ts` consolidando `ALLOWED_ORIGINS`, `applyCors()` e `getVerifiedUserId()`. Refatoradas todas as serverless functions em `api/` e `api/openai/` para eliminar a duplicação de cabeçalhos CORS.
+Removidos documentos obsoletos e duplicados da raiz (`QUICK_DEPLOY.md`, `TEST_SUITE.md`).
+
+---
+
 ### 2026-07-23 — Integração Contínua (CI) com GitHub Actions (A7)
 
 **Decisão:** Adicionado o workflow de CI do GitHub Actions (`.github/workflows/ci.yml`) configurado para rodar em Node.js 22.x em todo `push` e `pull_request` para a branch `main`.

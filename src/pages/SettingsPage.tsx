@@ -29,6 +29,7 @@ import PlanSettings from '../components/settings/PlanSettings';
 import TeamManager from '../components/TeamManager';
 import WebsiteSettings from '../components/settings/WebsiteSettings';
 import GuaranteeSettings from '../components/settings/GuaranteeSettings';
+import { FinancialSettings } from '../components/settings/FinancialSettings';
 import PageContainer from '../components/ui/PageContainer';
 
 interface BusinessHourEntry {
@@ -38,15 +39,16 @@ interface BusinessHourEntry {
     end: string;
 }
 
-type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Website' | 'Garantia' | 'Geral' | 'Equipe';
+type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Financeiro' | 'Website' | 'Garantia' | 'Geral' | 'Equipe';
 
-const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Website', 'Garantia', 'Geral'];
+const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Financeiro', 'Website', 'Garantia', 'Geral'];
 
 const TAB_ICONS: Record<Tab, React.ReactNode> = {
     'Perfil': <User size={15} />,
     'WhatsApp': <MessageCircle size={15} />,
     'Mensagens': <MessageSquare size={15} />,
     'Planos': <CreditCard size={15} />,
+    'Financeiro': <CreditCard size={15} />,
     'Website': <Globe size={15} />,
     'Garantia': <Award size={15} />,
     'Geral': <Wrench size={15} />,
@@ -163,7 +165,11 @@ const SettingsPage: React.FC = () => {
             )}
 
             {activeTab === 'Planos' && (
-                <PlanSettings profile={profile} />
+                <PlanSettings profile={profile} onNavigateToFinancial={() => handleTabChange('Financeiro')} />
+            )}
+
+            {activeTab === 'Financeiro' && (
+                <FinancialSettings profile={profile} onNavigateToPlans={() => handleTabChange('Planos')} />
             )}
 
             {activeTab === 'Website' && (

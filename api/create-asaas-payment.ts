@@ -47,10 +47,15 @@ export default async function handler(req: any, res: any) {
       return res.status(403).json({ error: 'Você só pode gerar cobrança para a própria conta.' });
     }
 
-    // 1. Fetch user profile and plan details
+    // 1. Fetch user profile and plan details (aceita planId como UUID ou slug)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(planId));
+    const planQuery = isUuid
+      ? supabase.from('plans').select('*').eq('id', planId).single()
+      : supabase.from('plans').select('*').eq('slug', planId).single();
+
     const [profileRes, planRes] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).single(),
-      supabase.from('plans').select('*').eq('id', planId).single(),
+      planQuery,
     ]);
 
     if (profileRes.error || !profileRes.data) {

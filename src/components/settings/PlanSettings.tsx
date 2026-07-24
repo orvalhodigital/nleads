@@ -8,9 +8,10 @@ import { hasUnlimitedAccess } from '../../lib/planAccess';
 
 interface Props {
     profile: Profile;
+    onNavigateToFinancial?: () => void;
 }
 
-const PlanSettings: React.FC<Props> = ({ profile }) => {
+const PlanSettings: React.FC<Props> = ({ profile, onNavigateToFinancial }) => {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
@@ -47,6 +48,10 @@ const PlanSettings: React.FC<Props> = ({ profile }) => {
     const [loadingBilling, setLoadingBilling] = useState(false);
 
     const handleBillingPortalClick = async () => {
+        if (onNavigateToFinancial) {
+            onNavigateToFinancial();
+            return;
+        }
         setLoadingBilling(true);
         try {
             const url = await planService.getAsaasBillingPortalLink();

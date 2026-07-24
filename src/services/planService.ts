@@ -137,4 +137,49 @@ export const planService = {
     const data = await response.json();
     return data.invoiceUrl;
   },
+
+  async getAsaasInvoices(): Promise<any[]> {
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+
+    const response = await fetch('/api/get-asaas-invoices', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || 'Erro ao carregar histórico de faturas.');
+    }
+
+    const data = await response.json();
+    return data.invoices || [];
+  },
+
+  async deleteAccount(confirmationText: string): Promise<void> {
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+
+    const response = await fetch('/api/delete-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ confirmationText }),
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.detail || errData.error || 'Erro ao excluir conta.');
+    }
+  },
 };

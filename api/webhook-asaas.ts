@@ -132,9 +132,27 @@ export default async function handler(req: any, res: any) {
         .select()
         .single();
 
-      if (error || !data) {
-        console.error('Error updating profile in Supabase:', error);
-        throw error || new Error('Update returned no row');
+      // Salva o registro da fatura no Supabase para histórico permanente (independência de gateway)
+      if (payment?.id) {
+        try {
+          await supabase.from('invoices').upsert({
+            user_id: userId,
+            provider: 'asaas',
+            provider_payment_id: payment.id,
+            provider_subscription_id: payment.subscription || null,
+            amount: Number(payment.value || 0),
+            status: payment.status || 'CONFIRMED',
+            billing_type: payment.billingType || 'UNDEFINED',
+            description: payment.description || 'Assinatura Gestor de Pátio',
+            invoice_url: payment.invoiceUrl || null,
+            receipt_url: payment.bankSlipUrl || payment.transactionReceiptUrl || null,
+            fiscal_invoice_url: payment.fiscalInvoiceUrl || null,
+            due_date: payment.dueDate ? new Date(payment.dueDate).toISOString() : null,
+            paid_at: new Date().toISOString(),
+          }, { onConflict: 'provider_payment_id' });
+        } catch (invErr) {
+          console.error('Erro ao salvar fatura na tabela invoices do Supabase:', invErr);
+        }
       }
 
       console.log(`Successfully upgraded/renewed user ${userId} to pro plan.`);

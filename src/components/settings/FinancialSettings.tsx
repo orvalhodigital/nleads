@@ -236,18 +236,31 @@ export const FinancialSettings: React.FC<FinancialSettingsProps> = ({ profile, o
                       {getStatusBadge(inv.status)}
                     </td>
                     <td className="py-4 px-4 text-right">
-                      {inv.invoiceUrl ? (
-                        <a
-                          href={inv.invoiceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-bold text-xs transition-all cursor-pointer"
-                        >
-                          Ver Recibo <ExternalLink size={13} />
-                        </a>
-                      ) : (
-                        <span className="text-xs text-muted-foreground font-normal">Indisponível</span>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        {inv.invoiceUrl && (
+                          <a
+                            href={inv.invoiceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-bold text-xs transition-all cursor-pointer"
+                          >
+                            Ver Recibo <ExternalLink size={13} />
+                          </a>
+                        )}
+                        {inv.fiscalInvoiceUrl && (
+                          <a
+                            href={inv.fiscalInvoiceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-600 hover:text-white font-bold text-xs transition-all cursor-pointer border border-violet-500/20"
+                          >
+                            Nota Fiscal <ExternalLink size={13} />
+                          </a>
+                        )}
+                        {!inv.invoiceUrl && !inv.fiscalInvoiceUrl && (
+                          <span className="text-xs text-muted-foreground font-normal">Indisponível</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

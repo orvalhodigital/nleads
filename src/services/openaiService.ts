@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 export const getMatchingInsights = async (vehicle: Vehicle, qualifiedLeads: Lead[]) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    const response = await fetch('/api/openai/matching-insights', {
+    const response = await fetch('/api/openai?action=matching-insights', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const generateSeoDetails = async (vehicle: Partial<Vehicle>): Promise<{ s
 
   let response: Response;
   try {
-    response = await fetch('/api/openai/generate-seo', {
+    response = await fetch('/api/openai?action=generate-seo', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export const generateVehicleDescriptions = async (
 
   let response: Response;
   try {
-    response = await fetch('/api/openai/generate-descriptions', {
+    response = await fetch('/api/openai?action=generate-descriptions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

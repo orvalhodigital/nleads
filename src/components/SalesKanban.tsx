@@ -170,22 +170,25 @@ const SalesKanban: React.FC<SalesKanbanProps> = ({ leads, userId, onUpdate }) =>
                       ) : (
                         phaseLeads.map((lead, index) => (
                           <Draggable key={lead.id} draggableId={lead.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                onClick={() => !snapshot.isDragging && navigate(`/leads/${lead.id}`)}
-                                className={`group p-4 rounded-2xl border-2 cursor-grab active:cursor-grabbing transition-colors ${
-                                  snapshot.isDragging
-                                    ? 'bg-card shadow-2xl border-primary/50 ring-2 ring-primary/20 z-50'
-                                    : 'bg-card border-border/80 hover:border-primary/50 hover:shadow-md'
-                                }`}
-                                style={provided.draggableProps.style}
-                              >
-                                <SalesCard lead={lead} guaranteeConfigs={guaranteeConfigs} phase={phase.id} />
-                              </div>
-                            )}
+                            {(provided, snapshot) => {
+                              const card = (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  onClick={() => !snapshot.isDragging && navigate(`/leads/${lead.id}`)}
+                                  className={`group p-4 rounded-2xl border-2 cursor-grab active:cursor-grabbing select-none ${
+                                    snapshot.isDragging
+                                      ? 'bg-card shadow-2xl border-primary ring-2 ring-primary/30 z-[9999]'
+                                      : 'bg-card border-border/80 hover:border-primary/50 hover:shadow-md transition-colors'
+                                  }`}
+                                  style={provided.draggableProps.style}
+                                >
+                                  <SalesCard lead={lead} guaranteeConfigs={guaranteeConfigs} phase={phase.id} />
+                                </div>
+                              );
+                              return snapshot.isDragging ? createPortal(card, document.body) : card;
+                            }}
                           </Draggable>
                         ))
                       )}

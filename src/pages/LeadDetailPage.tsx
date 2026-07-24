@@ -81,7 +81,13 @@ const LeadDetailPage: React.FC = () => {
             <div className="p-8 text-center text-slate-500">
                 Lead não encontrado.
                 <br /><br />
-                <button onClick={() => navigate(-1)} className="px-4 py-2 bg-slate-100 rounded-lg font-bold">Voltar</button>
+                <button onClick={() => {
+                    if (window.history.state && window.history.state.idx > 0) {
+                        navigate(-1);
+                    } else {
+                        navigate('/leads');
+                    }
+                }} className="px-4 py-2 bg-slate-100 rounded-lg font-bold">Voltar</button>
             </div>
         );
     }
@@ -412,7 +418,13 @@ const LeadDetailPage: React.FC = () => {
 
     return (
         <div className="flex-1 space-y-8 pb-20 animate-fadeIn">
-            <LeadHeader lead={lead} onBack={() => navigate(-1)} />
+            <LeadHeader lead={lead} onBack={() => {
+                if (window.history.state && window.history.state.idx > 0) {
+                    navigate(-1);
+                } else {
+                    navigate('/leads');
+                }
+            }} />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Coluna 1: Informações de Contato e Visita */}

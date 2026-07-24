@@ -55,15 +55,15 @@ export const MotoGridCard = memo(({ moto: m, onSelect, onToggleWebsite }: MotoCa
                     <h3 onClick={() => onSelect(m)} className="text-sm font-black text-slate-900 uppercase tracking-tight leading-tight mb-1.5 group-hover:text-brand-600 transition-colors cursor-pointer">
                         {m.brand} {m.model}
                     </h3>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                            <Calendar size={10} className="text-slate-300" />
-                            <span>{m.year}{m.modelYear && m.modelYear !== m.year ? ` / ${String(m.modelYear).slice(-2)}` : ''}</span>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 flex-wrap">
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100 whitespace-nowrap shrink-0">
+                            <Calendar size={10} className="text-slate-300 shrink-0" />
+                            <span className="whitespace-nowrap">{m.year}{m.modelYear && m.modelYear !== m.year ? ` / ${String(m.modelYear).slice(-2)}` : ''}</span>
                         </div>
-                        <div className="w-1 h-1 rounded-full bg-slate-200" />
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                            <Gauge size={10} className="text-slate-300" />
-                            <span>{m.mileage > 0 ? `${m.mileage.toLocaleString()} km` : '---'}</span>
+                        <div className="w-1 h-1 rounded-full bg-slate-200 shrink-0" />
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100 whitespace-nowrap shrink-0">
+                            <Gauge size={10} className="text-slate-300 shrink-0" />
+                            <span className="whitespace-nowrap">{m.mileage > 0 ? `${m.mileage.toLocaleString('pt-BR')} km` : '---'}</span>
                         </div>
                     </div>
                 </div>

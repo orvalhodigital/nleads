@@ -22,7 +22,7 @@ Cada lojista (tenant) gerencia estoque, leads/CRM, fluxo de vendas e um site pú
 | Sistema | Uso | Onde |
 |---|---|---|
 | **Supabase** | Auth, banco, storage de imagens | cliente + servidor |
-| **Asaas** | Assinaturas recorrentes, faturas, portal de cobrança | `api/create-asaas-payment.ts`, `api/get-asaas-billing-portal.ts`, `api/webhook-asaas.ts` |
+| **Asaas** | Assinaturas recorrentes, faturas, recibos e portal de cobrança | `api/create-asaas-payment.ts`, `api/get-asaas-billing-portal.ts`, `api/get-asaas-invoices.ts`, `api/delete-account.ts`, `api/webhook-asaas.ts` |
 | **OpenAI** | Geração de descrição, SEO, insights de matching | `api/openai/*` |
 | **OpenRouter** | Fallback automático da OpenAI | `api/openai/*` |
 | **Vercel API** | Registro/remoção de domínio customizado do lojista | `api/register-custom-domain.ts`, `api/remove-custom-domain.ts` |

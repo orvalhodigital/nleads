@@ -13,10 +13,14 @@ const OverdueBanner: React.FC = () => {
         setLoading(true);
         try {
             const url = await planService.getAsaasBillingPortalLink();
-            window.location.href = url;
+            if (url) {
+                window.location.href = url;
+            } else {
+                window.location.href = '/settings';
+            }
         } catch (err: any) {
-            alert(err?.message || 'Não foi possível abrir a renovação. Tente pela tela de Configurações.');
-            setLoading(false);
+            console.warn('Erro ao obter link de cobrança do Asaas, redirecionando para configurações:', err);
+            window.location.href = '/settings';
         }
     };
 

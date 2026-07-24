@@ -51,25 +51,42 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ error: 'Asaas API Key is not configured' });
     }
 
-    // 2. Busca os pagamentos do cliente ordenados pelo mais recente no Asaas
-    const paymentsRes = await fetch(`${ASAAS_API_URL}/payments?customer=${asaasCustomerId}&limit=1&order=desc`, {
-      headers: {
-        'access_token': ASAAS_API_KEY,
-        'Content-Type': 'application/json',
-      },
-    });
+    let lastPayment: any = null;
 
-    if (!paymentsRes.ok) {
-      const errText = await paymentsRes.text();
-      console.error('Error fetching billing portal from Asaas:', errText);
-      throw new Error('Falha ao recuperar faturas do Asaas.');
+    // 2. Busca os pagamentos do cliente pelo customer_id ou pela subscription_id
+    if (asaasCustomerId) {
+      const paymentsRes = await fetch(`${ASAAS_API_URL}/payments?customer=${asaasCustomerId}&limit=1&order=desc`, {
+        headers: {
+          'access_token': ASAAS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (paymentsRes.ok) {
+        const paymentsData = await paymentsRes.json();
+        lastPayment = paymentsData?.data?.[0];
+      }
     }
 
-    const paymentsData = await paymentsRes.json();
-    const lastPayment = paymentsData?.data?.[0];
+    if (!lastPayment && profile.asaas_subscription_id) {
+      const subPaymentsRes = await fetch(`${ASAAS_API_URL}/payments?subscription=${profile.asaas_subscription_id}&limit=1&order=desc`, {
+        headers: {
+          'access_token': ASAAS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (subPaymentsRes.ok) {
+        const subPaymentsData = await subPaymentsRes.json();
+        lastPayment = subPaymentsData?.data?.[0];
+      }
+    }
 
     if (!lastPayment) {
-      return res.status(404).json({ error: 'Nenhuma fatura encontrada para este cliente no Asaas.' });
+      return res.status(404).json({
+        error: 'Nenhuma fatura encontrada no Asaas. Redirecionando para a tela de planos em Configurações...',
+        redirectToSettings: true,
+      });
     }
 
     // Retorna a URL da fatura mais recente (que possui opções de boleto, pix, cartão e histórico)

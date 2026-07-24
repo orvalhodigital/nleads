@@ -22,7 +22,7 @@ import {
     Clock3
 } from 'lucide-react';
 
-import { format, isWithinInterval, startOfDay, endOfDay, subMonths, parseISO, subDays, startOfYear, differenceInCalendarDays } from 'date-fns';
+import { format, isWithinInterval, startOfDay, endOfDay, subMonths, parseISO, subDays, startOfYear, differenceInCalendarDays, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 
@@ -46,7 +46,7 @@ type SaleDashboardItem = {
     transactionLabel: string;
 };
 
-type QuickRange = '7d' | '30d' | 'year' | 'custom';
+type QuickRange = '7d' | '30d' | 'year' | 'all' | 'custom';
 
 const SalesClosedPage: React.FC = () => {
     const { profile, loading } = useAuthContext();
@@ -94,42 +94,87 @@ const SalesClosedPage: React.FC = () => {
             setDateRange({ start: format(subDays(now, 30), 'yyyy-MM-dd'), end: format(now, 'yyyy-MM-dd') });
         } else if (range === 'year') {
             setDateRange({ start: format(startOfYear(now), 'yyyy-MM-dd'), end: format(now, 'yyyy-MM-dd') });
+        } else if (range === 'all') {
+            setDateRange({ start: '', end: '' });
         }
     };
 
-    const salesData = useMemo<SaleDashboardItem[]>(() => {
-        const soldVehicles = soldAssets.filter(v => v.status === 'sold' && v.saleDetails);
+    const allSalesData = useMemo<SaleDashboardItem[]>(() => {
+        const salesList: SaleDashboardItem[] = [];
+        const processedVehicleIds = new Set<string>();
 
-        let filtered = soldVehicles
-            .map(vehicle => {
+        // 1. Process all sold vehicles/motorcycles from inventory
+        soldAssets.forEach(vehicle => {
+            if (vehicle.status === 'sold') {
+                processedVehicleIds.add(vehicle.id);
                 const buyerLead = vehicle.saleDetails?.buyerLeadId
                     ? leads.find(l => l.id === vehicle.saleDetails!.buyerLeadId)
                     : null;
                 const refurbishmentCosts = vehicle.saleDetails?.refurbishmentCosts ?? 0;
-                // Prioriza o preço de COMPRA real (mesmo fix aplicado em Dashboard.tsx);
-                // fipePrice/price são preço de referência/anúncio, não o que foi pago.
                 const costBasis = vehicle.purchasePrice || vehicle.fipePrice || vehicle.price || 0;
-                const profit = vehicle.saleDetails!.salePrice - (costBasis + refurbishmentCosts);
-                const margin = vehicle.saleDetails!.salePrice > 0 ? (profit / vehicle.saleDetails!.salePrice) * 100 : 0;
-                const createdReference = vehicle.createdAt || vehicle.saleDetails?.saleDate;
-                const daysToSell = createdReference ? Math.max(0, differenceInCalendarDays(parseISO(vehicle.saleDetails!.saleDate), parseISO(createdReference))) : null;
+                const salePrice = vehicle.saleDetails?.salePrice || vehicle.price || 0;
+                const profit = salePrice - (costBasis + refurbishmentCosts);
+                const margin = salePrice > 0 ? (profit / salePrice) * 100 : 0;
+                const saleDate = vehicle.saleDetails?.saleDate || vehicle.createdAt || new Date().toISOString();
+                const createdReference = vehicle.createdAt || saleDate;
+                const daysToSell = createdReference ? Math.max(0, differenceInCalendarDays(parseISO(saleDate), parseISO(createdReference))) : null;
 
-                return {
+                salesList.push({
                     vehicle,
                     buyerLead,
-                    salePrice: vehicle.saleDetails!.salePrice,
-                    saleDate: vehicle.saleDetails!.saleDate,
-                    buyerName: buyerLead?.name || vehicle.saleDetails!.buyerName,
+                    salePrice,
+                    saleDate,
+                    buyerName: buyerLead?.name || vehicle.saleDetails?.buyerName || 'Cliente Direto',
                     profit,
                     costBasis,
                     refurbishmentCosts,
                     margin,
                     daysToSell,
                     transactionLabel: `${vehicle.brand} ${vehicle.model}`
-                };
-            });
+                });
+            }
+        });
 
-        // Apply filters
+        // 2. Process buyer leads with sale details that may not be linked to a sold vehicle record above
+        leads.forEach(lead => {
+            if ((lead.is_buyer || lead.phase === 'Compradores' || lead.saleDate) && lead.saleDate) {
+                const vehicleId = lead.scheduling_data?.vehicleOfInterest || (lead.presentedVehicles?.length ? lead.presentedVehicles[lead.presentedVehicles.length - 1] : null);
+                if (vehicleId && processedVehicleIds.has(vehicleId)) {
+                    return;
+                }
+
+                const vehicle = vehicleId ? soldAssets.find(v => v.id === vehicleId) : null;
+                const salePrice = lead.saleDetails?.salePrice || vehicle?.price || 0;
+                if (salePrice > 0 || lead.saleDate) {
+                    const costBasis = vehicle?.purchasePrice || vehicle?.fipePrice || vehicle?.price || 0;
+                    const refurbishmentCosts = lead.saleDetails?.refurbishmentCosts || 0;
+                    const profit = salePrice - (costBasis + refurbishmentCosts);
+                    const margin = salePrice > 0 ? (profit / salePrice) * 100 : 0;
+                    const daysToSell = vehicle?.createdAt ? Math.max(0, differenceInCalendarDays(parseISO(lead.saleDate), parseISO(vehicle.createdAt))) : null;
+
+                    salesList.push({
+                        vehicle: vehicle || { brand: 'Veículo', model: 'Geral', year: new Date().getFullYear(), plate: '' },
+                        buyerLead: lead,
+                        salePrice,
+                        saleDate: lead.saleDate,
+                        buyerName: lead.name,
+                        profit,
+                        costBasis,
+                        refurbishmentCosts,
+                        margin,
+                        daysToSell,
+                        transactionLabel: vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Venda Concluída'
+                    });
+                }
+            }
+        });
+
+        return salesList.sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
+    }, [soldAssets, leads]);
+
+    const salesData = useMemo<SaleDashboardItem[]>(() => {
+        let filtered = [...allSalesData];
+
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(s =>
@@ -144,12 +189,12 @@ const SalesClosedPage: React.FC = () => {
             const end = endOfDay(parseISO(dateRange.end));
             filtered = filtered.filter(s => {
                 const saleDate = new Date(s.saleDate);
-                return isWithinInterval(saleDate, { start, end });
+                return isValid(saleDate) && isWithinInterval(saleDate, { start, end });
             });
         }
 
-        return filtered.sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
-    }, [vehicles, leads, searchQuery, dateRange]);
+        return filtered;
+    }, [allSalesData, searchQuery, dateRange]);
 
     const executiveMetrics = useMemo(() => {
         const totalRevenue = salesData.reduce((sum, s) => sum + s.salePrice, 0);
@@ -171,16 +216,16 @@ const SalesClosedPage: React.FC = () => {
     const now = new Date();
     const currentMonthSales = salesData.filter(s => {
         const d = new Date(s.saleDate);
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        return isValid(d) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
     const monthlyRevenue = currentMonthSales.reduce((sum, s) => sum + s.salePrice, 0);
 
     const trendData = useMemo(() => {
         return Array.from({ length: 6 }, (_, index) => {
             const date = subMonths(new Date(), 5 - index);
-            const monthSales = salesData.filter(s => {
+            const monthSales = allSalesData.filter(s => {
                 const saleDate = new Date(s.saleDate);
-                return saleDate.getMonth() === date.getMonth() && saleDate.getFullYear() === date.getFullYear();
+                return isValid(saleDate) && saleDate.getMonth() === date.getMonth() && saleDate.getFullYear() === date.getFullYear();
             });
 
             return {
@@ -188,7 +233,7 @@ const SalesClosedPage: React.FC = () => {
                 value: monthSales.length
             };
         });
-    }, [salesData]);
+    }, [allSalesData]);
 
     const maxTrendValue = Math.max(...trendData.map(item => item.value), 1);
 
@@ -274,13 +319,14 @@ const SalesClosedPage: React.FC = () => {
                 {[
                     { key: '7d', label: '7 dias' },
                     { key: '30d', label: '30 dias' },
-                    { key: 'year', label: 'Ano' },
+                    { key: 'year', label: 'Este Ano' },
+                    { key: 'all', label: 'Todo o Período' },
                     { key: 'custom', label: 'Personalizado' },
                 ].map(option => (
                     <button
                         key={option.key}
                         onClick={() => applyQuickRange(option.key as QuickRange)}
-                        className={`rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${quickRange === option.key ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 border border-brand-400/30' : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'}`}
+                        className={`rounded-2xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${quickRange === option.key ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20 border border-brand-400/30' : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'}`}
                     >
                         {option.label}
                     </button>

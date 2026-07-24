@@ -17,9 +17,7 @@ const InventoryPage: React.FC = () => {
     // The ViewLead function in Inventory redirects to "leads" view with a focused ID.
     // In new router, we should navigate to `/leads?focus=ID` or something.
     const handleViewLead = (leadId: string) => {
-        // Simple navigation to leads page
-        // To support focus, LeadsPage needs to read state/query param
-        navigate('/leads', { state: { focusedLeadId: leadId } });
+        navigate(`/leads/${leadId}`);
     };
 
     return (

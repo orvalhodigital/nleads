@@ -733,7 +733,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 space-y-6 animate-fadeIn overflow-hidden">
+    <div className="flex-1 flex flex-col h-[calc(100vh-150px)] min-h-0 space-y-4 animate-fadeIn overflow-hidden">
       <div className="flex flex-col gap-6 shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-6 px-1">
           <div className="flex items-center gap-3 flex-wrap">

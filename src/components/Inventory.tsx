@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect, lazy, Suspense, useCallback, memo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus, Search, Filter, MoreHorizontal, MapPin, Gauge, Calendar,
   DollarSign, Hash, Edit3, Trash2, ChevronLeft, ChevronRight, Upload, Loader2, X,
@@ -50,13 +50,9 @@ const Inventory: React.FC<InventoryProps> = ({
   vehicles, onAddVehicle, onUpdateVehicle, onDeleteVehicle, onSellVehicle, leads, onAddLead, onViewLead, userEmail, onDataChange
 }) => {
   const navigate = useNavigate();
-  /* 
-    State Logic:
-    selectedVehicle can be:
-    - null: List View
-    - Vehicle object: Detail View
-    - 'new': Create View
-  */
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlVehicleId = searchParams.get('vehicleId') || searchParams.get('id');
+
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | 'new' | null>(null);
 
   // Import Modal State
@@ -121,19 +117,19 @@ const Inventory: React.FC<InventoryProps> = ({
         }
     }, [location.state, vehicles]);
 
-    // ── LocalStorage Selected Persistence ───────────────────────────────────────
     useEffect(() => {
-        const savedId = localStorage.getItem('inventory_selected_id');
-        if (savedId && !selectedVehicle && vehicles.length > 0) {
-            const found = vehicles.find(v => v.id === savedId);
-            if (found) setSelectedVehicle(found);
+        if (urlVehicleId && vehicles.length > 0) {
+            const found = vehicles.find(v => v.id === urlVehicleId);
+            if (found) {
+                setSelectedVehicle(found);
+            }
         }
-    }, [vehicles.length]);
+    }, [urlVehicleId, vehicles]);
 
     useEffect(() => {
         if (selectedVehicle && typeof selectedVehicle === 'object') {
             localStorage.setItem('inventory_selected_id', selectedVehicle.id);
-        } else {
+        } else if (selectedVehicle === null) {
             localStorage.removeItem('inventory_selected_id');
         }
     }, [selectedVehicle]);
@@ -174,7 +170,15 @@ const Inventory: React.FC<InventoryProps> = ({
     }
   }, [selectedVehicle, leads]);
 
-  const handleSelectVehicle = useCallback((v: Vehicle) => setSelectedVehicle(v), []);
+  const handleSelectVehicle = useCallback((v: Vehicle) => {
+    setSelectedVehicle(v);
+    setSearchParams({ vehicleId: v.id });
+  }, [setSearchParams]);
+
+  const handleCloseVehicleDetails = useCallback(() => {
+    setSelectedVehicle(null);
+    setSearchParams({});
+  }, [setSearchParams]);
 
   const prepareMessageModal = (target: 'single' | 'all' | 'new', lead?: Lead) => {
     setMessageTarget(target);
@@ -322,7 +326,7 @@ const Inventory: React.FC<InventoryProps> = ({
       <div className="animate-fadeUp max-w-[1600px] mx-auto w-full pb-20">
         {/* Detail View Header */}
         <div className="flex items-center justify-between mb-8">
-          <button onClick={() => setSelectedVehicle(null)} className="flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors group">
+          <button onClick={handleCloseVehicleDetails} className="flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors group">
             <div className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center group-hover:bg-slate-50 transition-colors">
               <ChevronLeft size={20} />
             </div>
@@ -547,7 +551,7 @@ const Inventory: React.FC<InventoryProps> = ({
               {matchingLeads.map(lead => {
                 const hasReceived = communications.some(c => c.lead_id === lead.id);
                 return (
-                  <div key={lead.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group cursor-pointer relative">
+                  <div key={lead.id} onClick={() => onViewLead(lead.id)} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all group cursor-pointer relative">
 
                     {hasReceived && (
                       <div className="absolute top-6 right-6 w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center text-brand-600" title="Mensagem já enviada">
@@ -572,10 +576,10 @@ const Inventory: React.FC<InventoryProps> = ({
                     </div>
 
                     <div className="flex gap-2">
-                      <button onClick={() => prepareMessageModal('single', lead)} className="flex-1 py-3 bg-slate-50 text-slate-500 rounded-xl text-[10px] font-extrabold uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white transition-colors flex items-center justify-center gap-2">
+                      <button onClick={(e) => { e.stopPropagation(); prepareMessageModal('single', lead); }} className="flex-1 py-3 bg-slate-50 text-slate-500 rounded-xl text-[10px] font-extrabold uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white transition-colors flex items-center justify-center gap-2">
                         <Send size={14} /> Enviar Mensagem
                       </button>
-                      <button onClick={() => onViewLead(lead.id)} className="flex-1 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                      <button onClick={(e) => { e.stopPropagation(); onViewLead(lead.id); }} className="flex-1 py-3 bg-white border border-slate-100 text-slate-400 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-50 transition-colors">
                         Ver Detalhes
                       </button>
                     </div>
@@ -617,7 +621,7 @@ const Inventory: React.FC<InventoryProps> = ({
                   const hasReceived = communications.some(c => c.lead_id === lead.id);
                   
                   return (
-                    <div key={match.leadId} className="bg-white dark:bg-card p-6 rounded-[2rem] border border-indigo-100/50 dark:border-border shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-primary/50 transition-all group cursor-pointer relative">
+                    <div key={match.leadId} onClick={() => onViewLead(lead.id)} className="bg-white dark:bg-card p-6 rounded-[2rem] border border-indigo-100/50 dark:border-border shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-primary/50 transition-all group cursor-pointer relative">
                       {hasReceived && (
                         <div className="absolute top-6 right-6 w-8 h-8 bg-indigo-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-indigo-600 dark:text-brand-400" title="Mensagem já enviada">
                           <Check size={16} strokeWidth={3} />
@@ -638,10 +642,10 @@ const Inventory: React.FC<InventoryProps> = ({
                         {match.reason}
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => prepareIaMessageModal(lead, match.whatsappPitch)} className="flex-1 py-3 bg-indigo-600 dark:bg-primary text-white rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-primary/95 transition-colors flex items-center justify-center gap-2 shadow-md shadow-indigo-600/10 dark:shadow-none">
+                        <button onClick={(e) => { e.stopPropagation(); prepareIaMessageModal(lead, match.whatsappPitch); }} className="flex-1 py-3 bg-indigo-600 dark:bg-primary text-white rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-primary/95 transition-colors flex items-center justify-center gap-2 shadow-md shadow-indigo-600/10 dark:shadow-none">
                           <Send size={14} /> Abordagem de IA
                         </button>
-                        <button onClick={() => onViewLead(lead.id)} className="flex-1 py-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-border text-slate-400 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <button onClick={(e) => { e.stopPropagation(); onViewLead(lead.id); }} className="flex-1 py-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-border text-slate-400 rounded-xl text-[10px] font-extrabold uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                           Detalhes
                         </button>
                       </div>

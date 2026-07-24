@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
     Car,
@@ -9,6 +9,8 @@ import {
     LogOut,
     Settings,
     Calendar,
+    CalendarDays,
+    PhoneCall,
     Bike,
     ChevronLeft,
     ChevronRight,
@@ -35,9 +37,28 @@ interface MenuItem {
 const AppSidebar: React.FC = () => {
     const { logoUrl } = useSystemSettings();
     const { profile } = useAuthContext();
+    const location = useLocation();
     const navigate = useNavigate();
     const [isCollapsed, setIsCollapsed] = React.useState(false);
     const [isMoreOpen, setIsMoreOpen] = React.useState(false);
+
+    const isItemActive = (item: MenuItem) => {
+        const [itemPath] = item.id.split('?');
+        if (location.pathname !== itemPath) return false;
+
+        if (itemPath === '/agenda') {
+            const params = new URLSearchParams(location.search);
+            const tab = params.get('tab');
+            if (item.id === '/agenda?tab=visitas') {
+                return !tab || tab === 'visitas' || tab === 'visits';
+            }
+            if (item.id === '/agenda?tab=followups') {
+                return tab === 'followups' || tab === 'followup';
+            }
+        }
+
+        return true;
+    };
 
     // Lista completa (usada na sidebar desktop e no sheet "Mais" do mobile)
     const menuItems: MenuItem[] = [
@@ -45,7 +66,8 @@ const AppSidebar: React.FC = () => {
         ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: profile?.enable_motorcycles ? 'Carros' : 'Veículos', end: false }] : []),
         ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false }] : []),
         { id: '/leads', icon: Users, label: 'Leads', end: false },
-        { id: '/agenda', icon: Calendar, label: 'Agenda', end: false },
+        { id: '/agenda?tab=visitas', icon: CalendarDays, label: 'Visitas', end: false },
+        { id: '/agenda?tab=followups', icon: PhoneCall, label: 'Follow-up', end: false },
         { id: '/sales-flow', icon: BarChart3, label: 'Fluxo de Vendas', end: false },
         { id: '/sales-closed', icon: CheckCircle2, label: 'Vendas (Relatório)', end: false },
         { id: '/support', icon: LifeBuoy, label: 'Suporte', end: false },
@@ -58,7 +80,7 @@ const AppSidebar: React.FC = () => {
         menuItems.find(i => i.id === '/dashboard'),
         estoqueItem,
         menuItems.find(i => i.id === '/leads'),
-        menuItems.find(i => i.id === '/agenda'),
+        menuItems.find(i => i.id === '/agenda?tab=visitas'),
     ].filter(Boolean) as MenuItem[];
     const primaryMobileIds = primaryMobile.map(i => i.id);
     const secondaryMobile = menuItems.filter(i => !primaryMobileIds.includes(i.id));
@@ -106,41 +128,39 @@ const AppSidebar: React.FC = () => {
                 </div>
 
                 <nav className="flex-1 flex flex-col px-4 space-y-1.5 mt-4 items-stretch overflow-y-auto min-h-0">
-                    {menuItems.map(item => (
-                        <NavLink
-                            key={item.id}
-                            to={item.id}
-                            end={item.end}
-                            className={({ isActive }) => `
-                                flex flex-row items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group relative
-                                ${isCollapsed ? 'justify-center mx-1' : 'w-full'}
-                                ${isActive
-                                    ? 'bg-primary text-primary-foreground font-bold shadow-md shadow-primary/20'
-                                    : 'text-foreground/75 dark:text-foreground/80 hover:text-primary dark:hover:text-primary-foreground hover:bg-primary/10 dark:hover:bg-primary/20'
-                                }
-                            `}
-                        >
-                            {({ isActive }) => (
-                                <>
-                                    <item.icon
-                                        size={20}
-                                        strokeWidth={isActive ? 2.5 : 2}
-                                        className={`shrink-0 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
-                                    />
-                                    <span className={`text-sm font-semibold ${isCollapsed ? 'hidden' : ''}`}>
-                                        {item.label}
-                                    </span>
+                    {menuItems.map(item => {
+                        const active = isItemActive(item);
+                        return (
+                            <NavLink
+                                key={item.id}
+                                to={item.id}
+                                className={`
+                                    flex flex-row items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group relative
+                                    ${isCollapsed ? 'justify-center mx-1' : 'w-full'}
+                                    ${active
+                                        ? 'bg-primary text-primary-foreground font-bold shadow-md shadow-primary/20'
+                                        : 'text-foreground/75 dark:text-foreground/80 hover:text-primary dark:hover:text-primary-foreground hover:bg-primary/10 dark:hover:bg-primary/20'
+                                    }
+                                `}
+                            >
+                                <item.icon
+                                    size={20}
+                                    strokeWidth={active ? 2.5 : 2}
+                                    className={`shrink-0 transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`}
+                                />
+                                <span className={`text-sm font-semibold ${isCollapsed ? 'hidden' : ''}`}>
+                                    {item.label}
+                                </span>
 
-                                    {isCollapsed && (
-                                        <div className="absolute left-full ml-4 px-3 py-1.5 bg-foreground text-background text-xs font-bold rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl pointer-events-none">
-                                            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-foreground rotate-45" />
-                                            {item.label}
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </NavLink>
-                    ))}
+                                {isCollapsed && (
+                                    <div className="absolute left-full ml-4 px-3 py-1.5 bg-foreground text-background text-xs font-bold rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl pointer-events-none">
+                                        <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-foreground rotate-45" />
+                                        {item.label}
+                                    </div>
+                                )}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
                 <div className="p-4 mt-auto border-t border-border/60">
@@ -212,27 +232,25 @@ const AppSidebar: React.FC = () => {
                 aria-label="Navegação principal"
             >
                 <div className="flex items-stretch justify-around px-1 h-16">
-                    {primaryMobile.map(item => (
-                        <NavLink
-                            key={item.id}
-                            to={item.id}
-                            end={item.end}
-                            className={({ isActive }) => `
-                                relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 rounded-2xl transition-colors
-                                ${isActive ? 'text-primary' : 'text-muted-foreground active:bg-primary/5'}
-                            `}
-                        >
-                            {({ isActive }) => (
-                                <>
-                                    {isActive && <span className="absolute top-0 h-1 w-8 rounded-full bg-primary" />}
-                                    <item.icon size={22} strokeWidth={isActive ? 2.6 : 2} className="shrink-0" />
-                                    <span className={`text-[10px] leading-none truncate max-w-[64px] ${isActive ? 'font-bold' : 'font-medium'}`}>
-                                        {item.label}
-                                    </span>
-                                </>
-                            )}
-                        </NavLink>
-                    ))}
+                    {primaryMobile.map(item => {
+                        const active = isItemActive(item);
+                        return (
+                            <NavLink
+                                key={item.id}
+                                to={item.id}
+                                className={`
+                                    relative flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 rounded-2xl transition-colors
+                                    ${active ? 'text-primary' : 'text-muted-foreground active:bg-primary/5'}
+                                `}
+                            >
+                                {active && <span className="absolute top-0 h-1 w-8 rounded-full bg-primary" />}
+                                <item.icon size={22} strokeWidth={active ? 2.6 : 2} className="shrink-0" />
+                                <span className={`text-[10px] leading-none truncate max-w-[64px] ${active ? 'font-bold' : 'font-medium'}`}>
+                                    {item.label}
+                                </span>
+                            </NavLink>
+                        );
+                    })}
 
                     {/* Botão "Mais" */}
                     <button
@@ -299,23 +317,25 @@ const AppSidebar: React.FC = () => {
 
                         {/* Grade de itens secundários */}
                         <div className="grid grid-cols-3 gap-2">
-                            {secondaryMobile.map(item => (
-                                <NavLink
-                                    key={item.id}
-                                    to={item.id}
-                                    end={item.end}
-                                    onClick={() => setIsMoreOpen(false)}
-                                    className={({ isActive }) => `
-                                        flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl border transition-colors
-                                        ${isActive
-                                            ? 'bg-primary/10 border-primary/30 text-primary'
-                                            : 'bg-muted/40 border-border/60 text-foreground/80 active:bg-muted'}
-                                    `}
-                                >
-                                    <item.icon size={22} strokeWidth={2} className="shrink-0" />
-                                    <span className="text-[11px] font-semibold text-center leading-tight px-1">{item.label}</span>
-                                </NavLink>
-                            ))}
+                            {secondaryMobile.map(item => {
+                                const active = isItemActive(item);
+                                return (
+                                    <NavLink
+                                        key={item.id}
+                                        to={item.id}
+                                        onClick={() => setIsMoreOpen(false)}
+                                        className={`
+                                            flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl border transition-colors
+                                            ${active
+                                                ? 'bg-primary/10 border-primary/30 text-primary'
+                                                : 'bg-muted/40 border-border/60 text-foreground/80 active:bg-muted'}
+                                        `}
+                                    >
+                                        <item.icon size={22} strokeWidth={2} className="shrink-0" />
+                                        <span className="text-[11px] font-semibold text-center leading-tight px-1">{item.label}</span>
+                                    </NavLink>
+                                );
+                            })}
 
                             <NavLink
                                 to="/settings"

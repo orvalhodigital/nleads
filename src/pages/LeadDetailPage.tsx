@@ -4,7 +4,7 @@ import { useAuthContext } from '../contexts/AuthContext';
 import { useInventoryContext } from '../contexts/InventoryContext';
 import { useLeadContext } from '../contexts/LeadContext';
 import { useBasePath } from '../hooks/useBasePath';
-import { Clock, Car, ExternalLink, Plus, MessageCircle, CheckCircle2, X, Edit2 } from 'lucide-react';
+import { Clock, Car, ExternalLink, Plus, MessageCircle, CheckCircle2, X, Edit2, Sparkles, Zap, Flame } from 'lucide-react';
 
 import { LeadTemperature, LeadPhase } from '../types';
 import { leadCommunicationService } from '../services/leadCommunicationService';
@@ -18,6 +18,7 @@ import { generateUUID } from '../utils/uuid';
 
 import { LeadHeader } from '../components/lead-detail/LeadHeader';
 import { LeadContactInfo } from '../components/lead-detail/LeadContactInfo';
+import { LeadSaleDetails } from '../components/lead-detail/LeadSaleDetails';
 import { LeadPreferences } from '../components/lead-detail/LeadPreferences';
 import { LeadSimulationData } from '../components/lead-detail/LeadSimulationData';
 
@@ -55,6 +56,7 @@ const LeadDetailPage: React.FC = () => {
 
     const [lead, setLead] = useState(safeLead(leads.find(l => l.id === id)));
     const [visitNoteEdit, setVisitNoteEdit] = useState<{ id: string | null; draft: string }>({ id: null, draft: '' });
+    const [isAllMatchesModalOpen, setIsAllMatchesModalOpen] = useState(false);
 
     // Updates/Notes system
     const [showUpdatesPanel, setShowUpdatesPanel] = useState(false);
@@ -94,15 +96,40 @@ const LeadDetailPage: React.FC = () => {
     //    relevantes: mesma faixa de preço (±20% do orçamento declarado) ou
     //    mesmo tipo de carroceria (quando o lead declarou um tipo).
     const inventorySuggestions = useMemo(() => {
+        const hasCarPref = (lead?.preferences?.carro_valor_max ?? 0) > 0 ||
+            (lead?.preferences?.marcas?.length ?? 0) > 0 ||
+            (lead?.preferences?.modelos?.length ?? 0) > 0 ||
+            (lead?.preferences?.tipos_veiculo?.length ?? 0) > 0;
+
+        const hasMotoPref = (lead?.preferences?.moto_valor_max ?? 0) > 0 ||
+            (lead?.preferences?.marcas_moto?.length ?? 0) > 0 ||
+            (lead?.preferences?.modelos_moto?.length ?? 0) > 0 ||
+            (lead?.preferences?.tipos_moto?.length ?? 0) > 0;
+
+        const hasTruckPref = (lead?.preferences?.caminhao_valor_max ?? 0) > 0 ||
+            (lead?.preferences?.marcas_caminhao?.length ?? 0) > 0 ||
+            (lead?.preferences?.modelos_caminhao?.length ?? 0) > 0 ||
+            (lead?.preferences?.tipos_caminhao?.length ?? 0) > 0;
+
+        const hasAnyPreference = hasCarPref || hasMotoPref || hasTruckPref || (lead?.preferences?.valor_maximo ?? 0) > 0;
+
+        if (!hasAnyPreference) {
+            return { matchCompleto: [], outrasSugestoes: [], hasAnyPreference: false };
+        }
+
         const buildPool = (items: any[], maxPrice: number, marcas: string[], modelos: string[], tipos: string[], isMoto: boolean) =>
             items
                 .filter(item => item.status === 'available')
                 .map(item => ({ item: { ...item, isMoto }, maxPrice, marcas, modelos, tipos }));
 
+        const carMaxPrice = lead.preferences.carro_valor_max && lead.preferences.carro_valor_max > 0
+            ? lead.preferences.carro_valor_max
+            : (lead.preferences.valor_maximo && lead.preferences.valor_maximo > 0 ? lead.preferences.valor_maximo : 9999999);
+
         const carPool = profile?.enable_cars !== false
             ? buildPool(
                 vehicles,
-                lead.preferences.carro_valor_max || lead.preferences.valor_maximo || 9999999,
+                carMaxPrice,
                 lead.preferences.marcas || [],
                 lead.preferences.modelos || [],
                 lead.preferences.tipos_veiculo || [],
@@ -110,10 +137,14 @@ const LeadDetailPage: React.FC = () => {
             )
             : [];
 
+        const motoMaxPrice = lead.preferences.moto_valor_max && lead.preferences.moto_valor_max > 0
+            ? lead.preferences.moto_valor_max
+            : (lead.preferences.valor_maximo && lead.preferences.valor_maximo > 0 ? lead.preferences.valor_maximo : 9999999);
+
         const motoPool = profile?.enable_motorcycles
             ? buildPool(
                 motorcycles,
-                lead.preferences.moto_valor_max || lead.preferences.valor_maximo || 9999999,
+                motoMaxPrice,
                 lead.preferences.marcas_moto || [],
                 lead.preferences.modelos_moto || [],
                 lead.preferences.tipos_moto || [],
@@ -125,7 +156,8 @@ const LeadDetailPage: React.FC = () => {
         const outrasSugestoes: any[] = [];
 
         [...carPool, ...motoPool].forEach(({ item, maxPrice, marcas, modelos, tipos }) => {
-            const dentroDoOrcamento = item.price <= maxPrice;
+            const temLimitePreco = maxPrice < 9999999;
+            const dentroDoOrcamento = !temLimitePreco || item.price <= maxPrice;
             const bateMarca = marcas.length === 0 || marcas.includes(item.brand);
             const bateModelo = modelos.length === 0 || modelos.includes(item.model);
             const bateTipo = tipos.length === 0 || tipos.includes(item.type);
@@ -135,7 +167,7 @@ const LeadDetailPage: React.FC = () => {
                 return;
             }
 
-            const mesmaFaixaDePreco = item.price >= maxPrice * 0.8 && item.price <= maxPrice * 1.2;
+            const mesmaFaixaDePreco = temLimitePreco && item.price >= maxPrice * 0.8 && item.price <= maxPrice * 1.2;
             const carroceriaSimilar = tipos.length > 0 && tipos.includes(item.type);
             if (mesmaFaixaDePreco || carroceriaSimilar) {
                 const motivos: string[] = [];
@@ -145,7 +177,7 @@ const LeadDetailPage: React.FC = () => {
             }
         });
 
-        return { matchCompleto, outrasSugestoes };
+        return { matchCompleto, outrasSugestoes, hasAnyPreference: true };
     }, [vehicles, motorcycles, lead, profile]);
 
     const purchasedVehicles = useMemo(() => {
@@ -340,7 +372,7 @@ const LeadDetailPage: React.FC = () => {
                     <MessageCircle size={14} /> Enviar Sugestão
                 </button>
                 <button
-                    onClick={() => navigate(v.isMoto ? `/motorcycles/details/${v.id}` : `/inventory/details/${v.id}`)}
+                    onClick={() => navigate(v.isMoto ? `/motorcycles?motoId=${v.id}` : `/inventory?vehicleId=${v.id}`)}
                     className="px-3 bg-slate-50 text-slate-500 rounded-xl hover:bg-slate-100 transition-colors border border-slate-200"
                 >
                     <ExternalLink size={16} />
@@ -555,22 +587,61 @@ const LeadDetailPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Coluna 2 e 3: Perfil, Simulação e Veículos */}
+                {/* Coluna 2 e 3: Vendas, Perfil, Simulação e Veículos */}
                 <div className="md:col-span-2 space-y-6">
+                    <LeadSaleDetails
+                        lead={lead}
+                        onUpdateLead={async (updated) => {
+                            setLead(updated);
+                            await updateLead(updated);
+                        }}
+                        purchasedVehicles={purchasedVehicles}
+                    />
                     <LeadPreferences lead={lead} />
                     <LeadSimulationData lead={lead} />
 
                     <div>
-                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Match Completo</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {inventorySuggestions.matchCompleto.length > 0 ? (
-                                inventorySuggestions.matchCompleto.slice(0, 4).map(renderSuggestionCard)
-                            ) : (
-                                <div className="col-span-2 py-10 text-center border-2 border-dashed border-slate-100 rounded-3xl">
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nenhum veículo bate 100% com o perfil do lead.</p>
+                        <div className="flex items-center justify-between mb-4 px-1">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+                                    <Sparkles size={20} className="fill-amber-500/20" />
                                 </div>
-                            )}
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-heading font-extrabold text-lg text-foreground tracking-tight">
+                                        Match Completo
+                                    </h3>
+                                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary border border-primary/20">
+                                        {inventorySuggestions.matchCompleto.length}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
+
+                        {!inventorySuggestions.hasAnyPreference ? (
+                            <div className="py-10 text-center border-2 border-dashed border-border/80 rounded-3xl bg-card p-6">
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Nenhuma preferência cadastrada</p>
+                                <p className="text-xs text-muted-foreground/80">Preencha o orçamento máximo ou selecione marcas e modelos no perfil do lead para exibir a compatibilidade em tempo real.</p>
+                            </div>
+                        ) : inventorySuggestions.matchCompleto.length > 0 ? (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {inventorySuggestions.matchCompleto.slice(0, 4).map(renderSuggestionCard)}
+                                </div>
+
+                                {inventorySuggestions.matchCompleto.length > 4 && (
+                                    <button
+                                        onClick={() => setIsAllMatchesModalOpen(true)}
+                                        className="w-full mt-4 py-3.5 bg-card hover:bg-muted border border-border/80 rounded-2xl font-bold text-xs uppercase tracking-wider text-primary flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99] cursor-pointer"
+                                    >
+                                        <Sparkles size={16} /> Ver todos os {inventorySuggestions.matchCompleto.length} veículos com Match Perfeito
+                                    </button>
+                                )}
+                            </>
+                        ) : (
+                            <div className="py-10 text-center border-2 border-dashed border-border/80 rounded-3xl bg-card p-6">
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Nenhum veículo disponível bate 100% com o perfil deste lead.</p>
+                            </div>
+                        )}
                     </div>
 
                     {inventorySuggestions.outrasSugestoes.length > 0 && (
@@ -604,7 +675,7 @@ const LeadDetailPage: React.FC = () => {
                                             </div>
                                         </div>
                                         <button
-                                            onClick={() => navigate(`/inventory/details/${v.id}`)}
+                                            onClick={() => navigate(v.isMoto ? `/motorcycles?motoId=${v.id}` : `/inventory?vehicleId=${v.id}`)}
                                             className="p-2.5 text-brand-500 hover:bg-brand-50 rounded-xl transition-all"
                                             title="Ver no Estoque"
                                         >
@@ -791,6 +862,39 @@ const LeadDetailPage: React.FC = () => {
                     </div>
                 )
             }
+
+            {/* Modal para ver todos os veículos com Match Perfeito */}
+            {isAllMatchesModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className="bg-card text-foreground rounded-3xl border border-border/80 p-6 md:p-8 max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+                        <div className="flex items-center justify-between pb-4 border-b border-border/80 mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+                                    <Sparkles size={20} className="fill-amber-500/20" />
+                                </div>
+                                <div>
+                                    <h3 className="font-heading font-extrabold text-xl tracking-tight">Veículos com Match Perfeito</h3>
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Encontramos {inventorySuggestions.matchCompleto.length} veículos 100% compatíveis com as preferências de {lead.name}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsAllMatchesModalOpen(false)}
+                                className="w-10 h-10 rounded-xl bg-muted border border-border/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {inventorySuggestions.matchCompleto.map(renderSuggestionCard)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

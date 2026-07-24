@@ -1,6 +1,6 @@
 
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import UserLayout from './components/UserLayout';
 import { ToastProvider } from './contexts/ToastContext';
@@ -12,6 +12,30 @@ function isSystemHost(h: string) {
   return SYSTEM_HOSTS.some(s => h === s || h.endsWith(`.${s}`));
 }
 const IS_SYSTEM_DOMAIN = isSystemHost(window.location.hostname);
+
+const RESERVED_SLUGS = new Set([
+  'dashboard', 'inventory', 'motorcycles', 'leads', 'agenda',
+  'sales-closed', 'sales-flow', 'plans', 'settings', 'support',
+  'website', 'estrutura-ecv', 'login', 'nova-conta', 'redefinir-senha',
+  'politica-de-privacidade', 'termos-de-uso', 'contrato-saas', 'paineldoadm',
+  'site', 'loja', 'preview', 'admin'
+]);
+
+const StoreSlugResolver: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  if (!slug || RESERVED_SLUGS.has(slug.toLowerCase())) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <PublicSiteHome forcedSlug={slug} />;
+};
+
+const StoreVehicleResolver: React.FC = () => {
+  const { slug, id } = useParams<{ slug: string; id: string }>();
+  if (!slug || RESERVED_SLUGS.has(slug.toLowerCase())) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <PublicVehicleDetail forcedSlug={slug} forcedVehicleParam={id} />;
+};
 
 // Loading Component
 const PageLoader = () => (
@@ -64,6 +88,10 @@ const App: React.FC = () => {
                  {/* Rotas públicas — acessíveis em qualquer domínio */}
                 <Route path="/site/:slug" element={<PublicSiteHome />} />
                 <Route path="/site/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
+                <Route path="/loja/:slug" element={<PublicSiteHome />} />
+                <Route path="/loja/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
+                <Route path="/preview/:slug" element={<PublicSiteHome />} />
+                <Route path="/preview/:slug/veiculo/:id" element={<PublicVehicleDetail />} />
                 <Route path="/paineldoadm/*" element={<AdminApp />} />
                 <Route path="/politica-de-privacidade" element={<LegalPrivacyPage />} />
                 <Route path="/termos-de-uso" element={<LegalTermsPage />} />
@@ -109,6 +137,9 @@ const App: React.FC = () => {
                       <Route path="website" element={<WebsitePage />} />
                       <Route path="estrutura-ecv" element={<EstruturaECV />} />
                     </Route>
+                    {/* Resolvers de slug da loja no painel (/nomedaloja e /nomedaloja/veiculo/:id) */}
+                    <Route path="/:slug" element={<StoreSlugResolver />} />
+                    <Route path="/:slug/veiculo/:id" element={<StoreVehicleResolver />} />
                   </>
                 ) : (
                   <>

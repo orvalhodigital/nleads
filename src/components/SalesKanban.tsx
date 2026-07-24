@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Lead, SalePhase } from '../types';
+import { useNavigate } from 'react-router-dom';
+import { Lead, SalePhase, GuaranteeConfig } from '../types';
 import { salesFlowService } from '../services/salesFlowService';
 import { guaranteeService } from '../services/guaranteeService';
-import { GuaranteeConfig } from '../types';
 import { format, parseISO, differenceInDays, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, AlertCircle, Clock, Shield, X } from 'lucide-react';
+import { Calendar, AlertCircle, Clock, Shield, X, ExternalLink } from 'lucide-react';
 
 interface SalesKanbanProps {
   leads: Lead[];
@@ -23,6 +23,7 @@ const PHASES: { id: SalePhase; name: string; color: string; bgColor: string }[] 
 ];
 
 const SalesKanban: React.FC<SalesKanbanProps> = ({ leads, userId, onUpdate }) => {
+  const navigate = useNavigate();
   const [guaranteeConfigs, setGuaranteeConfigs] = useState<GuaranteeConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -174,11 +175,13 @@ const SalesKanban: React.FC<SalesKanbanProps> = ({ leads, userId, onUpdate }) =>
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`p-4 rounded-xl border-2 transition-all ${
+                                onClick={() => !snapshot.isDragging && navigate(`/leads/${lead.id}`)}
+                                className={`group p-4 rounded-2xl border-2 cursor-grab active:cursor-grabbing transition-colors ${
                                   snapshot.isDragging
-                                    ? 'bg-white shadow-xl border-slate-400 scale-105'
-                                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'
+                                    ? 'bg-card shadow-2xl border-primary/50 ring-2 ring-primary/20 z-50'
+                                    : 'bg-card border-border/80 hover:border-primary/50 hover:shadow-md'
                                 }`}
+                                style={provided.draggableProps.style}
                               >
                                 <SalesCard lead={lead} guaranteeConfigs={guaranteeConfigs} phase={phase.id} />
                               </div>
@@ -252,11 +255,18 @@ const SalesCard: React.FC<SalesCardProps> = ({ lead, guaranteeConfigs, phase }) 
 
   return (
     <div className="space-y-3">
-      <div>
-        <h4 className="font-black text-sm text-slate-800 truncate">{lead.name}</h4>
-        <p className="text-xs text-slate-500 mt-0.5">
-          {lead.phone ? lead.phone.replace(/\D/g, '').slice(-9) : 'Sem contato'}
-        </p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h4 className="font-heading font-extrabold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+            {lead.name}
+          </h4>
+          <p className="text-xs font-medium text-muted-foreground mt-0.5">
+            {lead.phone ? lead.phone.replace(/\D/g, '').slice(-11) : 'Sem contato'}
+          </p>
+        </div>
+        <div className="p-1.5 rounded-lg bg-muted border border-border/60 text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-all shrink-0" title="Abrir cadastro do lead">
+          <ExternalLink size={13} />
+        </div>
       </div>
 
       {lead.saleDate && (

@@ -66,8 +66,8 @@
     width: 8px;
   }
   .kanban-scrollbar::-webkit-scrollbar {
-    height: 14px;
-    width: 14px;
+    height: 12px;
+    width: 12px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -75,7 +75,7 @@
     border-radius: 20px;
   }
   .kanban-scrollbar::-webkit-scrollbar-track {
-    background: color-mix(in oklab, var(--secondary) 15%, transparent);
+    background: color-mix(in oklab, var(--muted) 90%, var(--border));
     border-radius: 20px;
   }
 
@@ -84,8 +84,8 @@
     border-radius: 20px;
   }
   .kanban-scrollbar::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, var(--primary) 40%, transparent);
-    border: 3px solid transparent;
+    background: color-mix(in oklab, var(--primary) 70%, transparent);
+    border: 2px solid transparent;
     background-clip: padding-box;
     border-radius: 20px;
   }
@@ -94,8 +94,8 @@
     background: color-mix(in oklab, var(--primary) 50%, transparent);
   }
   .kanban-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in oklab, var(--primary) 70%, transparent);
-    border: 3px solid transparent;
+    background: var(--primary);
+    border: 2px solid transparent;
     background-clip: padding-box;
   }
 

@@ -62,8 +62,8 @@ export interface SaleDetails {
   saleDate: string;
   buyerLeadId?: string;
   buyerName: string;
-  isFollowUpSale: boolean;
-  refurbishmentCosts: number;
+  isFollowUpSale?: boolean;
+  refurbishmentCosts?: number;
 }
 
 export interface OperationalCostItem {
@@ -294,6 +294,7 @@ export interface Lead {
   guaranteeId?: string;
   guaranteeEndsAt?: string;
   postSaleNotes?: string;
+  saleDetails?: SaleDetails;
 }
 
 

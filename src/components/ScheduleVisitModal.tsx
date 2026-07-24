@@ -112,7 +112,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                                     value={form.newLeadPhone} onChange={e => setForm(prev => ({ ...prev, newLeadPhone: e.target.value }))} />
                             </div>
                         ) : (
-                            <div className="relative animate-fadeUp" ref={leadDropdownRef}>
+                            <div className="relative z-30 animate-fadeUp" ref={leadDropdownRef}>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Selecione o Cliente</label>
                                 <input
                                     type="text"
@@ -126,18 +126,18 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                                     className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 transition-all outline-none"
                                 />
                                 {isLeadDropdownOpen && leadSearch && filteredLeads.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] max-h-56 overflow-y-auto custom-scrollbar">
                                         {filteredLeads.map(l => (
                                             <div
                                                 key={l.id}
-                                                className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0"
+                                                className="p-3.5 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors"
                                                 onClick={() => {
                                                     setLeadSearch(`${l.name} (${l.phone || 'Sem telefone'})`);
                                                     setForm(prev => ({ ...prev, leadId: l.id }));
                                                     setIsLeadDropdownOpen(false);
                                                 }}
                                             >
-                                                <p className="text-sm font-bold text-slate-700">{l.name}</p>
+                                                <p className="text-sm font-bold text-slate-800">{l.name}</p>
                                                 <p className="text-[10px] font-bold text-brand-600 mt-0.5">{l.phone || 'Sem telefone'}</p>
                                             </div>
                                         ))}
@@ -146,8 +146,8 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                             </div>
                         )}
 
-                        <div className="space-y-3">
-                            <div className="relative" ref={vehicleDropdownRef}>
+                        <div className="space-y-3 relative z-20">
+                            <div className="relative z-20" ref={vehicleDropdownRef}>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Veículo de Interesse (Opcional)</label>
                                 <input
                                     type="text"
@@ -161,17 +161,17 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ isOpen, onClose
                                     className="w-full text-xs font-bold p-3.5 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-brand-500 transition-all outline-none"
                                 />
                                 {isVehicleDropdownOpen && form.vehicleSearch && filteredVehicles.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] max-h-56 overflow-y-auto custom-scrollbar">
                                         {filteredVehicles.map(v => (
                                             <div
                                                 key={v.id}
-                                                className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0"
+                                                className="p-3.5 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors"
                                                 onClick={() => {
                                                     setForm({ ...form, vehicleSearch: `${v.brand} ${v.model}`, vehicleId: v.id });
                                                     setIsVehicleDropdownOpen(false);
                                                 }}
                                             >
-                                                <p className="text-sm font-bold text-slate-700">{v.brand} {v.model}</p>
+                                                <p className="text-sm font-bold text-slate-800">{v.brand} {v.model}</p>
                                                 <p className="text-[10px] font-bold text-brand-600 mt-0.5">R$ {formatCurrency(v.price)}</p>
                                             </div>
                                         ))}

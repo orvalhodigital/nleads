@@ -21,7 +21,7 @@ const MotorcyclesPage: React.FC = () => {
     }, [loadMotorcycles]);
 
     const handleViewLead = (leadId: string) => {
-        navigate('/leads', { state: { focusedLeadId: leadId } });
+        navigate(`/leads/${leadId}`);
     };
 
     return (

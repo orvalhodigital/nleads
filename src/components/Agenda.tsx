@@ -10,7 +10,7 @@ import { useInventoryContext } from '../contexts/InventoryContext';
 import { useLeadContext } from '../contexts/LeadContext';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lead, LeadPhase, LeadTemperature, VisitStatus } from '../types';
 import ScheduleVisitModal, { ScheduleFormData } from './ScheduleVisitModal';
 import ScheduleFollowUpModal from './ScheduleFollowUpModal';
@@ -28,11 +28,21 @@ const Agenda: React.FC = () => {
     const { loadData } = useData();
     const { showToast } = useToast();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const now = useMemo(() => new Date(), []);
+
+    const tabParam = searchParams.get('tab');
+    const agendaTab = useMemo<'visits' | 'followups'>(() => {
+        if (tabParam === 'followups' || tabParam === 'followup') return 'followups';
+        return 'visits';
+    }, [tabParam]);
+
+    const setAgendaTab = useCallback((tab: 'visits' | 'followups') => {
+        setSearchParams({ tab: tab === 'followups' ? 'followups' : 'visitas' });
+    }, [setSearchParams]);
 
     // View State
     const [viewType, setViewType] = useState<'list' | 'calendar'>('list');
-    const [agendaTab, setAgendaTab] = useState<'visits' | 'followups'>('visits');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [statusFilter, setStatusFilter] = useState<VisitStatus | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -416,22 +426,24 @@ const Agenda: React.FC = () => {
         }
     }, [updateLead, showToast]);
 
-    // Combined data for calendar view (ignores status filter for overview)
+    // Data for calendar view - strictly filtered by active tab (Visitas vs Follow-up)
     const calendarItems = useMemo(() => {
-        const visitItems = baseVisits
-            .filter(v => !searchQuery ||
-                v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (v.phone && v.phone.includes(searchQuery)))
-            .map(v => ({
-                id: v.appointmentId,
-                leadId: v.id,
-                date: v.visitDate,
-                name: v.name,
-                type: 'visit' as const,
-                status: v.visit_status
-            }));
+        if (agendaTab === 'visits') {
+            return baseVisits
+                .filter(v => !searchQuery ||
+                    v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (v.phone && v.phone.includes(searchQuery)))
+                .map(v => ({
+                    id: v.appointmentId,
+                    leadId: v.id,
+                    date: v.visitDate,
+                    name: v.name,
+                    type: 'visit' as const,
+                    status: v.visit_status
+                }));
+        }
 
-        const followupItems = baseFollowups
+        return baseFollowups
             .filter(f => !searchQuery ||
                 f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (f.phone && f.phone.includes(searchQuery)))
@@ -443,9 +455,7 @@ const Agenda: React.FC = () => {
                 type: 'followup' as const,
                 status: undefined
             }));
-
-        return [...visitItems, ...followupItems];
-    }, [baseVisits, baseFollowups, searchQuery]);
+    }, [baseVisits, baseFollowups, searchQuery, agendaTab]);
 
     return (
         <div className="flex flex-col h-full space-y-6 animate-fadeIn pb-10" >

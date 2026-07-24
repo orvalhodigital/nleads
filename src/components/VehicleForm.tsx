@@ -602,11 +602,15 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 {/* ── TAB 1: DADOS DO VEÍCULO ────────────────────────────────────── */}
                 {activeTab === 'dados' && (
                     <div className="bg-card rounded-[2.5rem] p-10 border border-border/80 shadow-sm space-y-10">
-                        {/* Identificação Básica — bloco destacado, com a Placa em evidência */}
-                        <section className="space-y-6 rounded-3xl border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.07] p-6 md:p-8">
-                            <div className="flex items-center gap-3">
-                                <div className="w-1.5 h-4 bg-primary rounded-full" />
-                                <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest flex items-center gap-2"><Calendar size={13} /> Identificação Básica</h3>
+                        {/* Identificação Básica — bloco destacado com cabeçalho limpo */}
+                        <section className="space-y-6 rounded-3xl border border-border/80 bg-muted/30 dark:bg-muted/20 p-6 md:p-8">
+                            <div className="flex items-center justify-between bg-card border border-border/80 p-4 px-6 rounded-2xl shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2.5 h-6 bg-primary rounded-full" />
+                                    <h3 className="font-heading font-extrabold text-base md:text-lg text-foreground tracking-tight flex items-center gap-2.5">
+                                        <Calendar size={18} className="text-primary" /> Identificação Básica
+                                    </h3>
+                                </div>
                             </div>
 
                             {/* PLACA — destaque principal */}
@@ -805,16 +809,20 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 type="button"
                                 onClick={() => setShowCondicoes(v => !v)}
                                 aria-expanded={showCondicoes}
-                                className="w-full flex items-center gap-3 mb-2 group"
+                                className="w-full flex items-center justify-between bg-muted/60 dark:bg-muted/40 hover:bg-muted border border-border/80 p-4 px-6 rounded-2xl transition-all group cursor-pointer shadow-sm"
                             >
-                                <div className="w-1.5 h-4 bg-primary rounded-full shrink-0" />
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 group-hover:text-foreground transition-colors"><FileText size={13} /> Condições e Chaves</h3>
-                                <span className="text-[9px] font-bold text-muted-foreground/60 normal-case tracking-normal">
-                                    {condicoesCount > 0 ? `${condicoesCount} marcado(s)` : 'opcional'}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2.5 h-6 bg-primary rounded-full shrink-0" />
+                                    <h3 className="font-heading font-extrabold text-base md:text-lg text-foreground tracking-tight flex items-center gap-2.5">
+                                        <FileText size={18} className="text-primary" /> Condições e Chaves
+                                    </h3>
+                                    <span className="text-xs font-bold text-muted-foreground px-3 py-1 bg-card rounded-lg border border-border/60 ml-2">
+                                        {condicoesCount > 0 ? `${condicoesCount} marcado(s)` : 'Opcional'}
+                                    </span>
+                                </div>
                                 <ChevronDown
-                                    size={16}
-                                    className={`ml-auto shrink-0 text-muted-foreground transition-transform duration-300 ${showCondicoes ? 'rotate-180' : ''}`}
+                                    size={20}
+                                    className={`text-muted-foreground group-hover:text-foreground transition-transform duration-300 ${showCondicoes ? 'rotate-180' : ''}`}
                                 />
                             </button>
 
@@ -878,16 +886,20 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 type="button"
                                 onClick={() => setShowOpcionais(v => !v)}
                                 aria-expanded={showOpcionais}
-                                className="w-full flex items-center gap-3 mb-2 group"
+                                className="w-full flex items-center justify-between bg-muted/60 dark:bg-muted/40 hover:bg-muted border border-border/80 p-4 px-6 rounded-2xl transition-all group cursor-pointer shadow-sm"
                             >
-                                <div className="w-1.5 h-4 bg-amber-500 rounded-full shrink-0" />
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 group-hover:text-foreground transition-colors"><Shield size={13} /> Opcionais do Veículo</h3>
-                                <span className="text-[9px] font-bold text-muted-foreground/60 normal-case tracking-normal">
-                                    {(formData.optionals?.length || 0) > 0 ? `${formData.optionals!.length} selecionado(s)` : 'opcional'}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2.5 h-6 bg-amber-500 rounded-full shrink-0" />
+                                    <h3 className="font-heading font-extrabold text-base md:text-lg text-foreground tracking-tight flex items-center gap-2.5">
+                                        <Shield size={18} className="text-amber-500" /> Opcionais do Veículo
+                                    </h3>
+                                    <span className="text-xs font-bold text-muted-foreground px-3 py-1 bg-card rounded-lg border border-border/60 ml-2">
+                                        {(formData.optionals?.length || 0) > 0 ? `${formData.optionals!.length} selecionado(s)` : 'Opcional'}
+                                    </span>
+                                </div>
                                 <ChevronDown
-                                    size={16}
-                                    className={`ml-auto shrink-0 text-muted-foreground transition-transform duration-300 ${showOpcionais ? 'rotate-180' : ''}`}
+                                    size={20}
+                                    className={`text-muted-foreground group-hover:text-foreground transition-transform duration-300 ${showOpcionais ? 'rotate-180' : ''}`}
                                 />
                             </button>
                             <div className={showOpcionais ? 'space-y-6 animate-fadeUp' : 'hidden'}>
@@ -972,9 +984,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
                         {/* Media and Description */}
                         <section className="space-y-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-4 bg-cyan-500 rounded-full" />
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><ImagePlus size={13} /> Mídia e Descrição</h3>
+                            <div className="flex items-center justify-between bg-muted/60 dark:bg-muted/40 border border-border/80 p-4 px-6 rounded-2xl shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2.5 h-6 bg-cyan-500 rounded-full" />
+                                    <h3 className="font-heading font-extrabold text-base md:text-lg text-foreground tracking-tight flex items-center gap-2.5">
+                                        <ImagePlus size={18} className="text-cyan-500" /> Mídia e Descrição
+                                    </h3>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

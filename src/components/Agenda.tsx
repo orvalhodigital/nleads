@@ -461,46 +461,34 @@ const Agenda: React.FC = () => {
         <div className="flex flex-col h-full space-y-6 animate-fadeIn pb-10" >
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-center justify-between gap-6 px-1">
-                    <div className="flex items-center gap-3">
-                        {/* Tab Selector */}
-                        <div className="flex bg-muted/80 dark:bg-slate-900/60 p-1 rounded-xl border border-border/80 backdrop-blur-sm">
-                            <button
-                                onClick={() => setAgendaTab('visits')}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'visits' ? 'bg-card text-primary shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
-                            >
-                                <CalendarDays size={15} />
-                                <span className="text-[11px] uppercase tracking-wide">Visitas</span>
-                                {stats.visitsPending > 0 && (
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'visits' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                        {stats.visitsPending}
-                                    </span>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => setAgendaTab('followups')}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all duration-300 ${agendaTab === 'followups' ? 'bg-card text-primary shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
-                            >
-                                <PhoneCall size={15} />
-                                <span className="text-[11px] uppercase tracking-wide">Follow-ups</span>
-                                {(stats.followupsOverdue + stats.followupsToday) > 0 && (
-                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-md ${agendaTab === 'followups' ? 'bg-rose-500/10 text-rose-500' : 'bg-muted text-muted-foreground'}`}>
-                                        {stats.followupsOverdue + stats.followupsToday}
-                                    </span>
-                                )}
-                            </button>
+                    <div className="flex items-center gap-4">
+                        {/* Page Header Title */}
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary">
+                                {agendaTab === 'visits' ? <CalendarDays size={22} /> : <PhoneCall size={22} />}
+                            </div>
+                            <div>
+                                <h1 className="font-heading font-extrabold text-2xl text-foreground tracking-tight">
+                                    {agendaTab === 'visits' ? 'Visitas' : 'Follow-ups'}
+                                </h1>
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    {agendaTab === 'visits' ? 'Gestão e agendamentos de visitas presenciais' : 'Acompanhamento e tarefas de follow-up com clientes'}
+                                </p>
+                            </div>
                         </div>
 
                         <div className="h-10 w-px bg-border/80 mx-1 hidden md:block" />
 
-                        {/* View Type */}
+                        {/* View Type Switcher */}
                         <div className="flex bg-muted/80 dark:bg-slate-900/60 p-1 rounded-xl border border-border/80">
                             {(['list', 'calendar'] as const).map((v) => (
                                 <button
                                     key={v}
                                     onClick={() => setViewType(v)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${viewType === v ? 'bg-card text-foreground shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer ${viewType === v ? 'bg-card text-foreground shadow-sm font-bold border border-border/50' : 'text-muted-foreground hover:text-foreground font-semibold'}`}
                                 >
                                     {v === 'list' ? <LayoutList size={15} strokeWidth={2.5} /> : <CalendarDays size={15} strokeWidth={2.5} />}
+                                    <span className="text-xs font-bold capitalize">{v === 'list' ? 'Lista' : 'Calendário'}</span>
                                 </button>
                             ))}
                         </div>

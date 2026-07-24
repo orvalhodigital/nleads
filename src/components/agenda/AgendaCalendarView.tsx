@@ -41,11 +41,7 @@ export const AgendaCalendarView: React.FC<AgendaCalendarViewProps> = ({
       <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border/80">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-primary"></div>
-          <span className="text-[9px] font-bold text-muted-foreground">Visitas</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-blue-500"></div>
-          <span className="text-[9px] font-bold text-muted-foreground">Follow-ups</span>
+          <span className="text-[9px] font-bold text-muted-foreground">Compromissos Agendados</span>
         </div>
       </div>
     </div>

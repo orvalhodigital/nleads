@@ -15,12 +15,10 @@ const OverdueBanner: React.FC = () => {
             const url = await planService.getAsaasBillingPortalLink();
             if (url) {
                 window.location.href = url;
-            } else {
-                window.location.href = '/settings';
             }
         } catch (err: any) {
-            console.warn('Erro ao obter link de cobrança do Asaas, redirecionando para configurações:', err);
-            window.location.href = '/settings';
+            alert(err?.message || 'Erro ao gerar fatura de renovação no Asaas.');
+            setLoading(false);
         }
     };
 

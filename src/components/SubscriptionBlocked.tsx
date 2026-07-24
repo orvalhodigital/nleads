@@ -17,10 +17,11 @@ const SubscriptionBlocked: React.FC = () => {
         setLoading(true);
         try {
             const url = await planService.getAsaasBillingPortalLink();
-            window.location.href = url;
-        } catch {
-            // Se o portal falhar, manda para Configurações, onde há a opção de plano.
-            navigate('/settings');
+            if (url) {
+                window.location.href = url;
+            }
+        } catch (err: any) {
+            alert(err?.message || 'Erro ao gerar fatura de renovação no Asaas.');
         } finally {
             setLoading(false);
         }

@@ -123,6 +123,13 @@ export const planService = {
     });
 
     if (!response.ok) {
+      // Se não houver fatura ativa no Asaas, gera um novo link de cobrança/renovação do plano no Asaas
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('plan').eq('id', user.id).single();
+        const planId = profile?.plan || 'estrutura-ecv-plus';
+        return await this.getAsaasUpgradeLink(user.id, planId);
+      }
       const errData = await response.json().catch(() => ({}));
       throw new Error(errData.error || 'Erro ao recuperar portal de faturamento.');
     }

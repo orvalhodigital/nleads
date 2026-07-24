@@ -603,14 +603,14 @@ const LeadDetailPage: React.FC = () => {
                     <div>
                         <div className="flex items-center justify-between mb-4 px-1">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
-                                    <Sparkles size={20} className="fill-amber-500/20" />
+                                <div className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-500/30 text-amber-500 shadow-sm">
+                                    <Sparkles size={22} className="fill-amber-400 text-amber-500" />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <h3 className="font-heading font-extrabold text-lg text-foreground tracking-tight">
-                                        Match Completo
+                                <div className="flex items-center gap-2.5">
+                                    <h3 className="font-heading font-extrabold text-xl text-foreground tracking-tight">
+                                        Match Perfeito
                                     </h3>
-                                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-primary/10 text-primary border border-primary/20">
+                                    <span className="px-2.5 py-0.5 text-xs font-black rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                                         {inventorySuggestions.matchCompleto.length}
                                     </span>
                                 </div>
@@ -645,8 +645,20 @@ const LeadDetailPage: React.FC = () => {
                     </div>
 
                     {inventorySuggestions.outrasSugestoes.length > 0 && (
-                        <div>
-                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Outras Sugestões</h3>
+                        <div className="pt-4 border-t border-border/60">
+                            <div className="flex items-center gap-3 mb-4 px-1">
+                                <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500">
+                                    <Sparkles size={18} />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-heading font-extrabold text-lg text-foreground tracking-tight">
+                                        Pode dar Match
+                                    </h3>
+                                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                        {inventorySuggestions.outrasSugestoes.length}
+                                    </span>
+                                </div>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {inventorySuggestions.outrasSugestoes.slice(0, 4).map(renderSuggestionCard)}
                             </div>

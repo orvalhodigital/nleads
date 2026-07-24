@@ -43,7 +43,6 @@ const LeadActionPage = lazy(() => import('./pages/LeadActionPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const WebsitePage = lazy(() => import('./pages/WebsitePage'));
 const EstruturaECV = lazy(() => import('./components/EstruturaECV'));
-const DiagnosticsPage = lazy(() => import('./pages/DiagnosticsPage'));
 const PublicSiteHome = lazy(() => import('./pages/public/PublicSiteHome'));
 const PublicVehicleDetail = lazy(() => import('./pages/public/PublicVehicleDetail'));
 const CustomDomainRedirect = lazy(() => import('./pages/CustomDomainRedirect'));
@@ -109,7 +108,6 @@ const App: React.FC = () => {
                       <Route path="support" element={<SupportPage />} />
                       <Route path="website" element={<WebsitePage />} />
                       <Route path="estrutura-ecv" element={<EstruturaECV />} />
-                      <Route path="diagnostico" element={<DiagnosticsPage />} />
                     </Route>
                   </>
                 ) : (

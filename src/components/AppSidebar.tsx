@@ -50,7 +50,6 @@ const AppSidebar: React.FC = () => {
         { id: '/sales-closed', icon: CheckCircle2, label: 'Vendas (Relatório)', end: false },
         { id: '/support', icon: LifeBuoy, label: 'Suporte', end: false },
         { id: '/website', icon: Globe, label: 'Website', end: false },
-        { id: '/diagnostico', icon: ListTodo, label: 'Diagnóstico', end: false },
     ];
 
     // Mobile: 4 itens principais na barra inferior; o resto vai para o sheet "Mais".

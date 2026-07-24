@@ -191,6 +191,16 @@ Não amplia exposição de dados: `anon` já é a internet inteira, e a condiç�
 
 ---
 
+### 2026-07-24 — Removida a Ficha de Diagnóstico do sistema
+
+**Decisão:** remover a tela de Diagnóstico (`src/pages/DiagnosticsPage.tsx`), a rota `/diagnostico` e o item do menu lateral.
+
+**Por quê:** funcionalidade desativada a pedido do usuário.
+
+**O que muda no código:** `src/pages/DiagnosticsPage.tsx` foi excluído, a rota `/diagnostico` foi removida em `src/App.tsx` e a opção foi retirada da sidebar (`src/components/AppSidebar.tsx`).
+
+---
+
 ### 2026-07-20 — Rebrand: Orvalho é o padrão; o produto chama-se Gestor de Pátio
 
 **Decisão:** eliminar as marcas `Otimizza` e `nLeads`.

@@ -35,7 +35,7 @@ Cada lojista (tenant) gerencia estoque, leads/CRM, fluxo de vendas e um site pú
 ## 3. Superfície de rotas
 
 ### 3.1 App do lojista (autenticado)
-`/dashboard` · `/inventory` (+`/new`, `/edit/:id`) · `/motorcycles` · `/leads` (+`/new`, `/edit/:id`, `/:id`, `/:id/action/:actionType`) · `/agenda` · `/sales-closed` · `/sales-flow` · `/settings` · `/support` · `/website` · `/estrutura-ecv` · `/diagnostics`
+`/dashboard` · `/inventory` (+`/new`, `/edit/:id`) · `/motorcycles` · `/leads` (+`/new`, `/edit/:id`, `/:id`, `/:id/action/:actionType`) · `/agenda` · `/sales-closed` · `/sales-flow` · `/settings` · `/support` · `/website` · `/estrutura-ecv`
 
 ### 3.2 Autenticação
 `/login` · `/nova-conta` · `/redefinir-senha`

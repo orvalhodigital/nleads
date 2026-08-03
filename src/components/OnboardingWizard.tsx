@@ -57,8 +57,6 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }) => {
     if (profile?.company_logo) count++;
     if (profile?.avatar_url) count++;
     if (profile?.whatsapp_webhook_url) count++;
-    if (profile?.enable_cars || profile?.enable_motorcycles) count++;
-    // Would need to check actual vehicle/lead count from context
     return count;
   };
 

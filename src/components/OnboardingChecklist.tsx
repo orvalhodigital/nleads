@@ -19,7 +19,6 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ onStart }) =>
     { id: 'logo', label: 'Logo da empresa', done: !!profile?.company_logo },
     { id: 'avatar', label: 'Foto de perfil', done: !!profile?.avatar_url },
     { id: 'whatsapp', label: 'WhatsApp conectado', done: !!profile?.whatsapp_webhook_url },
-    { id: 'vehicle-type', label: 'Tipo de veículo', done: profile?.enable_cars || profile?.enable_motorcycles },
   ];
 
   const completedCount = checklist.filter((item) => item.done).length;

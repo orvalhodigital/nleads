@@ -63,16 +63,10 @@ const Header: React.FC<HeaderProps> = ({ currentView, impersonatedUserId, onNavi
                 try {
                     const effectiveUserId = isEmpresa ? undefined : (profile?.id || impersonatedUserId);
                     const searchPromises: Promise<{ type: string, data: any[] }>[] = [
-                        leadService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'leads', data }))
+                        leadService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'leads', data })),
+                        vehicleService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'vehicles', data })),
+                        motorcycleService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'motorcycles', data }))
                     ];
-
-                    if (profile?.enable_cars !== false) {
-                        searchPromises.push(vehicleService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'vehicles', data })));
-                    }
-
-                    if (profile?.enable_motorcycles) {
-                        searchPromises.push(motorcycleService.search(searchTerm, effectiveUserId, adminId).then(data => ({ type: 'motorcycles', data })));
-                    }
 
                     const results = await Promise.all(searchPromises);
 

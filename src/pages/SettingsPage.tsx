@@ -4,10 +4,6 @@ import {
     Save,
     Settings as SettingsIcon,
     Shield,
-    Car,
-    Bike,
-    ToggleLeft,
-    ToggleRight,
     Clock,
     User,
     MessageCircle,
@@ -17,6 +13,8 @@ import {
     Users,
     Globe,
     Award,
+    ToggleLeft,
+    ToggleRight,
 } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -79,8 +77,6 @@ const SettingsPage: React.FC = () => {
     };
 
     const [loading, setLoading] = useState(false);
-    const [enableCars, setEnableCars] = useState(profile?.enable_cars !== false);
-    const [enableMotorcycles, setEnableMotorcycles] = useState(profile?.enable_motorcycles || false);
     const [businessHours, setBusinessHours] = useState<BusinessHourEntry[]>([
         { day: 0, open: false, start: '09:00', end: '18:00' },
         { day: 1, open: true,  start: '08:00', end: '18:00' },
@@ -92,8 +88,6 @@ const SettingsPage: React.FC = () => {
     ]);
 
     useEffect(() => {
-        setEnableCars(profile?.enable_cars !== false);
-        setEnableMotorcycles(profile?.enable_motorcycles || false);
         if (profile?.business_hours && Array.isArray(profile.business_hours) && profile.business_hours.length > 0) {
             setBusinessHours(profile.business_hours as BusinessHourEntry[]);
         }
@@ -102,13 +96,6 @@ const SettingsPage: React.FC = () => {
     const handleSaveGeral = async () => {
         setLoading(true);
         try {
-            await supabase.auth.updateUser({
-                data: {
-                    enable_cars: enableCars,
-                    enable_motorcycles: enableMotorcycles
-                }
-            });
-
             if (profile?.id) {
                 await profileService.updateProfile({ business_hours: businessHours });
             }
@@ -193,54 +180,6 @@ const SettingsPage: React.FC = () => {
 
             {activeTab === 'Geral' && (
                 <div className="space-y-8">
-                    {/* Tipos de Veículos */}
-                    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6">
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <Car className="text-brand-500" size={24} />
-                                Tipos de Veículos em Estoque
-                            </h2>
-                            <p className="text-sm text-slate-500 mt-1">
-                                Marque os tipos de veículos que sua loja trabalha. As páginas correspondentes aparecerão no menu lateral.
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${enableCars ? 'bg-brand-50 border-brand-100' : 'bg-slate-50 border-slate-100'}`}>
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${enableCars ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'bg-slate-200 text-slate-400'}`}>
-                                        <Car size={22} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-900">Carros</p>
-                                        <p className="text-[10px] font-medium text-slate-400">Gerenciamento de veículos leves</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => setEnableCars(!enableCars)} className="focus:outline-none">
-                                    {enableCars
-                                        ? <ToggleRight size={36} className="text-brand-500" />
-                                        : <ToggleLeft size={36} className="text-slate-300" />}
-                                </button>
-                            </div>
-
-                            <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${enableMotorcycles ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-100'}`}>
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${enableMotorcycles ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-200 text-slate-400'}`}>
-                                        <Bike size={22} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-900">Motos</p>
-                                        <p className="text-[10px] font-medium text-slate-400">Gerenciamento de motocicletas</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => setEnableMotorcycles(!enableMotorcycles)} className="focus:outline-none">
-                                    {enableMotorcycles
-                                        ? <ToggleRight size={36} className="text-blue-500" />
-                                        : <ToggleLeft size={36} className="text-slate-300" />}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Horário de Funcionamento */}
                     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6">

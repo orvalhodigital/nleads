@@ -31,26 +31,18 @@ const Dashboard: React.FC<DashboardProps> = ({ leads, vehicles, motorcycles = []
   const [filterSource, setFilterSource] = useState<string>('all');
 
   const unifiedVehicles = useMemo(() => {
-    const list: Vehicle[] = [];
-    if (profile?.enable_cars !== false) {
-      list.push(...vehicles);
-    }
-    if (profile?.enable_motorcycles) {
-      // Não sobrescrever `createdAt` aqui: motorcycleService já mapeia o valor real
-      // de `created_at`. Sobrescrever com a data de venda fazia "Tempo Médio de
-      // Venda" e "Veículos Parados" ficarem sempre errados/zerados para motos.
-      list.push(...motorcycles.map(m => ({
-        ...m,
-        type: m.category as unknown as VehicleType,
+    const list: Vehicle[] = [...vehicles];
+    list.push(...motorcycles.map(m => ({
+      ...m,
+      type: m.category as unknown as VehicleType,
         transmission: 'Manual' as TransmissionType,
         engine: m.engine,
         // Campo obrigatório de Vehicle sem equivalente em Motorcycle. Só afeta
         // a ficha do veículo, não as métricas calculadas aqui.
         isServiceHistoryComplete: false,
       })));
-    }
     return list;
-  }, [vehicles, motorcycles, profile]);
+  }, [vehicles, motorcycles]);
   const [filterTemp, setFilterTemp] = useState<string>('all');
   const [quote, setQuote] = useState<{ text: string, author: string }>({
     text: 'Aproxime-se de cada cliente com a ideia de ajudá-lo a resolver um problema.',

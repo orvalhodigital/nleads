@@ -272,10 +272,10 @@ export default function InventoryImportModal({ isOpen, onClose, onSuccess, curre
 
                 // Inferences for UI display
                 if (!brand && model) {
-                    brand = inferBrand(model, profile?.enable_cars !== false, !!profile?.enable_motorcycles);
+                    brand = inferBrand(model, true, true);
                 }
                 if (!type && model) {
-                    type = inferType(model, profile?.enable_cars !== false, !!profile?.enable_motorcycles);
+                    type = inferType(model, true, true);
                 }
 
                 // Skip if we still don't have at least a brand and model, or a plate

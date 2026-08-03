@@ -33,8 +33,8 @@ const HomePage: React.FC = () => {
     const leadsNovosHoje = leads.filter(l => l.phase === LeadPhase.NEW && isToday(new Date(l.createdAt))).length;
     const visitasHoje = leads.filter(l => l.visit_date && isToday(parseISO(l.visit_date)) && l.visit_status === 'pending').length;
     const followupsHoje = leads.filter(l => l.phase === LeadPhase.FOLLOW_UP && l.follow_up_data?.nextContactDate && isToday(parseISO(l.follow_up_data.nextContactDate))).length;
-    const availableVehicles = profile?.enable_cars !== false ? vehicles.filter(v => v.status === 'available').length : 0;
-    const availableMotos = profile?.enable_motorcycles ? motorcycles.filter(m => m.status === 'available').length : 0;
+    const availableVehicles = vehicles.filter(v => v.status === 'available').length;
+    const availableMotos = motorcycles.filter(m => m.status === 'available').length;
     const estoqueDisponivel = availableVehicles + availableMotos;
 
     return (

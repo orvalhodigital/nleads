@@ -63,8 +63,7 @@ const AppSidebar: React.FC = () => {
     // Lista completa (usada na sidebar desktop e no sheet "Mais" do mobile)
     const menuItems: MenuItem[] = [
         { id: '/dashboard', icon: LayoutDashboard, label: 'Métricas', end: true },
-        ...(profile?.enable_cars !== false ? [{ id: '/inventory', icon: Car, label: profile?.enable_motorcycles ? 'Carros' : 'Veículos', end: false }] : []),
-        ...(profile?.enable_motorcycles ? [{ id: '/motorcycles', icon: Bike, label: 'Motos', end: false }] : []),
+        { id: '/inventory', icon: Car, label: 'Veículos', end: false },
         { id: '/leads', icon: Users, label: 'Leads', end: false },
         { id: '/agenda?tab=visitas', icon: CalendarDays, label: 'Visitas', end: false },
         { id: '/agenda?tab=followups', icon: PhoneCall, label: 'Follow-up', end: false },
@@ -75,7 +74,7 @@ const AppSidebar: React.FC = () => {
     ];
 
     // Mobile: 4 itens principais na barra inferior; o resto vai para o sheet "Mais".
-    const estoqueItem = menuItems.find(i => i.id === '/inventory' || i.id === '/motorcycles');
+    const estoqueItem = menuItems.find(i => i.id === '/inventory');
     const primaryMobile: MenuItem[] = [
         menuItems.find(i => i.id === '/dashboard'),
         estoqueItem,

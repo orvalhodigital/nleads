@@ -132,31 +132,27 @@ const LeadDetailPage: React.FC = () => {
             ? lead.preferences.carro_valor_max
             : (lead.preferences.valor_maximo && lead.preferences.valor_maximo > 0 ? lead.preferences.valor_maximo : 9999999);
 
-        const carPool = profile?.enable_cars !== false
-            ? buildPool(
-                vehicles,
-                carMaxPrice,
-                lead.preferences.marcas || [],
-                lead.preferences.modelos || [],
-                lead.preferences.tipos_veiculo || [],
-                false
-            )
-            : [];
+        const carPool = buildPool(
+            vehicles,
+            carMaxPrice,
+            lead.preferences.marcas || [],
+            lead.preferences.modelos || [],
+            lead.preferences.tipos_veiculo || [],
+            false
+        );
 
         const motoMaxPrice = lead.preferences.moto_valor_max && lead.preferences.moto_valor_max > 0
             ? lead.preferences.moto_valor_max
             : (lead.preferences.valor_maximo && lead.preferences.valor_maximo > 0 ? lead.preferences.valor_maximo : 9999999);
 
-        const motoPool = profile?.enable_motorcycles
-            ? buildPool(
-                motorcycles,
-                motoMaxPrice,
-                lead.preferences.marcas_moto || [],
-                lead.preferences.modelos_moto || [],
-                lead.preferences.tipos_moto || [],
-                true
-            )
-            : [];
+        const motoPool = buildPool(
+            motorcycles,
+            motoMaxPrice,
+            lead.preferences.marcas_moto || [],
+            lead.preferences.modelos_moto || [],
+            lead.preferences.tipos_moto || [],
+            true
+        );
 
         const matchCompleto: any[] = [];
         const outrasSugestoes: any[] = [];
@@ -187,15 +183,12 @@ const LeadDetailPage: React.FC = () => {
     }, [vehicles, motorcycles, lead, profile]);
 
     const purchasedVehicles = useMemo(() => {
-        const list: any[] = [];
-        if (profile?.enable_cars !== false) {
-            list.push(...vehicles.filter(v => v.saleDetails?.buyerLeadId === lead.id));
-        }
-        if (profile?.enable_motorcycles) {
-            list.push(...motorcycles.filter(m => m.saleDetails?.buyerLeadId === lead.id).map(m => ({ ...m, isMoto: true })));
-        }
+        const list: any[] = [
+            ...vehicles.filter(v => v.saleDetails?.buyerLeadId === lead.id),
+            ...motorcycles.filter(m => m.saleDetails?.buyerLeadId === lead.id).map(m => ({ ...m, isMoto: true }))
+        ];
         return list;
-    }, [vehicles, motorcycles, lead, profile]);
+    }, [vehicles, motorcycles, lead]);
 
     const handleUpdateVisit = async (id: string, status: 'pending' | 'show' | 'noshow') => {
         let updatedAppointments = lead.scheduling_data?.appointments ? [...lead.scheduling_data.appointments] : [];
@@ -789,7 +782,7 @@ const LeadDetailPage: React.FC = () => {
                                 />
                                 {isVehicleDropdownOpen && newScheduleForm.vehicleOfInterest && (
                                     <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto custom-scrollbar">
-                                        {[...vehicles.filter(v => profile?.enable_cars !== false), ...motorcycles.filter(m => profile?.enable_motorcycles).map(m => ({ ...m, isMoto: true }))]
+                                        {[...vehicles, ...motorcycles.map(m => ({ ...m, isMoto: true }))]
                                             .filter(v => v.status === 'available' && `${v.brand} ${v.model}`.toLowerCase().includes(newScheduleForm.vehicleOfInterest.toLowerCase()))
                                             .map(v => (
                                                 <div

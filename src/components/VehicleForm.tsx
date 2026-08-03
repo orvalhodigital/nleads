@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import {
     X, Upload, Loader2, Check, Plus, DollarSign, Calendar, Gauge, Zap,
     ArrowLeft, Search, AlertCircle, Hash, Shield, ImagePlus, FileText,
-    Target, Settings, HelpCircle, Sparkles, PlusCircle, Trash2, ChevronDown, Star, Camera
+    Target, Settings, HelpCircle, Sparkles, PlusCircle, Trash2, ChevronDown, Star, Camera,
+    Car, Bike, Truck, Boxes
 } from 'lucide-react';
 import { Vehicle, VehicleType, TransmissionType, EngineType, FuelType, MotorcycleCategory, MotoStartType, MotoBrakeType, MotoFuelSystem, MotoCooling } from '../types';
 import { Switch } from './ui/switch';
@@ -680,10 +681,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
                     <div className="grid grid-cols-2 gap-4">
                         {[
-                            { label: 'Carro / Utilitário', value: 'carro', icon: <Zap size={24} /> },
-                            { label: 'Motocicleta', value: 'moto', icon: <Settings size={24} /> },
-                            { label: 'Caminhão', value: 'caminhao', icon: <Shield size={24} /> },
-                            { label: 'Outros', value: 'outros', icon: <HelpCircle size={24} /> }
+                            { label: 'Carro / Utilitário', value: 'carro', icon: <Car size={24} /> },
+                            { label: 'Motocicleta', value: 'moto', icon: <Bike size={24} /> },
+                            { label: 'Caminhão', value: 'caminhao', icon: <Truck size={24} /> },
+                            { label: 'Outros', value: 'outros', icon: <Boxes size={24} /> }
                         ].map((cat) => (
                             <button
                                 type="button"

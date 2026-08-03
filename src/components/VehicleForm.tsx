@@ -691,7 +691,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                                 type="button"
                                 key={cat.value}
                                 onClick={() => {
-                                    setFormData(prev => ({ ...prev, vehicleCategory: cat.value as any, plate: 'SEM PLACA' }));
+                                    setFormData(prev => ({ ...prev, vehicleCategory: cat.value as any, plate: '' }));
                                     setStep('form');
                                 }}
                                 className="flex flex-col items-center justify-center p-6 rounded-2xl border border-border/80 hover:border-primary hover:bg-primary/5 transition-all gap-3 cursor-pointer group"

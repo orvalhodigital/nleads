@@ -158,17 +158,8 @@ export const InventoryHeader: React.FC<InventoryHeaderProps> = ({
         </select>
       </div>
 
-      {/* Right action buttons: Import (if present) & Add New */}
+      {/* Right action buttons: Add New */}
       <div className="flex items-center gap-3">
-        {onOpenImport && (
-          <button
-            type="button"
-            onClick={onOpenImport}
-            className="flex items-center gap-2 px-5 py-2.5 bg-card border border-border text-foreground rounded-xl text-[11px] font-extrabold uppercase tracking-wider hover:bg-muted transition-all shadow-sm active:scale-95"
-          >
-            <Upload size={15} strokeWidth={2.5} /> Importar
-          </button>
-        )}
         <button
           type="button"
           onClick={onNewItem}

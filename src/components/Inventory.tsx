@@ -865,7 +865,6 @@ const Inventory: React.FC<InventoryProps> = ({
           onToggleFilter={() => setIsFilterOpen(!isFilterOpen)}
           sortBy={sortBy}
           onSortByChange={setSortBy}
-          onOpenImport={() => setIsImportModalOpen(true)}
           onNewItem={() => navigate('/inventory/new')}
           newItemLabel="Novo Veículo"
         />

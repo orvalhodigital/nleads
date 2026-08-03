@@ -103,13 +103,13 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-sm font-bold text-slate-800 truncate">Foto de Perfil</h3>
+                            <h3 className="text-sm font-bold text-slate-800 truncate">Foto de Perfil Pessoal</h3>
                             <span className="px-2 py-0.5 bg-brand-50 text-brand-600 text-[9px] font-black uppercase tracking-widest rounded-md shrink-0">
                                 {profile.role === 'super_admin' ? 'Super Admin' : profile.role === 'admin' ? 'Proprietário' : profile.role === 'empresa' ? 'Empresa' : 'Vendedor'}
                             </span>
                         </div>
                         <p className="text-[11px] text-slate-500 leading-relaxed mb-2">
-                            Sua foto de identificação no painel, chat de equipe e notificações.
+                            Sua foto de identificação no painel de controle e chat de equipe.
                         </p>
                         <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg">
                             <div className="w-1 h-1 rounded-full bg-brand-500" />
@@ -118,34 +118,18 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                     </div>
                 </div>
 
-                {/* Logo da Empresa */}
-                {profile.role !== 'vendedor' && (
-                    <div className="bg-white rounded-3xl border border-slate-100 p-6 flex items-start gap-5 transition-all hover:shadow-sm">
-                        <div className="relative shrink-0">
-                            <div className="w-32 h-20 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 overflow-hidden flex items-center justify-center p-2 shadow-inner group">
-                                {profile.company_logo ? (
-                                    <img src={profile.company_logo} alt="" className="w-full h-full object-contain transition-transform group-hover:scale-105" />
-                                ) : (
-                                    <Building2 size={32} className="text-slate-200" />
-                                )}
-                            </div>
-                            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-slate-800 text-white rounded-xl cursor-pointer hover:bg-slate-900 transition-all flex items-center justify-center shadow-lg border-2 border-white">
-                                <Camera size={14} />
-                                <input type="file" className="hidden" accept="image/*" onChange={e => handleUpload(e, 'logo')} />
-                            </label>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-bold text-slate-800 mb-1">Logotipo da Empresa</h3>
-                            <p className="text-[11px] text-slate-500 leading-relaxed mb-2">
-                                Exibida no cabeçalho do sistema e no seu site público de vendas para clientes.
-                            </p>
-                            <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg">
-                                <div className="w-1 h-1 rounded-full bg-brand-500" />
-                                <span className="text-[10px] font-bold text-slate-400">Tamanho ideal: 600x300 px</span>
-                            </div>
-                        </div>
+                {/* Card Informativo para a aba Empresa */}
+                <div className="bg-brand-500/5 rounded-3xl border border-brand-500/15 p-6 flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-600 flex items-center justify-center shrink-0 border border-brand-500/20">
+                        <Building2 size={22} />
                     </div>
-                )}
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-bold text-slate-900 mb-1">Dados e Marca da Loja</h3>
+                        <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                            O logotipo oficial, favicon, cores da marca, CNPJ e história da empresa estão centralizados na aba <span className="font-bold text-brand-600 uppercase">EMPRESA</span>.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Formulário */}
@@ -189,27 +173,6 @@ const ProfileSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                     value={phone}
                                     onChange={e => setPhone(e.target.value)}
                                     placeholder="(00) 00000-0000"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block">
-                                Nome da Empresa {profile.role === 'vendedor' && '(Inalterável)'}
-                            </label>
-                            <div className="relative">
-                                <Building2 className={`absolute left-4 top-1/2 -translate-y-1/2 ${profile.role === 'vendedor' ? 'text-slate-200' : 'text-slate-300'}`} size={16} />
-                                <input
-                                    type="text"
-                                    disabled={profile.role === 'vendedor'}
-                                    className={`w-full pl-10 pr-4 py-3 border border-slate-100 rounded-2xl text-sm font-semibold transition-all outline-none ${
-                                        profile.role === 'vendedor'
-                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            : 'bg-slate-50 text-slate-800 focus:bg-white focus:border-brand-400 focus:ring-4 focus:ring-brand-500/5'
-                                    }`}
-                                    value={companyName}
-                                    onChange={e => setCompanyName(e.target.value)}
-                                    placeholder="Nome da sua loja"
                                 />
                             </div>
                         </div>

@@ -5,11 +5,11 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const OPENAI_MODEL_FALLBACK_CHAIN = ['gpt-5-nano', 'gpt-5-mini', 'gpt-5'];
+const OPENAI_MODEL_FALLBACK_CHAIN = ['gpt-4o-mini', 'gpt-4o'];
 const OPENROUTER_MODEL_FALLBACK_CHAIN = [
-  'google/gemini-2.5-flash',
-  'meta-llama/llama-3-8b-instruct',
   'openai/gpt-4o-mini',
+  'google/gemini-2.0-flash-001',
+  'meta-llama/llama-3.1-8b-instruct',
 ];
 
 export interface AiMeta {
@@ -25,16 +25,12 @@ export interface AiResult {
   meta: AiMeta;
 }
 
-// Tabela de custo estimado por 1.000 tokens (USD). É ESTIMATIVA para o painel —
-// os tokens gravados são o dado real; o custo é derivado e fácil de reajustar.
-// Atualize aqui se os preços dos modelos mudarem.
 const COST_PER_1K_USD: Record<string, number> = {
-  'gpt-5-nano': 0.0002,
-  'gpt-5-mini': 0.0006,
-  'gpt-5': 0.005,
-  'google/gemini-2.5-flash': 0.0003,
-  'meta-llama/llama-3-8b-instruct': 0.0001,
-  'openai/gpt-4o-mini': 0.0002,
+  'gpt-4o-mini': 0.00015,
+  'gpt-4o': 0.0025,
+  'openai/gpt-4o-mini': 0.00015,
+  'google/gemini-2.0-flash-001': 0.0001,
+  'meta-llama/llama-3.1-8b-instruct': 0.0001,
 };
 
 export function estimateCostUsd(model: string, totalTokens: number): number {
@@ -69,6 +65,7 @@ export async function generateJson(
           method: 'POST',
           headers: { Authorization: `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } }),
+          signal: AbortSignal.timeout(8000),
         });
         if (!res.ok) { lastError = new Error(`OpenAI (${model}) HTTP ${res.status} — ${await res.text()}`); continue; }
         const data = await res.json();
@@ -90,6 +87,7 @@ export async function generateJson(
           method: 'POST',
           headers: { Authorization: `Bearer ${openrouterApiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://orvalhodigital.com.br' },
           body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } }),
+          signal: AbortSignal.timeout(8000),
         });
         if (!res.ok) { lastError = new Error(`OpenRouter (${model}) HTTP ${res.status} — ${await res.text()}`); continue; }
         const data = await res.json();

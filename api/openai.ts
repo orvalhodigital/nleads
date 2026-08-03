@@ -125,6 +125,44 @@ Se nenhum lead combinar bem, responda {"matches": []}.`;
       return res.status(200).json(parsed);
     }
 
+    // 4. Geração e Melhoria de Textos da Empresa (História / Apresentação)
+    if (action === 'company-text' || action === 'generate-company-text') {
+      const { companyName, city, text, mode, subAction } = req.body || {};
+      
+      let prompt = '';
+      if (subAction === 'improve' && text) {
+        prompt = `Você é um redator publicitário sênior especialista em branding para lojas de veículos no Brasil.
+Refine, corrija a gramática, melhore a fluidez e torne o texto a seguir extremamente elegante, persuasivo e profissional para ser exibido no site e apresentação institucional da loja de veículos "${companyName || 'Nossa Loja'}".
+
+Texto original para melhorar:
+"${text}"
+
+Responda APENAS com JSON válido, sem markdown:
+{
+  "improvedText": "o texto aprimorado e pronto para publicação"
+}`;
+      } else {
+        const isShort = mode === 'short';
+        prompt = `Você é um redator publicitário sênior especialista em branding para concessionárias e lojas de veículos seminovos no Brasil.
+Crie um texto institucional incrível e cativante para a loja de veículos "${companyName || 'Nossa Loja'}"${city ? ` localizada em ${city}` : ''}.
+
+${isShort
+  ? 'Gere uma apresentação institucional curta de 2 a 3 frases (até 200 caracteres), destacando qualidade, transparência e confiança.'
+  : 'Gere uma história institucional inspiradora de 2 a 3 parágrafos (400 a 800 caracteres), contando sobre a missão da loja, a busca por veículos com procedência garantida e a dedicação ao atendimento do cliente.'}
+
+Responda APENAS com JSON válido, sem markdown:
+{
+  "generatedText": "o texto gerado pronto para publicação"
+}`;
+      }
+
+      const { result: parsed, meta: aiMeta } = await generateJson(prompt, openaiApiKey, openrouterApiKey);
+      await logAiUsage(userId, 'company-text', aiMeta);
+      return res.status(200).json({
+        text: parsed.improvedText || parsed.generatedText || ''
+      });
+    }
+
     return res.status(400).json({ error: `Unknown action: ${action}` });
 
   } catch (err: any) {

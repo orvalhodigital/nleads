@@ -105,6 +105,19 @@ export const AuthContextProvider: React.FC<{
     };
   }, []);
 
+  // Favicon dinâmico por lojista (exibido na aba do navegador)
+  useEffect(() => {
+    if (profile?.website_favicon) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = profile.website_favicon;
+    }
+  }, [profile?.website_favicon]);
+
   const value = useMemo(
     () => ({
       session,

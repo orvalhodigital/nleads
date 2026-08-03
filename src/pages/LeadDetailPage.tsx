@@ -12,7 +12,7 @@ import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 import { CustomTimePicker } from '../components/ui/CustomTimePicker';
 import { formatCurrency } from '../utils/formatters';
 import { DEFAULT_PRESET_MESSAGES } from '../utils/constants';
-import { deriveRootVisitFields } from '../utils/visits';
+import { deriveRootVisitFields, safeIsoDate } from '../utils/visits';
 import { useToast } from '../contexts/ToastContext';
 import { generateUUID } from '../utils/uuid';
 
@@ -258,7 +258,7 @@ const LeadDetailPage: React.FC = () => {
     const handleScheduleNewVisit = async () => {
         if (!lead || !newScheduleForm.date || !newScheduleForm.time) return;
 
-        const visitDateTime = new Date(`${newScheduleForm.date}T${newScheduleForm.time}`).toISOString();
+        const visitDateTime = safeIsoDate(newScheduleForm.date, newScheduleForm.time);
         const presentedVehicles = [...(lead.presentedVehicles || [])];
         if (newScheduleForm.vehicleOfInterest && !presentedVehicles.includes(newScheduleForm.vehicleOfInterest)) {
             // assume it's just recorded in scheduling_data

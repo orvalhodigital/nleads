@@ -32,6 +32,7 @@ function buildProfile(data: any, user: any): Profile {
         avatar_url: user?.user_metadata?.avatar_url || data.avatar_url || '',
         company_name: data.company_name || '',
         company_logo: user?.user_metadata?.company_logo || data.company_logo || '',
+        website_favicon: data.website_favicon || '',
         phone: data.phone || '',
         cpf_cnpj: data.cpf_cnpj || undefined,
         use_company_number: data.use_company_number || false,

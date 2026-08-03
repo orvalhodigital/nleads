@@ -7,6 +7,11 @@ import { supabase } from '../lib/supabaseClient';
  * exibir (nunca silenciar, ver DESIGN_GUIDELINES.md sobre esse padrão).
  */
 export const consultaPlaca = async (plate: string): Promise<any> => {
+  const cleanPlate = String(plate || '').replace(/[-\s]/g, '').toUpperCase();
+  if (cleanPlate.length < 7) {
+    throw new Error('Placa inválida (informe 7 caracteres).');
+  }
+
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
     throw new Error('Sessão expirada. Faça login novamente.');
@@ -18,12 +23,13 @@ export const consultaPlaca = async (plate: string): Promise<any> => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${session.access_token}`,
     },
-    body: JSON.stringify({ plate }),
+    body: JSON.stringify({ plate: cleanPlate }),
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data?.error || `Falha ao consultar placa (HTTP ${response.status}).`);
+    throw new Error(data?.error || data?.mensagemRetorno || `Falha ao consultar placa (HTTP ${response.status}).`);
   }
+
   return data;
 };

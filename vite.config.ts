@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
 
@@ -8,22 +9,84 @@ import react from '@vitejs/plugin-react';
 import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig(({ mode }) => {
-  loadEnv(mode, '.', '');
+  const env = loadEnv(mode, process.cwd(), '');
+  Object.assign(process.env, env);
   const isProd = mode === 'production';
+
   return {
     server: {
       port: 3000,
       host: '0.0.0.0',
-      proxy: {
-        '/api': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '/api'),
-        }
-      }
     },
     plugins: [
       react(),
+      {
+        name: 'dev-api-serverless-router',
+        configureServer(server) {
+          server.middlewares.use(async (req: any, res: any, next: any) => {
+            if (!req.url?.startsWith('/api/')) return next();
+
+            try {
+              const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+              const cleanPath = urlObj.pathname.replace(/\/$/, ''); // ex: /api/openai
+              const relativeTs = `.${cleanPath}.ts`; // ex: ./api/openai.ts
+              const absTsPath = path.resolve(__dirname, relativeTs);
+
+              if (fs.existsSync(absTsPath)) {
+                // Parse request body for POST/PUT/PATCH
+                let bodyStr = '';
+                if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+                  bodyStr = await new Promise<string>((resolve) => {
+                    let data = '';
+                    req.on('data', (chunk: any) => { data += chunk; });
+                    req.on('end', () => resolve(data));
+                  });
+                  try {
+                    req.body = JSON.parse(bodyStr || '{}');
+                  } catch {
+                    req.body = {};
+                  }
+                }
+
+                // Attach query params
+                const query: Record<string, string> = {};
+                urlObj.searchParams.forEach((val, key) => { query[key] = val; });
+                req.query = query;
+
+                // Simulate status/json response helpers for Vercel/Express handlers
+                res.status = (code: number) => {
+                  res.statusCode = code;
+                  return res;
+                };
+                res.json = (data: any) => {
+                  if (!res.headersSent) {
+                    res.setHeader('Content-Type', 'application/json');
+                  }
+                  res.end(JSON.stringify(data));
+                  return res;
+                };
+
+                const module = await server.ssrLoadModule(relativeTs);
+                const handler = module.default;
+                if (typeof handler === 'function') {
+                  await handler(req, res);
+                  return;
+                }
+              }
+            } catch (err: any) {
+              console.error(`Dev API Error (${req.url}):`, err);
+              if (!res.headersSent) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: err?.message || 'Dev API Error' }));
+              }
+              return;
+            }
+
+            next();
+          });
+        }
+      },
       viteCompression({
         algorithm: 'gzip',
         ext: '.gz',

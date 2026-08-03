@@ -477,7 +477,7 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
 
                         {/* Informações da Loja */}
                         <div className="pt-8 border-t border-slate-50 space-y-6">
-                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><MapPin size={14} className="text-blue-500" /> Dados da Loja</h3>
+                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><MapPin size={14} className="text-blue-500" /> Dados e Localização da Loja</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5">
                                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Cidade e Estado</label>
@@ -489,10 +489,10 @@ const WebsiteSettings: React.FC<Props> = ({ profile, onUpdate }) => {
                                     <input value={website_google_maps} onChange={e => setWebsiteGoogleMaps(e.target.value)}
                                         placeholder="https://goo.gl/maps/..." className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs outline-none focus:bg-white" />
                                 </div>
-                                <div className="md:col-span-2 space-y-1.5">
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Sobre a Loja</label>
-                                    <textarea value={website_about_text} onChange={e => setWebsiteAboutText(e.target.value)}
-                                        placeholder="História da loja, missão..." className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs h-24 outline-none resize-none focus:bg-white" />
+                                <div className="md:col-span-2 p-4 bg-brand-500/5 rounded-2xl border border-brand-500/15 flex items-center justify-between gap-4">
+                                    <p className="text-xs font-medium text-slate-600">
+                                        💡 A <span className="font-bold text-slate-800">História da Empresa, Logotipo, Favicon e Redes Sociais</span> são configurados de forma centralizada na aba <span className="font-bold text-brand-600 uppercase">EMPRESA</span>.
+                                    </p>
                                 </div>
                             </div>
                         </div>

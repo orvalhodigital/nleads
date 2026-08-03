@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     X, Upload, Loader2, Check, Plus, DollarSign, Calendar, Gauge, Zap,
     ArrowLeft, Search, AlertCircle, Hash, Shield, ImagePlus, FileText,
-    Target, Settings, HelpCircle, Sparkles, PlusCircle, Trash2, ChevronDown
+    Target, Settings, HelpCircle, Sparkles, PlusCircle, Trash2, ChevronDown, Star, Camera
 } from 'lucide-react';
 import { Vehicle, VehicleType, TransmissionType, EngineType, FuelType, MotorcycleCategory, MotoStartType, MotoBrakeType, MotoFuelSystem, MotoCooling } from '../types';
 import { Switch } from './ui/switch';
@@ -120,21 +120,25 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         suggestedSalePrice: 0
     });
 
+    const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string | null>(null);
+
     useEffect(() => {
         if (isEditing && initialData) {
             const { id, status, saleDetails, ...rest } = initialData;
-            setFormData({
+            const updated = {
                 ...rest,
                 galleryImages: rest.galleryImages || [],
                 operationalCosts: rest.operationalCosts || [],
                 vehicleCategory: rest.vehicleCategory || 'carro'
-            });
+            };
+            setFormData(updated);
+            setLastSavedSnapshot(JSON.stringify(updated));
         } else {
             const savedDraft = localStorage.getItem('vehicle_form_draft_new');
             if (savedDraft) {
                 try {
                     const parsed = JSON.parse(savedDraft);
-                    setFormData(prev => ({ ...prev, ...parsed }));
+                    setFormData(prev => ({ ...prev, ...parsed, plate: '' }));
                 } catch (e) {
                     console.error("Error loading draft:", e);
                 }
@@ -144,12 +148,116 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
     useEffect(() => {
         if (isEditing) return;
-        localStorage.setItem('vehicle_form_draft_new', JSON.stringify(formData));
+        const { plate, ...draftToSave } = formData;
+        localStorage.setItem('vehicle_form_draft_new', JSON.stringify(draftToSave));
     }, [formData, isEditing]);
 
     const clearDraft = () => {
         if (isEditing) return;
         localStorage.removeItem('vehicle_form_draft_new');
+    };
+
+    // Analisador automático das especificações técnicas retornadas da API de placas
+    const detectVehicleSpecs = (data: any) => {
+        const extra = data.extra || {};
+        const fullText = [
+            data.MARCA || data.marca || '',
+            data.MODELO || data.modelo || '',
+            data.segmento || extra.segmento || '',
+            data.sub_segmento || extra.sub_segmento || '',
+            data.combustivel || extra.combustivel || '',
+            data.caixa_cambio || extra.caixa_cambio || extra.cambio || '',
+            data.motor || extra.motor || data.potencia || data.cilindradas || extra.cilindradas || '',
+            extra.tipo_carroceria || '',
+            extra.versao || ''
+        ].join(' ').toUpperCase();
+
+        // 1. Tipo Carroceria (SUV, Sedan, Hatch, Picape, Esportivo, Conversível, Van)
+        let type: VehicleType = 'Sedan';
+        if (/PICAPE|PICK|PICK-UP|CABINE|SAVEIRO|STRADA|TORO|HILUX|AMAROK|S10|RANGER|MONTANA|OROCH|RAM|COURIER|HOGGAR/.test(fullText)) {
+            type = 'Picape';
+        } else if (/SUV|UTILITARIO|CROSS|TRACKER|RENEGADE|COMPASS|CRETA|HRV|H-RV|KICKS|DUSTER|NIVUS|T-CROSS|TCROSS|TIGUAN|ECOSPORT|SW4|COMMANDER|FASTBACK|PULSE|TAOS|TIGGO/.test(fullText)) {
+            type = 'SUV';
+        } else if (/VAN|MINIVAN|FURGAO|SPIN|KOMBI|DUCATO|MASTER|EXPERT|JUMPY|FIORINO|DOBLO|KANGOO|PARTNER|TRANSIT/.test(fullText)) {
+            type = 'Van';
+        } else if (/CONVERSIVEL|CABRIO|ROADSTER/.test(fullText)) {
+            type = 'Conversível';
+        } else if (/ESPORTIVO|COUPE|MUSTANG|CAMARO|PORSCHE|TT|GTI|RS/.test(fullText)) {
+            type = 'Esportivo';
+        } else if (/SEDAN|SEDÃ|COROLLA|CIVIC|CITY|CRUZE|VIRTUS|LOGAN|VERSA|CRONOS|PRISMA|VOYAGE|JETTA|SENTRA|FLUENCE|CERATO/.test(fullText)) {
+            type = 'Sedan';
+        } else if (/HATCH|GOL|ONIX|KA|HB20|ARGO|POLO|PALIO|CELTA|UNO|FIT|SANDERO|208|308|YARIS|MOBY|MOBI|UP|FOX|ETIOS|CLIO/.test(fullText)) {
+            type = 'Hatch';
+        }
+
+        // 2. Câmbio (Manual, Automático, Automatizado, CVT, Semi-Automático)
+        let transmission: TransmissionType = 'Manual';
+        if (/CVT/.test(fullText)) {
+            transmission = 'CVT';
+        } else if (/AUTOMATIZADO|DUALOGIC|GSR|I-MOTION|IMOTION|POWERSHIFT|DSG/.test(fullText)) {
+            transmission = 'Automatizado';
+        } else if (/AUTOMATICO|AUTOMÁTICO|\bAUT\b|\bAT6\b|\bAT8\b|\bAT9\b|\bAT4\b|\bAT\b|TIPTRONIC|STEPTRONIC/.test(fullText)) {
+            transmission = 'Automático';
+        } else if (/MANUAL|\bMAN\b|MECANICO|MECÂNICO/.test(fullText)) {
+            transmission = 'Manual';
+        }
+
+        // 3. Combustível (Gasolina, Álcool, Flex, Diesel, GNV, Elétrico, Híbrido)
+        let fuelType: FuelType = 'Flex';
+        if (/ELETRICO|ELÉTRICO|\bBEV\b|\bEV\b/.test(fullText)) {
+            fuelType = 'Elétrico';
+        } else if (/HIBRIDO|HÍBRIDO|\bPHEV\b|\bHEV\b/.test(fullText)) {
+            fuelType = 'Híbrido';
+        } else if (/DIESEL/.test(fullText)) {
+            fuelType = 'Diesel';
+        } else if (/GNV|GAS NATURAL/.test(fullText)) {
+            fuelType = 'GNV';
+        } else if (/FLEX|BIOFLEX|ALCOOL\/GASOLINA|GASOL\/ALCOOL/.test(fullText)) {
+            fuelType = 'Flex';
+        } else if (/GASOLINA/.test(fullText)) {
+            fuelType = 'Gasolina';
+        } else if (/ALCOOL|ÁLCOOL|ETANOL/.test(fullText)) {
+            fuelType = 'Álcool';
+        }
+
+        // 4. Motor (1.0, 1.3, 1.4, 1.5, 1.6, 1.8, 2.0, 2.0+, Elétrico, Híbrido)
+        let engine: EngineType = '1.6';
+        if (fuelType === 'Elétrico') {
+            engine = 'Elétrico';
+        } else if (fuelType === 'Híbrido' && !/\b(1\.[0-9]|2\.[0-9])\b/.test(fullText)) {
+            engine = 'Híbrido';
+        } else {
+            const motorMatch = fullText.match(/\b(1\.[0-9]|2\.[0-9]|3\.[0-9]|4\.[0-9])\b/);
+            if (motorMatch) {
+                const val = parseFloat(motorMatch[1]);
+                if (val <= 1.1) engine = '1.0';
+                else if (val <= 1.35) engine = '1.3';
+                else if (val <= 1.45) engine = '1.4';
+                else if (val <= 1.55) engine = '1.5';
+                else if (val <= 1.7) engine = '1.6';
+                else if (val <= 1.9) engine = '1.8';
+                else if (val <= 2.05) engine = '2.0';
+                else engine = '2.0+';
+            } else if (/999CC|1\.0/.test(fullText)) {
+                engine = '1.0';
+            } else if (/1598CC|1599CC|1\.6/.test(fullText)) {
+                engine = '1.6';
+            } else if (/1998CC|1999CC|2\.0/.test(fullText)) {
+                engine = '2.0';
+            }
+        }
+
+        // 5. Portas (2 ou 4)
+        let doors: 2 | 4 = 4;
+        if (type === 'Picape' && /CABINE SIMPLES|CS|\b2P\b|2 PORTAS/.test(fullText) && !/CABINE DUPLA|CD|4P|4 PORTAS/.test(fullText)) {
+            doors = 2;
+        } else if (/2P\b|2 PORTAS|CABINE SIMPLES|CS|COUPE|CUPÊ/.test(fullText) && !/4P|4 PORTAS|5P/.test(fullText)) {
+            doors = 2;
+        } else {
+            doors = 4;
+        }
+
+        return { type, transmission, fuelType, engine, doors };
     };
 
     // Plate lookup
@@ -201,6 +309,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 }
             }
 
+            const specs = detectVehicleSpecs(data);
+
             setFormData(prev => ({
                 ...prev,
                 brand,
@@ -209,12 +319,18 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                 modelYear: parseInt(data.anoModelo) || year,
                 color: data.cor || extra.cor || prev.color,
                 fipePrice: fipePrice > 0 ? fipePrice : prev.fipePrice,
-                vehicleCategory
+                vehicleCategory,
+                type: specs.type,
+                transmission: specs.transmission,
+                fuelType: specs.fuelType,
+                engine: specs.engine,
+                doors: specs.doors
             }));
 
             setStep('form');
         } catch (err: any) {
-            setPlateError('Não foi possível consultar a placa. Verifique e tente novamente.');
+            console.error("Plate lookup error:", err);
+            setPlateError(err?.message || 'Não foi possível consultar a placa. Verifique e tente novamente.');
         } finally {
             setLookupLoading(false);
         }
@@ -227,58 +343,69 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         }
     };
 
-    // Images upload
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setUploading(true);
-        try {
-            const resizedBlob = await resizeImage(file, 1080, 1080);
-            const resizedFile = new File([resizedBlob], 'main.webp', { type: 'image/webp' });
-            const fileName = `main-${Date.now()}.webp`;
+    // Photos Management
+    const setAsMainImage = (url: string) => {
+        setFormData(prev => {
+            const currentMain = prev.imageUrl;
+            if (currentMain === url) return prev;
+            const currentGallery = prev.galleryImages || [];
+            const newGallery = currentGallery.filter(img => img !== url);
+            if (currentMain) {
+                newGallery.unshift(currentMain);
+            }
+            return {
+                ...prev,
+                imageUrl: url,
+                galleryImages: newGallery
+            };
+        });
+        showToast('success', 'Foto de capa atualizada!');
+    };
 
-            const { error: uploadError } = await supabase.storage
-                .from('vehicles')
-                .upload(fileName, resizedFile);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('vehicles')
-                .getPublicUrl(fileName);
-
-            setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
-        } catch (error: any) {
-            alert('Erro ao fazer upload: ' + error.message);
-        } finally {
-            setUploading(false);
-        }
+    const removeVehicleImage = (url: string) => {
+        setFormData(prev => {
+            if (prev.imageUrl === url) {
+                const gallery = prev.galleryImages || [];
+                const newMain = gallery[0] || '';
+                const newGallery = gallery.slice(1);
+                return {
+                    ...prev,
+                    imageUrl: newMain,
+                    galleryImages: newGallery
+                };
+            } else {
+                return {
+                    ...prev,
+                    galleryImages: (prev.galleryImages || []).filter(img => img !== url)
+                };
+            }
+        });
     };
 
     const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
-        // Limite real (antes só a UI escondia o botão; dava para estourar selecionando vários de uma vez)
-        const current = formData.galleryImages?.length || 0;
-        const slots = MAX_GALLERY_IMAGES - current;
+        const currentImages = [formData.imageUrl, ...(formData.galleryImages || [])].filter(Boolean);
+        const MAX_TOTAL = 12;
+        const slots = MAX_TOTAL - currentImages.length;
         if (slots <= 0) {
-            showToast('error', `Galeria cheia (máximo ${MAX_GALLERY_IMAGES} fotos além da principal).`);
+            showToast('error', `Limite de 12 fotos atingido.`);
             e.target.value = '';
             return;
         }
-        const selected = Array.from(files);
-        const toUpload = selected.slice(0, slots);
-        if (selected.length > slots) {
-            showToast('error', `Só cabem mais ${slots} foto(s). As demais foram ignoradas.`);
+
+        const selected = Array.from(files).slice(0, slots);
+        if (files.length > slots) {
+            showToast('error', `Limite de 12 fotos. Apenas as primeiras ${slots} foto(s) foram enviadas.`);
         }
 
         setGalleryUploading(true);
         try {
-            const urls: string[] = [];
-            for (const file of toUpload) {
+            const uploadedUrls: string[] = [];
+            for (const file of selected) {
                 const resizedBlob = await resizeImage(file, 1080, 1080);
-                const resizedFile = new File([resizedBlob], 'gallery.webp', { type: 'image/webp' });
+                const resizedFile = new File([resizedBlob], 'vehicle.webp', { type: 'image/webp' });
                 const fileName = `gallery/${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
 
                 const { error: uploadError } = await supabase.storage
@@ -291,24 +418,35 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                     .from('vehicles')
                     .getPublicUrl(fileName);
 
-                urls.push(publicUrl);
+                uploadedUrls.push(publicUrl);
             }
-            setFormData(prev => ({
-                ...prev,
-                galleryImages: [...(prev.galleryImages || []), ...urls],
-            }));
+
+            setFormData(prev => {
+                const hasMain = !!prev.imageUrl;
+                let newMain = prev.imageUrl;
+                let newGallery = [...(prev.galleryImages || [])];
+
+                if (!hasMain && uploadedUrls.length > 0) {
+                    newMain = uploadedUrls[0];
+                    newGallery = [...newGallery, ...uploadedUrls.slice(1)];
+                } else {
+                    newGallery = [...newGallery, ...uploadedUrls];
+                }
+
+                return {
+                    ...prev,
+                    imageUrl: newMain,
+                    galleryImages: newGallery
+                };
+            });
+
+            showToast('success', `${uploadedUrls.length} foto(s) enviada(s) com sucesso!`);
         } catch (error: any) {
             alert('Erro ao fazer upload da galeria: ' + error.message);
         } finally {
             setGalleryUploading(false);
+            e.target.value = '';
         }
-    };
-
-    const removeGalleryImage = (url: string) => {
-        setFormData(prev => ({
-            ...prev,
-            galleryImages: (prev.galleryImages || []).filter(u => u !== url),
-        }));
     };
 
     // AI Generation — SEO + preço sugerido
@@ -394,6 +532,39 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
         }));
     };
 
+    const updateOperationalCost = (id: string, amount: number) => {
+        setFormData(prev => ({
+            ...prev,
+            operationalCosts: (prev.operationalCosts || []).map(item =>
+                item.id === id ? { ...item, amount } : item
+            )
+        }));
+    };
+
+    const toggleOperationalCostTag = (label: string) => {
+        setFormData(prev => {
+            const current = prev.operationalCosts || [];
+            const existing = current.find(item => item.description.toLowerCase() === label.toLowerCase());
+            if (existing) {
+                return {
+                    ...prev,
+                    operationalCosts: current.filter(item => item.id !== existing.id)
+                };
+            } else {
+                const newItem = {
+                    id: Math.random().toString(36).substring(2),
+                    description: label,
+                    amount: 0,
+                    date: new Date().toISOString().split('T')[0]
+                };
+                return {
+                    ...prev,
+                    operationalCosts: [...current, newItem]
+                };
+            }
+        });
+    };
+
     const getFieldClassName = (field: string, base: string) => `${base} ${errors[field] ? 'border-rose-400 bg-rose-500/5 focus:ring-rose-500/10' : ''}`;
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -415,14 +586,21 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
 
         setSubmitting(true);
         try {
+            let savedResult: any = null;
             if (isEditing && initialData) {
-                await onSave({ ...initialData, ...formData });
+                savedResult = await onSave({ ...initialData, ...formData });
             } else {
-                await onSave({ ...formData, status: 'available' });
+                savedResult = await onSave({ ...formData, status: 'available' });
             }
             clearDraft();
-            showToast('success', isEditing ? 'Veículo atualizado com sucesso!' : 'Veículo cadastrado com sucesso!');
-            navigate('/inventory');
+            setLastSavedSnapshot(JSON.stringify(formData));
+            showToast('success', isEditing ? 'Alterações salvas com sucesso!' : 'Veículo publicado no estoque!');
+
+            if (!isEditing && savedResult?.id) {
+                navigate(`/inventory/edit/${savedResult.id}`, { replace: true });
+            }
+        } catch (err: any) {
+            console.error('Erro ao salvar veículo:', err);
         } finally {
             setSubmitting(false);
         }
@@ -982,81 +1160,156 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                             </div>
                         </section>
 
-                        {/* Media and Description */}
+                        {/* Media and Description Section */}
                         <section className="space-y-6">
                             <div className="flex items-center justify-between bg-muted/60 dark:bg-muted/40 border border-border/80 p-4 px-6 rounded-2xl shadow-sm">
                                 <div className="flex items-center gap-3">
                                     <div className="w-2.5 h-6 bg-cyan-500 rounded-full" />
                                     <h3 className="font-heading font-extrabold text-base md:text-lg text-foreground tracking-tight flex items-center gap-2.5">
-                                        <ImagePlus size={18} className="text-cyan-500" /> Mídia e Descrição
+                                        <ImagePlus size={18} className="text-cyan-500" /> Galeria de Fotos do Veículo
                                     </h3>
                                 </div>
+                                {(() => {
+                                    const totalCount = [formData.imageUrl, ...(formData.galleryImages || [])].filter(Boolean).length;
+                                    return (
+                                        <span className="text-xs font-bold text-muted-foreground px-3.5 py-1.5 bg-card rounded-xl border border-border/60">
+                                            {totalCount} de 12 fotos
+                                        </span>
+                                    );
+                                })()}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Foto Principal</label>
-                                    <div className="aspect-square max-w-[280px] rounded-2xl bg-muted/70 border-2 border-dashed border-border/80 overflow-hidden relative group">
-                                        {formData.imageUrl ? (
-                                            <>
-                                                <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="w-12 h-12 rounded-full bg-card text-rose-500 flex items-center justify-center shadow-xl">
-                                                        <X size={20} />
-                                                    </button>
+                            {/* Unificação de fotos e upload */}
+                            {(() => {
+                                const allImages: { url: string; isMain: boolean }[] = [];
+                                if (formData.imageUrl) {
+                                    allImages.push({ url: formData.imageUrl, isMain: true });
+                                }
+                                (formData.galleryImages || []).forEach(url => {
+                                    if (url && url !== formData.imageUrl) {
+                                        allImages.push({ url, isMain: false });
+                                    }
+                                });
+
+                                const canAddMore = allImages.length < 12;
+
+                                return (
+                                    <div className="space-y-6">
+                                        {/* Dropzone principal caso NENHUMA foto tenha sido enviada ainda */}
+                                        {allImages.length === 0 ? (
+                                            <label className="block cursor-pointer group">
+                                                <div className="rounded-3xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/60 transition-all p-10 md:p-14 text-center space-y-4 relative overflow-hidden">
+                                                    <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 mx-auto group-hover:scale-110 transition-transform">
+                                                        {galleryUploading ? <Loader2 size={28} className="animate-spin" /> : <Upload size={28} />}
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-base font-extrabold text-foreground tracking-tight">
+                                                            {galleryUploading ? 'Enviando fotos...' : 'Adicionar Fotos do Veículo'}
+                                                        </p>
+                                                        <p className="text-xs font-medium text-muted-foreground max-w-md mx-auto">
+                                                            Arraste as fotos para cá ou clique para navegar. Selecione até 12 fotos simultaneamente. A primeira foto será definida como a Capa Principal.
+                                                        </p>
+                                                    </div>
+                                                    <div className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-xs font-bold uppercase tracking-wider shadow-md shadow-primary/20">
+                                                        <Camera size={16} /> Selecionar Fotos
+                                                    </div>
                                                 </div>
-                                            </>
+                                                <input
+                                                    type="file"
+                                                    ref={galleryInputRef}
+                                                    accept="image/*"
+                                                    multiple
+                                                    className="hidden"
+                                                    onChange={handleGalleryUpload}
+                                                    disabled={galleryUploading}
+                                                />
+                                            </label>
                                         ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/50 gap-3">
-                                                <Upload size={40} strokeWidth={1} />
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">Nenhuma Foto</span>
+                                            /* Grid de fotos com badges de capa principal e ordenação rápida */
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                                    {allImages.map((item, idx) => (
+                                                        <div
+                                                            key={item.url + idx}
+                                                            className={`relative group aspect-square rounded-2xl overflow-hidden bg-muted border-2 transition-all ${
+                                                                item.isMain
+                                                                    ? 'border-amber-500 shadow-lg shadow-amber-500/10 ring-2 ring-amber-500/20'
+                                                                    : 'border-border/80 hover:border-primary/50'
+                                                            }`}
+                                                        >
+                                                            <img src={item.url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+
+                                                            {/* Badge Capa Principal */}
+                                                            {item.isMain && (
+                                                                <div className="absolute top-2 left-2 z-10 px-2.5 py-1 bg-amber-500 text-amber-950 font-black text-[9px] uppercase tracking-wider rounded-lg shadow-md flex items-center gap-1">
+                                                                    <Star size={10} className="fill-amber-950 stroke-none" /> Capa
+                                                                </div>
+                                                            )}
+
+                                                            {/* Overlay de ações ao passar o mouse */}
+                                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-between items-center z-20">
+                                                                <div className="w-full flex justify-end">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => removeVehicleImage(item.url)}
+                                                                        title="Remover foto"
+                                                                        className="w-8 h-8 rounded-xl bg-rose-500/90 text-white flex items-center justify-center hover:bg-rose-600 transition-colors shadow-md cursor-pointer"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                                
+                                                                {!item.isMain && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setAsMainImage(item.url)}
+                                                                        className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-1 cursor-pointer"
+                                                                    >
+                                                                        <Star size={12} className="fill-amber-950 stroke-none" /> Definir Capa
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+
+                                                    {/* Tile de Adicionar Mais Fotos (se houver vagas) */}
+                                                    {canAddMore && (
+                                                        <label className="block cursor-pointer aspect-square">
+                                                            <div className="w-full h-full rounded-2xl border-2 border-dashed border-border/80 hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center p-3 text-center gap-2 text-muted-foreground hover:text-primary">
+                                                                {galleryUploading ? (
+                                                                    <Loader2 size={22} className="animate-spin text-primary" />
+                                                                ) : (
+                                                                    <Plus size={24} />
+                                                                )}
+                                                                <span className="text-[10px] font-bold uppercase tracking-widest leading-tight">
+                                                                    {galleryUploading ? 'Enviando...' : 'Adicionar Fotos'}
+                                                                </span>
+                                                            </div>
+                                                            <input
+                                                                type="file"
+                                                                ref={galleryInputRef}
+                                                                accept="image/*"
+                                                                multiple
+                                                                className="hidden"
+                                                                onChange={handleGalleryUpload}
+                                                                disabled={galleryUploading}
+                                                            />
+                                                        </label>
+                                                    )}
+                                                </div>
+
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+                                                    Dica: Passe o mouse sobre qualquer foto para definí-la como <span className="text-amber-500 font-extrabold">Capa Principal</span> ou excluir.
+                                                </p>
                                             </div>
                                         )}
                                     </div>
-                                    <label className="block w-full cursor-pointer">
-                                        <div className={`max-w-[280px] w-full py-3 px-6 rounded-2xl border text-center flex items-center justify-center gap-3 ${uploading ? 'bg-muted border-border' : 'bg-card border-border/80 text-muted-foreground hover:text-foreground hover:border-primary hover:bg-primary/5'}`}>
-                                            {uploading ? <Loader2 size={16} className="animate-spin text-primary" /> : <Upload size={16} />}
-                                            <span className="text-[11px] font-bold uppercase tracking-widest">{uploading ? 'Enviando...' : 'Fazer Upload'}</span>
-                                        </div>
-                                        <input type="file" ref={logoInputRef} accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
-                                    </label>
-                                </div>
+                                );
+                            })()}
+                        </section>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between px-1">
-                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Galeria</label>
-                                        <span className="text-[10px] font-bold text-muted-foreground/50">{formData.galleryImages?.length || 0}/{MAX_GALLERY_IMAGES} fotos</span>
-                                    </div>
-
-                                    {(formData.galleryImages?.length ?? 0) > 0 && (
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {formData.galleryImages!.map((url, i) => (
-                                                <div key={i} className="relative group aspect-square rounded-xl overflow-hidden bg-muted">
-                                                    <img src={url} alt={`Galeria ${i + 1}`} className="w-full h-full object-cover" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeGalleryImage(url)}
-                                                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        <X size={16} className="text-white" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {(formData.galleryImages?.length || 0) < MAX_GALLERY_IMAGES && (
-                                        <label className="block w-full cursor-pointer">
-                                            <div className={`max-w-[280px] w-full py-3 px-4 rounded-2xl border text-center flex items-center justify-center gap-2 ${galleryUploading ? 'bg-muted' : 'bg-card border-border/80 hover:border-primary hover:text-foreground'}`}>
-                                                {galleryUploading ? <Loader2 size={16} className="animate-spin text-primary" /> : <Upload size={16} />}
-                                                <span className="text-[11px] font-bold uppercase tracking-widest">Adicionar Fotos</span>
-                                            </div>
-                                            <input type="file" ref={galleryInputRef} accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={galleryUploading} />
-                                        </label>
-                                    )}
-                                </div>
-                            </div>
-
+                        {/* Seção de Descrições do Anúncio */}
+                        <section className="space-y-6">
                             {/* Botão de IA para preencher as descrições */}
                             <div className="flex items-center justify-between gap-3 pt-2">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
@@ -1118,6 +1371,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                         setNewCostAmount={setNewCostAmount}
                         addOperationalCost={addOperationalCost}
                         removeOperationalCost={removeOperationalCost}
+                        updateOperationalCost={updateOperationalCost}
+                        toggleOperationalCostTag={toggleOperationalCostTag}
                         formatCurrency={formatCurrency}
                         parseCurrency={parseCurrency}
                         totalCosts={totalCosts}
@@ -1140,38 +1395,49 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
             </form>
 
             {/* Sticky Bottom Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border/80 px-6 py-4 shadow-xl">
-                <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
-                    <div>
-                        <p className="text-xs font-bold text-muted-foreground">
-                            {isEditing ? 'Editando veículo' : 'Novo cadastro'}
-                        </p>
+            {(() => {
+                const isDirty = lastSavedSnapshot === null || JSON.stringify(formData) !== lastSavedSnapshot;
+                return (
+                    <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border/80 px-6 py-4 shadow-xl">
+                        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-bold text-muted-foreground">
+                                    {isEditing ? 'Editando veículo' : 'Novo cadastro'}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => { clearDraft(); navigate('/inventory'); }}
+                                    className="px-6 py-3.5 text-muted-foreground text-[10px] font-bold uppercase tracking-widest hover:text-foreground transition-colors cursor-pointer"
+                                >
+                                    Voltar para o Estoque
+                                </button>
+                                <button
+                                    type="submit"
+                                    form="vehicle-form"
+                                    disabled={uploading || galleryUploading || submitting || !isDirty}
+                                    className={`px-8 py-3.5 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer ${
+                                        !isDirty
+                                            ? 'bg-muted/80 text-muted-foreground border border-border/80 shadow-none cursor-default opacity-80'
+                                            : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 active:scale-95'
+                                    }`}
+                                >
+                                    {submitting ? (
+                                        <span className="flex items-center gap-2"><Loader2 size={14} className="animate-spin" /> Salvando...</span>
+                                    ) : !isDirty ? (
+                                        <span className="flex items-center gap-2"><Check size={14} className="text-emerald-500 stroke-[3]" /> Salvo no Estoque</span>
+                                    ) : isEditing ? (
+                                        'Salvar Alterações'
+                                    ) : (
+                                        'Publicar no Estoque'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={() => { clearDraft(); navigate('/inventory'); }}
-                            className="px-6 py-3.5 text-muted-foreground text-[10px] font-bold uppercase tracking-widest hover:text-foreground transition-colors cursor-pointer"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            form="vehicle-form"
-                            disabled={uploading || galleryUploading || submitting}
-                            className="px-8 py-3.5 bg-primary text-primary-foreground rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-md shadow-primary/20 active:scale-95 disabled:opacity-50 cursor-pointer"
-                        >
-                            {submitting ? (
-                                <span className="flex items-center gap-2"><Loader2 size={14} className="animate-spin" /> Salvando...</span>
-                            ) : isEditing ? (
-                                'Salvar Alterações'
-                            ) : (
-                                'Publicar no Estoque'
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
+                );
+            })()}
         </PageContainer>
     );
 };

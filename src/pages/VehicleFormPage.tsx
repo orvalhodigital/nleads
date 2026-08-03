@@ -76,15 +76,15 @@ const VehicleFormPage: React.FC = () => {
                     const isMoto = v.vehicleCategory === 'moto';
                     if (isEditing && id) {
                         if (isMoto) {
-                            await updateMotorcycle({ ...v, id } as any);
+                            return await updateMotorcycle({ ...v, id } as any);
                         } else {
-                            await updateVehicle({ ...v, id } as any);
+                            return await updateVehicle({ ...v, id } as any);
                         }
                     } else {
                         if (isMoto) {
-                            await addMotorcycle(v as any);
+                            return await addMotorcycle(v as any);
                         } else {
-                            await addVehicle(v as any);
+                            return await addVehicle(v as any);
                         }
                     }
                 } catch (err: any) {

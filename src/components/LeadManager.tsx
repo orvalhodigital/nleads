@@ -25,7 +25,7 @@ import { LeadSimulationModal } from './LeadSimulationModal';
 import { LeadFollowUpModal } from './LeadFollowUpModal';
 import { useToast } from '../contexts/ToastContext';
 import { formatCurrency } from '../utils/formatters';
-import { deriveRootVisitFields } from '../utils/visits';
+import { deriveRootVisitFields, safeIsoDate } from '../utils/visits';
 import QuickLeadModal from './QuickLeadModal';
 
 
@@ -118,8 +118,7 @@ const LeadManager: React.FC<LeadManagerProps> = ({
     try {
       const oldPhase = actionLead.phase;
       if (data) {
-        const timeString = data.time || '00:00';
-        const visitDateTime = new Date(`${data.date}T${timeString}`).toISOString();
+        const visitDateTime = safeIsoDate(data.date, data.time);
         
         const existingAppointments = actionLead.scheduling_data?.appointments || [];
         const newAppointment = {

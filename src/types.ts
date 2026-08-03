@@ -31,8 +31,10 @@ export type VisitStatus = 'pending' | 'show' | 'noshow';
 export type VehicleType = 
   // Carros
   'SUV' | 'Sedan' | 'Hatch' | 'Picape' | 'Esportivo' | 'Conversível' | 'Van' |
-  // Motos
-  'Naked' | 'Sport' | 'Trail' | 'Custom' | 'Scooter' | 'Touring' | 'Elétrica' | 'Street' | 
+  // Motos (Categorias populares no Brasil)
+  'Street (Urbana)' | 'Scooter / CUB' | 'Trail / Big Trail' | 'Naked' | 'Esportiva' | 'Custom' | 'Touring (Viagem)' | 'Elétrica' | 
+  // Compatibilidade legada
+  'Street' | 'Scooter' | 'Trail' | 'Sport' | 'Touring' |
   'Qualquer Um(a)';
 
 /**
@@ -365,6 +367,7 @@ export interface Profile {
   avatar_url?: string;
   company_name?: string;
   company_logo?: string;
+  website_favicon?: string;
   role?: 'empresa' | 'vendedor' | 'super_admin' | 'admin';
   parent_id?: string;
   phone?: string;

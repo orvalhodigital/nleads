@@ -30,7 +30,9 @@ import TeamManager from '../components/TeamManager';
 import WebsiteSettings from '../components/settings/WebsiteSettings';
 import GuaranteeSettings from '../components/settings/GuaranteeSettings';
 import { FinancialSettings } from '../components/settings/FinancialSettings';
+import { CompanySettings } from '../components/settings/CompanySettings';
 import PageContainer from '../components/ui/PageContainer';
+import { Building2 } from 'lucide-react';
 
 interface BusinessHourEntry {
     day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -39,12 +41,13 @@ interface BusinessHourEntry {
     end: string;
 }
 
-type Tab = 'Perfil' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Financeiro' | 'Website' | 'Garantia' | 'Geral' | 'Equipe';
+type Tab = 'Perfil' | 'Empresa' | 'WhatsApp' | 'Mensagens' | 'Planos' | 'Financeiro' | 'Website' | 'Garantia' | 'Geral' | 'Equipe';
 
-const BASE_TABS: Tab[] = ['Perfil', 'WhatsApp', 'Mensagens', 'Planos', 'Financeiro', 'Website', 'Garantia', 'Geral'];
+const BASE_TABS: Tab[] = ['Perfil', 'Empresa', 'WhatsApp', 'Mensagens', 'Planos', 'Financeiro', 'Website', 'Garantia', 'Geral'];
 
 const TAB_ICONS: Record<Tab, React.ReactNode> = {
     'Perfil': <User size={15} />,
+    'Empresa': <Building2 size={15} />,
     'WhatsApp': <MessageCircle size={15} />,
     'Mensagens': <MessageSquare size={15} />,
     'Planos': <CreditCard size={15} />,
@@ -154,6 +157,10 @@ const SettingsPage: React.FC = () => {
             {/* Tab Content */}
             {activeTab === 'Perfil' && (
                 <ProfileSettings profile={profile} onUpdate={refreshProfile} />
+            )}
+
+            {activeTab === 'Empresa' && (
+                <CompanySettings profile={profile} onUpdate={refreshProfile} />
             )}
 
             {activeTab === 'WhatsApp' && (

@@ -117,3 +117,45 @@ export const generateVehicleDescriptions = async (
   }
   return data;
 };
+
+/**
+ * Gera ou melhora textos da empresa (história, apresentação curta, diferenciais) via IA.
+ */
+export const generateCompanyText = async (params: {
+  companyName?: string;
+  city?: string;
+  text?: string;
+  mode: 'short' | 'full';
+  subAction: 'generate' | 'improve';
+}): Promise<string> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
+
+  let response: Response;
+  try {
+    response = await fetch('/api/openai?action=company-text', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  } catch (networkErr) {
+    console.error('OpenAI texto empresa — falha de rede:', networkErr);
+    throw new Error('Não foi possível contatar o serviço de IA. Verifique sua conexão.');
+  }
+
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({} as any));
+    throw new Error(detail?.error || `Falha ao processar texto com IA (HTTP ${response.status}).`);
+  }
+
+  const data = await response.json();
+  if (!data?.text) {
+    throw new Error('A IA não retornou nenhum texto.');
+  }
+  return data.text;
+};

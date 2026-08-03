@@ -20,6 +20,7 @@ import { consultaPlaca } from '../services/plateService';
 import { VehicleFormSeo } from './vehicle-form/VehicleFormSeo';
 import { VehicleFormCosts } from './vehicle-form/VehicleFormCosts';
 import { VehicleFormPricing } from './vehicle-form/VehicleFormPricing';
+import MotorcycleIcon from './icons/MotorcycleIcon';
 
 interface VehicleFormProps {
     initialData?: Vehicle;
@@ -682,7 +683,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData, onSave, isEditin
                     <div className="grid grid-cols-2 gap-4">
                         {[
                             { label: 'Carro / Utilitário', value: 'carro', icon: <Car size={24} /> },
-                            { label: 'Motocicleta', value: 'moto', icon: <Bike size={24} /> },
+                            { label: 'Motocicleta', value: 'moto', icon: <MotorcycleIcon size={24} /> },
                             { label: 'Caminhão', value: 'caminhao', icon: <Truck size={24} /> },
                             { label: 'Outros', value: 'outros', icon: <Boxes size={24} /> }
                         ].map((cat) => (

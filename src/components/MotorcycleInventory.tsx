@@ -1110,7 +1110,7 @@ const MotorcycleInventory: React.FC<Props> = ({
             {/* Grid/List de Cards */}
             <div className="flex-1 min-h-0 min-w-0">
                 {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                         {displayed.map(m => {
                             const mWithToggle = m.id in websiteToggles ? { ...m, showOnWebsite: websiteToggles[m.id] } : m;
                             return <MotoGridCard key={m.id} moto={mWithToggle} onSelect={handleSelectMoto} onToggleWebsite={handleToggleWebsite} />;
